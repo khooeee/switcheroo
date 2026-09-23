@@ -4,6 +4,7 @@ import type { ActiveTabId, SessionTab } from "../../../shared/types";
 import { MASTER_TAB_ID } from "../../../shared/types";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
+import "./tabSpinner.css";
 
 interface Props {
   tabs: SessionTab[];
@@ -169,6 +170,9 @@ export function TabRail({
               }}
             >
               <span className="rail-label">{tab.title}</span>
+              {tab.status === "running" && (
+                <span className="rail-spinner" role="status" aria-label="Agent thinking" />
+              )}
             </button>
           ),
         )}

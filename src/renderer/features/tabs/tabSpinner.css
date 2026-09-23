@@ -1,0 +1,23 @@
+.rail-spinner {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  margin-left: auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: rail-spinner-turn 0.8s linear infinite;
+}
+
+@keyframes rail-spinner-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-spinner {
+    animation: none;
+  }
+}
