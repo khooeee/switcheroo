@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { toggleStoredTheme } from "../theme/theme";
 import { toggleDetailsVisible } from "./details";
+import { soundPreference } from "../sound/soundPreference";
 import "./settingsShortcuts.css";
 
 export function SettingsMenu() {
+  const soundEnabled = useSyncExternalStore(soundPreference.subscribe, soundPreference.getSnapshot);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
@@ -66,6 +68,14 @@ export function SettingsMenu() {
             >
               Toggle Details
               <kbd className="settings-shortcut">⌘/</kbd>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
+              onClick={() => soundPreference.toggle()}
+            >
+              {soundEnabled ? "Toggle Sound Off" : "Toggle Sound On"}
             </button>
             <button
               type="button"
