@@ -2,12 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toggleStoredTheme } from "../theme/theme";
 import { toggleDetailsVisible } from "./details";
+import "./settingsShortcuts.css";
 
 export function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "/" || !event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (event.defaultPrevented || event.repeat || event.isComposing) return;
+      event.preventDefault();
+      toggleDetailsVisible();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -49,9 +61,11 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
+              aria-keyshortcuts="Meta+/"
               onClick={() => toggleDetailsVisible()}
             >
               Toggle Details
+              <kbd className="settings-shortcut">⌘/</kbd>
             </button>
             <button
               type="button"
