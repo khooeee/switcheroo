@@ -13,6 +13,7 @@ import { TabRail } from "./features/tabs/TabRail";
 import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
+import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
@@ -128,6 +129,8 @@ export function App() {
     if (id !== MASTER_TAB_ID) setPromptFocus((n) => n + 1);
   }, []);
 
+  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -143,20 +146,10 @@ export function App() {
         void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
         return;
       }
-      if (e.key !== "Tab" || !e.ctrlKey || e.metaKey || e.altKey || showNewTab) return;
-      e.preventDefault();
-      const order: ActiveTabId[] = [
-        MASTER_TAB_ID,
-        ...tabs.filter((tab) => !tab.closed).map((tab) => tab.id),
-      ];
-      const index = Math.max(0, order.indexOf(activeTabId));
-      const step = e.shiftKey ? -1 : 1;
-      const next = (index + step + order.length) % order.length;
-      selectTab(order[next]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [tabs, activeTabId, activeTab, selectTab, showNewTab, findOpen]);
+  }, [activeTab, showNewTab, findOpen]);
 
   const createTab = useCallback((agentKind: AgentKind, cwd: string, title: string) => {
     setShowNewTab(false);
