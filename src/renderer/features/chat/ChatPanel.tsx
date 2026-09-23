@@ -69,6 +69,9 @@ export function ChatPanel({
   const [sendError, setSendError] = useState<{ tabId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
+  const sendLabel = tab.status === "running"
+    ? (tab.supportsSteering ? "Steer agent" : "Queue message")
+    : "Send message";
 
   const send = () => {
     if (!draft.trim() || tab.status === "connecting") return;
@@ -210,11 +213,15 @@ export function ChatPanel({
           <div style={{ flex: 1 }} />
           <button
             type="button"
-            className="btn primary"
+            className="btn primary composer-send"
+            aria-label={sendLabel}
+            title={sendLabel}
             disabled={!draft.trim() || tab.status === "connecting"}
             onClick={send}
           >
-            {tab.status === "running" ? (tab.supportsSteering ? "Steer" : "Queue") : "Send"}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         </div>
       </div>

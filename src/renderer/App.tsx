@@ -130,6 +130,19 @@ export function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (e.defaultPrevented || e.repeat || e.isComposing || showNewTab) return;
+        if (document.querySelector('[role="menu"]')) return;
+        if (findOpen) {
+          setFindOpen(false);
+          setFindQuery("");
+          return;
+        }
+        if (activeTab?.status !== "running") return;
+        e.preventDefault();
+        void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
+        return;
+      }
       if (e.key !== "Tab" || !e.ctrlKey || e.metaKey || e.altKey || showNewTab) return;
       e.preventDefault();
       const order: ActiveTabId[] = [
@@ -143,7 +156,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [tabs, activeTabId, selectTab, showNewTab]);
+  }, [tabs, activeTabId, activeTab, selectTab, showNewTab, findOpen]);
 
   const createTab = useCallback((agentKind: AgentKind, cwd: string, title: string) => {
     setShowNewTab(false);
