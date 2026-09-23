@@ -23,6 +23,7 @@ export function App() {
   const [activeTabId, setActiveTabId] = useState<ActiveTabId>(MASTER_TAB_ID);
   const [masterEvents, setMasterEvents] = useState<MasterEvent[]>([]);
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptItem[]>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [askQuestion, setAskQuestion] = useState<CursorAskQuestionRequest | null>(null);
   const [showNewTab, setShowNewTab] = useState(false);
@@ -213,6 +214,10 @@ export function App() {
           <>
             <ChatPanel
               tab={activeTab}
+              draft={drafts[activeTab.id] ?? ""}
+              onDraftChange={(text) => {
+                setDrafts((previous) => ({ ...previous, [activeTab.id]: text }));
+              }}
               items={transcripts[activeTab.id] ?? []}
               focusEventId={focusEventId}
               promptFocus={promptFocus}

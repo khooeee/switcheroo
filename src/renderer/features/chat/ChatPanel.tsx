@@ -11,6 +11,8 @@ import { ThinkingIndicator } from "./ThinkingIndicator";
 
 interface Props {
   tab: SessionTab;
+  draft: string;
+  onDraftChange: (text: string) => void;
   items: TranscriptItem[];
   focusEventId: string | null;
   promptFocus: number;
@@ -51,6 +53,8 @@ function highlight(text: string, query: string) {
 
 export function ChatPanel({
   tab,
+  draft,
+  onDraftChange,
   items,
   focusEventId,
   promptFocus,
@@ -62,7 +66,6 @@ export function ChatPanel({
   onPermission,
   onAsk,
 }: Props) {
-  const [draft, setDraft] = useState("");
   const [sendError, setSendError] = useState<{ tabId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
@@ -70,7 +73,7 @@ export function ChatPanel({
   const send = () => {
     if (!draft.trim() || tab.status === "connecting") return;
     const text = draft;
-    setDraft("");
+    onDraftChange("");
     setSendError(null);
     void onSend(text).catch((error: unknown) => {
       setSendError({ tabId: tab.id, message: `Could not send “${text}”: ${String(error)}` });
@@ -194,7 +197,7 @@ export function ChatPanel({
                 ? `${tab.supportsSteering ? "Steer the agent" : "Queue a follow-up"}… (Enter to send, Shift+Enter for newline)`
               : "Message the agent… (Enter to send, Shift+Enter for newline)"
           }
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
