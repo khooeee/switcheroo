@@ -123,8 +123,18 @@ button {
   z-index: 7;
 }
 
-.rail-resize:hover {
-  background: var(--accent);
+.rail-resize::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  transition: background 0.15s ease;
+}
+
+.rail-resize:hover::after {
+  background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
 }
 
 .rail-tab {
