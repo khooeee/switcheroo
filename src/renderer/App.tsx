@@ -12,6 +12,7 @@ import { MASTER_TAB_ID } from "../shared/types";
 import { TabRail } from "./features/tabs/TabRail";
 import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
 import { PermissionBar } from "./features/permissions/PermissionBar";
@@ -203,6 +204,7 @@ export function App() {
                 onClick={onMasterClick}
                 query={findQuery}
               />
+              {tabs.some((tab) => tab.status === "running") && <ThinkingIndicator />}
             </div>
           </section>
         ) : activeTab ? (

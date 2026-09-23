@@ -8,6 +8,10 @@
   color: var(--thinking-color);
 }
 
+.scroll > .chat-thinking {
+  margin: 0 16px 16px;
+}
+
 .chat-thinking-label {
   display: inline-block;
   background: linear-gradient(

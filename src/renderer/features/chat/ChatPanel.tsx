@@ -7,7 +7,7 @@ import type {
 } from "../../../shared/types";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
-import "./thinking.css";
+import { ThinkingIndicator } from "./ThinkingIndicator";
 
 interface Props {
   tab: SessionTab;
@@ -140,11 +140,7 @@ export function ChatPanel({
               </div>
             );
           })}
-          {tab.status === "running" && (
-            <div className="chat-thinking" role="status">
-              <span className="chat-thinking-label">Thinking</span>
-            </div>
-          )}
+          {tab.status === "running" && <ThinkingIndicator />}
           <div ref={endRef} />
         </div>
       </div>
