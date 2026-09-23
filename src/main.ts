@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { TabManager } from "./main/tabs";
+import { installQuitHandler } from "./main/installQuitHandler";
 import type { ActiveTabId, CreateTabInput } from "./shared/types";
 
 if (started) {
@@ -182,6 +183,4 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) void createWindow();
 });
 
-app.on("before-quit", () => {
-  void tabs.disposeAll();
-});
+installQuitHandler(() => tabs.disposeAll());
