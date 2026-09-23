@@ -151,6 +151,23 @@ button {
   font-size: 12px;
 }
 
+.rail-spinner {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rail-spin 0.7s linear infinite;
+}
+
+@keyframes rail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .rail-rename {
   width: calc(100% - 16px);
   height: 40px;

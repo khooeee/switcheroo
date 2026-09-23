@@ -169,6 +169,9 @@ export function TabRail({
               }}
             >
               <span className="rail-label">{tab.title}</span>
+              {tab.status === "running" && (
+                <span className="rail-spinner" aria-label="Thinking" />
+              )}
             </button>
           ),
         )}
