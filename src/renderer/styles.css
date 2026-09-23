@@ -469,6 +469,9 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 }
 
 .composer textarea {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
   width: 100%;
   min-height: 72px;
   resize: vertical;
