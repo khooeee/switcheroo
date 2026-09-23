@@ -144,6 +144,7 @@ button {
 }
 
 .rail-label {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,11 +153,11 @@ button {
 }
 
 .rail-spinner {
-  flex-shrink: 0;
-  margin-left: auto;
+  flex: 0 0 12px;
+  box-sizing: border-box;
   width: 12px;
   height: 12px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: rail-spin 0.7s linear infinite;
