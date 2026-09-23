@@ -19,6 +19,7 @@ interface Props {
   findQuery: string;
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
+  onInterrupt: () => void;
   permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
   onPermission: (optionId: string | "cancelled") => void;
@@ -61,6 +62,7 @@ export function ChatPanel({
   findQuery,
   chatRef,
   onSend,
+  onInterrupt,
   permission,
   askQuestion,
   onPermission,
@@ -69,7 +71,8 @@ export function ChatPanel({
   const [sendError, setSendError] = useState<{ tabId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
-  const sendLabel = tab.status === "running"
+  const showStop = tab.status === "running" && !draft.trim();
+  const sendLabel = showStop ? "Stop agent (Escape)" : tab.status === "running"
     ? (tab.supportsSteering ? "Steer agent" : "Queue message")
     : "Send message";
 
@@ -216,11 +219,15 @@ export function ChatPanel({
             className="btn primary composer-send"
             aria-label={sendLabel}
             title={sendLabel}
-            disabled={!draft.trim() || tab.status === "connecting"}
-            onClick={send}
+            disabled={(!showStop && !draft.trim()) || tab.status === "connecting"}
+            onClick={showStop ? onInterrupt : send}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              {showStop ? (
+                <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+              ) : (
+                <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              )}
             </svg>
           </button>
         </div>

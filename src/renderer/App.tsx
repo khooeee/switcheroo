@@ -237,6 +237,9 @@ export function App() {
               findQuery={findQuery}
               chatRef={chatRef}
               onSend={sendPrompt}
+              onInterrupt={() => {
+                void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
+              }}
               permission={permission?.tabId === activeTab.id ? permission : null}
               askQuestion={askQuestion?.tabId === activeTab.id ? askQuestion : null}
               onPermission={(optionId) => {
