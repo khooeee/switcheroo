@@ -219,7 +219,9 @@ export class AcpSession {
       await this.connection.agent.notify(acp.methods.agent.session.cancel, {
         sessionId: this.sessionId,
       });
-      this.emitTranscript({ id: randomUUID(), role: "stopped", text: "Stopped", at: Date.now() });
+      const id = randomUUID();
+      this.emitTranscript({ id, role: "stopped", text: "Stopped", at: Date.now() });
+      this.pushMaster("stopped", "Stopped", id);
     } catch (error) {
       this.stopRequested = false;
       throw error;

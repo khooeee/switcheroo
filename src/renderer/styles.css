@@ -441,7 +441,8 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   font-style: italic;
 }
 
-.message.stopped {
+.message.stopped,
+.feed-item.stopped {
   background: transparent;
   color: color-mix(in srgb, var(--text-dim) 50%, var(--bg-0));
 }

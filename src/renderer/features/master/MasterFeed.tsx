@@ -52,7 +52,7 @@ export function MasterFeed({ events, tabs, onClick, query }: Props) {
         <button
           key={event.id + event.at}
           type="button"
-          className={`feed-item${event.kind === "user" ? " user" : ""}${detail ? " detail" : ""}`}
+          className={`feed-item${event.kind === "user" ? " user" : ""}${event.kind === "stopped" ? " stopped" : ""}${detail ? " detail" : ""}`}
           disabled={!event.navigable}
           onClick={() => onClick(event)}
           data-find-text={`${title} ${event.summary}`}

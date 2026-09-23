@@ -13,6 +13,7 @@ async function fixture(supported = true) {
   const statuses = [];
   const transcripts = [];
   const capabilities = [];
+  const events = [];
   const cancellations = [];
   let steeringResult = { outcome: "injected" };
   const connection = {
@@ -60,7 +61,7 @@ async function fixture(supported = true) {
     return exports;
   }
   const { AcpSession } = load(path.join(__dirname, "../src/main/acp/session.ts"));
-  const session = new AcpSession("tab-1", "codex", "/tmp", { append() {}, updateSummary() {} }, {
+  const session = new AcpSession("tab-1", "codex", "/tmp", { append(event) { events.push(event); }, updateSummary() {} }, {
     onStatus: (status) => statuses.push(status),
     onTranscript: (item) => transcripts.push(item),
     onSteeringSupport: (value) => capabilities.push(value),
@@ -68,7 +69,7 @@ async function fixture(supported = true) {
   });
   await session.start();
   return {
-    session, requests, turns, statuses, transcripts, capabilities, cancellations,
+    session, requests, turns, statuses, transcripts, capabilities, cancellations, events,
     setOutcome: (outcome) => { steeringResult = { outcome }; },
     update: (update) => notifications.get("update")({ params: { sessionId: "session-1", update } }),
   };
@@ -85,6 +86,11 @@ test("interrupting adds one stopped event per turn and ignores idle interruption
     await Promise.all([f.session.cancel(), f.session.cancel()]);
     assert.equal(f.cancellations.length, i + 1);
     assert.equal(f.transcripts.filter((item) => item.role === "stopped" && item.text === "Stopped").length, i + 1);
+    const stopped = f.events.filter((event) => event.kind === "stopped");
+    assert.equal(stopped.length, i + 1);
+    assert.equal(stopped.at(-1).id, f.transcripts.at(-1).id);
+    assert.equal(stopped.at(-1).summary, "Stopped");
+    assert.equal(stopped.at(-1).navigable, true);
     f.turns[i]({ stopReason: "cancelled" });
     await turn;
   }

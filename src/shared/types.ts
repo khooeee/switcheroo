@@ -13,6 +13,7 @@ export type MasterEventKind =
   | "plan"
   | "error"
   | "status"
+  | "stopped"
   | "user";
 
 export interface MasterEvent {
