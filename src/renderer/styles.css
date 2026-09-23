@@ -363,6 +363,8 @@ button {
 .feed-item {
   width: 100%;
   cursor: pointer;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow 0.15s ease;
 }
 
 .feed-item.user {
@@ -376,7 +378,7 @@ html[data-details="hidden"] .message.thought {
 }
 
 .feed-item:hover:not(:disabled) {
-  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 
 .feed-item:disabled {
