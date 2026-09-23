@@ -66,13 +66,8 @@ export function ChatPanel({
 }: Props) {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [items.length]);
 
   useEffect(() => {
     promptRef.current?.focus();
@@ -95,7 +90,7 @@ export function ChatPanel({
       const t = setTimeout(() => el.classList.remove("highlight"), 1200);
       return () => clearTimeout(t);
     }
-  }, [focusEventId, items]);
+  }, [focusEventId, tab.id]);
 
   return (
     <section className="panel relative">
@@ -141,7 +136,6 @@ export function ChatPanel({
             );
           })}
           {tab.status === "running" && <ThinkingIndicator />}
-          <div ref={endRef} />
         </div>
       </div>
 

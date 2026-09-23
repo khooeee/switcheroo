@@ -12,6 +12,7 @@ import { MASTER_TAB_ID } from "../shared/types";
 import { TabRail } from "./features/tabs/TabRail";
 import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
@@ -32,6 +33,7 @@ export function App() {
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
   const tabIdsRef = useRef<Set<string> | null>(null);
+  useTabScrollPosition(activeTabId, activeTabId === MASTER_TAB_ID ? masterRef : chatRef);
 
   useEffect(() => {
     void window.switcheroo.listTabs().then(async (data) => {
