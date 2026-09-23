@@ -144,7 +144,7 @@ export function ChatPanel({
                 {item.role !== "stopped" && <div className="row">
                   <span className="kind-pill">{item.role}</span>
                   {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
-                  <span style={{ marginLeft: "auto" }}>
+                  <span className="event-timestamp" style={{ marginLeft: "auto" }}>
                     {new Date(item.at).toLocaleTimeString()}
                   </span>
                 </div>}

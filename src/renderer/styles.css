@@ -413,7 +413,9 @@ html[data-details="hidden"] .message.thought {
   background: var(--bg-3);
 }
 
-html[data-details="hidden"] .kind-pill {
+html[data-details="hidden"] .kind-pill,
+html[data-details="hidden"] .feed-item .event-timestamp,
+html[data-details="hidden"] .message.has-file-changes .event-timestamp {
   display: none;
 }
 

@@ -65,7 +65,7 @@ export function MasterFeed({ events, tabs, onClick, query }: Props) {
           <div className="row">
             <span className={`kind-pill ${event.kind}`}>{event.kind}</span>
             <span>{title}</span>
-            <span style={{ marginLeft: "auto" }}>
+            <span className="event-timestamp" style={{ marginLeft: "auto" }}>
               {new Date(event.at).toLocaleTimeString()}
             </span>
           </div>
