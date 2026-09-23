@@ -23,6 +23,8 @@ export interface MasterEvent {
   at: number;
   kind: MasterEventKind;
   summary: string;
+  fileChanges?: FileChange[];
+  toolStatus?: string;
   /** True when the source tab still exists */
   navigable: boolean;
 }
@@ -52,6 +54,11 @@ export interface TranscriptItem {
   toolStatus?: string;
   toolTitle?: string;
   diffs?: DiffPayload[];
+  fileChanges?: FileChange[];
+}
+
+export interface FileChange extends DiffPayload {
+  kind: "created" | "updated" | "deleted" | "moved";
 }
 
 export interface DiffPayload {

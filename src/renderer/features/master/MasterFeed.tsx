@@ -1,4 +1,5 @@
 import type { MasterEvent, SessionTab } from "../../../shared/types";
+import { MasterFileEvent } from "./MasterFileEvent";
 
 interface Props {
   events: MasterEvent[];
@@ -47,6 +48,10 @@ export function MasterFeed({ events, tabs, onClick, query }: Props) {
     <div className="feed">
       {ordered.map((event) => {
         const title = titleFor(event.tabId);
+        if (event.fileChanges?.length) {
+          return <MasterFileEvent key={event.id} event={event} title={title}
+            cwd={tabs.find((tab) => tab.id === event.tabId)?.cwd} onClick={onClick} />;
+        }
         const detail = event.kind === "status" || event.kind === "tool";
         return (
         <button

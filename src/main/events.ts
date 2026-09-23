@@ -16,9 +16,13 @@ export class GlobalEventBus extends EventEmitter {
   }
 
   updateSummary(id: string, summary: string): void {
+    this.updateEvent(id, { summary });
+  }
+
+  updateEvent(id: string, patch: Partial<Pick<MasterEvent, "summary" | "toolStatus" | "fileChanges">>): void {
     const event = this.events.find((entry) => entry.id === id);
     if (!event) return;
-    event.summary = summary;
+    Object.assign(event, patch);
     this.emit("event", event);
   }
 

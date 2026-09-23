@@ -1,0 +1,99 @@
+.file-changes {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-change summary,
+.file-change-label {
+  overflow-wrap: anywhere;
+}
+
+.file-change summary {
+  cursor: pointer;
+}
+
+.file-change summary:hover {
+  color: var(--codex);
+}
+
+.file-diff {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.file-diff pre {
+  margin: 0;
+  padding: 8px 0;
+  max-height: 400px;
+  overflow: auto;
+  font: inherit;
+  background: var(--bg-0);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.diff-line {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  padding: 0 8px;
+}
+
+.diff-line.added {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.diff-line.removed {
+  background: var(--danger-soft);
+}
+
+.diff-line-number {
+  width: 4em;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 1em;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.diff-marker {
+  width: 1.5em;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.file-diff-note {
+  color: var(--text-dim);
+}
+
+.file-diff-more,
+.file-event-link {
+  border: 0;
+  background: transparent;
+  color: var(--codex);
+  cursor: pointer;
+  font: inherit;
+}
+
+.file-diff-more {
+  padding: 8px;
+}
+
+.file-event-link {
+  padding: 0;
+  text-align: left;
+}
+
+.file-event-link:hover {
+  text-decoration: underline;
+}
+
+.feed-item.has-file-changes {
+  cursor: default;
+}

@@ -1,20 +1,24 @@
 import { randomUUID } from "node:crypto";
 import type * as acp from "@agentclientprotocol/sdk";
-import type { AgentKind, DiffPayload, MasterEvent, TranscriptItem } from "../../shared/types";
+import type { AgentKind, MasterEvent, TranscriptItem } from "../../shared/types";
 import type { GlobalEventBus } from "../events";
 import { stripCursorStreamNoise } from "../../shared/cursorStreamNoise";
+import { ToolOutput } from "./ToolOutput";
 
 export class SessionOutput {
   private streamingAssistantId: string | null = null;
   private streamingAssistantText = "";
   private streamingThoughtId: string | null = null;
+  private tools: ToolOutput;
 
   constructor(
     private agentKind: AgentKind,
     private bus: GlobalEventBus,
     private onTranscript: (item: TranscriptItem, replaceId?: string) => void,
     private pushMaster: (kind: MasterEvent["kind"], summary: string, id?: string) => void,
-  ) {}
+  ) {
+    this.tools = new ToolOutput(bus, onTranscript, pushMaster);
+  }
 
   reset(): void {
     this.streamingAssistantId = null;
@@ -76,35 +80,9 @@ export class SessionOutput {
         }
         break;
       }
-      case "tool_call": {
-        const diffs = extractDiffs(update);
-        const item: TranscriptItem = {
-          id: randomUUID(),
-          role: "tool",
-          text: update.title ?? update.toolCallId,
-          at: Date.now(),
-          toolCallId: update.toolCallId,
-          toolStatus: update.status ?? undefined,
-          toolTitle: update.title ?? undefined,
-          diffs,
-        };
-        this.onTranscript(item);
-        this.pushMaster("tool", update.title ?? "Tool call", item.id);
-        break;
-      }
+      case "tool_call":
       case "tool_call_update": {
-        const diffs = extractDiffs(update);
-        const item: TranscriptItem = {
-          id: randomUUID(),
-          role: "tool",
-          text: update.title ?? update.toolCallId,
-          at: Date.now(),
-          toolCallId: update.toolCallId,
-          toolStatus: update.status ?? "updated",
-          toolTitle: update.title ?? undefined,
-          diffs,
-        };
-        this.onTranscript(item);
+        this.tools.handle(update);
         break;
       }
       case "plan": {
@@ -121,20 +99,4 @@ function contentText(content: acp.ContentBlock | undefined): string {
   if (!content) return "";
   if (content.type === "text") return content.text;
   return `[${content.type}]`;
-}
-
-function extractDiffs(update: {
-  content?: acp.ToolCallContent[] | null;
-}): DiffPayload[] {
-  const diffs: DiffPayload[] = [];
-  for (const block of update.content ?? []) {
-    if (block.type === "diff") {
-      diffs.push({
-        path: block.path,
-        oldText: block.oldText,
-        newText: block.newText,
-      });
-    }
-  }
-  return diffs;
 }

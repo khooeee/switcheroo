@@ -52,6 +52,8 @@ export class TabManager {
             at: e.at,
             kind: e.kind,
             summary,
+            fileChanges: e.fileChanges,
+            toolStatus: e.toolStatus,
             navigable: openTabIds.has(e.tabId),
           };
         }),
@@ -291,7 +293,7 @@ export class TabManager {
     if (replaceId) {
       const idx = list.findIndex((i) => i.id === replaceId);
       if (idx >= 0) {
-        list[idx] = {
+        list[idx] = item.role === "tool" ? item : {
           ...list[idx],
           text: list[idx].text + item.text,
           at: item.at,

@@ -379,7 +379,7 @@ button {
 }
 
 html[data-details="hidden"] .feed-item.detail,
-html[data-details="hidden"] .message.tool,
+html[data-details="hidden"] .message.tool:not(.has-file-changes),
 html[data-details="hidden"] .message.thought {
   display: none;
 }

@@ -9,6 +9,7 @@ import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { ComposerResize } from "./ComposerResize";
+import { FileChanges } from "../files/FileChanges";
 
 interface Props {
   tab: SessionTab;
@@ -136,7 +137,7 @@ export function ChatPanel({
             return (
               <div
                 key={item.id}
-                className={`message ${item.role}`}
+                className={`message ${item.role}${item.fileChanges?.length ? " has-file-changes" : ""}`}
                 data-event-id={item.id}
                 data-find-text={text}
               >
@@ -147,7 +148,9 @@ export function ChatPanel({
                     {new Date(item.at).toLocaleTimeString()}
                   </span>
                 </div>}
-                <div className="body">{highlight(text, findQuery)}</div>
+                {item.fileChanges?.length ? (
+                  <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} />
+                ) : <div className="body">{highlight(text, findQuery)}</div>}
               </div>
             );
           })}
