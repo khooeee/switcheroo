@@ -1,79 +1,69 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, type RefObject } from "react";
+import { useFindMatches } from "./useFindMatches";
+import "./findHighlights.css";
 
 interface Props {
   query: string;
   onQuery: (q: string) => void;
-  root: HTMLElement | null;
+  rootRef: RefObject<HTMLDivElement | null>;
   onClose: () => void;
 }
 
-export function FindBar({ query, onQuery, root, onClose }: Props) {
+export function FindBar({ query, onQuery, rootRef, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [index, setIndex] = useState(0);
-
-  const matches = useMemo(() => {
-    if (!root || !query.trim()) return [] as HTMLElement[];
-    const nodes = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-find-text], .message, .feed-item"),
-    );
-    const q = query.toLowerCase();
-    return nodes.filter((n) => {
-      const text = (n.dataset.findText ?? n.textContent ?? "").toLowerCase();
-      return text.includes(q);
-    });
-  }, [root, query]);
+  const { count, index, go } = useFindMatches(rootRef, query);
 
   useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
+    const previousFocus = document.activeElement;
+    const focus = () => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        focus();
+      }
+    };
+    focus();
+    window.addEventListener("switcheroo:find", focus);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("switcheroo:find", focus);
+      window.removeEventListener("keydown", onKey);
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+    };
   }, []);
 
-  useEffect(() => {
-    setIndex(0);
-  }, [query]);
-
-  useEffect(() => {
-    if (matches.length === 0) return;
-    const el = matches[Math.min(index, matches.length - 1)];
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [index, matches]);
-
-  const go = (dir: 1 | -1) => {
-    if (matches.length === 0) return;
-    setIndex((i) => (i + dir + matches.length) % matches.length);
-  };
-
   return (
-    <div className="find-bar" role="search">
+    <div className="find-bar" role="search" aria-label="Find in current tab"
+      onKeyDown={(event) => {
+        if (event.nativeEvent.isComposing) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}>
       <input
         ref={inputRef}
         value={query}
+        aria-label="Find in current tab"
         placeholder="Find in tab…"
-        onChange={(e) => onQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onClose();
-          if (e.key === "Enter") {
-            e.preventDefault();
-            go(e.shiftKey ? -1 : 1);
+        onChange={(event) => onQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            go(event.shiftKey ? -1 : 1);
           }
         }}
       />
-      <span className="find-count">
-        {query.trim()
-          ? matches.length
-            ? `${Math.min(index + 1, matches.length)}/${matches.length}`
-            : "0/0"
-          : ""}
+      <span className="find-count" role="status" aria-live="polite">
+        {query ? count ? `${index + 1} of ${count}` : "0 results" : ""}
       </span>
-      <button type="button" className="btn" onClick={() => go(-1)}>
-        ↑
-      </button>
-      <button type="button" className="btn" onClick={() => go(1)}>
-        ↓
-      </button>
-      <button type="button" className="btn" onClick={onClose}>
-        ✕
-      </button>
+      <button type="button" className="btn" aria-label="Previous match" title="Previous match (Shift+Enter)" disabled={!count} onClick={() => go(-1)}>↑</button>
+      <button type="button" className="btn" aria-label="Next match" title="Next match (Enter)" disabled={!count} onClick={() => go(1)}>↓</button>
+      <button type="button" className="btn" aria-label="Close find" title="Close (Escape)" onClick={onClose}>✕</button>
     </div>
   );
 }

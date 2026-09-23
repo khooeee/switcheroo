@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject, type ReactNode } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import type {
   CursorAskQuestionRequest,
   PermissionRequest,
@@ -18,7 +18,6 @@ interface Props {
   items: TranscriptItem[];
   focusEventId: string | null;
   promptFocus: number;
-  findQuery: string;
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
@@ -36,24 +35,6 @@ interface Props {
   ) => void;
 }
 
-function highlight(text: string, query: string) {
-  if (!query.trim()) return text;
-  const lower = text.toLowerCase();
-  const q = query.toLowerCase();
-  const parts: Array<string | ReactNode> = [];
-  let start = 0;
-  let idx = lower.indexOf(q, start);
-  let key = 0;
-  while (idx >= 0) {
-    parts.push(text.slice(start, idx));
-    parts.push(<mark key={key++}>{text.slice(idx, idx + q.length)}</mark>);
-    start = idx + q.length;
-    idx = lower.indexOf(q, start);
-  }
-  parts.push(text.slice(start));
-  return parts;
-}
-
 export function ChatPanel({
   tab,
   draft,
@@ -61,7 +42,6 @@ export function ChatPanel({
   items,
   focusEventId,
   promptFocus,
-  findQuery,
   chatRef,
   onSend,
   onInterrupt,
@@ -150,7 +130,7 @@ export function ChatPanel({
                 </div>}
                 {item.fileChanges?.length ? (
                   <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} tabId={tab.id} />
-                ) : <div className="body">{highlight(text, findQuery)}</div>}
+                ) : <div className="body">{text}</div>}
               </div>
             );
           })}

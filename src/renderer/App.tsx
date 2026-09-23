@@ -172,9 +172,6 @@ export function App() {
     void window.switcheroo.navigateToEvent(event.tabId, event.id);
   }, []);
 
-  const searchRoot =
-    activeTabId === MASTER_TAB_ID ? masterRef.current : chatRef.current;
-
   return (
     <div className="app">
       <TabRail
@@ -191,9 +188,10 @@ export function App() {
       <div className="main relative">
         {findOpen && (
           <FindBar
+            key={activeTabId}
             query={findQuery}
             onQuery={setFindQuery}
-            root={searchRoot}
+            rootRef={activeTabId === MASTER_TAB_ID ? masterRef : chatRef}
             onClose={() => {
               setFindOpen(false);
               setFindQuery("");
@@ -211,7 +209,6 @@ export function App() {
                 events={masterEvents}
                 tabs={tabs}
                 onClick={onMasterClick}
-                query={findQuery}
               />
               {tabs.some((tab) => tab.status === "running") && <ThinkingIndicator />}
             </div>
@@ -227,7 +224,6 @@ export function App() {
               items={transcripts[activeTab.id] ?? []}
               focusEventId={focusEventId}
               promptFocus={promptFocus}
-              findQuery={findQuery}
               chatRef={chatRef}
               onSend={sendPrompt}
               onInterrupt={() => {

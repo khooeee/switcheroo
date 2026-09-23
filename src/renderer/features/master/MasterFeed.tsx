@@ -5,33 +5,10 @@ interface Props {
   events: MasterEvent[];
   tabs: SessionTab[];
   onClick: (event: MasterEvent) => void;
-  query: string;
 }
 
-function highlight(text: string, query: string) {
-  if (!query.trim()) return text;
-  const q = query.toLowerCase();
-  const idx = text.toLowerCase().indexOf(q);
-  if (idx < 0) return text;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark>{text.slice(idx, idx + query.length)}</mark>
-      {text.slice(idx + query.length)}
-    </>
-  );
-}
-
-export function MasterFeed({ events, tabs, onClick, query }: Props) {
+export function MasterFeed({ events, tabs, onClick }: Props) {
   const titleFor = (tabId: string) => tabs.find((tab) => tab.id === tabId)?.title ?? "Closed session";
-  const filtered = query.trim()
-    ? events.filter((e) => {
-        const title = titleFor(e.tabId).toLowerCase();
-        const q = query.toLowerCase();
-        return e.summary.toLowerCase().includes(q) || title.includes(q);
-      })
-    : events;
-
   if (events.length === 0) {
     return (
       <div className="empty">
@@ -42,7 +19,7 @@ export function MasterFeed({ events, tabs, onClick, query }: Props) {
     );
   }
 
-  const ordered = [...filtered].sort((a, b) => a.at - b.at);
+  const ordered = [...events].sort((a, b) => a.at - b.at);
 
   return (
     <div className="feed">
@@ -69,7 +46,7 @@ export function MasterFeed({ events, tabs, onClick, query }: Props) {
               {new Date(event.at).toLocaleTimeString()}
             </span>
           </div>
-          <div className="body">{highlight(event.summary, query)}</div>
+          <div className="body">{event.summary}</div>
         </button>
         );
       })}

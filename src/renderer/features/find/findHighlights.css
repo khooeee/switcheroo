@@ -1,0 +1,9 @@
+::highlight(find-matches) {
+  background-color: #ffe38a;
+  color: #201800;
+}
+
+::highlight(find-active) {
+  background-color: #ff963b;
+  color: #201000;
+}
