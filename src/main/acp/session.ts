@@ -6,35 +6,19 @@ import * as path from "node:path";
 import * as acp from "@agentclientprotocol/sdk";
 import type {
   AgentKind,
-  DiffPayload,
   MasterEvent,
-  PermissionRequest,
   TranscriptItem,
 } from "../../shared/types";
 import { AGENT_PRESETS, agentLabel } from "./presets";
 import type { GlobalEventBus } from "../events";
-import { stripCursorStreamNoise } from "../../shared/cursorStreamNoise";
+import { SessionOutput } from "./SessionOutput";
+import type { SessionCallbacks } from "./SessionCallbacks";
+import { PromptQueue } from "./PromptQueue";
+import { PromptDelivery } from "./PromptDelivery";
 
 type PermissionResolver = (optionId: string | "cancelled") => void;
 type AskQuestionResolver = (outcome: unknown) => void;
 
-export interface SessionCallbacks {
-  onTranscript: (item: TranscriptItem, replaceId?: string) => void;
-  onStatus: (status: "connecting" | "ready" | "running" | "error" | "idle", error?: string | null) => void;
-  onPermission: (req: PermissionRequest) => void;
-  onAskQuestion: (req: {
-    requestId: string;
-    tabId: string;
-    toolCallId: string;
-    title?: string;
-    questions: Array<{
-      id: string;
-      prompt: string;
-      options: Array<{ id: string; label: string }>;
-      allowMultiple?: boolean;
-    }>;
-  }) => void;
-}
 
 export class AcpSession {
   readonly tabId: string;
@@ -44,15 +28,35 @@ export class AcpSession {
 
   private proc: ChildProcessWithoutNullStreams | null = null;
   private connection: acp.ClientConnection | null = null;
-  private active: acp.ActiveSession | null = null;
+  private turnRunning = false;
+  private remoteTurnActive: boolean | null = null;
   private bus: GlobalEventBus;
   private cb: SessionCallbacks;
   private pendingPermissions = new Map<string, PermissionResolver>();
   private pendingAsk = new Map<string, AskQuestionResolver>();
-  private streamingAssistantId: string | null = null;
-  private streamingAssistantText = "";
-  private streamingThoughtId: string | null = null;
+  private output: SessionOutput;
   private disposed = false;
+  private starting: Promise<void> | null = null;
+  private prompts = new PromptQueue((text) => this.runPrompt(text));
+  private delivery = new PromptDelivery({
+    isRunning: () => this.turnRunning,
+    prompt: (text) => this.prompts.send(text),
+    steer: (text) => {
+      if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session closed");
+      return this.connection.agent.request("_session/steering", {
+        sessionId: this.sessionId,
+        prompt: [{ type: "text", text }],
+        _meta: { steering: { idleBehavior: "promptRequired" } },
+      });
+    },
+    onSupport: (supported) => this.cb.onSteeringSupport(supported),
+    onDetachedTurn: () => {
+      if (this.remoteTurnActive !== false) {
+        this.turnRunning = true;
+        this.cb.onStatus("running");
+      }
+    },
+  });
 
   constructor(
     tabId: string,
@@ -66,9 +70,18 @@ export class AcpSession {
     this.cwd = cwd;
     this.bus = bus;
     this.cb = cb;
+    this.output = new SessionOutput(agentKind, bus, cb.onTranscript, (kind, text, id) => this.pushMaster(kind, text, id));
   }
 
-  async start(): Promise<void> {
+  start(): Promise<void> {
+    if (this.sessionId) return Promise.resolve();
+    if (!this.starting) {
+      this.starting = this.startSession().finally(() => { this.starting = null; });
+    }
+    return this.starting;
+  }
+
+  private async startSession(): Promise<void> {
     this.cb.onStatus("connecting");
     const preset = AGENT_PRESETS[this.agentKind];
 
@@ -94,29 +107,42 @@ export class AcpSession {
     const output = Readable.toWeb(this.proc.stdout) as ReadableStream<Uint8Array>;
     const stream = acp.ndJsonStream(input, output);
 
-    const self = this;
     this.connection = acp
       .client({ name: "switcheroo" })
       .onRequest(acp.methods.client.session.requestPermission, async (ctx) => {
-        return self.handlePermission(ctx.params);
+        return this.handlePermission(ctx.params);
       })
       .onRequest(acp.methods.client.fs.readTextFile, async (ctx) => {
-        return self.readTextFile(ctx.params);
+        return this.readTextFile(ctx.params);
       })
       .onRequest(acp.methods.client.fs.writeTextFile, async (ctx) => {
-        return self.writeTextFile(ctx.params);
+        return this.writeTextFile(ctx.params);
       })
       .onRequest("cursor/ask_question", (params: unknown) => params as Record<string, unknown>, async (ctx) => {
-        return self.handleAskQuestion(ctx.params);
+        return this.handleAskQuestion(ctx.params);
       })
       .onNotification("cursor/update_todos", (params: unknown) => params, async () => {
-        self.pushMaster("plan", "Todos updated");
+        this.pushMaster("plan", "Todos updated");
+      })
+      .onNotification(acp.methods.client.session.update, (ctx) => {
+        if (ctx.params.sessionId !== this.sessionId || this.disposed) return;
+        this.output.handleUpdate(ctx.params.update);
+        const codex = ctx.params.update._meta?.codex;
+        const status = codex && typeof codex === "object" && "threadStatus" in codex
+          ? codex.threadStatus : null;
+        if (status && typeof status === "object" && "type" in status) {
+          if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+            this.remoteTurnActive = status.type === "active";
+            this.turnRunning = this.remoteTurnActive;
+            this.cb.onStatus(status.type === "active" ? "running" : status.type === "idle" ? "ready" : "error");
+          }
+        }
       })
       .connect(stream);
 
     const agent = this.connection.agent;
 
-    await agent.request(acp.methods.agent.initialize, {
+    const initialized = await agent.request(acp.methods.agent.initialize, {
       protocolVersion: acp.PROTOCOL_VERSION,
       clientCapabilities: {
         fs: { readTextFile: true, writeTextFile: true },
@@ -124,6 +150,7 @@ export class AcpSession {
       },
       clientInfo: { name: "switcheroo", version: "1.0.0" },
     });
+    this.delivery.configure(initialized._meta);
 
     if (preset.authMethodId) {
       try {
@@ -136,19 +163,14 @@ export class AcpSession {
       }
     }
 
-    this.active = await agent.buildSession({ cwd: this.cwd, mcpServers: [] }).start();
-    this.sessionId = this.active.sessionId;
+    const session = await agent.request(acp.methods.agent.session.new, { cwd: this.cwd, mcpServers: [] });
+    this.sessionId = session.sessionId;
     this.cb.onStatus("ready");
     this.pushMaster("status", `${agentLabel(this.agentKind)} session ready`);
   }
 
   async prompt(text: string): Promise<void> {
-    if (!this.active) throw new Error("Session not ready");
-    this.cb.onStatus("running");
-    this.streamingAssistantId = null;
-    this.streamingAssistantText = "";
-    this.streamingThoughtId = null;
-
+    if (!this.sessionId || this.disposed) throw new Error("Session not ready");
     const userItem: TranscriptItem = {
       id: randomUUID(),
       role: "user",
@@ -157,127 +179,34 @@ export class AcpSession {
     };
     this.emitTranscript(userItem);
     this.pushMaster("user", text, userItem.id);
+    await this.delivery.send(text);
+  }
 
-    // Drain updates in parallel with prompt promise
-    const pump = this.pumpUpdates();
+  private async runPrompt(text: string): Promise<void> {
+    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
+    this.turnRunning = true;
+    this.remoteTurnActive = null;
+    this.cb.onStatus("running");
+    this.output.reset();
+
     try {
-      await this.active.prompt(text);
-      await pump;
-      this.cb.onStatus("ready");
+      const response = await this.connection.agent.request(acp.methods.agent.session.prompt, {
+        sessionId: this.sessionId,
+        prompt: [{ type: "text", text }],
+      });
+      this.pushMaster("status", `Turn ended (${response.stopReason})`);
+      if (this.remoteTurnActive !== true && !this.disposed) {
+        this.turnRunning = false;
+        this.cb.onStatus("ready");
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.cb.onStatus("error", msg);
+      if (this.remoteTurnActive !== true && !this.disposed) {
+        this.turnRunning = false;
+        this.cb.onStatus("error", msg);
+      }
       this.pushMaster("error", msg);
       throw err;
-    }
-  }
-
-  private async pumpUpdates(): Promise<void> {
-    if (!this.active) return;
-    for (;;) {
-      const message = await this.active.nextUpdate();
-      if (message.kind === "stop") {
-        this.pushMaster("status", `Turn ended (${message.stopReason})`);
-        this.streamingAssistantId = null;
-        this.streamingAssistantText = "";
-        this.streamingThoughtId = null;
-        return;
-      }
-      this.handleUpdate(message.update);
-    }
-  }
-
-  private handleUpdate(update: acp.SessionUpdate): void {
-    switch (update.sessionUpdate) {
-      case "agent_message_chunk": {
-        const raw = contentText(update.content);
-        const chunk = this.agentKind === "cursor" ? stripCursorStreamNoise(raw) : raw;
-        if (!chunk) return;
-        if (!this.streamingAssistantId) {
-          this.streamingAssistantId = randomUUID();
-          const item: TranscriptItem = {
-            id: this.streamingAssistantId,
-            role: "assistant",
-            text: chunk,
-            at: Date.now(),
-          };
-          this.emitTranscript(item);
-          this.streamingAssistantText = chunk;
-          this.pushMaster("message", this.streamingAssistantText, item.id);
-        } else {
-          this.streamingAssistantText += chunk;
-          this.bus.updateSummary(this.streamingAssistantId, this.streamingAssistantText);
-          const item: TranscriptItem = {
-            id: this.streamingAssistantId,
-            role: "assistant",
-            text: chunk,
-            at: Date.now(),
-          };
-          this.cb.onTranscript(item, this.streamingAssistantId);
-        }
-        break;
-      }
-      case "agent_thought_chunk": {
-        const chunk = contentText(update.content);
-        if (!chunk) return;
-        if (!this.streamingThoughtId) {
-          this.streamingThoughtId = randomUUID();
-          this.emitTranscript({
-            id: this.streamingThoughtId,
-            role: "thought",
-            text: chunk,
-            at: Date.now(),
-          });
-        } else {
-          this.cb.onTranscript(
-            {
-              id: this.streamingThoughtId,
-              role: "thought",
-              text: chunk,
-              at: Date.now(),
-            },
-            this.streamingThoughtId,
-          );
-        }
-        break;
-      }
-      case "tool_call": {
-        const diffs = extractDiffs(update);
-        const item: TranscriptItem = {
-          id: randomUUID(),
-          role: "tool",
-          text: update.title ?? update.toolCallId,
-          at: Date.now(),
-          toolCallId: update.toolCallId,
-          toolStatus: update.status ?? undefined,
-          toolTitle: update.title ?? undefined,
-          diffs,
-        };
-        this.emitTranscript(item);
-        this.pushMaster("tool", update.title ?? "Tool call", item.id);
-        break;
-      }
-      case "tool_call_update": {
-        const diffs = extractDiffs(update);
-        const item: TranscriptItem = {
-          id: randomUUID(),
-          role: "tool",
-          text: update.title ?? update.toolCallId,
-          at: Date.now(),
-          toolCallId: update.toolCallId,
-          toolStatus: update.status ?? "updated",
-          toolTitle: update.title ?? undefined,
-          diffs,
-        };
-        this.emitTranscript(item);
-        break;
-      }
-      case "plan": {
-        this.pushMaster("plan", "Plan updated");
-        break;
-      }
-      default:
-        break;
     }
   }
 
@@ -400,17 +329,13 @@ export class AcpSession {
 
   async dispose(): Promise<void> {
     this.disposed = true;
-    try {
-      this.active?.dispose();
-    } catch {
-      /* ignore */
-    }
+    this.prompts.dispose();
     this.connection?.close();
     if (this.proc && !this.proc.killed) {
       this.proc.kill();
     }
     this.proc = null;
-    this.active = null;
+    this.sessionId = null;
     this.connection = null;
   }
 }
@@ -421,25 +346,3 @@ type CursorAskQuestionRequestQuestions = Array<{
   options: Array<{ id: string; label: string }>;
   allowMultiple?: boolean;
 }>;
-
-function contentText(content: acp.ContentBlock | undefined): string {
-  if (!content) return "";
-  if (content.type === "text") return content.text;
-  return `[${content.type}]`;
-}
-
-function extractDiffs(update: {
-  content?: acp.ToolCallContent[] | null;
-}): DiffPayload[] {
-  const diffs: DiffPayload[] = [];
-  for (const block of update.content ?? []) {
-    if (block.type === "diff") {
-      diffs.push({
-        path: block.path,
-        oldText: block.oldText,
-        newText: block.newText,
-      });
-    }
-  }
-  return diffs;
-}

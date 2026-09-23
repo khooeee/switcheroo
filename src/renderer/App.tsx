@@ -219,7 +219,6 @@ export function App() {
               findQuery={findQuery}
               chatRef={chatRef}
               onSend={sendPrompt}
-              onCancel={() => void window.switcheroo.cancelPrompt(activeTab.id)}
               permission={permission?.tabId === activeTab.id ? permission : null}
               askQuestion={askQuestion?.tabId === activeTab.id ? askQuestion : null}
               onPermission={(optionId) => {

@@ -33,6 +33,7 @@ export interface SessionTab {
   cwd: string;
   sessionId: string | null;
   status: TabStatus;
+  supportsSteering?: boolean;
   error: string | null;
   createdAt: number;
   /** Hidden from the rail. The session and its Switchboard events stay. */

@@ -17,7 +17,6 @@ interface Props {
   findQuery: string;
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
-  onCancel: () => void;
   permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
   onPermission: (optionId: string | "cancelled") => void;
@@ -58,16 +57,25 @@ export function ChatPanel({
   findQuery,
   chatRef,
   onSend,
-  onCancel,
   permission,
   askQuestion,
   onPermission,
   onAsk,
 }: Props) {
   const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<{ tabId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
+
+  const send = () => {
+    if (!draft.trim() || tab.status === "connecting") return;
+    const text = draft;
+    setDraft("");
+    setSendError(null);
+    void onSend(text).catch((error: unknown) => {
+      setSendError({ tabId: tab.id, message: `Could not send “${text}”: ${String(error)}` });
+    });
+  };
 
   useEffect(() => {
     promptRef.current?.focus();
@@ -183,39 +191,28 @@ export function ChatPanel({
           placeholder={
             tab.status === "connecting"
               ? "Creating session…"
+              : tab.status === "running"
+                ? `${tab.supportsSteering ? "Steer the agent" : "Queue a follow-up"}… (Enter to send, Shift+Enter for newline)`
               : "Message the agent… (Enter to send, Shift+Enter for newline)"
           }
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
-              if (!draft.trim() || sending) return;
-              const text = draft;
-              setDraft("");
-              setSending(true);
-              void onSend(text).finally(() => setSending(false));
+              send();
             }
           }}
         />
+        {sendError?.tabId === tab.id && <div role="alert">{sendError.message}</div>}
         <div className="composer-actions">
-          {tab.status === "running" && (
-            <button type="button" className="btn danger" onClick={onCancel}>
-              Cancel
-            </button>
-          )}
           <div style={{ flex: 1 }} />
           <button
             type="button"
             className="btn primary"
-            disabled={!draft.trim() || sending || tab.status === "connecting"}
-            onClick={() => {
-              const text = draft;
-              setDraft("");
-              setSending(true);
-              void onSend(text).finally(() => setSending(false));
-            }}
+            disabled={!draft.trim() || tab.status === "connecting"}
+            onClick={send}
           >
-            Send
+            {tab.status === "running" ? (tab.supportsSteering ? "Steer" : "Queue") : "Send"}
           </button>
         </div>
       </div>

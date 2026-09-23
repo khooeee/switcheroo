@@ -244,8 +244,11 @@ export class TabManager {
       this.emitTabs();
     }
 
-    await session.prompt(text);
-    void this.persist();
+    try {
+      await session.prompt(text);
+    } finally {
+      await this.persist();
+    }
   }
 
   async cancelPrompt(tabId: string): Promise<void> {
@@ -326,6 +329,10 @@ export class TabManager {
     return new AcpSession(tab.id, tab.agentKind, tab.cwd, this.bus, {
       onTranscript: (item, replaceId) => this.handleTranscript(tab.id, item, replaceId),
       onStatus: (status, error) => this.setStatus(tab.id, status, error ?? null),
+      onSteeringSupport: (supported) => {
+        tab.supportsSteering = supported;
+        this.emitTabs();
+      },
       onPermission: (req) => {
         this.permissionOwners.set(req.requestId, tab.id);
         this.send("permission", req);
