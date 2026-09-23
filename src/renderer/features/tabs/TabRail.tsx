@@ -4,7 +4,9 @@ import type { ActiveTabId, SessionTab } from "../../../shared/types";
 import { MASTER_TAB_ID } from "../../../shared/types";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
+import { getTabDropTarget } from "./getTabDropTarget";
 import "./tabSpinner.css";
+import "./tabDropIndicator.css";
 
 interface Props {
   tabs: SessionTab[];
@@ -30,7 +32,8 @@ export function TabRail({
   const [menu, setMenu] = useState<{ tab: SessionTab; x: number; y: number } | null>(null);
   const [rename, setRename] = useState<SessionTab | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
-  const [dragOrder, setDragOrder] = useState<string[] | null>(null);
+  const [dropBeforeId, setDropBeforeId] = useState<string | null | undefined>();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const skipClick = useRef<string | null>(null);
 
@@ -73,22 +76,29 @@ export function TabRail({
     window.addEventListener("pointerup", stop);
   };
 
-  const shown = dragOrder
-    ? dragOrder.flatMap((id) => {
-        const tab = tabs.find((item) => item.id === id);
-        return tab ? [tab] : [];
-      })
-    : tabs;
-
   const startDrag = (event: ReactPointerEvent<HTMLButtonElement>, tabId: string) => {
     if (event.button !== 0) return;
     const startY = event.clientY;
+    let pointerY = startY;
     let dragging = false;
     let order = tabs.map((tab) => tab.id);
     const previousCursor = document.body.style.cursor;
     const previousSelect = document.body.style.userSelect;
+    const scroll = scrollRef.current;
+    const updateTarget = () => {
+      if (!dragging || !scroll) return;
+      const rows = [...scroll.querySelectorAll<HTMLElement>("[data-tab-id]")].map((row) => ({
+        id: row.dataset.tabId ?? "",
+        top: row.getBoundingClientRect().top,
+        height: row.getBoundingClientRect().height,
+      }));
+      const target = getTabDropTarget(rows, tabId, pointerY);
+      order = target.order;
+      setDropBeforeId(target.beforeId);
+    };
 
     const move = (ev: PointerEvent) => {
+      pointerY = ev.clientY;
       if (!dragging && Math.abs(ev.clientY - startY) < 5) return;
       if (!dragging) {
         dragging = true;
@@ -96,23 +106,28 @@ export function TabRail({
         document.body.style.userSelect = "none";
         setDragId(tabId);
       }
-      order = orderFromPointer(order, tabId, ev.clientY);
-      setDragOrder(order);
+      updateTarget();
     };
-    const stop = () => {
-      if (dragging) {
+    const stop = (ev: PointerEvent) => {
+      if (dragging && ev.type === "pointerup") {
+        pointerY = ev.clientY;
+        updateTarget();
         skipClick.current = tabId;
         onReorder(order);
       }
       setDragId(null);
-      setDragOrder(null);
+      setDropBeforeId(undefined);
       document.body.style.cursor = previousCursor;
       document.body.style.userSelect = previousSelect;
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      scroll?.removeEventListener("scroll", updateTarget);
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    scroll?.addEventListener("scroll", updateTarget);
   };
 
   return (
@@ -137,8 +152,8 @@ export function TabRail({
           +
         </button>
       </div>
-      <div className="rail-scroll">
-        {shown.map((tab) =>
+      <div className="rail-scroll" ref={scrollRef}>
+        {tabs.map((tab, index) =>
           rename?.id === tab.id ? (
             <RailRename
               key={tab.id}
@@ -154,7 +169,7 @@ export function TabRail({
               key={tab.id}
               type="button"
               data-tab-id={tab.id}
-              className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""}`}
+              className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
               title={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
               onPointerDown={(e) => startDrag(e, tab.id)}
               onClick={() => {
@@ -226,23 +241,6 @@ export function TabRail({
         )}
     </aside>
   );
-}
-
-function orderFromPointer(ids: string[], dragId: string, y: number): string[] {
-  const rows = [...document.querySelectorAll<HTMLElement>("[data-tab-id]")].filter(
-    (el) => el.dataset.tabId !== dragId,
-  );
-  let index = rows.length;
-  for (let i = 0; i < rows.length; i++) {
-    const rect = rows[i].getBoundingClientRect();
-    if (y < rect.top + rect.height / 2) {
-      index = i;
-      break;
-    }
-  }
-  const next = ids.filter((id) => id !== dragId);
-  next.splice(index, 0, dragId);
-  return next;
 }
 
 function RailRename({

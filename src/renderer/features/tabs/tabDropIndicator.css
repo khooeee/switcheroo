@@ -1,0 +1,23 @@
+.rail-tab.drop-before::before,
+.rail-tab.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--codex);
+  pointer-events: none;
+}
+
+.rail-tab.drop-before::before {
+  top: -5px;
+}
+
+.rail-tab.drop-before:first-child::before {
+  top: 0;
+}
+
+.rail-tab.drop-after::after {
+  bottom: 0;
+}
