@@ -187,10 +187,9 @@ export function ChatPanel({
         <textarea
           ref={promptRef}
           value={draft}
-          disabled={tab.status === "connecting"}
           placeholder={
             tab.status === "connecting"
-              ? "Creating session…"
+              ? "Draft your message while the session is being created…"
               : tab.status === "running"
                 ? `${tab.supportsSteering ? "Steer the agent" : "Queue a follow-up"}… (Enter to send, Shift+Enter for newline)`
               : "Message the agent… (Enter to send, Shift+Enter for newline)"
