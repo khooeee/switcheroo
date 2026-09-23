@@ -1,3 +1,4 @@
+import { useCompletionSound } from "./features/sound/useCompletionSound";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActiveTabId,
@@ -20,6 +21,7 @@ import { NewTabModal } from "./features/tabs/NewTabModal";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 
 export function App() {
+  useCompletionSound();
   const [tabs, setTabs] = useState<SessionTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<ActiveTabId>(MASTER_TAB_ID);
   const [masterEvents, setMasterEvents] = useState<MasterEvent[]>([]);

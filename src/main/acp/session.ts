@@ -13,6 +13,7 @@ import { AGENT_PRESETS, agentLabel } from "./presets";
 import type { GlobalEventBus } from "../events";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
+import { PromptCompletion } from "./PromptCompletion";
 import { PromptQueue } from "./PromptQueue";
 import { PromptDelivery } from "./PromptDelivery";
 
@@ -38,6 +39,7 @@ export class AcpSession {
   private output: SessionOutput;
   private disposed = false;
   private starting: Promise<void> | null = null;
+  private completion = new PromptCompletion(() => this.cb.onPromptComplete());
   private prompts = new PromptQueue((text) => this.runPrompt(text));
   private delivery = new PromptDelivery({
     isRunning: () => this.turnRunning,
@@ -52,6 +54,7 @@ export class AcpSession {
     },
     onSupport: (supported) => this.cb.onSteeringSupport(supported),
     onDetachedTurn: () => {
+      this.completion.detached();
       if (this.remoteTurnActive !== false) {
         this.turnRunning = true;
         this.cb.onStatus("running");
@@ -133,6 +136,7 @@ export class AcpSession {
           ? codex.threadStatus : null;
         if (status && typeof status === "object" && "type" in status) {
           if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+            this.completion.status(status.type);
             this.remoteTurnActive = status.type === "active";
             this.turnRunning = this.remoteTurnActive;
             this.cb.onStatus(status.type === "active" ? "running" : status.type === "idle" ? "ready" : "error");
@@ -185,6 +189,7 @@ export class AcpSession {
 
   private async runPrompt(text: string): Promise<void> {
     if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
+    this.completion.start();
     this.turnRunning = true;
     this.remoteTurnActive = null;
     this.stopRequested = false;
@@ -196,12 +201,14 @@ export class AcpSession {
         sessionId: this.sessionId,
         prompt: [{ type: "text", text }],
       });
+      this.completion.finish(response.stopReason);
       this.pushMaster("status", `Turn ended (${response.stopReason})`);
       if (this.remoteTurnActive !== true && !this.disposed) {
         this.turnRunning = false;
         this.cb.onStatus("ready");
       }
     } catch (err) {
+      this.completion.finish("error");
       const msg = err instanceof Error ? err.message : String(err);
       if (this.remoteTurnActive !== true && !this.disposed) {
         this.turnRunning = false;
@@ -215,6 +222,7 @@ export class AcpSession {
   async cancel(): Promise<void> {
     if (!this.connection || !this.sessionId || !this.turnRunning || this.stopRequested || this.disposed) return;
     this.stopRequested = true;
+    this.completion.cancel();
     try {
       await this.connection.agent.notify(acp.methods.agent.session.cancel, {
         sessionId: this.sessionId,
@@ -336,6 +344,7 @@ export class AcpSession {
 
   async dispose(): Promise<void> {
     this.disposed = true;
+    this.completion.cancel();
     this.prompts.dispose();
     this.connection?.close();
     if (this.proc && !this.proc.killed) {

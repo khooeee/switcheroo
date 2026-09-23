@@ -10,10 +10,12 @@ async function fixture(supported = true) {
   const notifications = new Map();
   const requests = [];
   const turns = [];
+  const failures = [];
   const statuses = [];
   const transcripts = [];
   const capabilities = [];
   const events = [];
+  const completions = [];
   const cancellations = [];
   let steeringResult = { outcome: "injected" };
   const connection = {
@@ -22,7 +24,7 @@ async function fixture(supported = true) {
       requests.push({ method, params });
       if (method === "initialize") return { _meta: { steering: { supported } } };
       if (method === "new") return { sessionId: "session-1" };
-      if (method === "prompt") return new Promise((resolve) => turns.push(resolve));
+      if (method === "prompt") return new Promise((resolve, reject) => { turns.push(resolve); failures.push(reject); });
       if (method === "_session/steering") return steeringResult;
       throw new Error(`Unexpected request ${method}`);
     } },
@@ -62,6 +64,7 @@ async function fixture(supported = true) {
   }
   const { AcpSession } = load(path.join(__dirname, "../src/main/acp/session.ts"));
   const session = new AcpSession("tab-1", "codex", "/tmp", { append(event) { events.push(event); }, updateSummary() {} }, {
+    onPromptComplete: () => completions.push(true),
     onStatus: (status) => statuses.push(status),
     onTranscript: (item) => transcripts.push(item),
     onSteeringSupport: (value) => capabilities.push(value),
@@ -69,7 +72,7 @@ async function fixture(supported = true) {
   });
   await session.start();
   return {
-    session, requests, turns, statuses, transcripts, capabilities, cancellations, events,
+    session, requests, turns, failures, statuses, transcripts, capabilities, cancellations, events, completions,
     setOutcome: (outcome) => { steeringResult = { outcome }; },
     update: (update) => notifications.get("update")({ params: { sessionId: "session-1", update } }),
   };
@@ -93,6 +96,7 @@ test("interrupting adds one stopped event per turn and ignores idle interruption
     assert.equal(stopped.at(-1).navigable, true);
     f.turns[i]({ stopReason: "cancelled" });
     await turn;
+    assert.equal(f.completions.length, 0);
   }
 });
 
@@ -112,6 +116,7 @@ test("startup capability enables steering without a second prompt or duplicate t
   f.turns[0]({ stopReason: "end_turn" });
   await original;
   assert.equal(f.statuses.at(-1), "ready");
+  assert.equal(f.completions.length, 1);
 });
 
 test("an adapter without steering queues follow-ups until completion", async () => {
@@ -127,6 +132,7 @@ test("an adapter without steering queues follow-ups until completion", async () 
   assert.equal(f.turns.length, 2);
   f.turns[1]({ stopReason: "end_turn" });
   await next;
+  assert.equal(f.completions.length, 2);
 });
 
 test("a detached Codex continuation keeps streaming after the original prompt resolves", async () => {
@@ -139,8 +145,42 @@ test("a detached Codex continuation keeps streaming after the original prompt re
   f.turns[0]({ stopReason: "end_turn" });
   await original;
   assert.equal(f.statuses.at(-1), "running");
+  assert.equal(f.completions.length, 0);
   f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Continuation" } });
   assert.equal(f.transcripts.at(-1).text, "Continuation");
   f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "idle" } } } });
   assert.equal(f.statuses.at(-1), "ready");
+  assert.equal(f.completions.length, 1);
+});
+
+
+test("completion sounds stay silent on startup, failures, and disposal", async () => {
+  const f = await fixture();
+  assert.equal(f.completions.length, 0);
+  const failed = f.session.prompt("fail");
+  const rejection = assert.rejects(failed, /Agent failed/);
+  await tick();
+  f.failures[0](new Error("Agent failed"));
+  await rejection;
+  assert.equal(f.completions.length, 0);
+  const disposed = f.session.prompt("close before done");
+  await tick();
+  await f.session.dispose();
+  f.turns[1]({ stopReason: "end_turn" });
+  await disposed;
+  assert.equal(f.completions.length, 0);
+});
+
+test("idle updates do not duplicate completion or announce it before the response", async () => {
+  const f = await fixture();
+  const turn = f.session.prompt("work");
+  await tick();
+  const status = (type) => f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type } } } });
+  status("active");
+  status("idle");
+  assert.equal(f.completions.length, 0);
+  f.turns[0]({ stopReason: "end_turn" });
+  await turn;
+  status("idle");
+  assert.equal(f.completions.length, 1);
 });

@@ -330,6 +330,7 @@ export class TabManager {
 
   private openSession(tab: SessionTab): AcpSession {
     return new AcpSession(tab.id, tab.agentKind, tab.cwd, this.bus, {
+      onPromptComplete: () => this.send("prompt:complete", { tabId: tab.id }),
       onTranscript: (item, replaceId) => this.handleTranscript(tab.id, item, replaceId),
       onStatus: (status, error) => this.setStatus(tab.id, status, error ?? null),
       onSteeringSupport: (supported) => {

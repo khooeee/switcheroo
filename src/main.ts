@@ -26,6 +26,7 @@ const createWindow = async () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
+      autoplayPolicy: "no-user-gesture-required",
       nodeIntegration: false,
       sandbox: false,
     },
