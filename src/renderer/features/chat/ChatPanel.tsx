@@ -8,6 +8,7 @@ import type {
 import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { ThinkingIndicator } from "./ThinkingIndicator";
+import { ComposerResize } from "./ComposerResize";
 
 interface Props {
   tab: SessionTab;
@@ -193,6 +194,7 @@ export function ChatPanel({
       )}
 
       <div className="composer">
+        <ComposerResize />
         <textarea
           ref={promptRef}
           value={draft}

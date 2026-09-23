@@ -467,6 +467,8 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 }
 
 .composer {
+  position: relative;
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
   padding: 12px 16px;
   display: flex;
@@ -481,7 +483,9 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   line-height: 1.5;
   width: 100%;
   min-height: 72px;
-  resize: vertical;
+  height: var(--composer-input-height, 72px);
+  max-height: 50vh;
+  resize: none;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg-1);

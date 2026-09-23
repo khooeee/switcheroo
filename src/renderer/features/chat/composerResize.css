@@ -1,0 +1,26 @@
+.composer-resize {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  z-index: 1;
+  cursor: row-resize;
+  touch-action: none;
+}
+
+.composer-resize::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transition: background 0.15s ease;
+}
+
+.composer-resize:hover::after,
+.composer-resize:active::after,
+.composer-resize:focus-visible::after {
+  background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+}
