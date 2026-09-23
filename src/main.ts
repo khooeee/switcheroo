@@ -3,6 +3,7 @@ import path from "node:path";
 import started from "electron-squirrel-startup";
 import { TabManager } from "./main/tabs";
 import { installQuitHandler } from "./main/installQuitHandler";
+import { openInCursor } from "./main/openInCursor";
 import type { ActiveTabId, CreateTabInput } from "./shared/types";
 
 if (started) {
@@ -46,6 +47,11 @@ const createWindow = async () => {
 };
 
 function registerIpc(): void {
+  ipcMain.handle("files:openInCursor", async (_event, tabId: string, filePath: string) => {
+    const tab = tabs.list().tabs.find((item) => item.id === tabId);
+    if (!tab) throw new Error("This agent tab no longer exists.");
+    await openInCursor(tab.cwd, filePath);
+  });
   ipcMain.handle("tabs:list", () => tabs.list());
   ipcMain.handle("tabs:create", (_e, input: CreateTabInput) => tabs.createTab(input));
   ipcMain.handle("tabs:close", (_e, tabId: string) => tabs.closeTab(tabId));

@@ -97,3 +97,33 @@
 .feed-item.has-file-changes {
   cursor: default;
 }
+
+.file-open {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.file-open-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--codex);
+  cursor: pointer;
+}
+
+.file-open-button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.file-open-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.file-open-error {
+  color: var(--danger-text);
+}

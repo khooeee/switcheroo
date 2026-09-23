@@ -149,7 +149,7 @@ export function ChatPanel({
                   </span>
                 </div>}
                 {item.fileChanges?.length ? (
-                  <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} />
+                  <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} tabId={tab.id} />
                 ) : <div className="body">{highlight(text, findQuery)}</div>}
               </div>
             );

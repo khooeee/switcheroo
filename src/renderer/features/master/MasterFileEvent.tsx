@@ -14,7 +14,7 @@ export function MasterFileEvent({ event, title, cwd, onClick }: {
         <button type="button" className="file-event-link" disabled={!event.navigable} onClick={() => onClick(event)}>{title}</button>
         <span className="event-timestamp" style={{ marginLeft: "auto" }}>{new Date(event.at).toLocaleTimeString()}</span>
       </div>
-      <FileChanges changes={event.fileChanges ?? []} status={event.toolStatus} cwd={cwd} />
+      <FileChanges changes={event.fileChanges ?? []} status={event.toolStatus} cwd={cwd} tabId={event.tabId} />
     </div>
   );
 }
