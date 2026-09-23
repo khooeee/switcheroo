@@ -441,6 +441,11 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   font-style: italic;
 }
 
+.message.stopped {
+  background: transparent;
+  color: color-mix(in srgb, var(--text-dim) 50%, var(--bg-0));
+}
+
 .message.highlight {
   outline: 2px solid var(--accent);
   animation: flash 1.2s ease;

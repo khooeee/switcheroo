@@ -140,13 +140,13 @@ export function ChatPanel({
                 data-event-id={item.id}
                 data-find-text={text}
               >
-                <div className="row">
+                {item.role !== "stopped" && <div className="row">
                   <span className="kind-pill">{item.role}</span>
                   {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
                   <span style={{ marginLeft: "auto" }}>
                     {new Date(item.at).toLocaleTimeString()}
                   </span>
-                </div>
+                </div>}
                 <div className="body">{highlight(text, findQuery)}</div>
               </div>
             );

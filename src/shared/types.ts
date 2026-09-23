@@ -40,7 +40,7 @@ export interface SessionTab {
   closed: boolean;
 }
 
-export type TranscriptRole = "user" | "assistant" | "thought" | "tool" | "system";
+export type TranscriptRole = "user" | "assistant" | "thought" | "tool" | "system" | "stopped";
 
 export interface TranscriptItem {
   id: string;

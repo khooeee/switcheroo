@@ -253,6 +253,7 @@ export class TabManager {
 
   async cancelPrompt(tabId: string): Promise<void> {
     await this.sessions.get(tabId)?.cancel();
+    await this.persist();
   }
 
   respondPermission(requestId: string, optionId: string | "cancelled"): void {

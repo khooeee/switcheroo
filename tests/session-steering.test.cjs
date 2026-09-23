@@ -13,10 +13,11 @@ async function fixture(supported = true) {
   const statuses = [];
   const transcripts = [];
   const capabilities = [];
+  const cancellations = [];
   let steeringResult = { outcome: "injected" };
   const connection = {
     close() {},
-    agent: { request: async (method, params) => {
+    agent: { notify: async (method, params) => { cancellations.push({ method, params }); }, request: async (method, params) => {
       requests.push({ method, params });
       if (method === "initialize") return { _meta: { steering: { supported } } };
       if (method === "new") return { sessionId: "session-1" };
@@ -33,7 +34,7 @@ async function fixture(supported = true) {
   const acp = {
     PROTOCOL_VERSION: 1, client: () => builder, ndJsonStream() {},
     methods: {
-      agent: { initialize: "initialize", session: { new: "new", prompt: "prompt" } },
+      agent: { initialize: "initialize", session: { new: "new", prompt: "prompt", cancel: "cancel" } },
       client: { session: { requestPermission: "permission", update: "update" },
         fs: { readTextFile: "read", writeTextFile: "write" } },
     },
@@ -67,12 +68,27 @@ async function fixture(supported = true) {
   });
   await session.start();
   return {
-    session, requests, turns, statuses, transcripts, capabilities,
+    session, requests, turns, statuses, transcripts, capabilities, cancellations,
     setOutcome: (outcome) => { steeringResult = { outcome }; },
     update: (update) => notifications.get("update")({ params: { sessionId: "session-1", update } }),
   };
 }
 const tick = () => new Promise(setImmediate);
+
+test("interrupting adds one stopped event per turn and ignores idle interruptions", async () => {
+  const f = await fixture();
+  await f.session.cancel();
+  assert.equal(f.cancellations.length, 0);
+  for (let i = 0; i < 2; i++) {
+    const turn = f.session.prompt("work");
+    await tick();
+    await Promise.all([f.session.cancel(), f.session.cancel()]);
+    assert.equal(f.cancellations.length, i + 1);
+    assert.equal(f.transcripts.filter((item) => item.role === "stopped" && item.text === "Stopped").length, i + 1);
+    f.turns[i]({ stopReason: "cancelled" });
+    await turn;
+  }
+});
 
 test("startup capability enables steering without a second prompt or duplicate transcript", async () => {
   const f = await fixture();

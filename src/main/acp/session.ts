@@ -29,6 +29,7 @@ export class AcpSession {
   private proc: ChildProcessWithoutNullStreams | null = null;
   private connection: acp.ClientConnection | null = null;
   private turnRunning = false;
+  private stopRequested = false;
   private remoteTurnActive: boolean | null = null;
   private bus: GlobalEventBus;
   private cb: SessionCallbacks;
@@ -186,6 +187,7 @@ export class AcpSession {
     if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
     this.turnRunning = true;
     this.remoteTurnActive = null;
+    this.stopRequested = false;
     this.cb.onStatus("running");
     this.output.reset();
 
@@ -211,13 +213,16 @@ export class AcpSession {
   }
 
   async cancel(): Promise<void> {
-    if (!this.connection || !this.sessionId) return;
+    if (!this.connection || !this.sessionId || !this.turnRunning || this.stopRequested || this.disposed) return;
+    this.stopRequested = true;
     try {
       await this.connection.agent.notify(acp.methods.agent.session.cancel, {
         sessionId: this.sessionId,
       });
-    } catch {
-      /* ignore */
+      this.emitTranscript({ id: randomUUID(), role: "stopped", text: "Stopped", at: Date.now() });
+    } catch (error) {
+      this.stopRequested = false;
+      throw error;
     }
   }
 
