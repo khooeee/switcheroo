@@ -107,11 +107,9 @@ export function ChatPanel({
 
       <div className="scroll" ref={chatRef}>
         <div className="transcript">
-          {items.length === 0 && tab.status !== "running" && (
+          {items.length === 0 && tab.status !== "running" && tab.status !== "connecting" && (
             <div className="empty">
-              {tab.status === "connecting"
-                ? "Creating session…"
-                : "Send a prompt to start this session."}
+              Send a prompt to start this session.
             </div>
           )}
           {items.map((item) => {
@@ -136,6 +134,7 @@ export function ChatPanel({
             );
           })}
           {tab.status === "running" && <ThinkingIndicator />}
+          {tab.status === "connecting" && <ThinkingIndicator label="Creating session" />}
         </div>
       </div>
 

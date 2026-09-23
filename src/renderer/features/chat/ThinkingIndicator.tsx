@@ -1,9 +1,9 @@
 import "./thinking.css";
 
-export function ThinkingIndicator() {
+export function ThinkingIndicator({ label = "Thinking" }: { label?: string }) {
   return (
     <div className="chat-thinking" role="status">
-      <span className="chat-thinking-label">Thinking</span>
+      <span className="chat-thinking-label">{label}</span>
     </div>
   );
 }
