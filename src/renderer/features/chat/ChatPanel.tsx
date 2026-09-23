@@ -7,6 +7,7 @@ import type {
 } from "../../../shared/types";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
+import "./thinking.css";
 
 interface Props {
   tab: SessionTab;
@@ -111,7 +112,7 @@ export function ChatPanel({
 
       <div className="scroll" ref={chatRef}>
         <div className="transcript">
-          {items.length === 0 && (
+          {items.length === 0 && tab.status !== "running" && (
             <div className="empty">
               {tab.status === "connecting"
                 ? "Creating session…"
@@ -139,6 +140,11 @@ export function ChatPanel({
               </div>
             );
           })}
+          {tab.status === "running" && (
+            <div className="chat-thinking" role="status">
+              <span className="chat-thinking-label">Thinking</span>
+            </div>
+          )}
           <div ref={endRef} />
         </div>
       </div>
