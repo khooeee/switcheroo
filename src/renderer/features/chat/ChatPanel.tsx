@@ -10,6 +10,7 @@ import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { ComposerResize } from "./ComposerResize";
 import { FileChanges } from "../files/FileChanges";
+import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 
 interface Props {
   tab: SessionTab;
@@ -125,7 +126,7 @@ export function ChatPanel({
                   <span className="kind-pill">{item.role}</span>
                   {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
                   <span className="event-timestamp" style={{ marginLeft: "auto" }}>
-                    {new Date(item.at).toLocaleTimeString()}
+                    {formatDetailTimestamp(item.at)}
                   </span>
                 </div>}
                 {item.fileChanges?.length ? (

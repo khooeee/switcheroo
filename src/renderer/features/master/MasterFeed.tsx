@@ -1,5 +1,6 @@
 import type { MasterEvent, SessionTab } from "../../../shared/types";
 import { MasterFileEvent } from "./MasterFileEvent";
+import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 
 interface Props {
   events: MasterEvent[];
@@ -43,7 +44,7 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
             <span className={`kind-pill ${event.kind}`}>{event.kind}</span>
             <span>{title}</span>
             <span className="event-timestamp" style={{ marginLeft: "auto" }}>
-              {new Date(event.at).toLocaleTimeString()}
+              {formatDetailTimestamp(event.at)}
             </span>
           </div>
           <div className="body">{event.summary}</div>
