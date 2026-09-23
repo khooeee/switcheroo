@@ -67,6 +67,7 @@ export function ChatPanel({
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const previousSession = useRef({ id: tab.id, status: tab.status });
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,6 +76,14 @@ export function ChatPanel({
   useEffect(() => {
     promptRef.current?.focus();
   }, [promptFocus]);
+
+  useEffect(() => {
+    const previous = previousSession.current;
+    if (previous.id === tab.id && previous.status === "connecting" && tab.status === "ready") {
+      promptRef.current?.focus();
+    }
+    previousSession.current = { id: tab.id, status: tab.status };
+  }, [tab.id, tab.status]);
 
   useEffect(() => {
     if (!focusEventId) return;
