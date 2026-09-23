@@ -4,6 +4,7 @@
   box-sizing: border-box;
   flex-shrink: 0;
   margin-left: auto;
+  color: color-mix(in srgb, var(--text-dim) 50%, var(--rail-bg));
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
