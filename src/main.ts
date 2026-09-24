@@ -4,6 +4,8 @@ import started from "electron-squirrel-startup";
 import { TabManager } from "./main/tabs";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { openInCursor } from "./main/openInCursor";
+import { readClipboardPng } from "./main/readClipboardPng";
+import { savePastedImage } from "./main/savePastedImage";
 import type { ActiveTabId, CreateTabInput } from "./shared/types";
 
 if (started) {
@@ -49,9 +51,7 @@ const createWindow = async () => {
 
 function registerIpc(): void {
   ipcMain.handle("files:openInCursor", async (_event, tabId: string, filePath: string) => {
-    const tab = tabs.list().tabs.find((item) => item.id === tabId);
-    if (!tab) throw new Error("This agent tab no longer exists.");
-    await openInCursor(tab.cwd, filePath);
+    await openInCursor(requireTab(tabId).cwd, filePath);
   });
   ipcMain.handle("tabs:list", () => tabs.list());
   ipcMain.handle("tabs:create", (_e, input: CreateTabInput) => tabs.createTab(input));
@@ -94,7 +94,21 @@ function registerIpc(): void {
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
+  ipcMain.handle("images:savePaste", async (_e, tabId: string, mimeType: string, bytes: Uint8Array) => {
+    return savePastedImage(requireTab(tabId).cwd, bytes, mimeType);
+  });
+  ipcMain.handle("images:saveClipboard", async (_e, tabId: string) => {
+    const png = readClipboardPng();
+    if (!png) return null;
+    return savePastedImage(requireTab(tabId).cwd, png, "image/png");
+  });
   ipcMain.handle("transcript:get", (_e, tabId: string) => tabs.getTranscript(tabId));
+}
+
+function requireTab(tabId: string) {
+  const tab = tabs.list().tabs.find((item) => item.id === tabId);
+  if (!tab) throw new Error("This agent tab no longer exists.");
+  return tab;
 }
 
 function buildMenu(): void {
