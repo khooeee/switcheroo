@@ -30,7 +30,7 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
           return <MasterFileEvent key={event.id} event={event} title={title}
             cwd={tabs.find((tab) => tab.id === event.tabId)?.cwd} onClick={onClick} />;
         }
-        const detail = event.kind === "status" || event.kind === "tool";
+        const detail = event.kind === "status" || event.kind === "tool" || event.kind === "permission";
         return (
         <button
           key={event.id + event.at}
