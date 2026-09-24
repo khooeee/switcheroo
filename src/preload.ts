@@ -71,3 +71,7 @@ ipcRenderer.on("find:open", () => {
 ipcRenderer.on("session:new", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:new-session"));
 });
+
+ipcRenderer.on("prompt:focus", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
+});
