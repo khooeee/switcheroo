@@ -11,6 +11,7 @@ import { ThinkingIndicator } from "./ThinkingIndicator";
 import { ComposerResize } from "./ComposerResize";
 import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
+import { applyPromptImagePaste } from "./applyPromptImagePaste";
 
 interface Props {
   tab: SessionTab;
@@ -190,6 +191,16 @@ export function ChatPanel({
               : "Message the agent… (Enter to send, Shift+Enter for newline)"
           }
           onChange={(e) => onDraftChange(e.target.value)}
+          onPaste={(e) => {
+            void applyPromptImagePaste({
+              event: e.nativeEvent,
+              tabId: tab.id,
+              draft,
+              textarea: e.currentTarget,
+              onDraftChange,
+              onError: (message) => setSendError({ tabId: tab.id, message }),
+            });
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();

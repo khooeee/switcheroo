@@ -144,6 +144,11 @@ export interface SwitcherooApi {
       | { outcome: "cancelled" },
   ) => Promise<void>;
   pickFolder: () => Promise<string | null>;
+  savePastedImage: (
+    tabId: string,
+    image: { mimeType: string; bytes: Uint8Array },
+  ) => Promise<string>;
+  saveClipboardImage: (tabId: string) => Promise<string | null>;
   getTranscript: (tabId: string) => Promise<TranscriptItem[]>;
   onTabsChanged: (cb: (payload: { tabs: SessionTab[]; activeTabId: ActiveTabId }) => void) => () => void;
   onMasterEvent: (cb: (event: MasterEvent) => void) => () => void;

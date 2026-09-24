@@ -38,6 +38,9 @@ const api: SwitcherooApi = {
   respondAskQuestion: (requestId, outcome) =>
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
   pickFolder: () => ipcRenderer.invoke("fs:pickFolder"),
+  savePastedImage: (tabId, image) =>
+    ipcRenderer.invoke("images:savePaste", tabId, image.mimeType, image.bytes),
+  saveClipboardImage: (tabId) => ipcRenderer.invoke("images:saveClipboard", tabId),
   getTranscript: (tabId: string) => ipcRenderer.invoke("transcript:get", tabId),
   navigateToEvent: (tabId: string, eventId: string) =>
     ipcRenderer.invoke("tabs:navigateEvent", tabId, eventId),
