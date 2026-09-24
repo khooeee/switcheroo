@@ -158,6 +158,7 @@ export interface SwitcherooApi {
   ) => () => void;
   onTranscriptReset: (cb: (payload: { tabId: string; items: TranscriptItem[] }) => void) => () => void;
   onPermission: (cb: (req: PermissionRequest) => void) => () => void;
+  onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   onPromptComplete: (cb: (payload: { tabId: string }) => void) => () => void;
   onTabStatus: (cb: (payload: { tabId: string; status: TabStatus; error: string | null }) => void) => () => void;

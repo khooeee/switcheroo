@@ -114,3 +114,20 @@ test("file entries render relative paths, collapsible diffs, and missing-content
   assert.match(diff, /&lt;script&gt;/);
   assert.doesNotMatch(diff, /<script>/);
 });
+
+
+test("finishing a turn settles only unfinished tools and accepts late final updates", () => {
+  const bus = new GlobalEventBus();
+  const transcript = new Map();
+  const output = new ToolOutput(bus, (item) => transcript.set(item.toolCallId, item),
+    (kind, summary, id) => bus.append({ id, kind, summary }));
+  output.handle({ toolCallId: "pending", title: "Waiting", status: "pending" });
+  output.handle({ toolCallId: "done", title: "Done", status: "completed" });
+  output.finish("interrupted");
+  assert.equal(transcript.get("pending").toolStatus, "interrupted");
+  assert.equal(transcript.get("done").toolStatus, "completed");
+  assert.equal(bus.list()[0].toolStatus, "interrupted");
+  output.handle({ toolCallId: "pending", status: "completed" });
+  assert.equal(transcript.get("pending").toolStatus, "completed");
+  assert.equal(bus.list().length, 2);
+});

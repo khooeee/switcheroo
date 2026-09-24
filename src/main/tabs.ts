@@ -372,6 +372,10 @@ export class TabManager {
         this.permissionOwners.set(req.requestId, tab.id);
         this.send("permission", req);
       },
+      onQuestionSettled: (requestId) => {
+        this.askOwners.delete(requestId);
+        this.send("question:settled", { requestId });
+      },
       onAskQuestion: (req) => {
         this.askOwners.set(req.requestId, tab.id);
         this.send("ask-question", req);

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActiveTabId,
   AgentKind,
-  CursorAskQuestionRequest,
   MasterEvent,
   PermissionRequest,
   SessionTab,
@@ -19,6 +18,7 @@ import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
+import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { TabNotes } from "./features/notes/TabNotes";
 import { defaultNotesWidth } from "./features/notes/clampNotesWidth";
@@ -32,7 +32,7 @@ export function App() {
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptItem[]>>({});
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
-  const [askQuestion, setAskQuestion] = useState<CursorAskQuestionRequest | null>(null);
+  const askQuestion = useAgentQuestions(activeTabId);
   const [showNewTab, setShowNewTab] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
@@ -97,7 +97,6 @@ export function App() {
         });
       }),
       window.switcheroo.onPermission((req) => setPermission(req)),
-      window.switcheroo.onAskQuestion((req) => setAskQuestion(req)),
       window.switcheroo.onNavigateToEvent(({ eventId }) => {
         setFocusEventId(eventId);
       }),
@@ -249,8 +248,7 @@ export function App() {
               }}
               onAsk={(outcome) => {
                 if (!askQuestion) return;
-                void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome);
-                setAskQuestion(null);
+                void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
               }}
             />
             <TabNotes

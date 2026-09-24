@@ -56,6 +56,7 @@ const api: SwitcherooApi = {
   onTranscriptReset: (cb) =>
     subscribe<{ tabId: string; items: TranscriptItem[] }>("transcript:reset", cb),
   onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),
+  onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
   onPromptComplete: (cb) => subscribe<{ tabId: string }>("prompt:complete", cb),
   onTabStatus: (cb) =>

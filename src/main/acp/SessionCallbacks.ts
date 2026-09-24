@@ -1,6 +1,7 @@
 import type { PermissionRequest, TranscriptItem } from "../../shared/types";
 
 export interface SessionCallbacks {
+  onQuestionSettled?: (requestId: string) => void;
   onPromptComplete: () => void;
   onSteeringSupport: (supported: boolean) => void;
   onTranscript: (item: TranscriptItem, replaceId?: string) => void;

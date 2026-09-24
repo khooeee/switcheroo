@@ -20,6 +20,10 @@ export class SessionOutput {
     this.tools = new ToolOutput(bus, onTranscript, pushMaster);
   }
 
+  finish(status: string): void {
+    this.tools.finish(status);
+  }
+
   reset(): void {
     this.streamingAssistantId = null;
     this.streamingAssistantText = "";

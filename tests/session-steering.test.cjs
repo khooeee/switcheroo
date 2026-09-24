@@ -8,6 +8,10 @@ const ts = require("typescript");
 
 async function fixture(supported = true) {
   const notifications = new Map();
+  const handlers = new Map();
+  const questions = [];
+  const settled = [];
+  const disconnected = new AbortController();
   const requests = [];
   const turns = [];
   const failures = [];
@@ -19,7 +23,8 @@ async function fixture(supported = true) {
   const cancellations = [];
   let steeringResult = { outcome: "injected" };
   const connection = {
-    close() {},
+    signal: disconnected.signal,
+    close() { disconnected.abort(); },
     agent: { notify: async (method, params) => { cancellations.push({ method, params }); }, request: async (method, params) => {
       requests.push({ method, params });
       if (method === "initialize") return { _meta: { steering: { supported } } };
@@ -30,7 +35,7 @@ async function fixture(supported = true) {
     } },
   };
   const builder = {
-    onRequest() { return this; },
+    onRequest(method, ...args) { handlers.set(method, args.at(-1)); return this; },
     onNotification(method, handler) { notifications.set(method, handler); return this; },
     connect() { return connection; },
   };
@@ -63,15 +68,17 @@ async function fixture(supported = true) {
     return exports;
   }
   const { AcpSession } = load(path.join(__dirname, "../src/main/acp/session.ts"));
-  const session = new AcpSession("tab-1", "codex", "/tmp", { append(event) { events.push(event); }, updateSummary() {} }, {
+  const session = new AcpSession("tab-1", "codex", "/tmp", { append(event) { events.push(event); }, updateSummary() {}, updateEvent() {} }, {
     onPromptComplete: () => completions.push(true),
     onStatus: (status) => statuses.push(status),
     onTranscript: (item) => transcripts.push(item),
     onSteeringSupport: (value) => capabilities.push(value),
-    onPermission() {}, onAskQuestion() {},
+    onPermission() {}, onAskQuestion: (req) => questions.push(req),
+    onQuestionSettled: (id) => settled.push(id),
   });
   await session.start();
   return {
+    handlers, questions, settled, disconnected,
     session, requests, turns, failures, statuses, transcripts, capabilities, cancellations, events, completions,
     setOutcome: (outcome) => { steeringResult = { outcome }; },
     update: (update) => notifications.get("update")({ params: { sessionId: "session-1", update } }),
@@ -183,4 +190,48 @@ test("idle updates do not duplicate completion or announce it before the respons
   await turn;
   status("idle");
   assert.equal(f.completions.length, 1);
+});
+
+
+test("parallel questions settle independently and cancellation releases remaining requests", async () => {
+  const f = await fixture();
+  const turn = f.session.prompt("ask");
+  await tick();
+  const ask = () => f.handlers.get("cursor/ask_question")({ params: { questions: [] } });
+  const first = ask();
+  const second = ask();
+  f.session.respondAskQuestion(f.questions[1].requestId, { outcome: "skipped" });
+  assert.equal((await second).outcome, "skipped");
+  await f.session.cancel();
+  assert.equal((await first).outcome, "cancelled");
+  assert.equal(f.settled.length, 2);
+  f.turns[0]({ stopReason: "cancelled" });
+  await turn;
+});
+
+test("request abort and disconnect release questions", async () => {
+  const f = await fixture();
+  const controller = new AbortController();
+  const first = f.handlers.get("cursor/ask_question")({ params: {}, signal: controller.signal });
+  controller.abort();
+  assert.equal((await first).outcome, "cancelled");
+  const second = f.handlers.get("cursor/ask_question")({ params: {} });
+  f.disconnected.abort();
+  assert.equal((await second).outcome, "cancelled");
+  assert.equal(f.statuses.at(-1), "error");
+});
+
+test("turn end clears stale tools but keeps tools active during a remote continuation", async () => {
+  const f = await fixture();
+  const turn = f.session.prompt("work");
+  await tick();
+  f.update({ sessionUpdate: "tool_call", toolCallId: "tool", title: "Work", status: "pending" });
+  f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "active" } } } });
+  f.turns[0]({ stopReason: "end_turn" });
+  await turn;
+  assert.equal(f.transcripts.at(-1).toolStatus, "pending");
+  f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "idle" } } } });
+  assert.equal(f.transcripts.at(-1).toolStatus, "status unavailable");
+  f.update({ sessionUpdate: "tool_call_update", toolCallId: "tool", status: "completed" });
+  assert.equal(f.transcripts.at(-1).toolStatus, "completed");
 });

@@ -1,8 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { Readable, Writable } from "node:stream";
 import { randomUUID } from "node:crypto";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
 import * as acp from "@agentclientprotocol/sdk";
 import type {
   AgentKind,
@@ -17,10 +15,8 @@ import { PromptCompletion } from "./PromptCompletion";
 import { PromptQueue } from "./PromptQueue";
 import { PromptDelivery } from "./PromptDelivery";
 import { autoApprovePermission } from "./autoApprovePermission";
-
-type PermissionResolver = (optionId: string | "cancelled") => void;
-type AskQuestionResolver = (outcome: unknown) => void;
-
+import { SessionFiles } from "./SessionFiles";
+import { PendingQuestions } from "./PendingQuestions";
 
 export class AcpSession {
   readonly tabId: string;
@@ -35,8 +31,8 @@ export class AcpSession {
   private remoteTurnActive: boolean | null = null;
   private bus: GlobalEventBus;
   private cb: SessionCallbacks;
-  private pendingPermissions = new Map<string, PermissionResolver>();
-  private pendingAsk = new Map<string, AskQuestionResolver>();
+  private questions: PendingQuestions;
+  private files: SessionFiles;
   private output: SessionOutput;
   private disposed = false;
   private starting: Promise<void> | null = null;
@@ -75,6 +71,8 @@ export class AcpSession {
     this.cwd = cwd;
     this.bus = bus;
     this.cb = cb;
+    this.files = new SessionFiles(cwd);
+    this.questions = new PendingQuestions(tabId, cb.onAskQuestion, (id) => cb.onQuestionSettled?.(id));
     this.output = new SessionOutput(agentKind, bus, cb.onTranscript, (kind, text, id) => this.pushMaster(kind, text, id));
   }
 
@@ -104,6 +102,8 @@ export class AcpSession {
 
     this.proc.on("exit", (code) => {
       if (!this.disposed) {
+        this.finishPending("interrupted");
+        this.connection?.close();
         this.cb.onStatus("error", `Agent exited (code ${code ?? "?"})`);
       }
     });
@@ -118,13 +118,15 @@ export class AcpSession {
         return this.handlePermission(ctx.params);
       })
       .onRequest(acp.methods.client.fs.readTextFile, async (ctx) => {
-        return this.readTextFile(ctx.params);
+        return this.files.read(ctx.params);
       })
       .onRequest(acp.methods.client.fs.writeTextFile, async (ctx) => {
-        return this.writeTextFile(ctx.params);
+        return this.files.write(ctx.params);
       })
       .onRequest("cursor/ask_question", (params: unknown) => params as Record<string, unknown>, async (ctx) => {
-        return this.handleAskQuestion(ctx.params);
+        if (this.disposed || this.stopRequested) return { outcome: "cancelled" };
+        this.pushMaster("permission", "Question from agent");
+        return this.questions.request(ctx.params, ctx.signal);
       })
       .onNotification("cursor/update_todos", (params: unknown) => params, async () => {
         this.pushMaster("plan", "Todos updated");
@@ -137,6 +139,7 @@ export class AcpSession {
           ? codex.threadStatus : null;
         if (status && typeof status === "object" && "type" in status) {
           if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+            if (status.type !== "active") this.finishPending(status.type === "idle" ? "status unavailable" : "interrupted");
             this.completion.status(status.type);
             this.remoteTurnActive = status.type === "active";
             this.turnRunning = this.remoteTurnActive;
@@ -145,6 +148,11 @@ export class AcpSession {
         }
       })
       .connect(stream);
+
+    this.connection.signal?.addEventListener("abort", () => {
+      this.finishPending("interrupted");
+      if (!this.disposed) this.cb.onStatus("error", "Agent connection closed");
+    }, { once: true });
 
     const agent = this.connection.agent;
 
@@ -202,6 +210,7 @@ export class AcpSession {
         sessionId: this.sessionId,
         prompt: [{ type: "text", text }],
       });
+      if (this.remoteTurnActive !== true) this.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
       this.completion.finish(response.stopReason);
       this.pushMaster("status", `Turn ended (${response.stopReason})`);
       if (this.remoteTurnActive !== true && !this.disposed) {
@@ -209,6 +218,7 @@ export class AcpSession {
         this.cb.onStatus("ready");
       }
     } catch (err) {
+      this.finishPending("interrupted");
       this.completion.finish("error");
       const msg = err instanceof Error ? err.message : String(err);
       if (this.remoteTurnActive !== true && !this.disposed) {
@@ -223,6 +233,7 @@ export class AcpSession {
   async cancel(): Promise<void> {
     if (!this.connection || !this.sessionId || !this.turnRunning || this.stopRequested || this.disposed) return;
     this.stopRequested = true;
+    this.questions.cancel();
     this.completion.cancel();
     try {
       await this.connection.agent.notify(acp.methods.agent.session.cancel, {
@@ -237,20 +248,19 @@ export class AcpSession {
     }
   }
 
-  respondPermission(requestId: string, optionId: string | "cancelled"): void {
-    const resolve = this.pendingPermissions.get(requestId);
-    if (resolve) {
-      this.pendingPermissions.delete(requestId);
-      resolve(optionId);
-    }
+  respondPermission(_requestId: string, _optionId: string): void {
+    // Permissions are answered immediately by handlePermission.
+    void _requestId;
+    void _optionId;
   }
 
   respondAskQuestion(requestId: string, outcome: unknown): void {
-    const resolve = this.pendingAsk.get(requestId);
-    if (resolve) {
-      this.pendingAsk.delete(requestId);
-      resolve(outcome);
-    }
+    this.questions.respond(requestId, outcome);
+  }
+
+  private finishPending(status: string): void {
+    this.questions.cancel();
+    this.output.finish(status);
   }
 
   private async handlePermission(
@@ -263,49 +273,6 @@ export class AcpSession {
       return { outcome: { outcome: "cancelled" } };
     }
     return { outcome: { outcome: "selected", optionId } };
-  }
-
-  private async handleAskQuestion(
-    params: Record<string, unknown>,
-  ): Promise<unknown> {
-    const requestId = randomUUID();
-    this.pushMaster("permission", "Question from agent");
-    this.cb.onAskQuestion({
-      requestId,
-      tabId: this.tabId,
-      toolCallId: String(params.toolCallId ?? ""),
-      title: params.title as string | undefined,
-      questions: (params.questions as CursorAskQuestionRequestQuestions) ?? [],
-    });
-    return new Promise((resolve) => {
-      this.pendingAsk.set(requestId, resolve);
-    });
-  }
-
-  private async readTextFile(
-    params: acp.ReadTextFileRequest,
-  ): Promise<acp.ReadTextFileResponse> {
-    const filePath = this.resolvePath(params.path);
-    const content = await fs.readFile(filePath, "utf8");
-    return { content };
-  }
-
-  private async writeTextFile(
-    params: acp.WriteTextFileRequest,
-  ): Promise<acp.WriteTextFileResponse> {
-    const filePath = this.resolvePath(params.path);
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, params.content, "utf8");
-    return {};
-  }
-
-  resolvePath(p: string): string {
-    const resolved = path.isAbsolute(p) ? path.normalize(p) : path.resolve(this.cwd, p);
-    const root = path.resolve(this.cwd);
-    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
-      throw new Error("Path escapes workspace");
-    }
-    return resolved;
   }
 
   private emitTranscript(item: TranscriptItem): void {
@@ -330,6 +297,7 @@ export class AcpSession {
   }
 
   async dispose(): Promise<void> {
+    this.finishPending("interrupted");
     this.disposed = true;
     this.completion.cancel();
     this.prompts.dispose();
@@ -342,10 +310,3 @@ export class AcpSession {
     this.connection = null;
   }
 }
-
-type CursorAskQuestionRequestQuestions = Array<{
-  id: string;
-  prompt: string;
-  options: Array<{ id: string; label: string }>;
-  allowMultiple?: boolean;
-}>;
