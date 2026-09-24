@@ -2,7 +2,7 @@
 
 Multi-tab agent development client
 
-Run Claude Code, Codex, or Cursor side-by-side with a Master event feed, chat, and workspace.
+Run Claude Code, Codex, or Cursor side-by-side and monitor all agents through an event feed (aka the switchboard).
 
 ## Prerequisites
 
