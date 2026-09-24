@@ -43,11 +43,11 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
   const [title, setTitle] = useState(randomSessionTitle);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const agentRef = useRef<HTMLSelectElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    agentRef.current?.focus();
+    titleRef.current?.focus();
   }, []);
 
   const create = async () => {
@@ -116,9 +116,18 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
       <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>New agent session</h3>
         <label>
+          Title
+          <input
+            ref={titleRef}
+            value={title}
+            disabled={busy}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={createOnEnter}
+          />
+        </label>
+        <label>
           Agent
           <select
-            ref={agentRef}
             value={agentKind}
             disabled={busy}
             onChange={(e) => setAgentKind(e.target.value as AgentKind)}
@@ -128,15 +137,6 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
             <option value="codex">Codex</option>
             <option value="cursor">Cursor</option>
           </select>
-        </label>
-        <label>
-          Title
-          <input
-            value={title}
-            disabled={busy}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={createOnEnter}
-          />
         </label>
         <label>
           Workspace folder
