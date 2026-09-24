@@ -60,6 +60,12 @@ function registerIpc(): void {
   ipcMain.handle("tabs:rename", (_e, tabId: string, title: string) => {
     tabs.renameTab(tabId, title);
   });
+  ipcMain.handle("tabs:setNotes", (_e, tabId: string, notes: string) => {
+    tabs.setTabNotes(tabId, notes);
+  });
+  ipcMain.handle("tabs:setNotesWidth", (_e, tabId: string, width: number) => {
+    tabs.setTabNotesWidth(tabId, width);
+  });
   ipcMain.handle("tabs:reorder", (_e, tabIds: string[]) => {
     tabs.reorderTabs(tabIds);
   });

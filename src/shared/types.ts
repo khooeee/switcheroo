@@ -41,6 +41,8 @@ export interface SessionTab {
   createdAt: number;
   /** Hidden from the rail. The session and its Switchboard events stay. */
   closed: boolean;
+  notes?: string;
+  notesWidth?: number;
 }
 
 export type TranscriptRole = "user" | "assistant" | "thought" | "tool" | "system" | "stopped";
@@ -103,6 +105,8 @@ export interface PersistedState {
     cwd: string;
     sessionId: string | null;
     closed?: boolean;
+    notes?: string;
+    notesWidth?: number;
   }>;
   transcripts: Record<string, TranscriptItem[]>;
   masterEvents: MasterEvent[];
@@ -114,6 +118,8 @@ export interface SwitcherooApi {
   closeTab: (tabId: string) => Promise<void>;
   deleteTab: (tabId: string) => Promise<void>;
   renameTab: (tabId: string, title: string) => Promise<void>;
+  setTabNotes: (tabId: string, notes: string) => Promise<void>;
+  setTabNotesWidth: (tabId: string, width: number) => Promise<void>;
   reorderTabs: (tabIds: string[]) => Promise<void>;
   setActiveTab: (tabId: ActiveTabId) => Promise<void>;
   listTabs: () => Promise<{

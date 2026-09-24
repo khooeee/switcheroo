@@ -20,6 +20,9 @@ import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
 import { PermissionBar } from "./features/permissions/PermissionBar";
+import { TabNotes } from "./features/notes/TabNotes";
+import { defaultNotesWidth } from "./features/notes/clampNotesWidth";
+import { useSessionNotes } from "./features/notes/useSessionNotes";
 
 export function App() {
   useCompletionSound();
@@ -35,6 +38,7 @@ export function App() {
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
   const [promptFocus, setPromptFocus] = useState(0);
+  const sessionNotes = useSessionNotes();
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
   const tabIdsRef = useRef<Set<string> | null>(null);
@@ -46,6 +50,7 @@ export function App() {
       setTabs(data.tabs);
       setActiveTabId(data.activeTabId);
       setMasterEvents(data.masterEvents);
+      sessionNotes.hydrate(data.tabs);
       const next: Record<string, TranscriptItem[]> = {};
       for (const t of data.tabs) {
         next[t.id] = await window.switcheroo.getTranscript(t.id);
@@ -57,6 +62,7 @@ export function App() {
       window.switcheroo.onTabsChanged(({ tabs: t, activeTabId: a }) => {
         const ids = new Set(t.map((tab) => tab.id));
         tabIdsRef.current = ids;
+        sessionNotes.prune(ids);
         setTabs(t);
         setActiveTabId(a);
         setMasterEvents((prev) => prev.filter((event) => ids.has(event.tabId)));
@@ -219,7 +225,7 @@ export function App() {
             </div>
           </section>
         ) : activeTab ? (
-          <>
+          <div className="session-split">
             <ChatPanel
               tab={activeTab}
               draft={drafts[activeTab.id] ?? ""}
@@ -247,7 +253,14 @@ export function App() {
                 setAskQuestion(null);
               }}
             />
-          </>
+            <TabNotes
+              tabId={activeTab.id}
+              value={sessionNotes.notes[activeTab.id] ?? ""}
+              width={sessionNotes.widths[activeTab.id] ?? defaultNotesWidth}
+              onChange={(text) => sessionNotes.setNote(activeTab.id, text)}
+              onWidthChange={(width) => sessionNotes.setWidth(activeTab.id, width)}
+            />
+          </div>
         ) : (
           <section className="panel">
             <div className="empty">Select or create a session tab to begin.</div>

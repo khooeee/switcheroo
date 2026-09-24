@@ -27,6 +27,7 @@ export class TabManager {
   private window: BrowserWindow | null = null;
   private permissionOwners = new Map<string, string>(); // requestId -> tabId
   private askOwners = new Map<string, string>();
+  private persistTimer: ReturnType<typeof setTimeout> | null = null;
 
   setWindow(win: BrowserWindow): void {
     this.window = win;
@@ -65,6 +66,8 @@ export class TabManager {
           error: null,
           createdAt: Date.now(),
           closed: t.closed ?? false,
+          notes: t.notes,
+          notesWidth: t.notesWidth,
         });
         this.transcripts.set(t.id, saved.transcripts[t.id] ?? []);
       }
@@ -76,6 +79,10 @@ export class TabManager {
   }
 
   async persist(): Promise<void> {
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = null;
+    }
     const state: PersistedState = {
       version: 1,
       activeTabId: this.activeTabId,
@@ -86,6 +93,8 @@ export class TabManager {
         cwd: t.cwd,
         sessionId: t.sessionId,
         closed: t.closed,
+        notes: t.notes,
+        notesWidth: t.notesWidth,
       })),
       transcripts: Object.fromEntries(this.transcripts),
       masterEvents: this.bus.list(),
@@ -182,6 +191,20 @@ export class TabManager {
     tab.title = title;
     this.emitTabs();
     void this.persist();
+  }
+
+  setTabNotes(tabId: string, notes: string): void {
+    const tab = this.tabs.get(tabId);
+    if (!tab) return;
+    tab.notes = notes;
+    this.queuePersist();
+  }
+
+  setTabNotesWidth(tabId: string, width: number): void {
+    const tab = this.tabs.get(tabId);
+    if (!tab) return;
+    tab.notesWidth = Number.isFinite(width) ? Math.round(width) : tab.notesWidth;
+    this.queuePersist();
   }
 
   reorderTabs(tabIds: string[]): void {
@@ -319,6 +342,14 @@ export class TabManager {
     tab.error = error;
     this.send("tab-status", { tabId, status, error });
     this.emitTabs();
+  }
+
+  private queuePersist(): void {
+    if (this.persistTimer) clearTimeout(this.persistTimer);
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = null;
+      void this.persist();
+    }, 300);
   }
 
   private emitTabs(): void {

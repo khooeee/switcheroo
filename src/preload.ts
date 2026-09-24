@@ -24,6 +24,9 @@ const api: SwitcherooApi = {
   deleteTab: (tabId: string) => ipcRenderer.invoke("tabs:delete", tabId),
   renameTab: (tabId: string, title: string) =>
     ipcRenderer.invoke("tabs:rename", tabId, title),
+  setTabNotes: (tabId, notes) => ipcRenderer.invoke("tabs:setNotes", tabId, notes),
+  setTabNotesWidth: (tabId, width) =>
+    ipcRenderer.invoke("tabs:setNotesWidth", tabId, width),
   reorderTabs: (tabIds: string[]) => ipcRenderer.invoke("tabs:reorder", tabIds),
   setActiveTab: (tabId: ActiveTabId) => ipcRenderer.invoke("tabs:setActive", tabId),
   listTabs: () => ipcRenderer.invoke("tabs:list"),

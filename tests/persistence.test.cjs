@@ -41,6 +41,16 @@ function state(title = "Saved agent") {
   };
 }
 
+test("tab notes and notes width round-trip with the rest of saved state", async (t) => {
+  const { store, restart } = await fixture(t);
+  const snapshot = state();
+  snapshot.tabs[0].notes = "scratch\nline";
+  snapshot.tabs[0].notesWidth = 320;
+  await store.saveState(snapshot);
+  const restarted = await restart();
+  assert.equal(JSON.stringify(await restarted.loadState()), JSON.stringify(snapshot));
+});
+
 for (const initial of [null, "", "  \n"]) {
   test(`save and restore after restart with initial file ${JSON.stringify(initial)}`, async (t) => {
     const { target, store, restart } = await fixture(t);

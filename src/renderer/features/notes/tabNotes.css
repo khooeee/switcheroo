@@ -1,0 +1,56 @@
+.tab-notes {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--composer-bg);
+}
+
+.tab-notes-resize {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+  touch-action: none;
+}
+
+.tab-notes-resize::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  transition: background 0.15s ease;
+}
+
+.tab-notes-resize:hover::after,
+.tab-notes-resize:active::after,
+.tab-notes-resize:focus-visible::after {
+  background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+}
+
+.tab-notes textarea {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 12px;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.tab-notes textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
