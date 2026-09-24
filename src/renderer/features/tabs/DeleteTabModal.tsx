@@ -49,7 +49,7 @@ export function DeleteTabModal({ tab, onCancel, onDelete }: {
       onKeyDown={(event) => event.stopPropagation()}>
       <h3 id="delete-tab-title">Delete “{tab.title}”?</h3>
       <p id="delete-tab-description">
-        This permanently removes the session, its messages, notes, and Switchboard events.
+        This permanently removes the session, its messages, and notes.
         {tab.status === "running" || tab.status === "connecting" ? " The agent will be stopped." : ""}
         {" "}This cannot be undone.
       </p>
@@ -57,7 +57,7 @@ export function DeleteTabModal({ tab, onCancel, onDelete }: {
       <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
         <button ref={cancelRef} type="button" className="btn" disabled={busy} onClick={onCancel}>Cancel</button>
         <button type="button" className="btn delete-tab-confirm" disabled={busy} onClick={() => void remove()}>
-          {busy ? "Deleting…" : "Delete tab"}
+          {busy ? "Deleting…" : "Delete"}
         </button>
       </div>
     </dialog>
