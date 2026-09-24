@@ -95,12 +95,14 @@ function registerIpc(): void {
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
   ipcMain.handle("images:savePaste", async (_e, tabId: string, mimeType: string, bytes: Uint8Array) => {
-    return savePastedImage(requireTab(tabId).cwd, bytes, mimeType);
+    requireTab(tabId);
+    return savePastedImage(bytes, mimeType);
   });
   ipcMain.handle("images:saveClipboard", async (_e, tabId: string) => {
+    requireTab(tabId);
     const png = readClipboardPng();
     if (!png) return null;
-    return savePastedImage(requireTab(tabId).cwd, png, "image/png");
+    return savePastedImage(png, "image/png");
   });
   ipcMain.handle("transcript:get", (_e, tabId: string) => tabs.getTranscript(tabId));
 }

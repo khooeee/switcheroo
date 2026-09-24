@@ -17,10 +17,10 @@ function load(file, exportName) {
 
 test("inserts quoted paths at the caret with spacing", () => {
   const insert = load("insertPromptPaths.ts", "insertPromptPaths");
-  const mid = insert("look at this", 8, 8, [".switcheroo/pastes/a.png"]);
-  assert.equal(mid.value, "look at .switcheroo/pastes/a.png this");
-  const spaced = insert("", 0, 0, ["folder/my shot.png"]);
-  assert.equal(spaced.value, `"folder/my shot.png"`);
+  const mid = insert("look at this", 8, 8, ["/tmp/.switcheroo/pastes/a.png"]);
+  assert.equal(mid.value, "look at /tmp/.switcheroo/pastes/a.png this");
+  const spaced = insert("", 0, 0, ["/tmp/my shot.png"]);
+  assert.equal(spaced.value, `"/tmp/my shot.png"`);
   assert.equal(spaced.cursor, spaced.value.length);
 });
 
