@@ -1,6 +1,8 @@
 # Switcheroo
 
-Multi-tab Electron client for the [Agent Client Protocol](https://agentclientprotocol.com/). Run Claude Code, Codex, or Cursor side-by-side with a Master event feed, chat, and workspace.
+Multi-tab agent development client
+
+Run Claude Code, Codex, or Cursor side-by-side with a Master event feed, chat, and workspace.
 
 ## Prerequisites
 
@@ -21,6 +23,8 @@ npm start
 ## Usage
 
 1. Click **+** to create a session tab (pick agent + workspace folder).
-2. Chat in the center panel; browse files, diffs, and terminal on the right.
-3. Open **Master** (★) for a live feed of all tab events — click an event to jump to its tab.
-4. **Cmd/Ctrl+F** finds text in the active Master feed or chat transcript (Monaco uses its own find when the editor is focused).
+2. Open **Switchboard** (★) for a live feed of all tab events — click an event to jump to its tab.
+
+## Shortcuts
+
+**Cmd/Ctrl+F** finds text in the active Master feed or chat transcript (Monaco uses its own find when the editor is focused).
