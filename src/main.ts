@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
+import { installExternalLinks } from "./main/installExternalLinks";
 import { TabManager } from "./main/tabs";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { openInCursor } from "./main/openInCursor";
@@ -34,6 +35,7 @@ const createWindow = async () => {
     },
   });
 
+  installExternalLinks(mainWindow.webContents);
   tabs.setWindow(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {

@@ -5,6 +5,7 @@ import type {
   SessionTab,
   TranscriptItem,
 } from "../../../shared/types";
+import { MarkdownBody } from "../markdown/MarkdownBody";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { ThinkingIndicator } from "./ThinkingIndicator";
@@ -132,7 +133,9 @@ export function ChatPanel({
                 </div>}
                 {item.fileChanges?.length ? (
                   <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} tabId={tab.id} />
-                ) : <div className="body">{text}</div>}
+                ) : item.role === "assistant" || item.role === "user" || item.role === "thought"
+                  ? <MarkdownBody text={text} />
+                  : <div className="body">{text}</div>}
               </div>
             );
           })}
