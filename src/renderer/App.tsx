@@ -17,6 +17,7 @@ import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
 import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
+import { DeleteTabModal } from "./features/tabs/DeleteTabModal";
 import { NewTabModal } from "./features/tabs/NewTabModal";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
@@ -34,6 +35,7 @@ export function App() {
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const askQuestion = useAgentQuestions(activeTabId);
   const [showNewTab, setShowNewTab] = useState(false);
+  const [deleteTab, setDeleteTab] = useState<SessionTab | null>(null);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
@@ -102,11 +104,12 @@ export function App() {
       }),
     ];
 
-    const onFind = () => setFindOpen(true);
-    const onNewSession = () => setShowNewTab(true);
+    const onFind = () => { if (!document.querySelector("dialog[open]")) setFindOpen(true); };
+    const onNewSession = () => { if (!document.querySelector("dialog[open]")) setShowNewTab(true); };
     window.addEventListener("switcheroo:find", onFind);
     window.addEventListener("switcheroo:new-session", onNewSession);
     const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
         e.preventDefault();
         setFindOpen(true);
@@ -138,11 +141,12 @@ export function App() {
   }, []);
 
   const focusPrompt = useCallback(() => setPromptFocus((n) => n + 1), []);
-  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab);
-  useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab, focusPrompt);
+  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
+  useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab, focusPrompt);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if (e.key === "Escape") {
         if (e.defaultPrevented || e.repeat || e.isComposing || showNewTab) return;
         if (document.querySelector('[role="menu"]')) return;
@@ -190,7 +194,7 @@ export function App() {
         onSelect={selectTab}
         onAdd={() => setShowNewTab(true)}
         onClose={(id) => void window.switcheroo.closeTab(id)}
-        onDelete={(id) => void window.switcheroo.deleteTab(id)}
+        onDelete={(id) => setDeleteTab(tabs.find((tab) => tab.id === id) ?? null)}
         onRename={(id, title) => void window.switcheroo.renameTab(id, title)}
         onReorder={(ids) => void window.switcheroo.reorderTabs(ids)}
       />
@@ -275,6 +279,9 @@ export function App() {
           }}
         />
       )}
+
+      {deleteTab && <DeleteTabModal tab={deleteTab} onCancel={() => setDeleteTab(null)}
+        onDelete={(id) => window.switcheroo.deleteTab(id)} />}
 
       {showNewTab && (
         <NewTabModal

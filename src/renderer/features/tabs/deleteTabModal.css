@@ -1,0 +1,13 @@
+.delete-tab-modal {
+  color: var(--text);
+  margin: auto;
+  max-height: 90vh;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
+.delete-tab-modal:not([open]) { display: none; }
+.delete-tab-modal::backdrop { background: var(--backdrop); }
+.delete-tab-modal p { margin: 0; line-height: 1.5; }
+.delete-tab-error { color: var(--danger-text); }
+.btn.delete-tab-confirm { background: var(--danger-soft); color: var(--danger-text); border-color: var(--danger); }
