@@ -16,6 +16,7 @@ import type { SessionCallbacks } from "./SessionCallbacks";
 import { PromptCompletion } from "./PromptCompletion";
 import { PromptQueue } from "./PromptQueue";
 import { PromptDelivery } from "./PromptDelivery";
+import { autoApprovePermission } from "./autoApprovePermission";
 
 type PermissionResolver = (optionId: string | "cancelled") => void;
 type AskQuestionResolver = (outcome: unknown) => void;
@@ -255,24 +256,10 @@ export class AcpSession {
   private async handlePermission(
     params: acp.RequestPermissionRequest,
   ): Promise<acp.RequestPermissionResponse> {
-    const requestId = randomUUID();
-    this.pushMaster("permission", params.toolCall?.title ?? "Permission requested");
-    this.cb.onPermission({
-      requestId,
-      tabId: this.tabId,
-      toolCallTitle: params.toolCall?.title ?? "Permission requested",
-      options: (params.options ?? []).map((o) => ({
-        optionId: o.optionId,
-        name: o.name,
-        kind: o.kind,
-      })),
-    });
-
-    const optionId = await new Promise<string | "cancelled">((resolve) => {
-      this.pendingPermissions.set(requestId, resolve);
-    });
-
-    if (optionId === "cancelled") {
+    const title = params.toolCall?.title ?? "Permission requested";
+    const optionId = autoApprovePermission(params.options ?? []);
+    this.pushMaster("permission", optionId ? `Auto-approved: ${title}` : title);
+    if (!optionId) {
       return { outcome: { outcome: "cancelled" } };
     }
     return { outcome: { outcome: "selected", optionId } };
