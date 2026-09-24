@@ -15,6 +15,7 @@ import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
 import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
+import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { NewTabModal } from "./features/tabs/NewTabModal";
@@ -131,7 +132,9 @@ export function App() {
     if (id !== MASTER_TAB_ID) setPromptFocus((n) => n + 1);
   }, []);
 
+  const focusPrompt = useCallback(() => setPromptFocus((n) => n + 1), []);
   useTabShortcuts(tabs, activeTabId, selectTab, showNewTab);
+  useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab, focusPrompt);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

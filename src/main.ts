@@ -142,6 +142,13 @@ function buildMenu(): void {
             mainWindow?.webContents.send("find:open");
           },
         },
+        {
+          label: "Focus Prompt",
+          accelerator: "CmdOrCtrl+I",
+          click: () => {
+            mainWindow?.webContents.send("prompt:focus");
+          },
+        },
       ],
     },
     {
