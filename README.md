@@ -4,6 +4,11 @@ Multi-tab agent development client
 
 Run Claude Code, Codex, or Cursor side-by-side and monitor all agents through an event feed (aka its the switchboard).
 
+## Features
+
+- Switchboard
+- Tab notes
+
 ## Prerequisites
 
 - Node.js 20+
