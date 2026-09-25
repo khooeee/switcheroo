@@ -32,4 +32,6 @@ npm start
 
 ## Shortcuts
 
-**Cmd/Ctrl+F** finds text in the active Master feed or chat transcript (Monaco uses its own find when the editor is focused).
+**Cmd/Ctrl+F**: Find
+
+**Cmd/Ctrl+I**: Focus on prompt
