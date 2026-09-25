@@ -149,6 +149,7 @@ export function ChatPanel({
           {tab.status === "connecting" && <ThinkingIndicator label="Creating session" />}
         </div>
       </div>
+      <div className="scroll-fade" aria-hidden="true" />
 
       {permission && (
         <PermissionBar request={permission} onRespond={onPermission} />
