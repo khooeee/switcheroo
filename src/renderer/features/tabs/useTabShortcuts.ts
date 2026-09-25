@@ -5,7 +5,7 @@ import { MASTER_TAB_ID } from "../../../shared/types";
 export function useTabShortcuts(
   tabs: SessionTab[],
   activeTabId: ActiveTabId,
-  selectTab: (id: ActiveTabId) => void,
+  selectTab: (id: ActiveTabId, options?: { focusPrompt?: boolean }) => void,
   disabled: boolean,
 ) {
   useEffect(() => {

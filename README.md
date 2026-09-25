@@ -41,7 +41,7 @@ npm start
 
 **Ctrl+D**: Close session (empty prompt)
 
-**/**: Slash-command autocomplete above the prompt
+**Cmd/Ctrl+Shift+E**: Focus session tabs (↑/↓ move, Space/Enter select)
 
 **Cmd/Ctrl+F**: Find
 

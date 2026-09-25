@@ -84,3 +84,7 @@ ipcRenderer.on("session:new", () => {
 ipcRenderer.on("prompt:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
 });
+
+ipcRenderer.on("rail:focus", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:focus-rail"));
+});

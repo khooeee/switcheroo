@@ -15,6 +15,7 @@ import { ChatPanel } from "./features/chat/ChatPanel";
 import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
 import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
 import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
+import { useFocusRailShortcut } from "./features/tabs/useFocusRailShortcut";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { DeleteTabModal } from "./features/tabs/DeleteTabModal";
@@ -137,15 +138,17 @@ export function App() {
     [tabs, activeTabId],
   );
 
-  const selectTab = useCallback((id: ActiveTabId) => {
+  const selectTab = useCallback((id: ActiveTabId, options?: { focusPrompt?: boolean }) => {
     void window.switcheroo.setActiveTab(id);
     setFocusEventId(null);
+    if (options?.focusPrompt === false) return;
     if (id !== MASTER_TAB_ID) setPromptFocus((n) => n + 1);
   }, []);
 
   const focusPrompt = useCallback(() => setPromptFocus((n) => n + 1), []);
   useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
   useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab, focusPrompt);
+  useFocusRailShortcut(activeTabId, !showNewTab && !deleteTab);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

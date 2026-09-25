@@ -5,13 +5,14 @@ import { MASTER_TAB_ID } from "../../../shared/types";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
 import { getTabDropTarget } from "./getTabDropTarget";
+import { handleRailKeyDown } from "./handleRailKeyDown";
 import "./tabSpinner.css";
 import "./tabDropIndicator.css";
 
 interface Props {
   tabs: SessionTab[];
   activeTabId: ActiveTabId;
-  onSelect: (id: ActiveTabId) => void;
+  onSelect: (id: ActiveTabId, options?: { focusPrompt?: boolean }) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
   onDelete: (id: string) => void;
@@ -34,6 +35,7 @@ export function TabRail({
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropBeforeId, setDropBeforeId] = useState<string | null | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const skipClick = useRef<string | null>(null);
 
@@ -131,7 +133,14 @@ export function TabRail({
   };
 
   return (
-    <aside className="rail" aria-label="Session tabs">
+    <aside
+      ref={railRef}
+      className="rail"
+      aria-label="Session tabs"
+      onKeyDown={(event) => {
+        if (railRef.current) handleRailKeyDown(event, railRef.current, onSelect);
+      }}
+    >
       <div
         className="rail-resize"
         role="separator"
@@ -142,6 +151,7 @@ export function TabRail({
       <div className="rail-master-row">
         <button
           type="button"
+          data-rail-id={MASTER_TAB_ID}
           className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
           title="Switchboard — all events"
           onClick={() => onSelect(MASTER_TAB_ID)}
@@ -169,6 +179,7 @@ export function TabRail({
               key={tab.id}
               type="button"
               data-tab-id={tab.id}
+              data-rail-id={tab.id}
               className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
               title={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
               onPointerDown={(e) => startDrag(e, tab.id)}

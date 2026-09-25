@@ -181,6 +181,13 @@ function buildMenu(): void {
             mainWindow?.webContents.send("prompt:focus");
           },
         },
+        {
+          label: "Focus Session Tabs",
+          accelerator: "CmdOrCtrl+Shift+E",
+          click: () => {
+            mainWindow?.webContents.send("rail:focus");
+          },
+        },
       ],
     },
     {
