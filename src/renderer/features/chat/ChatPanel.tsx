@@ -264,7 +264,7 @@ export function ChatPanel({
             className="btn primary composer-send"
             aria-label={sendLabel}
             data-tooltip={sendLabel}
-            data-tooltip-align="end"
+            data-tooltip-align="center"
             disabled={(!showStop && !draft.trim()) || tab.status === "connecting"}
             onClick={showStop ? onInterrupt : send}
           >

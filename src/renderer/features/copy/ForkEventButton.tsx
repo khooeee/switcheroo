@@ -13,7 +13,7 @@ export function ForkEventButton({ tabId, eventId }: { tabId: string; eventId: st
       className={`event-action${error ? " error" : ""}`}
       aria-label={label}
       data-tooltip={label}
-      data-tooltip-align="end"
+      data-tooltip-align="center"
       disabled={busy}
       onClick={(event) => {
         event.preventDefault();

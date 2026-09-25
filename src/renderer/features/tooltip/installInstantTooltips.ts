@@ -24,12 +24,24 @@ export function installInstantTooltips(): void {
     tip.textContent = text;
     tip.hidden = false;
     const rect = el.getBoundingClientRect();
-    const end = el.getAttribute("data-tooltip-align") === "end";
     tip.style.left = "0px";
     tip.style.top = "0px";
     tip.style.transform = "none";
     const size = tip.getBoundingClientRect();
-    let left = end ? rect.right - size.width : rect.left;
+    const side = el.getAttribute("data-tooltip-side");
+    if (side === "right") {
+      let left = rect.right + 8;
+      left = Math.min(left, window.innerWidth - size.width - 8);
+      let top = rect.top + (rect.height - size.height) / 2;
+      top = Math.max(8, Math.min(top, window.innerHeight - size.height - 8));
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+      return;
+    }
+    const align = el.getAttribute("data-tooltip-align");
+    let left = rect.left;
+    if (align === "end") left = rect.right - size.width;
+    else if (align === "center") left = rect.left + (rect.width - size.width) / 2;
     left = Math.max(8, Math.min(left, window.innerWidth - size.width - 8));
     let top = rect.top - size.height - 6;
     if (top < 8) top = rect.bottom + 6;

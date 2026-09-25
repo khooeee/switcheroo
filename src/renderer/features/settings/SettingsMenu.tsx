@@ -92,6 +92,7 @@ export function SettingsMenu() {
         type="button"
         className={`rail-tab ${open ? "active" : ""}`}
         data-tooltip="Settings"
+        data-tooltip-align="center"
         aria-label="Settings"
         aria-haspopup="menu"
         aria-expanded={open}
