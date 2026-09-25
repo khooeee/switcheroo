@@ -28,7 +28,11 @@ npm start
 ## Usage
 
 1. Click **+** to create a session tab (pick agent + workspace folder).
-2. Open **Switchboard** (★) for a live feed of all tab events — click an event to jump to its tab.
+2. Open **Switchboard** for a live feed of all events from all sessions — click an event to jump to its tab.
+
+## Defaults
+
+- Bypass permissions / YOLO
 
 ## Shortcuts
 
