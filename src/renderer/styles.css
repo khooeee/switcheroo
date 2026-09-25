@@ -53,7 +53,7 @@ html[data-theme="light"] {
   --header-bg: rgba(255, 255, 255, 0.88);
   --card-bg: #ffffff;
   --user-bg: #e4ebf0;
-  --composer-bg: #f7fafb;
+  --composer-bg: #ffffff;
   --app-top: #ffffff;
   --glow-accent: color-mix(in srgb, var(--accent) 10%, transparent);
   --glow-warm: rgba(184, 106, 34, 0.08);
@@ -499,8 +499,7 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 .composer {
   position: relative;
   flex-shrink: 0;
-  border-top: 1px solid var(--border);
-  padding: 12px 16px;
+  padding: 0 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
