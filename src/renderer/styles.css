@@ -43,7 +43,7 @@ html[data-theme="light"] {
   --border: #c9d5dc;
   --text: #172026;
   --text-dim: #5c6d7a;
-  --accent: #0c7c72;
+  --accent: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
   --accent-2: #b86a22;
   --danger: #c44747;
   --danger-soft: rgba(196, 71, 71, 0.12);
@@ -55,10 +55,10 @@ html[data-theme="light"] {
   --user-bg: #e4ebf0;
   --composer-bg: #f7fafb;
   --app-top: #ffffff;
-  --glow-accent: rgba(12, 124, 114, 0.1);
+  --glow-accent: color-mix(in srgb, var(--accent) 10%, transparent);
   --glow-warm: rgba(184, 106, 34, 0.08);
   --mark: rgba(184, 106, 34, 0.35);
-  --flash: rgba(12, 124, 114, 0.18);
+  --flash: color-mix(in srgb, var(--accent) 18%, transparent);
   --shadow: rgba(23, 32, 38, 0.14);
   --backdrop: rgba(23, 32, 38, 0.35);
   --placeholder: #c5d2d8;
@@ -180,7 +180,7 @@ button {
 }
 
 .rail-tab:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-color: var(--accent);
 }
 
 .rail-tab.active {
@@ -393,7 +393,7 @@ button {
 }
 
 .feed-item:hover {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 45%, var(--border));
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .feed-item.user {
