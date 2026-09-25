@@ -578,8 +578,9 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 .composer-usage {
   flex: 1;
   min-width: 0;
+  padding-left: 13px; /* match textarea border (1px) + padding (12px) */
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--placeholder);
   text-align: left;
   font-variant-numeric: tabular-nums;
 }
