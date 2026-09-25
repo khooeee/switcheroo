@@ -663,7 +663,7 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 .modal label.modal-check {
   flex-direction: row;
   align-items: center;
-  align-self: flex-start;
+  align-self: flex-end;
   gap: 8px;
   padding-block: 6px;
 }
