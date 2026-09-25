@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
+import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
 import { TabManager } from "./main/tabs";
 import { installQuitHandler } from "./main/installQuitHandler";
@@ -12,6 +13,8 @@ import type { ActiveTabId, CreateTabInput } from "./shared/types";
 if (started) {
   app.quit();
 }
+
+app.setName("Switcheroo");
 
 const tabs = new TabManager();
 let mainWindow: BrowserWindow | null = null;
@@ -26,6 +29,7 @@ const createWindow = async () => {
     minHeight: 640,
     title: "Switcheroo",
     backgroundColor: "#0e1114",
+    icon: applyAppIcon(),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -208,6 +212,7 @@ function buildMenu(): void {
 }
 
 app.on("ready", () => {
+  applyAppIcon();
   registerIpc();
   buildMenu();
   void createWindow();

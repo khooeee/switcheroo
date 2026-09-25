@@ -10,6 +10,9 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    name: "Switcheroo",
+    icon: "./assets/icon",
+    extraResource: ["./assets/icon.png"],
   },
   rebuildConfig: {},
   makers: [
