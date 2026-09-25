@@ -5,7 +5,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--composer-bg);
+  background: var(--bg-1);
 }
 
 .tab-notes-resize {
