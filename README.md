@@ -40,3 +40,5 @@ npm start
 **Cmd/Ctrl+F**: Find
 
 **Cmd/Ctrl+I**: Focus on prompt
+
+**Ctrl+D**: Close session (empty prompt)

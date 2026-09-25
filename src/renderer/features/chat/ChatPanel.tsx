@@ -26,6 +26,7 @@ interface Props {
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
+  onClose: () => void;
   permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
   onPermission: (optionId: string | "cancelled") => void;
@@ -50,6 +51,7 @@ export function ChatPanel({
   chatRef,
   onSend,
   onInterrupt,
+  onClose,
   permission,
   askQuestion,
   onPermission,
@@ -215,6 +217,18 @@ export function ChatPanel({
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               send();
+              return;
+            }
+            if (
+              e.key.toLowerCase() === "d"
+              && e.ctrlKey
+              && !e.metaKey
+              && !e.altKey
+              && !e.shiftKey
+              && draft === ""
+            ) {
+              e.preventDefault();
+              onClose();
             }
           }}
         />
