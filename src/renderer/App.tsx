@@ -251,6 +251,7 @@ export function App() {
               onInterrupt={() => {
                 void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
               }}
+              onClose={() => void window.switcheroo.closeTab(activeTab.id)}
               permission={permission?.tabId === activeTab.id ? permission : null}
               askQuestion={askQuestion?.tabId === activeTab.id ? askQuestion : null}
               onPermission={(optionId) => {
