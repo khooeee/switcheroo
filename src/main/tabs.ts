@@ -14,9 +14,11 @@ import type {
 import { MASTER_TAB_ID } from "../shared/types";
 import { GlobalEventBus } from "./events";
 import { AcpSession } from "./acp/session";
+import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { agentLabel } from "./acp/presets";
 import { loadState, saveState } from "./persist";
 import { stripCursorStreamNoise } from "../shared/cursorStreamNoise";
+import { forkTabAtEvent } from "./forkTabAtEvent";
 
 export class TabManager {
   private tabs = new Map<string, SessionTab>();
@@ -147,6 +149,36 @@ export class TabManager {
     return tab;
   }
 
+  async forkTab(tabId: string, eventId: string): Promise<SessionTab> {
+    return forkTabAtEvent({
+      getTab: (id) => this.tabs.get(id),
+      getTranscript: (id) => this.getTranscript(id),
+      listTitles: () => [...this.tabs.values()].map((tab) => tab.title),
+      ensureSession: async (tab) => {
+        let session = this.sessions.get(tab.id);
+        if (session?.sessionId) return session;
+        session = this.openSession(tab);
+        this.sessions.set(tab.id, session);
+        if (tab.sessionId) await session.attachExisting(tab.sessionId);
+        else await session.start();
+        tab.sessionId = session.sessionId;
+        this.emitTabs();
+        return session;
+      },
+      callbacksFor: (tab) => this.callbacksFor(tab),
+      bus: () => this.bus,
+      setSession: (id, session) => { this.sessions.set(id, session); },
+      addTab: (tab, transcript) => {
+        this.tabs.set(tab.id, tab);
+        this.transcripts.set(tab.id, transcript);
+      },
+      setActiveTab: (id) => { this.activeTabId = id; },
+      emitTabs: () => this.emitTabs(),
+      send: (channel, payload) => this.send(channel, payload),
+      persist: () => this.persist(),
+    }, tabId, eventId);
+  }
+
   async closeTab(tabId: string): Promise<void> {
     const tab = this.tabs.get(tabId);
     if (!tab || tab.closed) return;
@@ -260,11 +292,13 @@ export class TabManager {
     if (!session) {
       session = this.openSession(tab);
       this.sessions.set(tabId, session);
-      await session.start();
+      if (tab.sessionId) await session.attachExisting(tab.sessionId);
+      else await session.start();
       tab.sessionId = session.sessionId;
       this.emitTabs();
     } else if (!session.sessionId) {
-      await session.start();
+      if (tab.sessionId) await session.attachExisting(tab.sessionId);
+      else await session.start();
       tab.sessionId = session.sessionId;
       this.emitTabs();
     }
@@ -360,7 +394,11 @@ export class TabManager {
   }
 
   private openSession(tab: SessionTab): AcpSession {
-    return new AcpSession(tab.id, tab.agentKind, tab.cwd, this.bus, {
+    return new AcpSession(tab.id, tab.agentKind, tab.cwd, this.bus, this.callbacksFor(tab));
+  }
+
+  private callbacksFor(tab: SessionTab): SessionCallbacks {
+    return {
       onPromptComplete: () => this.send("prompt:complete", { tabId: tab.id }),
       onTranscript: (item, replaceId) => this.handleTranscript(tab.id, item, replaceId),
       onStatus: (status, error) => this.setStatus(tab.id, status, error ?? null),
@@ -380,7 +418,7 @@ export class TabManager {
         this.askOwners.set(req.requestId, tab.id);
         this.send("ask-question", req);
       },
-    });
+    };
   }
 
   private send(channel: string, payload: unknown): void {

@@ -98,6 +98,9 @@ export function App() {
           return { ...prev, [tabId]: list };
         });
       }),
+      window.switcheroo.onTranscriptReset(({ tabId, items }) => {
+        setTranscripts((prev) => ({ ...prev, [tabId]: items }));
+      }),
       window.switcheroo.onPermission((req) => setPermission(req)),
       window.switcheroo.onNavigateToEvent(({ eventId }) => {
         setFocusEventId(eventId);

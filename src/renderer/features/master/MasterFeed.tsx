@@ -51,7 +51,9 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
           {event.kind === "message" || event.kind === "user"
             ? <MarkdownBody text={event.summary} />
             : <div className="body">{event.summary}</div>}
-          <CopyEventButton text={event.summary} />
+          <div className="event-actions">
+            <CopyEventButton text={event.summary} />
+          </div>
         </div>
         );
       })}

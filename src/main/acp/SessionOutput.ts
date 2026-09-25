@@ -37,7 +37,7 @@ export class SessionOutput {
         const chunk = this.agentKind === "cursor" ? stripCursorStreamNoise(raw) : raw;
         if (!chunk) return;
         if (!this.streamingAssistantId) {
-          this.streamingAssistantId = randomUUID();
+          this.streamingAssistantId = update.messageId ?? randomUUID();
           const item: TranscriptItem = {
             id: this.streamingAssistantId,
             role: "assistant",

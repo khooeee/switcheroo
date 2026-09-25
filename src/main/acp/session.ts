@@ -17,6 +17,8 @@ import { PromptDelivery } from "./PromptDelivery";
 import { autoApprovePermission } from "./autoApprovePermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
+import { forkAcpSession } from "./forkAcpSession";
+import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
 
 export class AcpSession {
   readonly tabId: string;
@@ -26,9 +28,13 @@ export class AcpSession {
 
   private proc: ChildProcessWithoutNullStreams | null = null;
   private connection: acp.ClientConnection | null = null;
+  private connectionOwner: AcpSession | null = null;
+  private connectionUsers = 1;
   private turnRunning = false;
   private stopRequested = false;
   private remoteTurnActive: boolean | null = null;
+  private canLoad = false;
+  private canResume = false;
   private bus: GlobalEventBus;
   private cb: SessionCallbacks;
   private questions: PendingQuestions;
@@ -84,7 +90,94 @@ export class AcpSession {
     return this.starting;
   }
 
+  /** Reopen a persisted session via resume, then load. */
+  attachExisting(sessionId: string): Promise<void> {
+    if (this.sessionId) return Promise.resolve();
+    if (!this.starting) {
+      this.starting = this.attachSession(sessionId).finally(() => { this.starting = null; });
+    }
+    return this.starting;
+  }
+
   private async startSession(): Promise<void> {
+    await this.connectAgent();
+    if (!this.connection) throw new Error("Session closed");
+    const session = await this.connection.agent.request(acp.methods.agent.session.new, {
+      cwd: this.cwd,
+      mcpServers: [],
+    });
+    this.setSessionId(session.sessionId);
+    this.cb.onStatus("ready");
+    this.pushMaster("status", `${agentLabel(this.agentKind)} session ready`);
+  }
+
+  private async attachSession(sessionId: string): Promise<void> {
+    await this.connectAgent();
+    if (!this.connection) throw new Error("Session closed");
+    const params = { sessionId, cwd: this.cwd, mcpServers: [] as [] };
+    // Prefer load: older agents (incl. Cursor) advertise loadSession, not session/resume.
+    const methods: Array<typeof acp.methods.agent.session.load | typeof acp.methods.agent.session.resume> = [];
+    if (this.canLoad) methods.push(acp.methods.agent.session.load);
+    if (this.canResume) methods.push(acp.methods.agent.session.resume);
+    if (methods.length === 0) {
+      methods.push(acp.methods.agent.session.load, acp.methods.agent.session.resume);
+    }
+    const errors: string[] = [];
+    for (const method of methods) {
+      try {
+        this.setSessionId(sessionId);
+        await this.connection.agent.request(method, params);
+        this.cb.onStatus("ready");
+        this.pushMaster("status", `${agentLabel(this.agentKind)} session attached`);
+        return;
+      } catch (err) {
+        this.clearSessionId();
+        errors.push(err instanceof Error ? err.message : String(err));
+      }
+    }
+    throw new Error(
+      `Could not reopen session (${errors.join("; ")}). Send a message in this tab to reconnect, then fork.`,
+    );
+  }
+
+  async fork(atMessageId?: string): Promise<string> {
+    if (!this.connection || !this.sessionId || this.disposed) {
+      throw new Error("Session not ready to fork");
+    }
+    return forkAcpSession(this.connection, this.sessionId, this.cwd, atMessageId);
+  }
+
+  /** Fork on this connection and return a sibling session sharing the agent process. */
+  async forkSibling(
+    tabId: string,
+    bus: GlobalEventBus,
+    cb: SessionCallbacks,
+    atMessageId?: string,
+  ): Promise<AcpSession> {
+    const forkedId = await this.fork(atMessageId);
+    const owner = this.connectionOwner ?? this;
+    const child = new AcpSession(tabId, this.agentKind, this.cwd, bus, cb);
+    child.connection = this.connection;
+    child.proc = null;
+    child.connectionOwner = owner;
+    owner.connectionUsers += 1;
+    child.setSessionId(forkedId);
+    child.cb.onStatus("ready");
+    return child;
+  }
+
+  private setSessionId(sessionId: string): void {
+    this.clearSessionId();
+    this.sessionId = sessionId;
+    registerSessionRoute(sessionId, this);
+  }
+
+  private clearSessionId(): void {
+    unregisterSessionRoute(this.sessionId);
+    this.sessionId = null;
+  }
+
+  private async connectAgent(): Promise<void> {
     this.cb.onStatus("connecting");
     const preset = AGENT_PRESETS[this.agentKind];
 
@@ -132,20 +225,9 @@ export class AcpSession {
         this.pushMaster("plan", "Todos updated");
       })
       .onNotification(acp.methods.client.session.update, (ctx) => {
-        if (ctx.params.sessionId !== this.sessionId || this.disposed) return;
-        this.output.handleUpdate(ctx.params.update);
-        const codex = ctx.params.update._meta?.codex;
-        const status = codex && typeof codex === "object" && "threadStatus" in codex
-          ? codex.threadStatus : null;
-        if (status && typeof status === "object" && "type" in status) {
-          if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
-            if (status.type !== "active") this.finishPending(status.type === "idle" ? "status unavailable" : "interrupted");
-            this.completion.status(status.type);
-            this.remoteTurnActive = status.type === "active";
-            this.turnRunning = this.remoteTurnActive;
-            this.cb.onStatus(status.type === "active" ? "running" : status.type === "idle" ? "ready" : "error");
-          }
-        }
+        const target = sessionForUpdate(ctx.params.sessionId, this);
+        if (target.disposed) return;
+        target.handleSessionUpdate(ctx.params.update);
       })
       .connect(stream);
 
@@ -155,7 +237,6 @@ export class AcpSession {
     }, { once: true });
 
     const agent = this.connection.agent;
-
     const initialized = await agent.request(acp.methods.agent.initialize, {
       protocolVersion: acp.PROTOCOL_VERSION,
       clientCapabilities: {
@@ -164,6 +245,9 @@ export class AcpSession {
       },
       clientInfo: { name: "switcheroo", version: "1.0.0" },
     });
+    const caps = initialized.agentCapabilities;
+    this.canLoad = caps?.loadSession === true;
+    this.canResume = caps?.sessionCapabilities?.resume != null;
     this.delivery.configure(initialized._meta);
 
     if (preset.authMethodId) {
@@ -173,14 +257,24 @@ export class AcpSession {
         });
       } catch (err) {
         console.error("[acp] authenticate failed", err);
-        // Continue — some agents are already logged in via CLI
       }
     }
+  }
 
-    const session = await agent.request(acp.methods.agent.session.new, { cwd: this.cwd, mcpServers: [] });
-    this.sessionId = session.sessionId;
-    this.cb.onStatus("ready");
-    this.pushMaster("status", `${agentLabel(this.agentKind)} session ready`);
+  private handleSessionUpdate(update: acp.SessionUpdate): void {
+    this.output.handleUpdate(update);
+    const codex = update._meta?.codex;
+    const status = codex && typeof codex === "object" && "threadStatus" in codex
+      ? codex.threadStatus : null;
+    if (status && typeof status === "object" && "type" in status) {
+      if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+        if (status.type !== "active") this.finishPending(status.type === "idle" ? "status unavailable" : "interrupted");
+        this.completion.status(status.type);
+        this.remoteTurnActive = status.type === "active";
+        this.turnRunning = this.remoteTurnActive;
+        this.cb.onStatus(status.type === "active" ? "running" : status.type === "idle" ? "ready" : "error");
+      }
+    }
   }
 
   async prompt(text: string): Promise<void> {
@@ -249,7 +343,6 @@ export class AcpSession {
   }
 
   respondPermission(_requestId: string, _optionId: string): void {
-    // Permissions are answered immediately by handlePermission.
     void _requestId;
     void _optionId;
   }
@@ -301,12 +394,16 @@ export class AcpSession {
     this.disposed = true;
     this.completion.cancel();
     this.prompts.dispose();
-    this.connection?.close();
-    if (this.proc && !this.proc.killed) {
-      this.proc.kill();
+    this.clearSessionId();
+    const owner = this.connectionOwner ?? this;
+    owner.connectionUsers -= 1;
+    if (owner.connectionUsers <= 0) {
+      owner.connection?.close();
+      if (owner.proc && !owner.proc.killed) owner.proc.kill();
+      owner.proc = null;
+      owner.connection = null;
     }
-    this.proc = null;
-    this.sessionId = null;
     this.connection = null;
+    this.proc = null;
   }
 }

@@ -22,7 +22,9 @@ export function MasterFileEvent({ event, title, cwd, onClick }: {
         <span className="event-timestamp" style={{ marginLeft: "auto" }}>{formatDetailTimestamp(event.at)}</span>
       </div>
       <FileChanges changes={event.fileChanges ?? []} status={event.toolStatus} cwd={cwd} tabId={event.tabId} />
-      <CopyEventButton text={event.summary} />
+      <div className="event-actions">
+        <CopyEventButton text={event.summary} />
+      </div>
     </div>
   );
 }

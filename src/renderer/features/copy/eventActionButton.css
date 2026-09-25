@@ -1,10 +1,12 @@
-.event-copy-row {
+.event-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
   margin-top: 8px;
 }
 
-.event-copy {
+.event-action {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -17,17 +19,26 @@
   cursor: pointer;
 }
 
-.event-copy:hover {
+.event-action:hover:not(:disabled) {
   color: color-mix(in srgb, var(--copy-icon) 55%, var(--text));
   background: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
-.event-copy.copied {
+.event-action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.event-action.error {
+  color: var(--danger-text);
+}
+
+.event-action.copied {
   color: var(--copy-done);
   background: color-mix(in srgb, var(--copy-done) 14%, transparent);
 }
 
-.event-copy::after {
+.event-action::after {
   content: attr(data-tooltip);
   position: absolute;
   right: 0;
@@ -45,8 +56,8 @@
   box-shadow: 0 2px 8px var(--shadow);
 }
 
-.event-copy:hover::after,
-.event-copy:focus-visible::after {
+.event-action:hover::after,
+.event-action:focus-visible::after {
   opacity: 1;
   transform: none;
 }

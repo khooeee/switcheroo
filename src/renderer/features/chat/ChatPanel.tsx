@@ -14,6 +14,7 @@ import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
 import { CopyEventButton } from "../copy/CopyEventButton";
+import { ForkEventButton } from "../copy/ForkEventButton";
 
 interface Props {
   tab: SessionTab;
@@ -137,7 +138,10 @@ export function ChatPanel({
                 ) : item.role === "assistant" || item.role === "user" || item.role === "thought"
                   ? <MarkdownBody text={text} />
                   : <div className="body">{text}</div>}
-                {text ? <CopyEventButton text={text} /> : null}
+                <div className="event-actions">
+                  <ForkEventButton tabId={tab.id} eventId={item.id} />
+                  {text ? <CopyEventButton text={text} /> : null}
+                </div>
               </div>
             );
           })}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./copyEventButton.css";
+import "./eventActionButton.css";
 
 /** Right-aligned icon that copies message text; shows an instant Copy tooltip on hover. */
 export function CopyEventButton({ text }: { text: string }) {
@@ -12,24 +12,22 @@ export function CopyEventButton({ text }: { text: string }) {
   }, []);
 
   return (
-    <div className="event-copy-row">
-      <button
-        type="button"
-        className={`event-copy${copied ? " copied" : ""}`}
-        aria-label={label}
-        data-tooltip={label}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          void navigator.clipboard.writeText(text).catch(console.error);
-          setCopied(true);
-          if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
-          resetTimer.current = window.setTimeout(() => setCopied(false), 1500);
-        }}
-      >
-        {copied ? <CheckIcon /> : <CopyIcon />}
-      </button>
-    </div>
+    <button
+      type="button"
+      className={`event-action${copied ? " copied" : ""}`}
+      aria-label={label}
+      data-tooltip={label}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void navigator.clipboard.writeText(text).catch(console.error);
+        setCopied(true);
+        if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
+        resetTimer.current = window.setTimeout(() => setCopied(false), 1500);
+      }}
+    >
+      {copied ? <CheckIcon /> : <CopyIcon />}
+    </button>
   );
 }
 

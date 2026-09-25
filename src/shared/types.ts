@@ -115,6 +115,7 @@ export interface PersistedState {
 export interface SwitcherooApi {
   openInCursor: (tabId: string, filePath: string) => Promise<void>;
   createTab: (input: CreateTabInput) => Promise<SessionTab>;
+  forkTab: (tabId: string, eventId: string) => Promise<SessionTab>;
   closeTab: (tabId: string) => Promise<void>;
   deleteTab: (tabId: string) => Promise<void>;
   renameTab: (tabId: string, title: string) => Promise<void>;
