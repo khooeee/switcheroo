@@ -660,6 +660,22 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   font-size: 12px;
 }
 
+.modal label.modal-check {
+  flex-direction: row;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+}
+
+.modal label.modal-check input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--accent, #6b9fff);
+}
+
 .modal select,
 .modal input {
   border: 1px solid var(--border);

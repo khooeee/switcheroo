@@ -157,6 +157,15 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
             <option value="cursor">Cursor</option>
           </select>
         </label>
+        <label className="modal-check">
+          <input
+            type="checkbox"
+            checked={switcherooAware}
+            disabled={busy}
+            onChange={(e) => setSwitcherooAware(e.target.checked)}
+          />
+          Switcheroo aware
+        </label>
         <label>
           Workspace folder
           <div style={{ display: "flex", gap: 8 }}>
@@ -180,15 +189,6 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
               Browse
             </button>
           </div>
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input
-            type="checkbox"
-            checked={switcherooAware}
-            disabled={busy}
-            onChange={(e) => setSwitcherooAware(e.target.checked)}
-          />
-          Switcheroo aware
         </label>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
