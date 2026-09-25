@@ -37,8 +37,10 @@ npm start
 
 ## Shortcuts
 
+**Ctrl+C**: Stop agent (prompt, while running)
+
+**Ctrl+D**: Close session (empty prompt)
+
 **Cmd/Ctrl+F**: Find
 
 **Cmd/Ctrl+I**: Focus on prompt
-
-**Ctrl+D**: Close session (empty prompt)

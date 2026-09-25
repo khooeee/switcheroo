@@ -61,7 +61,7 @@ export function ChatPanel({
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
   const showStop = tab.status === "running" && !draft.trim();
-  const sendLabel = showStop ? "Stop agent (Escape)" : tab.status === "running"
+  const sendLabel = showStop ? "Stop agent (Escape / Ctrl+C)" : tab.status === "running"
     ? (tab.supportsSteering ? "Steer agent" : "Queue message")
     : "Send message";
 
@@ -217,6 +217,18 @@ export function ChatPanel({
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               send();
+              return;
+            }
+            if (
+              e.key.toLowerCase() === "c"
+              && e.ctrlKey
+              && !e.metaKey
+              && !e.altKey
+              && !e.shiftKey
+              && tab.status === "running"
+            ) {
+              e.preventDefault();
+              onInterrupt();
               return;
             }
             if (
