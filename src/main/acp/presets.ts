@@ -43,6 +43,12 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     args: ["acp"],
     authMethodId: "cursor_login",
   },
+  pi: {
+    kind: "pi",
+    label: "Pi",
+    command: "npx",
+    args: ["-y", "pi-acp"],
+  },
 };
 
 export function agentLabel(kind: AgentKind): string {

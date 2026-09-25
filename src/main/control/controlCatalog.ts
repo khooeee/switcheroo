@@ -39,7 +39,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       auth: true,
       summary: "Create a tab",
       body: {
-        agentKind: "claude | codex | cursor",
+        agentKind: "claude | codex | cursor | pi",
         cwd: "absolute workspace path",
         title: "optional string",
         switcherooAware: "optional boolean — inject control API bootstrap prompt",
