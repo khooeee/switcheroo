@@ -153,8 +153,6 @@ export function TabRail({
           type="button"
           data-rail-id={MASTER_TAB_ID}
           className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
-          data-tooltip="Switchboard — all events"
-          data-tooltip-side="right"
           onClick={() => onSelect(MASTER_TAB_ID)}
         >
           <span className="rail-label">Switchboard</span>
