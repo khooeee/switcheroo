@@ -19,6 +19,8 @@ import { agentLabel } from "./acp/presets";
 import { loadState, saveState } from "./persist";
 import { stripCursorStreamNoise } from "../shared/cursorStreamNoise";
 import { forkTabAtEvent } from "./forkTabAtEvent";
+import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
+import { TabWaiters } from "./tabWaiters";
 
 export class TabManager {
   private tabs = new Map<string, SessionTab>();
@@ -30,6 +32,7 @@ export class TabManager {
   private permissionOwners = new Map<string, string>(); // requestId -> tabId
   private askOwners = new Map<string, string>();
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
+  private waiters = new TabWaiters();
 
   setWindow(win: BrowserWindow): void {
     this.window = win;
@@ -140,6 +143,9 @@ export class TabManager {
       await session.start();
       tab.sessionId = session.sessionId;
       this.emitTabs();
+      if (input.switcherooAware) {
+        await session.prompt(controlBootstrapText());
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.setStatus(id, "error", msg);
@@ -147,6 +153,21 @@ export class TabManager {
 
     void this.persist();
     return tab;
+  }
+
+  waitUntilSettled(
+    tabId: string,
+    timeoutMs: number,
+  ): Promise<{ tabId: string; status: string; error: string | null }> {
+    const tab = this.tabs.get(tabId);
+    if (!tab) throw new Error("No tab");
+    const pending = this.waiters.waitSettled(tabId, timeoutMs, {
+      status: tab.status,
+      error: tab.error,
+    });
+    const again = this.tabs.get(tabId);
+    if (again) this.waiters.notifySettled(tabId, again.status, again.error);
+    return pending;
   }
 
   async forkTab(tabId: string, eventId: string): Promise<SessionTab> {
@@ -376,6 +397,7 @@ export class TabManager {
     tab.error = error;
     this.send("tab-status", { tabId, status, error });
     this.emitTabs();
+    this.waiters.notifySettled(tabId, status, error);
   }
 
   private queuePersist(): void {
@@ -399,7 +421,9 @@ export class TabManager {
 
   private callbacksFor(tab: SessionTab): SessionCallbacks {
     return {
-      onPromptComplete: () => this.send("prompt:complete", { tabId: tab.id }),
+      onPromptComplete: () => {
+        this.send("prompt:complete", { tabId: tab.id });
+      },
       onTranscript: (item, replaceId) => this.handleTranscript(tab.id, item, replaceId),
       onStatus: (status, error) => this.setStatus(tab.id, status, error ?? null),
       onSteeringSupport: (supported) => {

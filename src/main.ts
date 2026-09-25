@@ -9,6 +9,7 @@ import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { openInCursor } from "./main/openInCursor";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
+import { ControlServer } from "./main/control/ControlServer";
 import type { ActiveTabId, CreateTabInput } from "./shared/types";
 
 if (started) {
@@ -18,6 +19,7 @@ if (started) {
 app.setName("Switcheroo");
 
 const tabs = new TabManager();
+const control = new ControlServer();
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = async () => {
@@ -219,6 +221,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     registerIpc();
     buildMenu();
     void createWindow();
+    void control.start(tabs);
   });
 
   app.on("window-all-closed", () => {
@@ -229,5 +232,8 @@ if (installSingleInstanceLock(() => mainWindow)) {
     if (BrowserWindow.getAllWindows().length === 0) void createWindow();
   });
 
-  installQuitHandler(() => tabs.disposeAll());
+  installQuitHandler(async () => {
+    await tabs.disposeAll();
+    await control.stop();
+  });
 }
