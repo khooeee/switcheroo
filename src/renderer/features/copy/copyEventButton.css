@@ -13,18 +13,18 @@
   border: 0;
   border-radius: 4px;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--copy-icon);
   cursor: pointer;
 }
 
 .event-copy:hover {
-  color: var(--text);
+  color: color-mix(in srgb, var(--copy-icon) 55%, var(--text));
   background: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 .event-copy.copied {
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--copy-done);
+  background: color-mix(in srgb, var(--copy-done) 14%, transparent);
 }
 
 .event-copy::after {

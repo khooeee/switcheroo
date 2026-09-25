@@ -28,6 +28,8 @@
   --backdrop: rgba(0, 0, 0, 0.55);
   --placeholder: #3a4450;
   --code-bg: #060809;
+  --copy-icon: #7d8b9a;
+  --copy-done: #3aafa0;
   --font-ui: "Sora", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -61,6 +63,8 @@ html[data-theme="light"] {
   --backdrop: rgba(23, 32, 38, 0.35);
   --placeholder: #c5d2d8;
   --code-bg: #f7fafb;
+  --copy-icon: #c9d5dc;
+  --copy-done: #a3d0c9;
 }
 
 * {
