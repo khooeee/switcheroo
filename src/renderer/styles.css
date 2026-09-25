@@ -16,9 +16,9 @@
   --rail: 160px;
   --rail-bg: rgba(10, 12, 14, 0.85);
   --header-bg: rgba(18, 22, 26, 0.7);
-  --card-bg: rgba(26, 32, 38, 0.65);
+  --card-bg: var(--bg-1);
   --user-bg: #243038;
-  --composer-bg: rgba(12, 14, 17, 0.9);
+  --composer-bg: var(--bg-1);
   --app-top: #0e1216;
   --glow-accent: rgba(61, 214, 198, 0.08);
   --glow-warm: rgba(240, 163, 94, 0.06);
@@ -51,9 +51,9 @@ html[data-theme="light"] {
   --codex: #2d6f96;
   --rail-bg: rgba(255, 255, 255, 0.92);
   --header-bg: rgba(255, 255, 255, 0.88);
-  --card-bg: #ffffff;
+  --card-bg: var(--bg-1);
   --user-bg: #e4ebf0;
-  --composer-bg: #ffffff;
+  --composer-bg: var(--bg-1);
   --app-top: #ffffff;
   --glow-accent: color-mix(in srgb, var(--accent) 10%, transparent);
   --glow-warm: rgba(184, 106, 34, 0.08);
