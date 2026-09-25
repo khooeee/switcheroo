@@ -24,8 +24,23 @@ test("nextForkTitle picks the lowest unused fork number", () => {
     nextForkTitle("Alpha", ["Alpha (fork #1)", "Alpha (fork #3)"]),
     "Alpha (fork #2)",
   );
+});
+
+test("nextForkTitle reuses an existing fork suffix and increments from there", () => {
   assert.equal(
     nextForkTitle("Alpha (fork #1)", ["Alpha (fork #1)"]),
-    "Alpha (fork #1) (fork #1)",
+    "Alpha (fork #2)",
+  );
+  assert.equal(
+    nextForkTitle("Alpha (fork #2)", ["Alpha (fork #1)", "Alpha (fork #2)"]),
+    "Alpha (fork #3)",
+  );
+  assert.equal(
+    nextForkTitle("Alpha (fork #2)", ["Alpha (fork #2)", "Alpha (fork #3)"]),
+    "Alpha (fork #4)",
+  );
+  assert.equal(
+    nextForkTitle("Alpha (fork #1)", ["Alpha (fork #1)", "Alpha (fork #2)", "Alpha (fork #4)"]),
+    "Alpha (fork #3)",
   );
 });
