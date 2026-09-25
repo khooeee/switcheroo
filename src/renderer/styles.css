@@ -665,6 +665,7 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   align-items: center;
   align-self: flex-start;
   gap: 8px;
+  padding-block: 6px;
 }
 
 .modal label.modal-check input[type="checkbox"] {
