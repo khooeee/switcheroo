@@ -47,7 +47,10 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    titleRef.current?.focus();
+    const input = titleRef.current;
+    if (!input) return;
+    input.focus();
+    input.select();
   }, []);
 
   const create = async () => {
