@@ -188,6 +188,13 @@ function buildMenu(): void {
             mainWindow?.webContents.send("rail:focus");
           },
         },
+        {
+          label: "Focus Notes",
+          accelerator: "CmdOrCtrl+Shift+N",
+          click: () => {
+            mainWindow?.webContents.send("notes:focus");
+          },
+        },
       ],
     },
     {

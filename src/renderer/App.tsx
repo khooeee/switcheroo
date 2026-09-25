@@ -16,6 +16,7 @@ import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
 import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
 import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
 import { useFocusRailShortcut } from "./features/tabs/useFocusRailShortcut";
+import { useFocusNotesShortcut } from "./features/notes/useFocusNotesShortcut";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { DeleteTabModal } from "./features/tabs/DeleteTabModal";
@@ -121,7 +122,7 @@ export function App() {
         e.preventDefault();
         setFindOpen(true);
       }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "n") {
         e.preventDefault();
         setShowNewTab(true);
       }
@@ -155,6 +156,7 @@ export function App() {
   useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
   useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab, focusPrompt);
   useFocusRailShortcut(activeTabId, !showNewTab && !deleteTab);
+  useFocusNotesShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

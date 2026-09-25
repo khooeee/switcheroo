@@ -46,3 +46,7 @@ npm start
 **Cmd/Ctrl+F**: Find
 
 **Cmd/Ctrl+I**: Focus on prompt
+
+**Cmd/Ctrl+N**: New agent session
+
+**Cmd/Ctrl+Shift+N**: Focus notes

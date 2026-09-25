@@ -88,3 +88,7 @@ ipcRenderer.on("prompt:focus", () => {
 ipcRenderer.on("rail:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-rail"));
 });
+
+ipcRenderer.on("notes:focus", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:focus-notes"));
+});
