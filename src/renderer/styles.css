@@ -661,9 +661,10 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
 }
 
 .modal label.modal-check {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
 }
 
 .modal label.modal-check input[type="checkbox"] {
