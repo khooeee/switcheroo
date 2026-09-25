@@ -63,7 +63,7 @@ test("partial streaming content can be rendered before and after fences close", 
   assert.match(complete, /<p>Done\.<\/p>/);
 });
 
-test("Switchboard renders message Markdown with a separate navigation button", () => {
+test("Switchboard opens navigable events from the whole card", () => {
   const events = [
     { id: "m", kind: "message", summary: "**Formatted** [link](https://example.com)", navigable: true },
     { id: "t", kind: "tool", summary: "literal *tool*", navigable: false },
@@ -75,10 +75,12 @@ test("Switchboard renders message Markdown with a separate navigation button", (
   assert.match(html, /literal \*tool\*/);
   assert.doesNotMatch(html, /<button[^>]*class="feed-item/);
   assert.match(html, /aria-label="Open Session at this event"/);
+  assert.match(html, /class="[^"]*\bnavigable\b/);
   const cards = tree.props.children;
-  cards[0].props.children[0].props.children[1].props.onClick();
+  cards[0].props.onClick({ target: { closest: () => null } });
   assert.deepEqual(clicks, ["m"]);
-  assert.equal(cards[1].props.children[0].props.children[1].props.disabled, true);
+  assert.equal(cards[1].props.onClick, undefined);
+  assert.equal(cards[1].props.role, undefined);
 });
 
 test("external links open in the browser and never create Electron windows", () => {

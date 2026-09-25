@@ -2,6 +2,7 @@ import type { MasterEvent, SessionTab } from "../../../shared/types";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { MasterFileEvent } from "./MasterFileEvent";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
+import { masterEventCardProps } from "./masterEventCardProps";
 
 interface Props {
   events: MasterEvent[];
@@ -35,13 +36,13 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
         return (
         <div
           key={event.id + event.at}
-          className={`feed-item${event.kind === "user" ? " user" : ""}${event.kind === "stopped" ? " stopped" : ""}${detail ? " detail" : ""}`}
+          className={`feed-item${event.kind === "user" ? " user" : ""}${event.kind === "stopped" ? " stopped" : ""}${detail ? " detail" : ""}${event.navigable ? " navigable" : ""}`}
           data-find-text={`${title} ${event.summary}`}
+          {...masterEventCardProps(event, title, onClick)}
         >
           <div className="row">
             <span className={`kind-pill ${event.kind}`}>{event.kind}</span>
-            <button type="button" className="event-link" disabled={!event.navigable}
-              onClick={() => onClick(event)} aria-label={`Open ${title} at this event`}>{title}</button>
+            <span className="event-title">{title}</span>
             <span className="event-timestamp" style={{ marginLeft: "auto" }}>
               {formatDetailTimestamp(event.at)}
             </span>

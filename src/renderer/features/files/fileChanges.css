@@ -72,30 +72,17 @@
   color: var(--text-dim);
 }
 
-.file-diff-more,
-.file-event-link {
+.file-diff-more {
   border: 0;
   background: transparent;
   color: var(--codex);
   cursor: pointer;
   font: inherit;
-}
-
-.file-diff-more {
   padding: 8px;
 }
 
-.file-event-link {
-  padding: 0;
-  text-align: left;
-}
-
-.file-event-link:hover {
-  text-decoration: underline;
-}
-
-.feed-item.has-file-changes {
-  cursor: default;
+.feed-item.has-file-changes.navigable {
+  cursor: pointer;
 }
 
 .file-open {
