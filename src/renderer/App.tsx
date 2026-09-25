@@ -168,9 +168,14 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [activeTab, showNewTab, findOpen]);
 
-  const createTab = useCallback((agentKind: AgentKind, cwd: string, title: string) => {
+  const createTab = useCallback((
+    agentKind: AgentKind,
+    cwd: string,
+    title: string,
+    switcherooAware: boolean,
+  ) => {
     setShowNewTab(false);
-    void window.switcheroo.createTab({ agentKind, cwd, title }).then((tab) => {
+    void window.switcheroo.createTab({ agentKind, cwd, title, switcherooAware }).then((tab) => {
       setTranscripts((prev) => ({ ...prev, [tab.id]: prev[tab.id] ?? [] }));
     });
     return Promise.resolve();

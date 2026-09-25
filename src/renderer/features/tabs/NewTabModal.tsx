@@ -4,10 +4,16 @@ import { randomSessionTitle } from "./sessionTitle";
 
 const LAST_AGENT_KEY = "switcheroo.lastAgent";
 const LAST_CWD_KEY = "switcheroo.lastCwd";
+const LAST_AWARE_KEY = "switcheroo.lastSwitcherooAware";
 
 interface Props {
   onCancel: () => void;
-  onCreate: (agentKind: AgentKind, cwd: string, title: string) => Promise<void>;
+  onCreate: (
+    agentKind: AgentKind,
+    cwd: string,
+    title: string,
+    switcherooAware: boolean,
+  ) => Promise<void>;
 }
 
 function readLastAgent(): AgentKind {
@@ -28,10 +34,19 @@ function readLastCwd(): string {
   }
 }
 
-function rememberSession(agentKind: AgentKind, cwd: string): void {
+function readLastAware(): boolean {
+  try {
+    return localStorage.getItem(LAST_AWARE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function rememberSession(agentKind: AgentKind, cwd: string, switcherooAware: boolean): void {
   try {
     localStorage.setItem(LAST_AGENT_KEY, agentKind);
     localStorage.setItem(LAST_CWD_KEY, cwd);
+    localStorage.setItem(LAST_AWARE_KEY, switcherooAware ? "1" : "0");
   } catch {
     // The session can still be created if the preference cannot be saved.
   }
@@ -41,6 +56,7 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
   const [agentKind, setAgentKind] = useState<AgentKind>(readLastAgent);
   const [cwd, setCwd] = useState(readLastCwd);
   const [title, setTitle] = useState(randomSessionTitle);
+  const [switcherooAware, setSwitcherooAware] = useState(readLastAware);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -58,9 +74,9 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
     if (!cwd || !sessionTitle || busy) return;
     setBusy(true);
     setError(null);
-    rememberSession(agentKind, cwd);
+    rememberSession(agentKind, cwd, switcherooAware);
     try {
-      await onCreate(agentKind, cwd, sessionTitle);
+      await onCreate(agentKind, cwd, sessionTitle, switcherooAware);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
@@ -164,6 +180,15 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
               Browse
             </button>
           </div>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={switcherooAware}
+            disabled={busy}
+            onChange={(e) => setSwitcherooAware(e.target.checked)}
+          />
+          Switcheroo aware
         </label>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
