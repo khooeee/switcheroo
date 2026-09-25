@@ -123,6 +123,7 @@ export interface PersistedState {
     closed?: boolean;
     notes?: string;
     notesWidth?: number;
+    slashCommands?: SlashCommand[];
   }>;
   transcripts: Record<string, TranscriptItem[]>;
   masterEvents: MasterEvent[];

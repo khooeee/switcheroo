@@ -36,6 +36,7 @@ export class TabManager {
 
   setWindow(win: BrowserWindow): void {
     this.window = win;
+    if (this.activeTabId !== MASTER_TAB_ID) this.refreshCommandsIfNeeded(this.activeTabId);
   }
 
   async init(): Promise<void> {
@@ -73,6 +74,7 @@ export class TabManager {
           closed: t.closed ?? false,
           notes: t.notes,
           notesWidth: t.notesWidth,
+          slashCommands: t.slashCommands,
         });
         this.transcripts.set(t.id, saved.transcripts[t.id] ?? []);
       }
@@ -100,6 +102,7 @@ export class TabManager {
         closed: t.closed,
         notes: t.notes,
         notesWidth: t.notesWidth,
+        slashCommands: t.slashCommands,
       })),
       transcripts: Object.fromEntries(this.transcripts),
       masterEvents: this.bus.list(),
@@ -175,17 +178,7 @@ export class TabManager {
       getTab: (id) => this.tabs.get(id),
       getTranscript: (id) => this.getTranscript(id),
       listTitles: () => [...this.tabs.values()].map((tab) => tab.title),
-      ensureSession: async (tab) => {
-        let session = this.sessions.get(tab.id);
-        if (session?.sessionId) return session;
-        session = this.openSession(tab);
-        this.sessions.set(tab.id, session);
-        if (tab.sessionId) await session.attachExisting(tab.sessionId);
-        else await session.start();
-        tab.sessionId = session.sessionId;
-        this.emitTabs();
-        return session;
-      },
+      ensureSession: async (tab) => this.ensureSession(tab),
       callbacksFor: (tab) => this.callbacksFor(tab),
       bus: () => this.bus,
       setSession: (id, session) => { this.sessions.set(id, session); },
@@ -289,6 +282,7 @@ export class TabManager {
     this.activeTabId = tabId;
     this.emitTabs();
     void this.persist();
+    if (tabId !== MASTER_TAB_ID) this.refreshCommandsIfNeeded(tabId);
   }
 
   navigateToEvent(tabId: string, eventId: string): void {
@@ -303,6 +297,7 @@ export class TabManager {
     this.emitTabs();
     this.send("navigate-event", { tabId, eventId });
     void this.persist();
+    this.refreshCommandsIfNeeded(tabId);
   }
 
   async sendPrompt(tabId: string, text: string): Promise<void> {
@@ -419,6 +414,27 @@ export class TabManager {
     return new AcpSession(tab.id, tab.agentKind, tab.cwd, this.bus, this.callbacksFor(tab));
   }
 
+  private refreshCommandsIfNeeded(tabId: string): void {
+    const tab = this.tabs.get(tabId);
+    if (!tab || tab.closed || !tab.sessionId) return;
+    if (tab.slashCommands && tab.slashCommands.length > 0) return;
+    void this.ensureSession(tab).catch((error) => {
+      console.error("[tabs] failed to refresh slash commands", error);
+    });
+  }
+
+  private async ensureSession(tab: SessionTab): Promise<AcpSession> {
+    let session = this.sessions.get(tab.id);
+    if (session?.sessionId) return session;
+    session = this.openSession(tab);
+    this.sessions.set(tab.id, session);
+    if (tab.sessionId) await session.attachExisting(tab.sessionId);
+    else await session.start();
+    tab.sessionId = session.sessionId;
+    this.emitTabs();
+    return session;
+  }
+
   private callbacksFor(tab: SessionTab): SessionCallbacks {
     return {
       onPromptComplete: () => {
@@ -433,6 +449,7 @@ export class TabManager {
       onAvailableCommands: (commands) => {
         tab.slashCommands = commands;
         this.emitTabs();
+        this.queuePersist();
       },
       onPermission: (req) => {
         this.permissionOwners.set(req.requestId, tab.id);
