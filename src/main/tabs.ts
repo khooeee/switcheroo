@@ -430,6 +430,10 @@ export class TabManager {
         tab.supportsSteering = supported;
         this.emitTabs();
       },
+      onAvailableCommands: (commands) => {
+        tab.slashCommands = commands;
+        this.emitTabs();
+      },
       onPermission: (req) => {
         this.permissionOwners.set(req.requestId, tab.id);
         this.send("permission", req);

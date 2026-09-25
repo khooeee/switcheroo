@@ -49,6 +49,14 @@ export interface SessionTab {
   closed: boolean;
   notes?: string;
   notesWidth?: number;
+  /** ACP slash commands advertised by the agent for this session. */
+  slashCommands?: SlashCommand[];
+}
+
+export interface SlashCommand {
+  name: string;
+  description: string;
+  hint?: string;
 }
 
 export type TranscriptRole = "user" | "assistant" | "thought" | "tool" | "system" | "stopped";

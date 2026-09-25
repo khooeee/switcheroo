@@ -10,6 +10,7 @@ import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { ComposerResize } from "./ComposerResize";
+import { ComposerPrompt } from "./ComposerPrompt";
 import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
@@ -192,9 +193,11 @@ export function ChatPanel({
 
       <div className="composer">
         <ComposerResize />
-        <textarea
-          ref={promptRef}
-          value={draft}
+        <ComposerPrompt
+          draft={draft}
+          promptRef={promptRef}
+          commands={tab.slashCommands ?? []}
+          onDraftChange={onDraftChange}
           placeholder={
             tab.status === "connecting"
               ? "Draft your message while the session is being created…"
@@ -202,7 +205,6 @@ export function ChatPanel({
                 ? `${tab.supportsSteering ? "Steer the agent" : "Queue a follow-up"}… (Enter to send, Shift+Enter for newline)`
               : "Message the agent… (Enter to send, Shift+Enter for newline)"
           }
-          onChange={(e) => onDraftChange(e.target.value)}
           onPaste={(e) => {
             void applyPromptImagePaste({
               event: e.nativeEvent,
@@ -215,9 +217,8 @@ export function ChatPanel({
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
               send();
-              return;
+              return true;
             }
             if (
               e.key.toLowerCase() === "c"
@@ -227,9 +228,8 @@ export function ChatPanel({
               && !e.shiftKey
               && tab.status === "running"
             ) {
-              e.preventDefault();
               onInterrupt();
-              return;
+              return true;
             }
             if (
               e.key.toLowerCase() === "d"
@@ -239,9 +239,10 @@ export function ChatPanel({
               && !e.shiftKey
               && draft === ""
             ) {
-              e.preventDefault();
               onClose();
+              return true;
             }
+            return false;
           }}
         />
         {sendError?.tabId === tab.id && <div role="alert">{sendError.message}</div>}

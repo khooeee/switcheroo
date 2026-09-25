@@ -262,6 +262,16 @@ export class AcpSession {
   }
 
   private handleSessionUpdate(update: acp.SessionUpdate): void {
+    if (update.sessionUpdate === "available_commands_update") {
+      this.cb.onAvailableCommands(
+        update.availableCommands.map((command) => ({
+          name: command.name,
+          description: command.description,
+          hint: command.input && "hint" in command.input ? command.input.hint : undefined,
+        })),
+      );
+      return;
+    }
     this.output.handleUpdate(update);
     const codex = update._meta?.codex;
     const status = codex && typeof codex === "object" && "threadStatus" in codex
