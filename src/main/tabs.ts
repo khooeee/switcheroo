@@ -418,17 +418,35 @@ export class TabManager {
     const tab = this.tabs.get(tabId);
     if (!tab || tab.closed || !tab.sessionId) return;
     if (tab.slashCommands && tab.slashCommands.length > 0) return;
-    void this.ensureSession(tab).catch((error) => {
+    void this.refreshCommands(tab).catch((error) => {
       console.error("[tabs] failed to refresh slash commands", error);
     });
   }
 
-  private async ensureSession(tab: SessionTab): Promise<AcpSession> {
+  private async refreshCommands(tab: SessionTab): Promise<void> {
+    try {
+      await Promise.race([
+        this.ensureSession(tab, { quiet: true }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error("Timed out refreshing slash commands")), 45_000);
+        }),
+      ]);
+    } catch (error) {
+      const session = this.sessions.get(tab.id);
+      if (session && !session.sessionId) {
+        this.sessions.delete(tab.id);
+        await session.dispose().catch(() => undefined);
+      }
+      throw error;
+    }
+  }
+
+  private async ensureSession(tab: SessionTab, options?: { quiet?: boolean }): Promise<AcpSession> {
     let session = this.sessions.get(tab.id);
     if (session?.sessionId) return session;
     session = this.openSession(tab);
     this.sessions.set(tab.id, session);
-    if (tab.sessionId) await session.attachExisting(tab.sessionId);
+    if (tab.sessionId) await session.attachExisting(tab.sessionId, options);
     else await session.start();
     tab.sessionId = session.sessionId;
     this.emitTabs();

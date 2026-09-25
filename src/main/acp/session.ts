@@ -91,10 +91,10 @@ export class AcpSession {
   }
 
   /** Reopen a persisted session via resume, then load. */
-  attachExisting(sessionId: string): Promise<void> {
+  attachExisting(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
     if (this.sessionId) return Promise.resolve();
     if (!this.starting) {
-      this.starting = this.attachSession(sessionId).finally(() => { this.starting = null; });
+      this.starting = this.attachSession(sessionId, options).finally(() => { this.starting = null; });
     }
     return this.starting;
   }
@@ -111,8 +111,8 @@ export class AcpSession {
     this.pushMaster("status", `${agentLabel(this.agentKind)} session ready`);
   }
 
-  private async attachSession(sessionId: string): Promise<void> {
-    await this.connectAgent();
+  private async attachSession(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
+    await this.connectAgent(options);
     if (!this.connection) throw new Error("Session closed");
     const params = { sessionId, cwd: this.cwd, mcpServers: [] as [] };
     // Prefer load: older agents (incl. Cursor) advertise loadSession, not session/resume.
@@ -177,8 +177,8 @@ export class AcpSession {
     this.sessionId = null;
   }
 
-  private async connectAgent(): Promise<void> {
-    this.cb.onStatus("connecting");
+  private async connectAgent(options?: { quiet?: boolean }): Promise<void> {
+    if (!options?.quiet) this.cb.onStatus("connecting");
     const preset = AGENT_PRESETS[this.agentKind];
 
     this.proc = spawn(preset.command, preset.args, {
