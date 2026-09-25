@@ -272,6 +272,16 @@ export class AcpSession {
       );
       return;
     }
+    if (update.sessionUpdate === "usage_update") {
+      this.cb.onUsage({
+        used: update.used,
+        size: update.size,
+        cost: update.cost
+          ? { amount: update.cost.amount, currency: update.cost.currency }
+          : undefined,
+      });
+      return;
+    }
     this.output.handleUpdate(update);
     const codex = update._meta?.codex;
     const status = codex && typeof codex === "object" && "threadStatus" in codex

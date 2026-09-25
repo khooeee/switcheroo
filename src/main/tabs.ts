@@ -451,6 +451,10 @@ export class TabManager {
         tab.supportsSteering = supported;
         this.emitTabs();
       },
+      onUsage: (usage) => {
+        tab.usage = usage;
+        this.emitTabs();
+      },
       onAvailableCommands: (commands) => {
         tab.slashCommands = commands;
         this.emitTabs();

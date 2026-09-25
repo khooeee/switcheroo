@@ -35,6 +35,12 @@ export interface MasterEvent {
   navigable: boolean;
 }
 
+export interface SessionUsage {
+  used: number;
+  size: number;
+  cost?: { amount: number; currency: string };
+}
+
 export interface SessionTab {
   id: string;
   title: string;
@@ -51,6 +57,8 @@ export interface SessionTab {
   notesWidth?: number;
   /** ACP slash commands advertised by the agent for this session. */
   slashCommands?: SlashCommand[];
+  /** Live context window usage from ACP usage_update; not persisted. */
+  usage?: SessionUsage;
 }
 
 export interface SlashCommand {

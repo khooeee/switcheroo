@@ -575,6 +575,15 @@ html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
   align-items: center;
 }
 
+.composer-usage {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
 .btn {
   border: 1px solid var(--border);
   background: var(--bg-2);

@@ -16,6 +16,7 @@ import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
+import { formatSessionUsage } from "./formatSessionUsage";
 
 interface Props {
   tab: SessionTab;
@@ -65,6 +66,7 @@ export function ChatPanel({
   const sendLabel = showStop ? "Stop agent (Escape / Ctrl+C)" : tab.status === "running"
     ? (tab.supportsSteering ? "Steer agent" : "Queue message")
     : "Send message";
+  const usageLabel = tab.usage ? formatSessionUsage(tab.usage) : null;
 
   const send = () => {
     if (!draft.trim() || tab.status === "connecting") return;
@@ -250,7 +252,13 @@ export function ChatPanel({
         />
         {sendError?.tabId === tab.id && <div role="alert">{sendError.message}</div>}
         <div className="composer-actions">
-          <div style={{ flex: 1 }} />
+          {usageLabel ? (
+            <div className="composer-usage" title={usageLabel.detail}>
+              {usageLabel.percent}
+            </div>
+          ) : (
+            <div style={{ flex: 1 }} />
+          )}
           <button
             type="button"
             className="btn primary composer-send"
