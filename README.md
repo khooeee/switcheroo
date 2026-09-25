@@ -13,8 +13,8 @@ Run Claude Code, Codex, Cursor, or Pi side-by-side and monitor all agents throug
 
 - Node.js 20+
 - At least one ACP agent installed and authenticated:
-  - **Claude Code**: Claude login or `ANTHROPIC_API_KEY` (launched via `@agentclientprotocol/claude-agent-acp`)
-  - **Codex**: `codex login` or `OPENAI_API_KEY` (via `@zed-industries/codex-acp`)
+  - **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
+  - **Codex**: `codex login` or `OPENAI_API_KEY`
   - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
   - **Pi**: `pi` on `PATH` via `@earendil-works/pi-coding-agent`, launched through `pi-acp`
 

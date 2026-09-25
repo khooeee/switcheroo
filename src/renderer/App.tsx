@@ -40,7 +40,10 @@ export function App() {
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
-  const [promptFocus, setPromptFocus] = useState(0);
+  const [promptFocus, setPromptFocus] = useState<{ token: number; tabId: string | null }>({
+    token: 0,
+    tabId: null,
+  });
   const sessionNotes = useSessionNotes();
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
@@ -141,11 +144,14 @@ export function App() {
   const selectTab = useCallback((id: ActiveTabId, options?: { focusPrompt?: boolean }) => {
     void window.switcheroo.setActiveTab(id);
     setFocusEventId(null);
-    if (options?.focusPrompt === false) return;
-    if (id !== MASTER_TAB_ID) setPromptFocus((n) => n + 1);
+    if (options?.focusPrompt === false || id === MASTER_TAB_ID) return;
+    setPromptFocus((previous) => ({ token: previous.token + 1, tabId: id }));
   }, []);
 
-  const focusPrompt = useCallback(() => setPromptFocus((n) => n + 1), []);
+  const focusPrompt = useCallback(() => {
+    if (activeTabId === MASTER_TAB_ID) return;
+    setPromptFocus((previous) => ({ token: previous.token + 1, tabId: activeTabId }));
+  }, [activeTabId]);
   useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
   useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab, focusPrompt);
   useFocusRailShortcut(activeTabId, !showNewTab && !deleteTab);

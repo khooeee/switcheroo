@@ -154,7 +154,7 @@ export function TabRail({
           data-rail-id={MASTER_TAB_ID}
           className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
           title="Switchboard — all events"
-          onClick={() => onSelect(MASTER_TAB_ID)}
+          onClick={(event) => onSelect(MASTER_TAB_ID, event.detail === 0 ? { focusPrompt: false } : undefined)}
         >
           <span className="rail-label">Switchboard</span>
         </button>
@@ -183,12 +183,12 @@ export function TabRail({
               className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
               title={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
               onPointerDown={(e) => startDrag(e, tab.id)}
-              onClick={() => {
+              onClick={(event) => {
                 if (skipClick.current === tab.id) {
                   skipClick.current = null;
                   return;
                 }
-                onSelect(tab.id);
+                onSelect(tab.id, event.detail === 0 ? { focusPrompt: false } : undefined);
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
