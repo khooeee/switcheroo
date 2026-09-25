@@ -1,5 +1,6 @@
 import type { MasterEvent, SessionTab } from "../../../shared/types";
 import { MarkdownBody } from "../markdown/MarkdownBody";
+import { CopyEventButton } from "../copy/CopyEventButton";
 import { MasterFileEvent } from "./MasterFileEvent";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { masterEventCardProps } from "./masterEventCardProps";
@@ -50,6 +51,7 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
           {event.kind === "message" || event.kind === "user"
             ? <MarkdownBody text={event.summary} />
             : <div className="body">{event.summary}</div>}
+          <CopyEventButton text={event.summary} />
         </div>
         );
       })}

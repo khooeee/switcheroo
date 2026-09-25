@@ -13,6 +13,7 @@ import { ComposerResize } from "./ComposerResize";
 import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
+import { CopyEventButton } from "../copy/CopyEventButton";
 
 interface Props {
   tab: SessionTab;
@@ -136,6 +137,7 @@ export function ChatPanel({
                 ) : item.role === "assistant" || item.role === "user" || item.role === "thought"
                   ? <MarkdownBody text={text} />
                   : <div className="body">{text}</div>}
+                {text ? <CopyEventButton text={text} /> : null}
               </div>
             );
           })}

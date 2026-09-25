@@ -1,6 +1,7 @@
 import type { MasterEvent } from "../../../shared/types";
 import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
+import { CopyEventButton } from "../copy/CopyEventButton";
 import { masterEventCardProps } from "./masterEventCardProps";
 
 export function MasterFileEvent({ event, title, cwd, onClick }: {
@@ -21,6 +22,7 @@ export function MasterFileEvent({ event, title, cwd, onClick }: {
         <span className="event-timestamp" style={{ marginLeft: "auto" }}>{formatDetailTimestamp(event.at)}</span>
       </div>
       <FileChanges changes={event.fileChanges ?? []} status={event.toolStatus} cwd={cwd} tabId={event.tabId} />
+      <CopyEventButton text={event.summary} />
     </div>
   );
 }

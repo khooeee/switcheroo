@@ -75,6 +75,7 @@ test("Switchboard opens navigable events from the whole card", () => {
   assert.match(html, /literal \*tool\*/);
   assert.doesNotMatch(html, /<button[^>]*class="feed-item/);
   assert.match(html, /aria-label="Open Session at this event"/);
+  assert.match(html, /aria-label="Copy"/);
   assert.match(html, /class="[^"]*\bnavigable\b/);
   const cards = tree.props.children;
   cards[0].props.onClick({ target: { closest: () => null } });
