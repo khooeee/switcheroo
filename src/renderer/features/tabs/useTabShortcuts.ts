@@ -13,20 +13,13 @@ export function useTabShortcuts(
       if (disabled || event.defaultPrevented || event.isComposing) return;
       const sessions = tabs.filter((tab) => !tab.closed).map((tab) => tab.id);
       const order: ActiveTabId[] = [MASTER_TAB_ID, ...sessions];
+      const mod = event.metaKey || event.ctrlKey;
 
-      if (
-        (event.metaKey || event.ctrlKey)
-        && !event.altKey
-        && !event.shiftKey
-        && /^[0-9]$/.test(event.key)
-      ) {
-        // Avoid treating Ctrl+Tab digit-less combos; require exactly one of meta/ctrl alone.
-        if (event.metaKey && event.ctrlKey) return;
+      if (mod && !event.altKey && !event.shiftKey && /^[0-9]$/.test(event.key)) {
         const target = event.key === "0" ? MASTER_TAB_ID : sessions[Number(event.key) - 1];
-        if (target !== undefined) {
-          event.preventDefault();
-          selectTab(target);
-        }
+        if (target === undefined) return;
+        event.preventDefault();
+        selectTab(target);
         return;
       }
 
@@ -34,8 +27,7 @@ export function useTabShortcuts(
       event.preventDefault();
       const index = Math.max(0, order.indexOf(activeTabId));
       const step = event.shiftKey ? -1 : 1;
-      const next = (index + step + order.length) % order.length;
-      selectTab(order[next]);
+      selectTab(order[(index + step + order.length) % order.length]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

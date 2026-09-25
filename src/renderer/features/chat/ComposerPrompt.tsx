@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent, type RefObject } from "react";
 import type { SlashCommand } from "../../../shared/types";
-import { applySlashCommand } from "./applySlashCommand";
 import { filterSlashCommands } from "./filterSlashCommands";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { slashQuery } from "./slashQuery";
@@ -39,7 +38,8 @@ export function ComposerPrompt({
   }, [query]);
 
   const pick = (command: SlashCommand) => {
-    const next = applySlashCommand(command);
+    const name = command.name.startsWith("/") ? command.name : `/${command.name}`;
+    const next = `${name} `;
     onDraftChange(next);
     requestAnimationFrame(() => {
       const el = promptRef.current;

@@ -23,7 +23,7 @@ interface Props {
   onDraftChange: (text: string) => void;
   items: TranscriptItem[];
   focusEventId: string | null;
-  promptFocus: { token: number; tabId: string | null };
+  promptFocus: number;
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
@@ -76,10 +76,12 @@ export function ChatPanel({
     });
   };
 
+  const promptFocusSeen = useRef(promptFocus);
   useEffect(() => {
-    if (promptFocus.tabId !== tab.id) return;
+    if (promptFocusSeen.current === promptFocus) return;
+    promptFocusSeen.current = promptFocus;
     promptRef.current?.focus();
-  }, [promptFocus, tab.id]);
+  }, [promptFocus]);
 
   useEffect(() => {
     const previous = previousSession.current;

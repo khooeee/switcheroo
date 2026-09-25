@@ -1,10 +1,10 @@
-import type { PermissionRequest, TranscriptItem } from "../../shared/types";
+import type { PermissionRequest, SlashCommand, TranscriptItem } from "../../shared/types";
 
 export interface SessionCallbacks {
   onQuestionSettled?: (requestId: string) => void;
   onPromptComplete: () => void;
   onSteeringSupport: (supported: boolean) => void;
-  onAvailableCommands: (commands: Array<{ name: string; description: string; hint?: string }>) => void;
+  onAvailableCommands: (commands: SlashCommand[]) => void;
   onTranscript: (item: TranscriptItem, replaceId?: string) => void;
   onStatus: (status: "connecting" | "ready" | "running" | "error" | "idle", error?: string | null) => void;
   onPermission: (req: PermissionRequest) => void;

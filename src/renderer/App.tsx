@@ -14,9 +14,7 @@ import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
 import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
-import { useFocusPromptShortcut } from "./features/chat/useFocusPromptShortcut";
-import { useFocusRailShortcut } from "./features/tabs/useFocusRailShortcut";
-import { useFocusNotesShortcut } from "./features/notes/useFocusNotesShortcut";
+import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusShortcuts";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
 import { DeleteTabModal } from "./features/tabs/DeleteTabModal";
@@ -41,10 +39,6 @@ export function App() {
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
-  const [promptFocus, setPromptFocus] = useState<{ token: number; tabId: string | null }>({
-    token: 0,
-    tabId: null,
-  });
   const sessionNotes = useSessionNotes();
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
@@ -147,14 +141,8 @@ export function App() {
     setFocusEventId(null);
   }, []);
 
-  const focusPrompt = useCallback(() => {
-    if (activeTabId === MASTER_TAB_ID) return;
-    setPromptFocus((previous) => ({ token: previous.token + 1, tabId: activeTabId }));
-  }, [activeTabId]);
+  const promptFocus = useSessionFocusShortcuts(activeTabId, showNewTab || !!deleteTab);
   useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
-  useFocusPromptShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab, focusPrompt);
-  useFocusRailShortcut(activeTabId, !showNewTab && !deleteTab);
-  useFocusNotesShortcut(activeTabId !== MASTER_TAB_ID && !showNewTab && !deleteTab);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

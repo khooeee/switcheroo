@@ -303,22 +303,7 @@ export class TabManager {
   async sendPrompt(tabId: string, text: string): Promise<void> {
     const tab = this.tabs.get(tabId);
     if (!tab) throw new Error("No tab");
-
-    let session = this.sessions.get(tabId);
-    if (!session) {
-      session = this.openSession(tab);
-      this.sessions.set(tabId, session);
-      if (tab.sessionId) await session.attachExisting(tab.sessionId);
-      else await session.start();
-      tab.sessionId = session.sessionId;
-      this.emitTabs();
-    } else if (!session.sessionId) {
-      if (tab.sessionId) await session.attachExisting(tab.sessionId);
-      else await session.start();
-      tab.sessionId = session.sessionId;
-      this.emitTabs();
-    }
-
+    const session = await this.ensureSession(tab);
     try {
       await session.prompt(text);
     } finally {
@@ -443,9 +428,11 @@ export class TabManager {
 
   private async ensureSession(tab: SessionTab, options?: { quiet?: boolean }): Promise<AcpSession> {
     let session = this.sessions.get(tab.id);
-    if (session?.sessionId) return session;
-    session = this.openSession(tab);
-    this.sessions.set(tab.id, session);
+    if (!session) {
+      session = this.openSession(tab);
+      this.sessions.set(tab.id, session);
+    }
+    if (session.sessionId) return session;
     if (tab.sessionId) await session.attachExisting(tab.sessionId, options);
     else await session.start();
     tab.sessionId = session.sessionId;
