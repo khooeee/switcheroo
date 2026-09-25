@@ -69,6 +69,22 @@ html[data-theme="light"] {
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-0) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--bg-0);
+  border-radius: 2px;
 }
 
 html,
