@@ -42,6 +42,12 @@ test("renders rich Markdown and scroll containers for code and GFM tables", () =
   }
 });
 
+test("loose lists still render as one list with paragraph-wrapped items", () => {
+  const html = render("- one\n\n- two\n\n- three");
+  assert.match(html, /<ul>\s*<li>\s*<p>one<\/p>\s*<\/li>\s*<li>\s*<p>two<\/p>/);
+  assert.equal((html.match(/<ul>/g) || []).length, 1);
+});
+
 test("raw HTML and unsafe links cannot create active content", () => {
   const html = render('<script>alert(1)</script>\n\n[bad](javascript:alert) [local](file:///tmp/a) [relative](./a) [good](https://example.com)\n\n![picture](https://example.com/a.png)');
   assert.doesNotMatch(html, /<script|<img|href="(?:javascript|file|\.\/)/);
