@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import type { AgentKind } from "../../../shared/types";
+import { isAgentKind, type AgentKind } from "../../../shared/types";
 import { randomSessionTitle } from "./sessionTitle";
 
 const LAST_AGENT_KEY = "switcheroo.lastAgent";
@@ -19,7 +19,7 @@ interface Props {
 function readLastAgent(): AgentKind {
   try {
     const value = localStorage.getItem(LAST_AGENT_KEY);
-    if (value === "claude" || value === "codex" || value === "cursor") return value;
+    if (isAgentKind(value)) return value;
   } catch {
     // Storage can be unavailable; fall back to the default agent.
   }
@@ -155,6 +155,7 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
             <option value="claude">Claude Code</option>
             <option value="codex">Codex</option>
             <option value="cursor">Cursor</option>
+            <option value="pi">Pi</option>
           </select>
         </label>
         <label>

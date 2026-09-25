@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AgentKind, CreateTabInput } from "../../shared/types";
+import { isAgentKind, type CreateTabInput } from "../../shared/types";
 import type { TabManager } from "../tabs";
 import { bearerAuthorized } from "./controlAuth";
 import { controlCatalogJson, controlOpenApi } from "./controlCatalog";
@@ -85,14 +85,14 @@ export async function handleControlRequest(
 
 function parseCreateTab(body: Record<string, unknown>): CreateTabInput {
   const agentKind = body.agentKind;
-  if (agentKind !== "claude" && agentKind !== "codex" && agentKind !== "cursor") {
-    throw new Error("agentKind must be claude, codex, or cursor");
+  if (!isAgentKind(agentKind)) {
+    throw new Error("agentKind must be claude, codex, cursor, or pi");
   }
   const cwd = body.cwd;
   if (typeof cwd !== "string" || !cwd.trim()) throw new Error("cwd is required");
   const title = typeof body.title === "string" ? body.title : undefined;
   const switcherooAware = body.switcherooAware === true;
-  return { agentKind: agentKind as AgentKind, cwd, title, switcherooAware };
+  return { agentKind, cwd, title, switcherooAware };
 }
 
 function json(res: ServerResponse, status: number, payload: unknown): void {

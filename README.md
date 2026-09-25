@@ -2,7 +2,7 @@
 
 Multi-tab agent development client
 
-Run Claude Code, Codex, or Cursor side-by-side and monitor all agents through an event feed (aka its the switchboard).
+Run Claude Code, Codex, Cursor, or Pi side-by-side and monitor all agents through an event feed (aka its the switchboard).
 
 ## Features
 
@@ -16,6 +16,7 @@ Run Claude Code, Codex, or Cursor side-by-side and monitor all agents through an
   - **Claude Code**: Claude login or `ANTHROPIC_API_KEY` (launched via `@agentclientprotocol/claude-agent-acp`)
   - **Codex**: `codex login` or `OPENAI_API_KEY` (via `@zed-industries/codex-acp`)
   - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
+  - **Pi**: `pi` on `PATH` via `@earendil-works/pi-coding-agent`, launched through `pi-acp`
 
 ## Develop
 
