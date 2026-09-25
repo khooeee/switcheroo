@@ -11,13 +11,18 @@ export function useTabShortcuts(
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      const order: ActiveTabId[] = [
-        MASTER_TAB_ID,
-        ...tabs.filter((tab) => !tab.closed).map((tab) => tab.id),
-      ];
+      const sessions = tabs.filter((tab) => !tab.closed).map((tab) => tab.id);
+      const order: ActiveTabId[] = [MASTER_TAB_ID, ...sessions];
 
-      if (event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey && /^[1-9]$/.test(event.key)) {
-        const target = order[Number(event.key) - 1];
+      if (
+        (event.metaKey || event.ctrlKey)
+        && !event.altKey
+        && !event.shiftKey
+        && /^[0-9]$/.test(event.key)
+      ) {
+        // Avoid treating Ctrl+Tab digit-less combos; require exactly one of meta/ctrl alone.
+        if (event.metaKey && event.ctrlKey) return;
+        const target = event.key === "0" ? MASTER_TAB_ID : sessions[Number(event.key) - 1];
         if (target !== undefined) {
           event.preventDefault();
           selectTab(target);

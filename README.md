@@ -6,7 +6,7 @@ Run Claude Code, Codex, Cursor, or Pi side-by-side and monitor all agents throug
 
 ## Features
 
-- Switchboard
+- Switchboard (everything feed)
 - Tab notes
 
 ## Prerequisites
@@ -40,6 +40,10 @@ npm start
 **Ctrl+C**: Stop agent (prompt, while running)
 
 **Ctrl+D**: Close session (empty prompt)
+
+**Cmd/Ctrl+0**: Switchboard
+
+**Cmd/Ctrl+1–9**: Select session tab 1–9
 
 **Cmd/Ctrl+Shift+E**: Focus session tabs (↑/↓ move, Space/Enter select)
 
