@@ -37,27 +37,3 @@
   color: var(--copy-done);
   background: color-mix(in srgb, var(--copy-done) 14%, transparent);
 }
-
-.event-action::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 6px);
-  padding: 4px 7px;
-  border-radius: 4px;
-  background: var(--bg-3);
-  color: var(--text);
-  font-size: 11px;
-  line-height: 1.2;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(2px);
-  box-shadow: 0 2px 8px var(--shadow);
-}
-
-.event-action:hover::after,
-.event-action:focus-visible::after {
-  opacity: 1;
-  transform: none;
-}

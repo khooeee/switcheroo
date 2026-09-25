@@ -153,12 +153,12 @@ export function TabRail({
           type="button"
           data-rail-id={MASTER_TAB_ID}
           className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
-          title="Switchboard — all events"
+          data-tooltip="Switchboard — all events"
           onClick={() => onSelect(MASTER_TAB_ID)}
         >
           <span className="rail-label">Switchboard</span>
         </button>
-        <button type="button" className="rail-add" title="New session" onClick={onAdd}>
+        <button type="button" className="rail-add" data-tooltip="New session" onClick={onAdd}>
           +
         </button>
       </div>
@@ -181,7 +181,7 @@ export function TabRail({
               data-tab-id={tab.id}
               data-rail-id={tab.id}
               className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
-              title={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
+              data-tooltip={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
               onPointerDown={(e) => startDrag(e, tab.id)}
               onClick={(event) => {
                 if (skipClick.current === tab.id) {

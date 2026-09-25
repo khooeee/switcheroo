@@ -253,7 +253,7 @@ export function ChatPanel({
         {sendError?.tabId === tab.id && <div role="alert">{sendError.message}</div>}
         <div className="composer-actions">
           {usageLabel ? (
-            <div className="composer-usage" title={usageLabel.detail}>
+            <div className="composer-usage" data-tooltip={usageLabel.detail}>
               {usageLabel.percent}
             </div>
           ) : (
@@ -263,7 +263,8 @@ export function ChatPanel({
             type="button"
             className="btn primary composer-send"
             aria-label={sendLabel}
-            title={sendLabel}
+            data-tooltip={sendLabel}
+            data-tooltip-align="end"
             disabled={(!showStop && !draft.trim()) || tab.status === "connecting"}
             onClick={showStop ? onInterrupt : send}
           >

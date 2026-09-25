@@ -29,10 +29,10 @@ function FileEntry({ change, status, cwd, tabId }: { change: FileChange; status?
     <div className="file-entry">
       {hasContent ? (
         <details className="file-change" onToggle={(event) => setOpen(event.currentTarget.open)}>
-          <summary title={change.path}>{label}</summary>
+          <summary data-tooltip={change.path}>{label}</summary>
           {open && <FileDiff change={change} />}
         </details>
-      ) : <div className="file-change-label" title={change.path}>
+      ) : <div className="file-change-label" data-tooltip={change.path}>
         {label}<span className="file-diff-note"> · Diff not provided</span>
       </div>}
       {tabId && <OpenInCursor tabId={tabId} filePath={change.path} />}

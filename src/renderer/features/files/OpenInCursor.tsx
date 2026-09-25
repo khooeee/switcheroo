@@ -8,7 +8,7 @@ export function OpenInCursor({ tabId, filePath }: { tabId: string; filePath: str
       <button
         type="button"
         className="file-open-button"
-        title={`Open ${filePath} in Cursor`}
+        data-tooltip={`Open ${filePath} in Cursor`}
         disabled={opening}
         onClick={() => {
           setOpening(true);

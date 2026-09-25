@@ -17,6 +17,7 @@ export function CopyEventButton({ text }: { text: string }) {
       className={`event-action${copied ? " copied" : ""}`}
       aria-label={label}
       data-tooltip={label}
+      data-tooltip-align="end"
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();

@@ -61,9 +61,9 @@ export function FindBar({ query, onQuery, rootRef, onClose }: Props) {
       <span className="find-count" role="status" aria-live="polite">
         {query ? count ? `${index + 1} of ${count}` : "0 results" : ""}
       </span>
-      <button type="button" className="btn" aria-label="Previous match" title="Previous match (Shift+Enter)" disabled={!count} onClick={() => go(-1)}>↑</button>
-      <button type="button" className="btn" aria-label="Next match" title="Next match (Enter)" disabled={!count} onClick={() => go(1)}>↓</button>
-      <button type="button" className="btn" aria-label="Close find" title="Close (Escape)" onClick={onClose}>✕</button>
+      <button type="button" className="btn" aria-label="Previous match" data-tooltip="Previous match (Shift+Enter)" disabled={!count} onClick={() => go(-1)}>↑</button>
+      <button type="button" className="btn" aria-label="Next match" data-tooltip="Next match (Enter)" disabled={!count} onClick={() => go(1)}>↓</button>
+      <button type="button" className="btn" aria-label="Close find" data-tooltip="Close (Escape)" onClick={onClose}>✕</button>
     </div>
   );
 }
