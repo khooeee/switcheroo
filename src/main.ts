@@ -5,6 +5,7 @@ import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
 import { TabManager } from "./main/tabs";
 import { installQuitHandler } from "./main/installQuitHandler";
+import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { openInCursor } from "./main/openInCursor";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
@@ -212,19 +213,21 @@ function buildMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-app.on("ready", () => {
-  applyAppIcon();
-  registerIpc();
-  buildMenu();
-  void createWindow();
-});
+if (installSingleInstanceLock(() => mainWindow)) {
+  app.on("ready", () => {
+    applyAppIcon();
+    registerIpc();
+    buildMenu();
+    void createWindow();
+  });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit();
+  });
 
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) void createWindow();
-});
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) void createWindow();
+  });
 
-installQuitHandler(() => tabs.disposeAll());
+  installQuitHandler(() => tabs.disposeAll());
+}
