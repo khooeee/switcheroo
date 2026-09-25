@@ -27,7 +27,7 @@
   --shadow: rgba(0, 0, 0, 0.35);
   --backdrop: rgba(0, 0, 0, 0.55);
   --placeholder: #3a4450;
-  --code-bg: #060809;
+  --code-bg: #181e24;
   --copy-icon: #7d8b9a;
   --copy-done: #3aafa0;
   --font-ui: "Sora", system-ui, sans-serif;
@@ -62,7 +62,7 @@ html[data-theme="light"] {
   --shadow: rgba(23, 32, 38, 0.14);
   --backdrop: rgba(23, 32, 38, 0.35);
   --placeholder: #c5d2d8;
-  --code-bg: #f7fafb;
+  --code-bg: #e8eef2;
   --copy-icon: #c9d5dc;
   --copy-done: #a3d0c9;
 }
