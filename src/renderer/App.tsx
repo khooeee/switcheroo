@@ -142,11 +142,9 @@ export function App() {
     [tabs, activeTabId],
   );
 
-  const selectTab = useCallback((id: ActiveTabId, options?: { focusPrompt?: boolean }) => {
+  const selectTab = useCallback((id: ActiveTabId) => {
     void window.switcheroo.setActiveTab(id);
     setFocusEventId(null);
-    if (options?.focusPrompt === false || id === MASTER_TAB_ID) return;
-    setPromptFocus((previous) => ({ token: previous.token + 1, tabId: id }));
   }, []);
 
   const focusPrompt = useCallback(() => {

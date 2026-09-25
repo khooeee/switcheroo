@@ -12,7 +12,7 @@ import "./tabDropIndicator.css";
 interface Props {
   tabs: SessionTab[];
   activeTabId: ActiveTabId;
-  onSelect: (id: ActiveTabId, options?: { focusPrompt?: boolean }) => void;
+  onSelect: (id: ActiveTabId) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
   onDelete: (id: string) => void;
@@ -154,7 +154,7 @@ export function TabRail({
           data-rail-id={MASTER_TAB_ID}
           className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
           title="Switchboard — all events"
-          onClick={(event) => onSelect(MASTER_TAB_ID, event.detail === 0 ? { focusPrompt: false } : undefined)}
+          onClick={() => onSelect(MASTER_TAB_ID)}
         >
           <span className="rail-label">Switchboard</span>
         </button>
@@ -188,7 +188,7 @@ export function TabRail({
                   skipClick.current = null;
                   return;
                 }
-                onSelect(tab.id, event.detail === 0 ? { focusPrompt: false } : undefined);
+                onSelect(tab.id);
               }}
               onContextMenu={(e) => {
                 e.preventDefault();

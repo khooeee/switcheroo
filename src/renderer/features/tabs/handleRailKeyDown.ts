@@ -5,7 +5,7 @@ import type { ActiveTabId } from "../../../shared/types";
 export function handleRailKeyDown(
   event: ReactKeyboardEvent,
   rail: HTMLElement,
-  onSelect: (id: ActiveTabId, options?: { focusPrompt?: boolean }) => void,
+  onSelect: (id: ActiveTabId) => void,
 ): void {
   const target = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-rail-id]");
   if (!target || !rail.contains(target)) return;
@@ -25,6 +25,6 @@ export function handleRailKeyDown(
 
   if (event.key === " " || event.key === "Enter") {
     event.preventDefault();
-    onSelect(target.dataset.railId as ActiveTabId, { focusPrompt: false });
+    onSelect(target.dataset.railId as ActiveTabId);
   }
 }
