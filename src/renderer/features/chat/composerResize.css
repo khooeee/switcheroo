@@ -1,8 +1,8 @@
 .composer-resize {
   position: absolute;
   top: -3px;
-  left: 0;
-  right: 0;
+  left: 24px;
+  right: 24px;
   height: 6px;
   z-index: 1;
   cursor: row-resize;
