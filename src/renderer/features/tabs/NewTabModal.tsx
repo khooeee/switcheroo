@@ -158,13 +158,13 @@ export function NewTabModal({ onCancel, onCreate }: Props) {
           </select>
         </label>
         <label className="modal-check">
+          Switcheroo aware
           <input
             type="checkbox"
             checked={switcherooAware}
             disabled={busy}
             onChange={(e) => setSwitcherooAware(e.target.checked)}
           />
-          Switcheroo aware
         </label>
         <label>
           Workspace folder
