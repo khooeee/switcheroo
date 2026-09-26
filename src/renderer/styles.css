@@ -30,6 +30,7 @@
   --code-bg: var(--bg-0);
   --copy-icon: #7d8b9a;
   --copy-done: #3aafa0;
+  --scrollbar: #3a4450;
   --font-ui: "Sora", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -65,12 +66,13 @@ html[data-theme="light"] {
   --code-bg: var(--bg-0);
   --copy-icon: #c9d5dc;
   --copy-done: #a3d0c9;
+  --scrollbar: #8a9aa6;
 }
 
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: var(--bg-0) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -83,7 +85,7 @@ html[data-theme="light"] {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: var(--bg-0);
+  background: var(--scrollbar);
   border-radius: 2px;
 }
 
