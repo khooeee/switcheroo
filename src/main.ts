@@ -174,27 +174,6 @@ function buildMenu(): void {
             mainWindow?.webContents.send("find:open");
           },
         },
-        {
-          label: "Focus Prompt",
-          accelerator: "CmdOrCtrl+I",
-          click: () => {
-            mainWindow?.webContents.send("prompt:focus");
-          },
-        },
-        {
-          label: "Focus Session Tabs",
-          accelerator: "CmdOrCtrl+Shift+E",
-          click: () => {
-            mainWindow?.webContents.send("rail:focus");
-          },
-        },
-        {
-          label: "Focus Notes",
-          accelerator: "CmdOrCtrl+Shift+N",
-          click: () => {
-            mainWindow?.webContents.send("notes:focus");
-          },
-        },
       ],
     },
     {
@@ -208,6 +187,32 @@ function buildMenu(): void {
         { role: "zoomOut" },
         { type: "separator" },
         { role: "togglefullscreen" },
+      ],
+    },
+    {
+      label: "Go",
+      submenu: [
+        {
+          label: "Go to Session Tabs",
+          accelerator: "CmdOrCtrl+Shift+E",
+          click: () => {
+            mainWindow?.webContents.send("rail:focus");
+          },
+        },
+        {
+          label: "Go to Prompt",
+          accelerator: "CmdOrCtrl+I",
+          click: () => {
+            mainWindow?.webContents.send("prompt:focus");
+          },
+        },
+        {
+          label: "Go to Notes",
+          accelerator: "CmdOrCtrl+Shift+N",
+          click: () => {
+            mainWindow?.webContents.send("notes:focus");
+          },
+        },
       ],
     },
     {
