@@ -1,10 +1,6 @@
 import * as fs from "node:fs/promises";
 import type { TranscriptItem } from "../shared/types";
-import {
-  legacyFlatTranscriptPath,
-  sessionDir,
-  sessionTranscriptPath,
-} from "./userDataPaths";
+import { sessionDir, sessionTranscriptPath } from "./userDataPaths";
 
 let pendingSave: Promise<void> = Promise.resolve();
 
@@ -33,31 +29,4 @@ export async function saveTranscript(tabId: string, items: TranscriptItem[]): Pr
   });
   pendingSave = save.catch(() => undefined);
   await save;
-}
-
-/** Write many transcripts (used when migrating out of switcheroo-state.json). */
-export async function saveAllTranscripts(
-  transcripts: Record<string, TranscriptItem[]>,
-): Promise<void> {
-  for (const [tabId, items] of Object.entries(transcripts)) {
-    await saveTranscript(tabId, items);
-  }
-}
-
-/** Move sessions/<tabId>.jsonl → sessions/<tabId>/transcript.jsonl when present. */
-export async function relocateFlatTranscript(tabId: string): Promise<void> {
-  const flat = legacyFlatTranscriptPath(tabId);
-  const nested = sessionTranscriptPath(tabId);
-  try {
-    await fs.access(flat);
-  } catch {
-    return;
-  }
-  await fs.mkdir(sessionDir(tabId), { recursive: true });
-  try {
-    await fs.access(nested);
-    await fs.unlink(flat);
-  } catch {
-    await fs.rename(flat, nested);
-  }
 }

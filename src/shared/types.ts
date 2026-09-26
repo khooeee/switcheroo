@@ -118,7 +118,7 @@ export interface CreateTabInput {
 }
 
 export interface PersistedState {
-  version: 4;
+  version: 1;
   activeTabId: ActiveTabId;
   /** Open session ids in rail order. Soft-closed sessions are omitted but kept on disk. */
   tabs: string[];

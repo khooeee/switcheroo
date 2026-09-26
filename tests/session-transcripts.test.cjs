@@ -79,15 +79,3 @@ test("deleteSessionFolder removes the whole session directory", async (t) => {
   await assert.rejects(fs.access(path.join(sessions, "tab-1")));
   assert.equal(JSON.stringify(await transcripts.loadTranscript("tab-1")), "[]");
 });
-
-test("relocateFlatTranscript moves legacy sessions/<id>.jsonl into the folder", async (t) => {
-  const { sessions, transcripts } = await fixture(t);
-  await fs.mkdir(sessions, { recursive: true });
-  await fs.writeFile(
-    path.join(sessions, "legacy.jsonl"),
-    `${JSON.stringify(items[0])}\n`,
-  );
-  await transcripts.relocateFlatTranscript("legacy");
-  assert.equal(JSON.stringify(await transcripts.loadTranscript("legacy")), JSON.stringify([items[0]]));
-  await assert.rejects(fs.access(path.join(sessions, "legacy.jsonl")));
-});

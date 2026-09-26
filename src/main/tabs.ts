@@ -70,7 +70,7 @@ export class TabManager {
           ? saved.activeTabId
           : MASTER_TAB_ID;
       if (openIds.length !== saved.tabs.length) {
-        await saveState({ version: 4, activeTabId: this.activeTabId, tabs: openIds });
+        await saveState({ version: 1, activeTabId: this.activeTabId, tabs: openIds });
       }
       const openTabIds = new Set(openIds);
       const masterEvents = await loadSwitchboardEvents();
@@ -113,7 +113,7 @@ export class TabManager {
       this.persistTimer = null;
     }
     const state: PersistedState = {
-      version: 4,
+      version: 1,
       activeTabId: this.activeTabId,
       tabs: [...this.tabs.keys()],
     };

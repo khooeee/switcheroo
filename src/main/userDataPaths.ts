@@ -21,11 +21,6 @@ export function sessionTranscriptPath(tabId: string): string {
   return path.join(sessionDir(tabId), "transcript.jsonl");
 }
 
-/** Pre-v4 flat transcript path: sessions/<tabId>.jsonl */
-export function legacyFlatTranscriptPath(tabId: string): string {
-  return path.join(sessionsDir(), `${tabId}.jsonl`);
-}
-
 export function sessionMetaPath(tabId: string): string {
   return path.join(sessionDir(tabId), "meta.json");
 }
