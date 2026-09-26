@@ -38,6 +38,7 @@ export function SessionRail({
   const railRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const skipClick = useRef<string | null>(null);
+  const anyThinking = sessions.some((session) => session.status === "running");
 
   useEffect(() => {
     if (!menu) return;
@@ -156,6 +157,9 @@ export function SessionRail({
           onClick={() => onSelect(SWITCHBOARD_ID)}
         >
           <span className="rail-label">Switchboard</span>
+          {anyThinking && (
+            <span className="rail-spinner" role="status" aria-label="Agent thinking" />
+          )}
         </button>
         <button type="button" className="rail-add" data-tooltip="New session" data-tooltip-align="center" onClick={onAdd}>
           +
