@@ -24,7 +24,8 @@ test("Codex forks resume before ready, route updates, and inherit steering", asy
   const child = await f.session.forkSibling("fork-tab", { append() {} }, c.cb);
   assert.equal(f.requests.at(-1).method, "resume");
   assert.equal(f.requests.at(-1).params.sessionId, "session-2");
-  assert.equal(c.transcripts[0].text, "Resumed");
+  // Resume may replay history; that must not hit transcript/Switchboard.
+  assert.equal(c.transcripts.length, 0);
   assert.equal(f.transcripts.length, 0);
   assert.deepEqual(c.statuses, ["ready"]);
   assert.deepEqual(c.capabilities, [true]);

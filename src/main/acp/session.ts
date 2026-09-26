@@ -43,6 +43,8 @@ export class AcpSession {
   private files: SessionFiles;
   private output: SessionOutput;
   private disposed = false;
+  /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
+  private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
   private completion = new PromptCompletion(() => this.cb.onPromptComplete());
   private prompts = new PromptQueue((text) => this.runPrompt(text));
@@ -81,7 +83,15 @@ export class AcpSession {
     this.cb = cb;
     this.files = new SessionFiles(cwd);
     this.questions = new PendingQuestions(tabId, cb.onAskQuestion, (id) => cb.onQuestionSettled?.(id));
-    this.output = new SessionOutput(agentKind, bus, cb.onTranscript, (kind, text, id) => this.pushMaster(kind, text, id));
+    this.output = new SessionOutput(
+      agentKind,
+      bus,
+      (item, replaceId) => {
+        if (!this.mirrorUpdates) return;
+        cb.onTranscript(item, replaceId);
+      },
+      (kind, text, id) => this.pushMaster(kind, text, id),
+    );
   }
 
   start(): Promise<void> {
@@ -128,9 +138,17 @@ export class AcpSession {
     for (const method of methods) {
       try {
         this.setSessionId(sessionId);
-        await this.connection.agent.request(method, params);
+        // load/resume often replays history as session updates — don't mirror those.
+        this.mirrorUpdates = false;
+        try {
+          await this.connection.agent.request(method, params);
+        } finally {
+          this.mirrorUpdates = true;
+        }
         this.cb.onStatus("ready");
-        this.pushMaster("status", `${agentLabel(this.agentKind)} session attached`);
+        if (!options?.quiet) {
+          this.pushMaster("status", `${agentLabel(this.agentKind)} session attached`);
+        }
         return;
       } catch (err) {
         this.clearSessionId();
@@ -171,11 +189,16 @@ export class AcpSession {
       // prompts/updates work on the forked id.
       if (this.agentKind === "codex" || this.agentKind === "claude") {
         if (!child.connection) throw new Error("Session closed while forking");
-        await child.connection.agent.request(acp.methods.agent.session.resume, {
-          sessionId: forkedId,
-          cwd: this.cwd,
-          mcpServers: [],
-        });
+        child.mirrorUpdates = false;
+        try {
+          await child.connection.agent.request(acp.methods.agent.session.resume, {
+            sessionId: forkedId,
+            cwd: this.cwd,
+            mcpServers: [],
+          });
+        } finally {
+          child.mirrorUpdates = true;
+        }
       }
     } catch (error) {
       await child.dispose();
@@ -417,7 +440,7 @@ export class AcpSession {
     summary: string,
     id?: string,
   ): void {
-    if (this.disposed) return;
+    if (this.disposed || !this.mirrorUpdates) return;
     this.bus.append({
       id: id ?? randomUUID(),
       tabId: this.tabId,

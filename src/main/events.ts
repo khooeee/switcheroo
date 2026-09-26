@@ -7,6 +7,14 @@ export class GlobalEventBus extends EventEmitter {
   private events: MasterEvent[] = [];
 
   append(event: MasterEvent): MasterEvent {
+    const existing = this.events.findIndex((entry) => entry.id === event.id);
+    if (existing >= 0) {
+      // Keep the original timestamp so Switchboard order stays stable on updates.
+      const at = this.events[existing]!.at;
+      this.events[existing] = { ...event, at };
+      this.emit("event", this.events[existing]);
+      return this.events[existing]!;
+    }
     this.events.push(event);
     if (this.events.length > MAX_EVENTS) {
       this.events = this.events.slice(-MAX_EVENTS);
