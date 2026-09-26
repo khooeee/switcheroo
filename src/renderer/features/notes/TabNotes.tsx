@@ -3,6 +3,7 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
+  type RefObject,
   type UIEvent,
 } from "react";
 import { clampNotesWidth } from "./clampNotesWidth";
@@ -13,11 +14,12 @@ interface Props {
   tabId: string;
   value: string;
   width: number;
+  scrollRef: RefObject<HTMLTextAreaElement | null>;
   onChange: (text: string) => void;
   onWidthChange: (width: number) => void;
 }
 
-export function TabNotes({ tabId, value, width, onChange, onWidthChange }: Props) {
+export function TabNotes({ tabId, value, width, scrollRef, onChange, onWidthChange }: Props) {
   const [paneWidth, setPaneWidth] = useState(() => clampNotesWidth(width));
   const paneWidthRef = useRef(paneWidth);
   const drag = useRef<{ x: number; width: number } | null>(null);
@@ -89,6 +91,7 @@ export function TabNotes({ tabId, value, width, onChange, onWidthChange }: Props
       <div className="tab-notes-editor" ref={editorRef}>
         <NotesMarkdownPreview text={value} />
         <textarea
+          ref={scrollRef}
           value={value}
           placeholder="Notes…"
           spellCheck

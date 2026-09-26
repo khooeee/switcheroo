@@ -42,7 +42,9 @@ export function App() {
   const sessionNotes = useSessionNotes();
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
+  const notesScrollRef = useRef<HTMLTextAreaElement>(null);
   useTabScrollPosition(activeTabId, activeTabId === MASTER_TAB_ID ? masterRef : chatRef);
+  useTabScrollPosition(activeTabId === MASTER_TAB_ID ? "" : activeTabId, notesScrollRef, false);
 
   useEffect(() => {
     void window.switcheroo.listTabs().then(async (data) => {
@@ -263,6 +265,7 @@ export function App() {
               tabId={activeTab.id}
               value={sessionNotes.notes[activeTab.id] ?? ""}
               width={sessionNotes.widths[activeTab.id] ?? defaultNotesWidth}
+              scrollRef={notesScrollRef}
               onChange={(text) => sessionNotes.setNote(activeTab.id, text)}
               onWidthChange={(width) => sessionNotes.setWidth(activeTab.id, width)}
             />
