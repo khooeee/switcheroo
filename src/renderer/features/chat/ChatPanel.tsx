@@ -8,6 +8,7 @@ import type {
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
+import { formatAgentError } from "../../../shared/formatAgentError";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
@@ -74,7 +75,7 @@ export function ChatPanel({
     onDraftChange("");
     setSendError(null);
     void onSend(text).catch((error: unknown) => {
-      setSendError({ tabId: tab.id, message: `Could not send “${text}”: ${String(error)}` });
+      setSendError({ tabId: tab.id, message: `Could not send “${text}”: ${formatAgentError(error)}` });
     });
   };
 

@@ -18,6 +18,7 @@ import { autoApprovePermission } from "./autoApprovePermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
+import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
 
 export class AcpSession {
@@ -353,7 +354,7 @@ export class AcpSession {
     } catch (err) {
       this.finishPending("interrupted");
       this.completion.finish("error");
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = formatAgentError(err);
       if (this.remoteTurnActive !== true && !this.disposed) {
         this.turnRunning = false;
         this.cb.onStatus("error", msg);

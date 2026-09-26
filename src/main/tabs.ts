@@ -21,6 +21,7 @@ import { loadSessionNotes, saveSessionNotes } from "./sessionNotes";
 import { loadTranscript, saveTranscript } from "./sessionTranscripts";
 import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvents";
 import { stripCursorStreamNoise } from "../shared/cursorStreamNoise";
+import { formatAgentError } from "../shared/formatAgentError";
 import { forkTabAtEvent } from "./forkTabAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { TabWaiters } from "./tabWaiters";
@@ -311,6 +312,8 @@ export class TabManager {
     const session = await this.ensureSession(tab);
     try {
       await session.prompt(text);
+    } catch (error) {
+      throw new Error(formatAgentError(error));
     } finally {
       await this.persist();
     }
