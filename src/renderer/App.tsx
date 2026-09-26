@@ -112,7 +112,8 @@ export function App() {
     window.addEventListener("switcheroo:new-session", onNewSession);
     const onKey = (e: KeyboardEvent) => {
       if (document.querySelector("dialog[open]")) return;
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+      if ((e.metaKey || e.ctrlKey) && !(e.metaKey && e.ctrlKey) && !e.shiftKey && !e.altKey
+        && e.key.toLowerCase() === "f") {
         e.preventDefault();
         setFindOpen(true);
       }
