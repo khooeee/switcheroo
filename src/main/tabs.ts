@@ -134,7 +134,7 @@ export class TabManager {
       createdAt: Date.now(),
       closed: false,
     };
-    this.tabs.set(id, tab);
+    this.prependTab(tab);
     this.transcripts.set(id, []);
     this.activeTabId = id;
     this.emitTabs();
@@ -183,7 +183,7 @@ export class TabManager {
       bus: () => this.bus,
       setSession: (id, session) => { this.sessions.set(id, session); },
       addTab: (tab, transcript) => {
-        this.tabs.set(tab.id, tab);
+        this.prependTab(tab);
         this.transcripts.set(tab.id, transcript);
       },
       setActiveTab: (id) => { this.activeTabId = id; },
@@ -386,6 +386,15 @@ export class TabManager {
       this.persistTimer = null;
       void this.persist();
     }, 300);
+  }
+
+  private prependTab(tab: SessionTab): void {
+    const next = new Map<string, SessionTab>();
+    next.set(tab.id, tab);
+    for (const [id, existing] of this.tabs) {
+      if (id !== tab.id) next.set(id, existing);
+    }
+    this.tabs = next;
   }
 
   private emitTabs(): void {
