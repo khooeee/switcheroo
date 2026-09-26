@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { applyAppIcon } from "./main/applyAppIcon";
@@ -213,17 +213,6 @@ function buildMenu(): void {
     {
       label: "Window",
       submenu: [{ role: "minimize" }, { role: "close" }],
-    },
-    {
-      role: "help",
-      submenu: [
-        {
-          label: "Agent Client Protocol",
-          click: () => {
-            void shell.openExternal("https://agentclientprotocol.com/");
-          },
-        },
-      ],
     },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
