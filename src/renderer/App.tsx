@@ -42,12 +42,10 @@ export function App() {
   const sessionNotes = useSessionNotes();
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
-  const tabIdsRef = useRef<Set<string> | null>(null);
   useTabScrollPosition(activeTabId, activeTabId === MASTER_TAB_ID ? masterRef : chatRef);
 
   useEffect(() => {
     void window.switcheroo.listTabs().then(async (data) => {
-      tabIdsRef.current = new Set(data.tabs.map((tab) => tab.id));
       setTabs(data.tabs);
       setActiveTabId(data.activeTabId);
       setMasterEvents(data.masterEvents);
@@ -62,16 +60,13 @@ export function App() {
     const unsubs = [
       window.switcheroo.onTabsChanged(({ tabs: t, activeTabId: a }) => {
         const ids = new Set(t.map((tab) => tab.id));
-        tabIdsRef.current = ids;
         sessionNotes.prune(ids);
         sessionNotes.syncFromTabs(t);
         setTabs(t);
         setActiveTabId(a);
-        setMasterEvents((prev) => prev.filter((event) => ids.has(event.tabId)));
       }),
       window.switcheroo.onMasterReset(setMasterEvents),
       window.switcheroo.onMasterEvent((event) => {
-        if (tabIdsRef.current && !tabIdsRef.current.has(event.tabId)) return;
         setMasterEvents((prev) => {
           const idx = prev.findIndex((entry) => entry.id === event.id);
           if (idx >= 0) {

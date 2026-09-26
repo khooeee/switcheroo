@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { MasterEvent, SessionTab } from "../../../shared/types";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { CopyEventButton } from "../copy/CopyEventButton";
@@ -12,7 +13,9 @@ interface Props {
 }
 
 export function MasterFeed({ events, tabs, onClick }: Props) {
-  const titleFor = (tabId: string) => tabs.find((tab) => tab.id === tabId)?.title ?? "Closed session";
+  const titles = useRef(new Map<string, string>());
+  for (const tab of tabs) titles.current.set(tab.id, tab.title);
+  const titleFor = (tabId: string) => titles.current.get(tabId) ?? "Closed session";
   if (events.length === 0) {
     return (
       <div className="empty">

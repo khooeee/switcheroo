@@ -31,7 +31,7 @@ export interface MasterEvent {
   summary: string;
   fileChanges?: FileChange[];
   toolStatus?: string;
-  /** True when the source tab still exists */
+  /** True when the session folder still exists and can be reopened */
   navigable: boolean;
 }
 
