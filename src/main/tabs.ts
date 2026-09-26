@@ -309,6 +309,8 @@ export class TabManager {
   async sendPrompt(tabId: string, text: string): Promise<void> {
     const tab = this.tabs.get(tabId);
     if (!tab) throw new Error("No tab");
+    this.prependTab(tab);
+    this.emitTabs();
     const session = await this.ensureSession(tab);
     try {
       await session.prompt(text);
