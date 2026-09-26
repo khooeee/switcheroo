@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import type { ActiveSessionId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
@@ -6,6 +6,9 @@ import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
 import { getSessionDropTarget } from "./getSessionDropTarget";
 import { handleRailKeyDown } from "./handleRailKeyDown";
+import { nextSessionSelection } from "./nextSessionSelection";
+import { SessionRailMenu } from "./SessionRailMenu";
+import { SessionRailRename } from "./SessionRailRename";
 import "./sessionSpinner.css";
 import "./sessionDropIndicator.css";
 
@@ -30,15 +33,27 @@ export function SessionRail({
   onFork,
   onReorder,
 }: Props) {
-  const [menu, setMenu] = useState<{ tab: Session; x: number; y: number } | null>(null);
+  const [menu, setMenu] = useState<{ ids: string[]; x: number; y: number } | null>(null);
   const [rename, setRename] = useState<Session | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropBeforeId, setDropBeforeId] = useState<string | null | undefined>();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const skipClick = useRef<string | null>(null);
+  const anchorId = useRef<string | null>(null);
   const anyThinking = sessions.some((session) => session.status === "running");
+  const orderedIds = sessions.map((session) => session.id);
+
+  useEffect(() => {
+    const open = new Set(orderedIds);
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => open.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+    if (anchorId.current && !open.has(anchorId.current)) anchorId.current = null;
+  }, [orderedIds.join("\0")]);
 
   useEffect(() => {
     if (!menu) return;
@@ -56,6 +71,7 @@ export function SessionRail({
       window.removeEventListener("keydown", onKey);
     };
   }, [menu]);
+
   const resize = (event: ReactPointerEvent) => {
     event.preventDefault();
     const startX = event.clientX;
@@ -64,7 +80,6 @@ export function SessionRail({
     const previousSelect = document.body.style.userSelect;
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
-
     const move = (ev: PointerEvent) => {
       applyRailWidth(startWidth + ev.clientX - startX);
     };
@@ -80,11 +95,11 @@ export function SessionRail({
   };
 
   const startDrag = (event: ReactPointerEvent<HTMLButtonElement>, sessionId: string) => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || event.shiftKey || event.metaKey || event.ctrlKey) return;
     const startY = event.clientY;
     let pointerY = startY;
     let dragging = false;
-    let order = sessions.map((tab) => tab.id);
+    let order = sessions.map((session) => session.id);
     const previousCursor = document.body.style.cursor;
     const previousSelect = document.body.style.userSelect;
     const scroll = scrollRef.current;
@@ -99,7 +114,6 @@ export function SessionRail({
       order = target.order;
       setDropBeforeId(target.beforeId);
     };
-
     const move = (ev: PointerEvent) => {
       pointerY = ev.clientY;
       if (!dragging && Math.abs(ev.clientY - startY) < 5) return;
@@ -133,6 +147,34 @@ export function SessionRail({
     scroll?.addEventListener("scroll", updateTarget);
   };
 
+  const applyClick = (event: ReactMouseEvent, sessionId: string) => {
+    if (skipClick.current === sessionId) {
+      skipClick.current = null;
+      return;
+    }
+    const next = nextSessionSelection(
+      orderedIds,
+      { selected: selectedIds, anchorId: anchorId.current },
+      sessionId,
+      { shift: event.shiftKey, toggle: event.metaKey || event.ctrlKey },
+    );
+    anchorId.current = next.anchorId;
+    setSelectedIds(next.selected);
+    if (!event.shiftKey && !event.metaKey && !event.ctrlKey) onSelect(sessionId);
+  };
+
+  const openMenu = (event: ReactMouseEvent, session: Session) => {
+    event.preventDefault();
+    const ids = selectedIds.has(session.id) && selectedIds.size > 1
+      ? [...selectedIds]
+      : [session.id];
+    if (ids.length === 1) {
+      setSelectedIds(new Set(ids));
+      anchorId.current = session.id;
+    }
+    setMenu({ ids, x: event.clientX, y: event.clientY });
+  };
+
   return (
     <aside
       ref={railRef}
@@ -154,7 +196,11 @@ export function SessionRail({
           type="button"
           data-rail-id={SWITCHBOARD_ID}
           className={`rail-session ${activeSessionId === SWITCHBOARD_ID ? "active" : ""}`}
-          onClick={() => onSelect(SWITCHBOARD_ID)}
+          onClick={() => {
+            setSelectedIds(new Set());
+            anchorId.current = null;
+            onSelect(SWITCHBOARD_ID);
+          }}
         >
           <span className="rail-label">Switchboard</span>
           {anyThinking && (
@@ -167,41 +213,33 @@ export function SessionRail({
       </div>
       <div className="rail-sessions">
         <div className="rail-scroll" ref={scrollRef}>
-          {sessions.map((tab, index) =>
-            rename?.id === tab.id ? (
-              <RailRename
-                key={tab.id}
-                title={tab.title}
+          {sessions.map((session, index) =>
+            rename?.id === session.id ? (
+              <SessionRailRename
+                key={session.id}
+                title={session.title}
                 onSave={(title) => {
-                  onRename(tab.id, title);
+                  onRename(session.id, title);
                   setRename(null);
                 }}
                 onCancel={() => setRename(null)}
               />
             ) : (
               <button
-                key={tab.id}
+                key={session.id}
                 type="button"
-                data-session-id={tab.id}
-                data-rail-id={tab.id}
-                className={`rail-session ${activeSessionId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === sessions.length - 1 ? "drop-after" : ""}`}
-                data-tooltip={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
+                data-session-id={session.id}
+                data-rail-id={session.id}
+                className={`rail-session ${activeSessionId === session.id ? "active" : ""} ${selectedIds.has(session.id) ? "selected" : ""} ${session.status === "connecting" ? "creating" : ""} ${dragId === session.id ? "dragging" : ""} ${dropBeforeId === session.id ? "drop-before" : ""} ${dropBeforeId === null && index === sessions.length - 1 ? "drop-after" : ""}`}
+                data-tooltip={`${session.title}\n${session.cwd}\n(${session.status === "connecting" ? "Creating" : session.status})`}
                 data-tooltip-side="right"
-                onPointerDown={(e) => startDrag(e, tab.id)}
-                onClick={(event) => {
-                  if (skipClick.current === tab.id) {
-                    skipClick.current = null;
-                    return;
-                  }
-                  onSelect(tab.id);
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setMenu({ tab, x: e.clientX, y: e.clientY });
-                }}
+                aria-selected={selectedIds.has(session.id)}
+                onPointerDown={(e) => startDrag(e, session.id)}
+                onClick={(event) => applyClick(event, session.id)}
+                onContextMenu={(e) => openMenu(e, session)}
               >
-                <span className="rail-label">{tab.title}</span>
-                {tab.status === "running" && (
+                <span className="rail-label">{session.title}</span>
+                {session.status === "running" && (
                   <span className="rail-spinner" role="status" aria-label="Agent thinking" />
                 )}
               </button>
@@ -215,90 +253,23 @@ export function SessionRail({
       </div>
       {menu &&
         createPortal(
-          <div
-            ref={menuRef}
-            className="context-menu"
-            role="menu"
-            style={{ left: menu.x, top: menu.y }}
-          >
-            <button
-              type="button"
-              role="menuitem"
-              className="context-item"
-              onClick={() => {
-                setRename(menu.tab);
-                setMenu(null);
-              }}
-            >
-              Rename...
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="context-item"
-              onClick={() => {
-                onFork(menu.tab.id);
-                setMenu(null);
-              }}
-            >
-              Fork
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="context-item"
-              onClick={() => {
-                onClose(menu.tab.id);
-                setMenu(null);
-              }}
-            >
-              Close
-            </button>
-          </div>,
+          <SessionRailMenu
+            menuRef={menuRef}
+            ids={menu.ids}
+            x={menu.x}
+            y={menu.y}
+            sessions={sessions}
+            onRename={setRename}
+            onFork={onFork}
+            onClose={(ids) => {
+              for (const id of ids) onClose(id);
+              setSelectedIds(new Set());
+              anchorId.current = null;
+            }}
+            onDismiss={() => setMenu(null)}
+          />,
           document.body,
         )}
     </aside>
-  );
-}
-
-function RailRename({
-  title,
-  onSave,
-  onCancel,
-}: {
-  title: string;
-  onSave: (title: string) => void;
-  onCancel: () => void;
-}) {
-  const [value, setValue] = useState(title);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, []);
-
-  return (
-    <input
-      ref={inputRef}
-      className="rail-rename"
-      value={value}
-      aria-label="Session title"
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={onCancel}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const next = value.trim();
-          if (next) onSave(next);
-          else onCancel();
-        }
-        if (e.key === "Escape") {
-          e.preventDefault();
-          onCancel();
-        }
-      }}
-    />
   );
 }

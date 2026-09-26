@@ -2,12 +2,12 @@
 
 Multi-tab agent development client
 
-Run Claude Code, Codex, Cursor, or Pi side-by-side and monitor all agents through an event feed (aka its the switchboard).
+Run Claude Code, Codex, Cursor, or Pi side-by-side and track all agent logs through a central event feed (aka the switchboard).
 
 ## Features
 
-- Switchboard (everything feed)
-- Tab notes
+- Switchboard
+- Each session has its own notes.
 
 ## Prerequisites
 
@@ -33,7 +33,11 @@ npm start
 
 ## Defaults
 
-- Bypass permissions / YOLO
+- All agents are started in bypass permissions/YOLO mode.
+
+## History management
+
+- Todo
 
 ## Shortcuts
 

@@ -214,6 +214,15 @@ button {
   color: var(--text);
 }
 
+.rail-session.selected:not(.active) {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--text);
+}
+
+.rail-session.active.selected {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
 .rail-session.creating {
   opacity: 0.45;
 }
