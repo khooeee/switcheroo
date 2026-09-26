@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import * as path from "node:path";
 import type { BrowserWindow } from "electron";
 import type {
@@ -23,6 +22,7 @@ import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvent
 import { formatAgentError } from "../shared/formatAgentError";
 import { forkTabAtEvent } from "./forkTabAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
+import { newSessionId } from "./newSessionId";
 import { TabWaiters } from "./tabWaiters";
 
 export class TabManager {
@@ -127,7 +127,7 @@ export class TabManager {
   }
 
   async createTab(input: CreateTabInput): Promise<SessionTab> {
-    const id = randomUUID();
+    const id = newSessionId();
     const title =
       input.title ??
       `${agentLabel(input.agentKind)} · ${path.basename(input.cwd)}`;
