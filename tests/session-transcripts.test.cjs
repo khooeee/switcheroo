@@ -35,11 +35,12 @@ async function fixture(t) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "switcheroo-sessions-"));
   t.after(() => fs.rm(dir, { recursive: true, force: true }));
   const electron = { app: { getPath: () => dir } };
-  const store = load(path.join(__dirname, "../src/main/sessionTranscripts.ts"), electron);
   return {
     dir,
     sessions: path.join(dir, "sessions"),
-    store,
+    transcripts: load(path.join(__dirname, "../src/main/sessionTranscripts.ts"), electron),
+    meta: load(path.join(__dirname, "../src/main/sessionMeta.ts"), electron),
+    notes: load(path.join(__dirname, "../src/main/sessionNotes.ts"), electron),
   };
 }
 
@@ -48,28 +49,45 @@ const items = [
   { id: "b", role: "assistant", text: "Hello\nthere", at: 2 },
 ];
 
-test("transcript JSONL round-trips and uses sessions/<tabId>.jsonl", async (t) => {
-  const { sessions, store } = await fixture(t);
-  await store.saveTranscript("tab-1", items);
-  const file = path.join(sessions, "tab-1.jsonl");
+test("transcript JSONL lives at sessions/<id>/transcript.jsonl", async (t) => {
+  const { sessions, transcripts } = await fixture(t);
+  await transcripts.saveTranscript("tab-1", items);
+  const file = path.join(sessions, "tab-1", "transcript.jsonl");
   const raw = await fs.readFile(file, "utf8");
   assert.equal(raw.trim().split("\n").length, 2);
-  assert.equal(JSON.stringify(await store.loadTranscript("tab-1")), JSON.stringify(items));
+  assert.equal(JSON.stringify(await transcripts.loadTranscript("tab-1")), JSON.stringify(items));
 });
 
-test("deleteTranscript removes the file and load returns empty", async (t) => {
-  const { sessions, store } = await fixture(t);
-  await store.saveTranscript("tab-1", items);
-  await store.deleteTranscript("tab-1");
-  await assert.rejects(fs.access(path.join(sessions, "tab-1.jsonl")));
-  assert.equal(JSON.stringify(await store.loadTranscript("tab-1")), "[]");
+test("meta and notes round-trip beside the transcript", async (t) => {
+  const { sessions, meta, notes } = await fixture(t);
+  await meta.saveSessionMeta("tab-1", {
+    title: "Demo", agentKind: "codex", cwd: "/tmp", sessionId: null, notesWidth: 280,
+  });
+  await notes.saveSessionNotes("tab-1", "# hello\n");
+  assert.equal((await meta.loadSessionMeta("tab-1")).title, "Demo");
+  assert.equal(await notes.loadSessionNotes("tab-1"), "# hello\n");
+  assert.equal(await fs.readFile(path.join(sessions, "tab-1", "notes.md"), "utf8"), "# hello\n");
 });
 
-test("removeOrphanTranscripts keeps only listed tab ids", async (t) => {
-  const { store } = await fixture(t);
-  await store.saveTranscript("keep", items);
-  await store.saveTranscript("drop", items);
-  await store.removeOrphanTranscripts(new Set(["keep"]));
-  assert.equal(JSON.stringify(await store.loadTranscript("keep")), JSON.stringify(items));
-  assert.equal(JSON.stringify(await store.loadTranscript("drop")), "[]");
+test("deleteSessionFolder removes the whole session directory", async (t) => {
+  const { sessions, transcripts, meta } = await fixture(t);
+  await transcripts.saveTranscript("tab-1", items);
+  await meta.saveSessionMeta("tab-1", {
+    title: "Demo", agentKind: "codex", cwd: "/tmp", sessionId: null,
+  });
+  await meta.deleteSessionFolder("tab-1");
+  await assert.rejects(fs.access(path.join(sessions, "tab-1")));
+  assert.equal(JSON.stringify(await transcripts.loadTranscript("tab-1")), "[]");
+});
+
+test("relocateFlatTranscript moves legacy sessions/<id>.jsonl into the folder", async (t) => {
+  const { sessions, transcripts } = await fixture(t);
+  await fs.mkdir(sessions, { recursive: true });
+  await fs.writeFile(
+    path.join(sessions, "legacy.jsonl"),
+    `${JSON.stringify(items[0])}\n`,
+  );
+  await transcripts.relocateFlatTranscript("legacy");
+  assert.equal(JSON.stringify(await transcripts.loadTranscript("legacy")), JSON.stringify([items[0]]));
+  await assert.rejects(fs.access(path.join(sessions, "legacy.jsonl")));
 });

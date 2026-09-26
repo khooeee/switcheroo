@@ -27,7 +27,7 @@ export async function forkTabAtEvent(
   eventId?: string,
 ): Promise<SessionTab> {
   const source = host.getTab(tabId);
-  if (!source || source.closed) throw new Error("Session not found");
+  if (!source) throw new Error("Session not found");
 
   const items = host.getTranscript(tabId);
   let clipped: TranscriptItem[];
@@ -54,7 +54,6 @@ export async function forkTabAtEvent(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
-    closed: false,
     slashCommands: source.slashCommands ? [...source.slashCommands] : undefined,
   };
   host.addTab(tab, clipped);

@@ -1,6 +1,10 @@
 import * as fs from "node:fs/promises";
 import type { TranscriptItem } from "../shared/types";
-import { sessionsDir, sessionTranscriptPath } from "./userDataPaths";
+import {
+  legacyFlatTranscriptPath,
+  sessionDir,
+  sessionTranscriptPath,
+} from "./userDataPaths";
 
 let pendingSave: Promise<void> = Promise.resolve();
 
@@ -23,20 +27,12 @@ export async function saveTranscript(tabId: string, items: TranscriptItem[]): Pr
   const tmp = `${target}.${process.pid}.tmp`;
   const body = items.length ? `${items.map((item) => JSON.stringify(item)).join("\n")}\n` : "";
   const save = pendingSave.then(async () => {
-    await fs.mkdir(sessionsDir(), { recursive: true });
+    await fs.mkdir(sessionDir(tabId), { recursive: true });
     await fs.writeFile(tmp, body, "utf8");
     await fs.rename(tmp, target);
   });
   pendingSave = save.catch(() => undefined);
   await save;
-}
-
-export async function deleteTranscript(tabId: string): Promise<void> {
-  try {
-    await fs.unlink(sessionTranscriptPath(tabId));
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-  }
 }
 
 /** Write many transcripts (used when migrating out of switcheroo-state.json). */
@@ -48,18 +44,20 @@ export async function saveAllTranscripts(
   }
 }
 
-/** Remove JSONL files whose tab ids are not in `keep`. */
-export async function removeOrphanTranscripts(keep: Set<string>): Promise<void> {
-  let names: string[];
+/** Move sessions/<tabId>.jsonl → sessions/<tabId>/transcript.jsonl when present. */
+export async function relocateFlatTranscript(tabId: string): Promise<void> {
+  const flat = legacyFlatTranscriptPath(tabId);
+  const nested = sessionTranscriptPath(tabId);
   try {
-    names = await fs.readdir(sessionsDir());
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
-    throw err;
+    await fs.access(flat);
+  } catch {
+    return;
   }
-  for (const name of names) {
-    if (!name.endsWith(".jsonl")) continue;
-    const tabId = name.slice(0, -".jsonl".length);
-    if (!keep.has(tabId)) await deleteTranscript(tabId);
+  await fs.mkdir(sessionDir(tabId), { recursive: true });
+  try {
+    await fs.access(nested);
+    await fs.unlink(flat);
+  } catch {
+    await fs.rename(flat, nested);
   }
 }

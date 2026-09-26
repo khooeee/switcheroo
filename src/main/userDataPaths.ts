@@ -13,8 +13,25 @@ export function sessionsDir(): string {
   return path.join(userDataDir(), "sessions");
 }
 
+export function sessionDir(tabId: string): string {
+  return path.join(sessionsDir(), tabId);
+}
+
 export function sessionTranscriptPath(tabId: string): string {
+  return path.join(sessionDir(tabId), "transcript.jsonl");
+}
+
+/** Pre-v4 flat transcript path: sessions/<tabId>.jsonl */
+export function legacyFlatTranscriptPath(tabId: string): string {
   return path.join(sessionsDir(), `${tabId}.jsonl`);
+}
+
+export function sessionMetaPath(tabId: string): string {
+  return path.join(sessionDir(tabId), "meta.json");
+}
+
+export function sessionNotesPath(tabId: string): string {
+  return path.join(sessionDir(tabId), "notes.md");
 }
 
 export function switchboardPath(): string {

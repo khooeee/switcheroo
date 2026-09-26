@@ -11,7 +11,7 @@ export function useTabShortcuts(
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      const sessions = tabs.filter((tab) => !tab.closed).map((tab) => tab.id);
+      const sessions = tabs.map((tab) => tab.id);
       const order: ActiveTabId[] = [MASTER_TAB_ID, ...sessions];
       if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey
         && /^[0-9]$/.test(event.key)) {

@@ -10,8 +10,6 @@ const cache = new Map();
 
 async function loadModule(file, electron, overrides = {}) {
   const absolute = path.isAbsolute(file) ? file : path.join(__dirname, "../src/main", file);
-  const key = `${absolute}::${overrides === undefined ? "" : Object.keys(overrides).join(",")}`;
-  // Always reload persist graph against this electron userData dir.
   const exports = {};
   const source = await fs.readFile(absolute, "utf8");
   const { outputText } = ts.transpileModule(source, {
@@ -32,7 +30,7 @@ async function loadModule(file, electron, overrides = {}) {
   return exports;
 }
 
-function loadSync(absolute, electron, overrides) {
+function loadSync(absolute, electron, overrides = {}) {
   if (cache.has(absolute)) return cache.get(absolute);
   const exports = {};
   cache.set(absolute, exports);
@@ -65,7 +63,12 @@ async function fixture(t, overrides) {
     target: path.join(dir, "switcheroo-state.json"),
     sessions: path.join(dir, "sessions"),
     store: await loadModule("persist.ts", electron, overrides),
-    transcripts: loadSync(path.join(__dirname, "../src/main/sessionTranscripts.ts"), electron, overrides),
+    session: {
+      meta: loadSync(path.join(__dirname, "../src/main/sessionMeta.ts"), electron, overrides),
+      notes: loadSync(path.join(__dirname, "../src/main/sessionNotes.ts"), electron, overrides),
+      transcripts: loadSync(path.join(__dirname, "../src/main/sessionTranscripts.ts"), electron, overrides),
+      switchboard: loadSync(path.join(__dirname, "../src/main/switchboardEvents.ts"), electron, overrides),
+    },
     restart: () => {
       cache.clear();
       return loadModule("persist.ts", electron);
@@ -75,17 +78,15 @@ async function fixture(t, overrides) {
 
 function state(title = "Saved agent") {
   return {
-    version: 3,
+    version: 4,
     activeTabId: "agent-1",
-    tabs: [{ id: "agent-1", title, agentKind: "codex", cwd: "/tmp", sessionId: null }],
+    tabs: ["agent-1"],
   };
 }
 
-test("tab notes and notes width round-trip with the rest of saved state", async (t) => {
+test("active tab and id list round-trip", async (t) => {
   const { store, restart } = await fixture(t);
   const snapshot = state();
-  snapshot.tabs[0].notes = "scratch\nline";
-  snapshot.tabs[0].notesWidth = 320;
   await store.saveState(snapshot);
   const restarted = await restart();
   assert.equal(JSON.stringify(await restarted.loadState()), JSON.stringify(snapshot));
@@ -104,15 +105,16 @@ for (const initial of [null, "", "  \n"]) {
 
 test("overlapping saves finish in order and capture the state at call time", async (t) => {
   const { target, store } = await fixture(t);
-  const snapshot = state();
   const saves = [];
   for (let i = 0; i < 50; i++) {
-    snapshot.tabs[0].title = `Agent ${i}`;
-    saves.push(store.saveState(snapshot));
+    saves.push(store.saveState({
+      version: 4,
+      activeTabId: `agent-${i}`,
+      tabs: ["agent-1"],
+    }));
   }
-  snapshot.tabs[0].title = "Unsaved change";
   await Promise.all(saves);
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).tabs[0].title, "Agent 49");
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "agent-49");
 });
 
 test("a failed write preserves the previous file and allows a retry", async (t) => {
@@ -123,16 +125,16 @@ test("a failed write preserves the previous file and allows a retry", async (t) 
       writeFile: (...args) => fail ? Promise.reject(new Error("Disk full")) : fs.writeFile(...args),
     },
   });
-  await store.saveState(state("Original"));
+  await store.saveState(state());
   fail = true;
-  await assert.rejects(store.saveState(state("Failed")), /Disk full/);
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).tabs[0].title, "Original");
+  await assert.rejects(store.saveState({ ...state(), activeTabId: "master" }), /Disk full/);
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "agent-1");
   fail = false;
-  await store.saveState(state("Retried"));
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).tabs[0].title, "Retried");
+  await store.saveState({ ...state(), activeTabId: "master" });
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "master");
 });
 
-for (const contents of ["{broken", '{"version":4}']) {
+for (const contents of ["{broken", '{"version":5}']) {
   test(`preserve unreadable or unsupported state: ${contents}`, async (t) => {
     const { target, store } = await fixture(t);
     await fs.writeFile(target, contents);
@@ -142,8 +144,8 @@ for (const contents of ["{broken", '{"version":4}']) {
   });
 }
 
-test("v1 state migrates transcripts and switchboard events to JSONL", async (t) => {
-  const { target, sessions, store, transcripts, restart } = await fixture(t);
+test("v1 state migrates into session folders and switchboard.jsonl", async (t) => {
+  const { target, sessions, store, session, restart } = await fixture(t);
   const events = [{
     id: "evt-1", tabId: "agent-1", agentKind: "codex", at: 1,
     kind: "message", summary: "Hello", navigable: true,
@@ -151,7 +153,10 @@ test("v1 state migrates transcripts and switchboard events to JSONL", async (t) 
   const legacy = {
     version: 1,
     activeTabId: "agent-1",
-    tabs: [{ id: "agent-1", title: "Saved agent", agentKind: "codex", cwd: "/tmp", sessionId: null }],
+    tabs: [{
+      id: "agent-1", title: "Saved agent", agentKind: "codex", cwd: "/tmp",
+      sessionId: null, notes: "scratch", notesWidth: 320,
+    }],
     transcripts: {
       "agent-1": [
         { id: "msg-1", role: "assistant", text: "Hello\nworld", at: 1 },
@@ -162,40 +167,38 @@ test("v1 state migrates transcripts and switchboard events to JSONL", async (t) 
   };
   await fs.writeFile(target, JSON.stringify(legacy));
   const loaded = await store.loadState();
-  assert.equal(loaded.version, 3);
-  assert.equal(loaded.transcripts, undefined);
-  assert.equal(loaded.masterEvents, undefined);
-  assert.equal(JSON.stringify(await transcripts.loadTranscript("agent-1")), JSON.stringify(legacy.transcripts["agent-1"]));
-  const onDisk = await fs.readFile(path.join(sessions, "agent-1.jsonl"), "utf8");
-  assert.equal(onDisk.trim().split("\n").length, 2);
-  const switchboard = loadSync(path.join(__dirname, "../src/main/switchboardEvents.ts"), { app: { getPath: () => path.dirname(target) } });
-  assert.equal(JSON.stringify(await switchboard.loadSwitchboardEvents()), JSON.stringify(events));
-  const restarted = await restart();
-  assert.equal((await restarted.loadState()).version, 3);
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).masterEvents, undefined);
+  assert.equal(loaded.version, 4);
+  assert.equal(JSON.stringify(loaded.tabs), JSON.stringify(["agent-1"]));
+  assert.equal(JSON.stringify(await session.transcripts.loadTranscript("agent-1")), JSON.stringify(legacy.transcripts["agent-1"]));
+  assert.equal((await session.meta.loadSessionMeta("agent-1")).title, "Saved agent");
+  assert.equal(await session.notes.loadSessionNotes("agent-1"), "scratch");
+  assert.equal(JSON.stringify(await session.switchboard.loadSwitchboardEvents()), JSON.stringify(events));
+  assert.equal(await fs.readFile(path.join(sessions, "agent-1", "transcript.jsonl"), "utf8").then((s) => s.trim().split("\n").length), 2);
+  assert.equal((await (await restart()).loadState()).version, 4);
 });
 
-test("v2 state migrates switchboard events to switchboard.jsonl", async (t) => {
-  const { target, store, restart } = await fixture(t);
-  const events = [{
-    id: "evt-1", tabId: "agent-1", agentKind: "codex", at: 1,
-    kind: "tool", summary: "Read file", navigable: true,
-  }];
+test("v3 state relocates flat jsonl and drops closed tabs from the open list", async (t) => {
+  const { target, sessions, store, session } = await fixture(t);
+  await fs.mkdir(sessions, { recursive: true });
+  await fs.writeFile(
+    path.join(sessions, "open.jsonl"),
+    `${JSON.stringify({ id: "m1", role: "user", text: "Hi", at: 1 })}\n`,
+  );
   await fs.writeFile(target, JSON.stringify({
-    version: 2,
-    activeTabId: "agent-1",
-    tabs: [{ id: "agent-1", title: "Saved agent", agentKind: "codex", cwd: "/tmp", sessionId: null }],
-    masterEvents: events,
+    version: 3,
+    activeTabId: "closed",
+    tabs: [
+      { id: "open", title: "Open", agentKind: "codex", cwd: "/tmp", sessionId: null },
+      { id: "closed", title: "Closed", agentKind: "codex", cwd: "/tmp", sessionId: null, closed: true },
+    ],
   }));
   const loaded = await store.loadState();
-  assert.equal(loaded.version, 3);
-  assert.equal(loaded.masterEvents, undefined);
-  const switchboard = loadSync(
-    path.join(__dirname, "../src/main/switchboardEvents.ts"),
-    { app: { getPath: () => path.dirname(target) } },
-  );
-  assert.equal(JSON.stringify(await switchboard.loadSwitchboardEvents()), JSON.stringify(events));
-  assert.equal((await (await restart()).loadState()).version, 3);
+  assert.equal(loaded.version, 4);
+  assert.equal(JSON.stringify(loaded.tabs), JSON.stringify(["open"]));
+  assert.equal(loaded.activeTabId, "master");
+  assert.equal(JSON.stringify(await session.transcripts.loadTranscript("open")), JSON.stringify([{ id: "m1", role: "user", text: "Hi", at: 1 }]));
+  assert.equal((await session.meta.loadSessionMeta("closed")).title, "Closed");
+  await assert.rejects(fs.access(path.join(sessions, "open.jsonl")));
 });
 
 async function quitFixture(save) {

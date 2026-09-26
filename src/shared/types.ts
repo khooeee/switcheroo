@@ -51,8 +51,6 @@ export interface SessionTab {
   supportsSteering?: boolean;
   error: string | null;
   createdAt: number;
-  /** Hidden from the rail. The session and its Switchboard events stay. */
-  closed: boolean;
   notes?: string;
   notesWidth?: number;
   /** ACP slash commands advertised by the agent for this session. */
@@ -120,19 +118,10 @@ export interface CreateTabInput {
 }
 
 export interface PersistedState {
-  version: 3;
+  version: 4;
   activeTabId: ActiveTabId;
-  tabs: Array<{
-    id: string;
-    title: string;
-    agentKind: AgentKind;
-    cwd: string;
-    sessionId: string | null;
-    closed?: boolean;
-    notes?: string;
-    notesWidth?: number;
-    slashCommands?: SlashCommand[];
-  }>;
+  /** Open session ids in rail order. Soft-closed sessions are omitted but kept on disk. */
+  tabs: string[];
 }
 
 export interface SwitcherooApi {

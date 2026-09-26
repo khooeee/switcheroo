@@ -195,7 +195,7 @@ export function App() {
   return (
     <div className="app">
       <TabRail
-        tabs={tabs.filter((tab) => !tab.closed)}
+        tabs={tabs}
         activeTabId={activeTabId}
         onSelect={selectTab}
         onAdd={() => setShowNewTab(true)}
