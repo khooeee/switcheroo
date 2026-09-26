@@ -41,9 +41,9 @@ npm start
 
 **Ctrl+D**: Close session (empty prompt)
 
-**Cmd/Ctrl+0**: Switchboard
+**Ctrl+0**: Switchboard
 
-**Cmd/Ctrl+1–9**: Select session tab 1–9
+**Ctrl+1–9**: Select session tab 1–9
 
 **Cmd/Ctrl+Shift+E**: Focus session tabs (↑/↓ move, Space/Enter select)
 
