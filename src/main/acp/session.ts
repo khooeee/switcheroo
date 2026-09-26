@@ -166,9 +166,9 @@ export class AcpSession {
     child.initializationMeta = this.initializationMeta;
     child.delivery.configure(this.initializationMeta);
     try {
-      // Codex forks are unsubscribed. Resume before prompting so turn updates
-      // and completion arrive; register the child first to route startup updates.
-      if (this.agentKind === "codex") {
+      // Fork only allocates a session id. Codex and Claude need resume before
+      // prompts/updates work on the forked id.
+      if (this.agentKind === "codex" || this.agentKind === "claude") {
         if (!child.connection) throw new Error("Session closed while forking");
         await child.connection.agent.request(acp.methods.agent.session.resume, {
           sessionId: forkedId,

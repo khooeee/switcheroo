@@ -20,6 +20,7 @@ async function fixture(supported = true, options = {}) {
   const completions = [];
   const cancellations = [];
   let steeringResult = { outcome: "injected" };
+  const agentKind = options.agentKind ?? "codex";
   const connection = {
     signal: disconnected.signal,
     close() { disconnected.abort(); },
@@ -66,14 +67,20 @@ async function fixture(supported = true, options = {}) {
     vm.runInNewContext(outputText, { exports, process, console, require: (name) => {
       if (name === "@agentclientprotocol/sdk") return acp;
       if (name === "node:child_process") return { spawn: () => child };
-      if (name === "./presets") return { AGENT_PRESETS: { codex: { command: "fake", args: [] } }, agentLabel: () => "Codex" };
+      if (name === "./presets") return {
+        AGENT_PRESETS: {
+          codex: { command: "fake", args: [] },
+          claude: { command: "fake", args: [] },
+        },
+        agentLabel: () => "Agent",
+      };
       if (name.startsWith(".")) return load(path.resolve(path.dirname(file), `${name}.ts`));
       return require(name);
     } });
     return exports;
   }
   const { AcpSession } = load(path.join(__dirname, "../src/main/acp/session.ts"));
-  const session = new AcpSession("tab-1", "codex", "/tmp", { append(event) { events.push(event); }, updateSummary() {}, updateEvent() {} }, {
+  const session = new AcpSession("tab-1", agentKind, "/tmp", { append(event) { events.push(event); }, updateSummary() {}, updateEvent() {} }, {
     onPromptComplete: () => completions.push(true),
     onStatus: (status) => statuses.push(status),
     onTranscript: (item) => transcripts.push(item),

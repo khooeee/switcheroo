@@ -46,6 +46,22 @@ test("Codex forks resume before ready, route updates, and inherit steering", asy
   assert.equal(f.disconnected.signal.aborted, true);
 });
 
+test("Claude forks resume before ready so prompts can run", async () => {
+  const f = await fixture(false, { agentKind: "claude" });
+  const c = childCallbacks();
+  const child = await f.session.forkSibling("fork-tab", { append() {} }, c.cb);
+  assert.equal(f.requests.at(-1).method, "resume");
+  assert.equal(f.requests.at(-1).params.sessionId, "session-2");
+  const turn = child.prompt("hello");
+  await tick();
+  assert.equal(f.requests.at(-1).method, "prompt");
+  assert.equal(f.requests.at(-1).params.sessionId, "session-2");
+  f.turns[0]({ stopReason: "end_turn" });
+  await turn;
+  await child.dispose();
+  await f.session.dispose();
+});
+
 test("failed fork resume rejects without marking ready or closing the source", async () => {
   const f = await fixture(true, { resumeError: "Subscription failed" });
   const c = childCallbacks();
