@@ -25,6 +25,8 @@ export type MasterEventKind =
 export interface MasterEvent {
   id: string;
   tabId: string;
+  /** Session title at event time (kept after soft-close) */
+  tabTitle?: string;
   agentKind: AgentKind;
   at: number;
   kind: MasterEventKind;

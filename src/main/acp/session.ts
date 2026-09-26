@@ -421,6 +421,7 @@ export class AcpSession {
     this.bus.append({
       id: id ?? randomUUID(),
       tabId: this.tabId,
+      tabTitle: this.cb.getTabTitle(),
       agentKind: this.agentKind,
       at: Date.now(),
       kind,

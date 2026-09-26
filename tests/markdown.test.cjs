@@ -84,6 +84,16 @@ test("Switchboard opens navigable events from the whole card", () => {
   assert.equal(cards[1].props.role, undefined);
 });
 
+test("Switchboard keeps the session title after the tab is closed", () => {
+  const events = [{
+    id: "m", tabId: "gone", tabTitle: "Lucky falcon", at: 1, kind: "user",
+    summary: "hi", navigable: true,
+  }];
+  const html = renderToStaticMarkup(MasterFeed({ events, tabs: [], onClick() {} }));
+  assert.match(html, /Lucky falcon/);
+  assert.doesNotMatch(html, /Closed session/);
+});
+
 test("external links open in the browser and never create Electron windows", () => {
   const opened = [];
   let handler;

@@ -21,4 +21,5 @@ export interface SessionCallbacks {
       allowMultiple?: boolean;
     }>;
   }) => void;
+  getTabTitle: () => string;
 }

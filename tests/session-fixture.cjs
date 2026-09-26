@@ -87,6 +87,7 @@ async function fixture(supported = true, options = {}) {
     onSteeringSupport: (value) => capabilities.push(value),
     onPermission() {}, onAskQuestion: (req) => questions.push(req),
     onQuestionSettled: (id) => settled.push(id),
+    getTabTitle: () => "Demo session",
   });
   await session.start();
   return {

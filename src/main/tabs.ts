@@ -71,14 +71,21 @@ export class TabManager {
       const openTabIds = new Set(openIds);
       const masterEvents = await loadSwitchboardEvents();
       const navigableIds = new Set(openTabIds);
-      for (const event of masterEvents) {
-        if (navigableIds.has(event.tabId)) continue;
-        if (await loadSessionMeta(event.tabId)) navigableIds.add(event.tabId);
+      const titles = new Map<string, string>(
+        [...this.tabs.entries()].map(([id, tab]) => [id, tab.title]),
+      );
+      const closedIds = [...new Set(masterEvents.map((e) => e.tabId))].filter((id) => !openTabIds.has(id));
+      for (const tabId of closedIds) {
+        const meta = await loadSessionMeta(tabId);
+        if (!meta) continue;
+        navigableIds.add(tabId);
+        titles.set(tabId, meta.title);
       }
       this.bus.restore(
         masterEvents.map((e) => ({
           id: e.id,
           tabId: e.tabId,
+          tabTitle: titles.get(e.tabId) ?? e.tabTitle,
           agentKind: e.agentKind,
           at: e.at,
           kind: e.kind,
@@ -206,6 +213,9 @@ export class TabManager {
   async closeTab(tabId: string): Promise<void> {
     const tab = this.tabs.get(tabId);
     if (!tab) return;
+    for (const event of this.bus.setTabTitle(tabId, tab.title)) {
+      this.send("master:event", event);
+    }
     if (this.hydrated.has(tabId)) {
       await saveSessionMeta(tabId, metaFromTab(tab));
       await saveSessionNotes(tabId, tab.notes ?? "");
@@ -250,6 +260,9 @@ export class TabManager {
     const tab = this.tabs.get(tabId);
     if (!tab) return;
     tab.title = title;
+    for (const event of this.bus.setTabTitle(tabId, title)) {
+      this.send("master:event", event);
+    }
     this.emitTabs();
     void this.persist();
   }
@@ -525,6 +538,7 @@ export class TabManager {
         this.askOwners.set(req.requestId, tab.id);
         this.send("ask-question", req);
       },
+      getTabTitle: () => tab.title,
     };
   }
 

@@ -30,6 +30,16 @@ export class GlobalEventBus extends EventEmitter {
     return [...this.events];
   }
 
+  setTabTitle(tabId: string, title: string): MasterEvent[] {
+    const updated: MasterEvent[] = [];
+    for (const event of this.events) {
+      if (event.tabId !== tabId || event.tabTitle === title) continue;
+      event.tabTitle = title;
+      updated.push(event);
+    }
+    return updated;
+  }
+
   removeTab(tabId: string): MasterEvent[] {
     this.events = this.events.filter((event) => event.tabId !== tabId);
     return this.list();

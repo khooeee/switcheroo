@@ -13,6 +13,7 @@ function childCallbacks() {
       onSteeringSupport: (value) => capabilities.push(value),
       onPromptComplete: () => completions.push(true),
       onAskQuestion() {}, onPermission() {},
+      getTabTitle: () => "Fork session",
     },
   };
 }
