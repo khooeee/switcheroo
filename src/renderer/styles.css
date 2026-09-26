@@ -41,7 +41,7 @@ html[data-theme="light"] {
   --bg-2: #e7eef2;
   --bg-3: #d7e2e8;
   --border: #c9d5dc;
-  --text: #172026;
+  --text: #000000;
   --text-dim: #5c6d7a;
   --accent: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
   --accent-2: #b86a22;
