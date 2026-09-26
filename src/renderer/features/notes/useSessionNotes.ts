@@ -11,6 +11,23 @@ export function useSessionNotes() {
     setWidths(Object.fromEntries(tabs.map((tab) => [tab.id, tab.notesWidth ?? defaultNotesWidth])));
   }, []);
 
+  const syncFromTabs = useCallback((tabs: SessionTab[]) => {
+    setNotes((prev) => {
+      const next = { ...prev };
+      for (const tab of tabs) {
+        if (tab.notes !== undefined) next[tab.id] = tab.notes;
+      }
+      return next;
+    });
+    setWidths((prev) => {
+      const next = { ...prev };
+      for (const tab of tabs) {
+        if (tab.notesWidth !== undefined) next[tab.id] = tab.notesWidth;
+      }
+      return next;
+    });
+  }, []);
+
   const prune = useCallback((ids: Set<string>) => {
     const keep = ([id]: [string, unknown]) => ids.has(id);
     setNotes((prev) => Object.fromEntries(Object.entries(prev).filter(keep)));
@@ -27,5 +44,5 @@ export function useSessionNotes() {
     void window.switcheroo.setTabNotesWidth(tabId, width);
   }, []);
 
-  return { notes, widths, hydrate, prune, setNote, setWidth };
+  return { notes, widths, hydrate, syncFromTabs, prune, setNote, setWidth };
 }

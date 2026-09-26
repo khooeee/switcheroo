@@ -46,7 +46,7 @@ export async function handleControlRequest(
     const action = tabMatch[2];
 
     if (method === "GET" && action === "transcript") {
-      return json(res, 200, { tabId, items: tabs.getTranscript(tabId) });
+      return json(res, 200, { tabId, items: await tabs.getTranscript(tabId) });
     }
     if (method === "GET" && action === "wait") {
       const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);

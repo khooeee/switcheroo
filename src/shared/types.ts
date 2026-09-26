@@ -117,11 +117,16 @@ export interface CreateTabInput {
   switcherooAware?: boolean;
 }
 
+export interface PersistedTab {
+  id: string;
+  title: string;
+}
+
 export interface PersistedState {
   version: 1;
   activeTabId: ActiveTabId;
-  /** Open session ids in rail order. Soft-closed sessions are omitted but kept on disk. */
-  tabs: string[];
+  /** Open sessions in rail order. Soft-closed sessions are omitted but kept on disk. */
+  tabs: PersistedTab[];
 }
 
 export interface SwitcherooApi {

@@ -20,7 +20,6 @@ import { deleteSessionFolder, loadSessionMeta, saveSessionMeta, type SessionMeta
 import { loadSessionNotes, saveSessionNotes } from "./sessionNotes";
 import { loadTranscript, saveTranscript } from "./sessionTranscripts";
 import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvents";
-import { stripCursorStreamNoise } from "../shared/cursorStreamNoise";
 import { formatAgentError } from "../shared/formatAgentError";
 import { forkTabAtEvent } from "./forkTabAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
@@ -30,6 +29,7 @@ export class TabManager {
   private tabs = new Map<string, SessionTab>();
   private sessions = new Map<string, AcpSession>();
   private transcripts = new Map<string, TranscriptItem[]>();
+  private hydrated = new Set<string>();
   private activeTabId: ActiveTabId = MASTER_TAB_ID;
   private bus = new GlobalEventBus();
   private window: BrowserWindow | null = null;
@@ -47,31 +47,27 @@ export class TabManager {
     const saved = await loadState();
     if (saved) {
       const openIds: string[] = [];
-      for (const id of saved.tabs) {
-        const meta = await loadSessionMeta(id);
-        if (!meta) continue;
+      for (const raw of saved.tabs as Array<string | { id: string; title: string }>) {
+        const id = typeof raw === "string" ? raw : raw.id;
+        const title = typeof raw === "string" ? raw : raw.title;
+        if (!id) continue;
         openIds.push(id);
         this.tabs.set(id, {
           id,
-          title: meta.title,
-          agentKind: meta.agentKind,
-          cwd: meta.cwd,
-          sessionId: meta.sessionId,
+          title: title || id,
+          agentKind: "claude",
+          cwd: "",
+          sessionId: null,
           status: "idle",
           error: null,
           createdAt: Date.now(),
-          notes: await loadSessionNotes(id),
-          notesWidth: meta.notesWidth,
         });
-        this.transcripts.set(id, await loadTranscript(id));
+        this.transcripts.set(id, []);
       }
       this.activeTabId =
         saved.activeTabId === MASTER_TAB_ID || openIds.includes(saved.activeTabId)
           ? saved.activeTabId
           : MASTER_TAB_ID;
-      if (openIds.length !== saved.tabs.length) {
-        await saveState({ version: 1, activeTabId: this.activeTabId, tabs: openIds });
-      }
       const openTabIds = new Set(openIds);
       const masterEvents = await loadSwitchboardEvents();
       const navigableIds = new Set(openTabIds);
@@ -80,26 +76,19 @@ export class TabManager {
         if (await loadSessionMeta(event.tabId)) navigableIds.add(event.tabId);
       }
       this.bus.restore(
-        masterEvents.map((e) => {
-          const savedText = this.transcripts.get(e.tabId)?.find((item) => item.id === e.id)?.text;
-          const summary = savedText
-            ? e.agentKind === "cursor"
-              ? stripCursorStreamNoise(savedText)
-              : savedText
-            : e.summary;
-          return {
-            id: e.id,
-            tabId: e.tabId,
-            agentKind: e.agentKind,
-            at: e.at,
-            kind: e.kind,
-            summary,
-            fileChanges: e.fileChanges,
-            toolStatus: e.toolStatus,
-            navigable: navigableIds.has(e.tabId),
-          };
-        }),
+        masterEvents.map((e) => ({
+          id: e.id,
+          tabId: e.tabId,
+          agentKind: e.agentKind,
+          at: e.at,
+          kind: e.kind,
+          summary: e.summary,
+          fileChanges: e.fileChanges,
+          toolStatus: e.toolStatus,
+          navigable: navigableIds.has(e.tabId),
+        })),
       );
+      if (this.activeTabId !== MASTER_TAB_ID) await this.ensureHydrated(this.activeTabId);
     }
 
     this.bus.on("event", (event: MasterEvent) => {
@@ -115,12 +104,13 @@ export class TabManager {
     const state: PersistedState = {
       version: 1,
       activeTabId: this.activeTabId,
-      tabs: [...this.tabs.keys()],
+      tabs: [...this.tabs.values()].map((t) => ({ id: t.id, title: t.title })),
     };
     await saveState(state);
     await saveSwitchboardEvents(this.bus.list());
     await Promise.all(
       [...this.tabs.values()].map(async (tab) => {
+        if (!this.hydrated.has(tab.id)) return;
         await saveSessionMeta(tab.id, metaFromTab(tab));
         await saveSessionNotes(tab.id, tab.notes ?? "");
         await saveTranscript(tab.id, this.transcripts.get(tab.id) ?? []);
@@ -153,6 +143,7 @@ export class TabManager {
     };
     this.prependTab(tab);
     this.transcripts.set(id, []);
+    this.hydrated.add(id);
     this.activeTabId = id;
     this.emitTabs();
 
@@ -191,9 +182,10 @@ export class TabManager {
   }
 
   async forkTab(tabId: string, eventId?: string): Promise<SessionTab> {
+    if (!(await this.ensureHydrated(tabId))) throw new Error("Session not found");
     return forkTabAtEvent({
       getTab: (id) => this.tabs.get(id),
-      getTranscript: (id) => this.getTranscript(id),
+      getTranscript: (id) => this.transcripts.get(id) ?? [],
       listTitles: () => [...this.tabs.values()].map((tab) => tab.title),
       ensureSession: async (tab) => this.ensureSession(tab),
       callbacksFor: (tab) => this.callbacksFor(tab),
@@ -202,6 +194,7 @@ export class TabManager {
       addTab: (tab, transcript) => {
         this.prependTab(tab);
         this.transcripts.set(tab.id, transcript);
+        this.hydrated.add(tab.id);
       },
       setActiveTab: (id) => { this.activeTabId = id; },
       emitTabs: () => this.emitTabs(),
@@ -213,9 +206,11 @@ export class TabManager {
   async closeTab(tabId: string): Promise<void> {
     const tab = this.tabs.get(tabId);
     if (!tab) return;
-    await saveSessionMeta(tabId, metaFromTab(tab));
-    await saveSessionNotes(tabId, tab.notes ?? "");
-    await saveTranscript(tabId, this.transcripts.get(tabId) ?? []);
+    if (this.hydrated.has(tabId)) {
+      await saveSessionMeta(tabId, metaFromTab(tab));
+      await saveSessionNotes(tabId, tab.notes ?? "");
+      await saveTranscript(tabId, this.transcripts.get(tabId) ?? []);
+    }
     const session = this.sessions.get(tabId);
     if (session) {
       await session.dispose();
@@ -223,6 +218,7 @@ export class TabManager {
     }
     this.tabs.delete(tabId);
     this.transcripts.delete(tabId);
+    this.hydrated.delete(tabId);
     if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
     this.emitTabs();
     void this.persist();
@@ -241,6 +237,7 @@ export class TabManager {
     }
     this.tabs.delete(tabId);
     this.transcripts.delete(tabId);
+    this.hydrated.delete(tabId);
     await deleteSessionFolder(tabId);
     if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
     const events = this.bus.removeTab(tabId);
@@ -258,17 +255,19 @@ export class TabManager {
   }
 
   setTabNotes(tabId: string, notes: string): void {
-    const tab = this.tabs.get(tabId);
-    if (!tab) return;
-    tab.notes = notes;
-    this.queuePersist();
+    void this.ensureHydrated(tabId).then((tab) => {
+      if (!tab) return;
+      tab.notes = notes;
+      this.queuePersist();
+    });
   }
 
   setTabNotesWidth(tabId: string, width: number): void {
-    const tab = this.tabs.get(tabId);
-    if (!tab) return;
-    tab.notesWidth = Number.isFinite(width) ? Math.round(width) : tab.notesWidth;
-    this.queuePersist();
+    void this.ensureHydrated(tabId).then((tab) => {
+      if (!tab) return;
+      tab.notesWidth = Number.isFinite(width) ? Math.round(width) : tab.notesWidth;
+      this.queuePersist();
+    });
   }
 
   reorderTabs(tabIds: string[]): void {
@@ -286,8 +285,12 @@ export class TabManager {
     void this.persist();
   }
 
-  setActiveTab(tabId: ActiveTabId): void {
+  async setActiveTab(tabId: ActiveTabId): Promise<void> {
     if (tabId !== MASTER_TAB_ID && !this.tabs.has(tabId)) return;
+    if (tabId !== MASTER_TAB_ID) {
+      const tab = await this.ensureHydrated(tabId);
+      if (!tab) return;
+    }
     this.activeTabId = tabId;
     this.emitTabs();
     void this.persist();
@@ -298,6 +301,8 @@ export class TabManager {
     if (!this.tabs.has(tabId)) {
       const reopened = await this.reopenTab(tabId);
       if (!reopened) return;
+    } else if (!(await this.ensureHydrated(tabId))) {
+      return;
     }
     this.activeTabId = tabId;
     this.emitTabs();
@@ -307,7 +312,7 @@ export class TabManager {
   }
 
   async sendPrompt(tabId: string, text: string): Promise<void> {
-    const tab = this.tabs.get(tabId);
+    const tab = await this.ensureHydrated(tabId);
     if (!tab) throw new Error("No tab");
     this.prependTab(tab);
     this.emitTabs();
@@ -340,7 +345,8 @@ export class TabManager {
     this.sessions.get(tabId)?.respondAskQuestion(requestId, outcome);
   }
 
-  getTranscript(tabId: string): TranscriptItem[] {
+  async getTranscript(tabId: string): Promise<TranscriptItem[]> {
+    await this.ensureHydrated(tabId);
     return this.transcripts.get(tabId) ?? [];
   }
 
@@ -445,6 +451,7 @@ export class TabManager {
   }
 
   private async ensureSession(tab: SessionTab, options?: { quiet?: boolean }): Promise<AcpSession> {
+    if (!(await this.ensureHydrated(tab.id))) throw new Error("No tab");
     let session = this.sessions.get(tab.id);
     if (!session) {
       session = this.openSession(tab);
@@ -458,6 +465,33 @@ export class TabManager {
     tab.sessionId = session.sessionId;
     this.emitTabs();
     return session;
+  }
+
+  private async ensureHydrated(tabId: string): Promise<SessionTab | null> {
+    const tab = this.tabs.get(tabId);
+    if (!tab) return null;
+    if (this.hydrated.has(tabId)) return tab;
+    const meta = await loadSessionMeta(tabId);
+    if (!meta) {
+      this.tabs.delete(tabId);
+      this.transcripts.delete(tabId);
+      if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
+      this.emitTabs();
+      void this.persist();
+      return null;
+    }
+    tab.title = meta.title;
+    tab.agentKind = meta.agentKind;
+    tab.cwd = meta.cwd;
+    tab.sessionId = meta.sessionId;
+    tab.notesWidth = meta.notesWidth;
+    tab.notes = await loadSessionNotes(tabId);
+    const items = await loadTranscript(tabId);
+    this.transcripts.set(tabId, items);
+    this.hydrated.add(tabId);
+    this.send("transcript:reset", { tabId, items });
+    this.emitTabs();
+    return tab;
   }
 
   private callbacksFor(tab: SessionTab): SessionCallbacks {
@@ -512,6 +546,7 @@ export class TabManager {
     };
     this.prependTab(tab);
     this.transcripts.set(tabId, items);
+    this.hydrated.add(tabId);
     this.send("transcript:reset", { tabId, items });
     return tab;
   }

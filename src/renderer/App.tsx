@@ -52,11 +52,11 @@ export function App() {
       setActiveTabId(data.activeTabId);
       setMasterEvents(data.masterEvents);
       sessionNotes.hydrate(data.tabs);
-      const next: Record<string, TranscriptItem[]> = {};
-      for (const t of data.tabs) {
-        next[t.id] = await window.switcheroo.getTranscript(t.id);
+      setTranscripts({});
+      if (data.activeTabId !== MASTER_TAB_ID) {
+        const items = await window.switcheroo.getTranscript(data.activeTabId);
+        setTranscripts({ [data.activeTabId]: items });
       }
-      setTranscripts(next);
     });
 
     const unsubs = [
@@ -64,6 +64,7 @@ export function App() {
         const ids = new Set(t.map((tab) => tab.id));
         tabIdsRef.current = ids;
         sessionNotes.prune(ids);
+        sessionNotes.syncFromTabs(t);
         setTabs(t);
         setActiveTabId(a);
         setMasterEvents((prev) => prev.filter((event) => ids.has(event.tabId)));

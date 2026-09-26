@@ -72,7 +72,7 @@ function state() {
   return {
     version: 1,
     activeTabId: "agent-1",
-    tabs: ["agent-1"],
+    tabs: [{ id: "agent-1", title: "Saved agent" }],
   };
 }
 
@@ -102,7 +102,7 @@ test("overlapping saves finish in order and capture the state at call time", asy
     saves.push(store.saveState({
       version: 1,
       activeTabId: `agent-${i}`,
-      tabs: ["agent-1"],
+      tabs: [{ id: "agent-1", title: "Saved agent" }],
     }));
   }
   await Promise.all(saves);
