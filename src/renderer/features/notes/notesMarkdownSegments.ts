@@ -37,11 +37,9 @@ export function notesMarkdownSegments(source: string): NotesMdSegment[] {
   while (i < source.length) {
     if (lineStart() && source.startsWith("```", i)) {
       const close = source.indexOf("\n```", i + 3);
-      if (close !== -1) {
-        take("codeBlock", close + 4);
-        continue;
-      }
-      take("codeBlock", source.length);
+      let end = close !== -1 ? close + 4 : source.length;
+      if (source[end] === "\n") end += 1;
+      take("codeBlock", end);
       continue;
     }
 
@@ -57,7 +55,7 @@ export function notesMarkdownSegments(source: string): NotesMdSegment[] {
           end = eol + 1;
           continue;
         }
-        end = eol;
+        end = eol + 1;
         break;
       }
       take("blockquote", end);

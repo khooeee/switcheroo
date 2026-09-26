@@ -38,7 +38,7 @@ test("fenced code blocks keep fences and content", () => {
   const segments = notesMarkdownSegments(text);
   assert.equal(join(segments), text);
   assert.equal(segments[1].kind, "codeBlock");
-  assert.equal(segments[1].text, "```js\nconst x = 1;\n```");
+  assert.equal(segments[1].text, "```js\nconst x = 1;\n```\n");
 });
 
 test("blockquotes keep markers and group consecutive lines", () => {
@@ -46,7 +46,7 @@ test("blockquotes keep markers and group consecutive lines", () => {
   const segments = notesMarkdownSegments(text);
   assert.equal(join(segments), text);
   assert.equal(segments[1].kind, "blockquote");
-  assert.equal(segments[1].text, "> one\n> two");
+  assert.equal(segments[1].text, "> one\n> two\n");
 });
 
 test("unclosed markers stay plain text", () => {

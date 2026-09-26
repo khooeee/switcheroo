@@ -110,11 +110,12 @@
   padding: 0.05em 0.2em;
 }
 
-/* Keep inline layout so the overlay stays line-aligned with the textarea. */
+/* One block row per source line: full-width bg without shifting caret alignment. */
 .tab-notes-md-codeBlock,
 .tab-notes-md-blockquote {
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 24px);
   margin: 0 -12px;
   padding: 0 12px;
   border-radius: 0;
