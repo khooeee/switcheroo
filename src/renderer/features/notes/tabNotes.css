@@ -35,22 +35,100 @@
   background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
 }
 
-.tab-notes textarea {
+.tab-notes-editor {
+  position: relative;
   flex: 1;
   min-height: 0;
-  width: 100%;
-  resize: none;
+  min-width: 0;
+}
+
+.tab-notes-md,
+.tab-notes textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 10px 12px;
   border: none;
   border-radius: 0;
-  background: transparent;
-  padding: 10px 12px;
-  outline: none;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-family: var(--font-mono);
   font-size: 12.5px;
   line-height: 1.5;
+  tab-size: 2;
+}
+
+.tab-notes-md {
+  color: var(--text);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tab-notes textarea {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text);
+  outline: none;
 }
 
 .tab-notes textarea::placeholder {
   color: var(--placeholder);
   opacity: 1;
+}
+
+.tab-notes textarea::selection {
+  background: color-mix(in srgb, var(--codex) 35%, transparent);
+}
+
+.tab-notes-md-bold {
+  font-weight: 700;
+}
+
+.tab-notes-md-italic {
+  font-style: italic;
+}
+
+.tab-notes-md-strike {
+  text-decoration: line-through;
+}
+
+.tab-notes-md-heading {
+  font-weight: 700;
+  font-size: inherit;
+}
+
+.tab-notes-md-code {
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+  border-radius: 3px;
+  padding: 0.05em 0.2em;
+}
+
+/* One block row per source line: full-width bg without shifting caret alignment. */
+.tab-notes-md-codeBlock,
+.tab-notes-md-blockquote {
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 24px);
+  margin: 0 -12px;
+  padding: 0 12px;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.tab-notes-md-codeBlock {
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+}
+
+.tab-notes-md-blockquote {
+  background: color-mix(in srgb, var(--code-bg) 70%, var(--bg-2));
+  border-left: 3px solid var(--border);
+  padding-left: 9px;
 }

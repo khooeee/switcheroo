@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type UIEvent,
+} from "react";
 import { clampNotesWidth } from "./clampNotesWidth";
+import { NotesMarkdownPreview } from "./NotesMarkdownPreview";
 import "./tabNotes.css";
 
 interface Props {
@@ -14,6 +21,7 @@ export function TabNotes({ tabId, value, width, onChange, onWidthChange }: Props
   const [paneWidth, setPaneWidth] = useState(() => clampNotesWidth(width));
   const paneWidthRef = useRef(paneWidth);
   const drag = useRef<{ x: number; width: number } | null>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (drag.current) return;
@@ -46,6 +54,13 @@ export function TabNotes({ tabId, value, width, onChange, onWidthChange }: Props
     drag.current = null;
   };
 
+  const syncScroll = (event: UIEvent<HTMLTextAreaElement>) => {
+    const preview = editorRef.current?.querySelector<HTMLElement>(".tab-notes-md");
+    if (!preview) return;
+    preview.scrollTop = event.currentTarget.scrollTop;
+    preview.scrollLeft = event.currentTarget.scrollLeft;
+  };
+
   return (
     <aside className="tab-notes" style={{ width: paneWidth }} aria-label="Tab notes">
       <div
@@ -71,12 +86,16 @@ export function TabNotes({ tabId, value, width, onChange, onWidthChange }: Props
           apply(paneWidth + (event.key === "ArrowLeft" ? 24 : -24), true);
         }}
       />
-      <textarea
-        value={value}
-        placeholder="Notes…"
-        spellCheck
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <div className="tab-notes-editor" ref={editorRef}>
+        <NotesMarkdownPreview text={value} />
+        <textarea
+          value={value}
+          placeholder="Notes…"
+          spellCheck
+          onChange={(event) => onChange(event.target.value)}
+          onScroll={syncScroll}
+        />
+      </div>
     </aside>
   );
 }
