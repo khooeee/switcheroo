@@ -6,38 +6,78 @@ const vm = require("node:vm");
 const { test } = require("node:test");
 const ts = require("typescript");
 
+const cache = new Map();
+
 async function loadModule(file, electron, overrides = {}) {
-  const source = await fs.readFile(path.join(__dirname, "../src/main", file), "utf8");
+  const absolute = path.isAbsolute(file) ? file : path.join(__dirname, "../src/main", file);
+  const key = `${absolute}::${overrides === undefined ? "" : Object.keys(overrides).join(",")}`;
+  // Always reload persist graph against this electron userData dir.
+  const exports = {};
+  const source = await fs.readFile(absolute, "utf8");
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   });
-  const exports = {};
   vm.runInNewContext(outputText, {
     exports,
     process,
-    require: (name) => name === "electron" ? electron : overrides[name] ?? require(name),
+    require: (name) => {
+      if (name === "electron") return electron;
+      if (overrides[name]) return overrides[name];
+      if (!name.startsWith(".")) return require(name);
+      const target = path.resolve(path.dirname(absolute), name);
+      const resolved = require("node:fs").existsSync(`${target}.ts`) ? `${target}.ts` : `${target}.js`;
+      return loadSync(resolved, electron, overrides);
+    },
+  });
+  return exports;
+}
+
+function loadSync(absolute, electron, overrides) {
+  if (cache.has(absolute)) return cache.get(absolute);
+  const exports = {};
+  cache.set(absolute, exports);
+  const source = require("node:fs").readFileSync(absolute, "utf8");
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  });
+  vm.runInNewContext(outputText, {
+    exports,
+    process,
+    require: (name) => {
+      if (name === "electron") return electron;
+      if (overrides[name]) return overrides[name];
+      if (!name.startsWith(".")) return require(name);
+      const target = path.resolve(path.dirname(absolute), name);
+      const resolved = require("node:fs").existsSync(`${target}.ts`) ? `${target}.ts` : `${target}.js`;
+      return loadSync(resolved, electron, overrides);
+    },
   });
   return exports;
 }
 
 async function fixture(t, overrides) {
+  cache.clear();
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "switcheroo-persistence-"));
   t.after(() => fs.rm(dir, { recursive: true, force: true }));
   const electron = { app: { getPath: () => dir } };
   return {
+    dir,
     target: path.join(dir, "switcheroo-state.json"),
+    sessions: path.join(dir, "sessions"),
     store: await loadModule("persist.ts", electron, overrides),
-    restart: () => loadModule("persist.ts", electron),
+    transcripts: loadSync(path.join(__dirname, "../src/main/sessionTranscripts.ts"), electron, overrides),
+    restart: () => {
+      cache.clear();
+      return loadModule("persist.ts", electron);
+    },
   };
 }
 
 function state(title = "Saved agent") {
   return {
-    version: 1,
+    version: 3,
     activeTabId: "agent-1",
     tabs: [{ id: "agent-1", title, agentKind: "codex", cwd: "/tmp", sessionId: null }],
-    transcripts: { "agent-1": [{ id: "msg-1", role: "assistant", text: "Hello\nworld", at: 1 }] },
-    masterEvents: [],
   };
 }
 
@@ -92,7 +132,7 @@ test("a failed write preserves the previous file and allows a retry", async (t) 
   assert.equal(JSON.parse(await fs.readFile(target, "utf8")).tabs[0].title, "Retried");
 });
 
-for (const contents of ["{broken", '{"version":2}']) {
+for (const contents of ["{broken", '{"version":4}']) {
   test(`preserve unreadable or unsupported state: ${contents}`, async (t) => {
     const { target, store } = await fixture(t);
     await fs.writeFile(target, contents);
@@ -101,6 +141,62 @@ for (const contents of ["{broken", '{"version":2}']) {
     assert.equal(await fs.readFile(target, "utf8"), contents);
   });
 }
+
+test("v1 state migrates transcripts and switchboard events to JSONL", async (t) => {
+  const { target, sessions, store, transcripts, restart } = await fixture(t);
+  const events = [{
+    id: "evt-1", tabId: "agent-1", agentKind: "codex", at: 1,
+    kind: "message", summary: "Hello", navigable: true,
+  }];
+  const legacy = {
+    version: 1,
+    activeTabId: "agent-1",
+    tabs: [{ id: "agent-1", title: "Saved agent", agentKind: "codex", cwd: "/tmp", sessionId: null }],
+    transcripts: {
+      "agent-1": [
+        { id: "msg-1", role: "assistant", text: "Hello\nworld", at: 1 },
+        { id: "msg-2", role: "user", text: "Hi", at: 2 },
+      ],
+    },
+    masterEvents: events,
+  };
+  await fs.writeFile(target, JSON.stringify(legacy));
+  const loaded = await store.loadState();
+  assert.equal(loaded.version, 3);
+  assert.equal(loaded.transcripts, undefined);
+  assert.equal(loaded.masterEvents, undefined);
+  assert.equal(JSON.stringify(await transcripts.loadTranscript("agent-1")), JSON.stringify(legacy.transcripts["agent-1"]));
+  const onDisk = await fs.readFile(path.join(sessions, "agent-1.jsonl"), "utf8");
+  assert.equal(onDisk.trim().split("\n").length, 2);
+  const switchboard = loadSync(path.join(__dirname, "../src/main/switchboardEvents.ts"), { app: { getPath: () => path.dirname(target) } });
+  assert.equal(JSON.stringify(await switchboard.loadSwitchboardEvents()), JSON.stringify(events));
+  const restarted = await restart();
+  assert.equal((await restarted.loadState()).version, 3);
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).masterEvents, undefined);
+});
+
+test("v2 state migrates switchboard events to switchboard.jsonl", async (t) => {
+  const { target, store, restart } = await fixture(t);
+  const events = [{
+    id: "evt-1", tabId: "agent-1", agentKind: "codex", at: 1,
+    kind: "tool", summary: "Read file", navigable: true,
+  }];
+  await fs.writeFile(target, JSON.stringify({
+    version: 2,
+    activeTabId: "agent-1",
+    tabs: [{ id: "agent-1", title: "Saved agent", agentKind: "codex", cwd: "/tmp", sessionId: null }],
+    masterEvents: events,
+  }));
+  const loaded = await store.loadState();
+  assert.equal(loaded.version, 3);
+  assert.equal(loaded.masterEvents, undefined);
+  const switchboard = loadSync(
+    path.join(__dirname, "../src/main/switchboardEvents.ts"),
+    { app: { getPath: () => path.dirname(target) } },
+  );
+  assert.equal(JSON.stringify(await switchboard.loadSwitchboardEvents()), JSON.stringify(events));
+  assert.equal((await (await restart()).loadState()).version, 3);
+});
 
 async function quitFixture(save) {
   let handler;
@@ -115,6 +211,7 @@ async function quitFixture(save) {
       if (!blocked) exited++;
     },
   };
+  cache.clear();
   const { installQuitHandler } = await loadModule("installQuitHandler.ts", {
     app,
     dialog: { showErrorBox: (...args) => errors.push(args) },

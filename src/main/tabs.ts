@@ -17,6 +17,13 @@ import { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { agentLabel } from "./acp/presets";
 import { loadState, saveState } from "./persist";
+import {
+  deleteTranscript,
+  loadTranscript,
+  removeOrphanTranscripts,
+  saveTranscript,
+} from "./sessionTranscripts";
+import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvents";
 import { stripCursorStreamNoise } from "../shared/cursorStreamNoise";
 import { forkTabAtEvent } from "./forkTabAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
@@ -44,9 +51,24 @@ export class TabManager {
     if (saved) {
       this.activeTabId = saved.activeTabId;
       const openTabIds = new Set(saved.tabs.map((t) => t.id));
+      for (const t of saved.tabs) {
+        this.tabs.set(t.id, {
+          ...t,
+          status: "idle",
+          error: null,
+          createdAt: Date.now(),
+          closed: t.closed ?? false,
+          notes: t.notes,
+          notesWidth: t.notesWidth,
+          slashCommands: t.slashCommands,
+        });
+        this.transcripts.set(t.id, await loadTranscript(t.id));
+      }
+      await removeOrphanTranscripts(openTabIds);
+      const masterEvents = await loadSwitchboardEvents();
       this.bus.restore(
-        saved.masterEvents.map((e) => {
-          const savedText = saved.transcripts[e.tabId]?.find((item) => item.id === e.id)?.text;
+        masterEvents.map((e) => {
+          const savedText = this.transcripts.get(e.tabId)?.find((item) => item.id === e.id)?.text;
           const summary = savedText
             ? e.agentKind === "cursor"
               ? stripCursorStreamNoise(savedText)
@@ -65,19 +87,6 @@ export class TabManager {
           };
         }),
       );
-      for (const t of saved.tabs) {
-        this.tabs.set(t.id, {
-          ...t,
-          status: "idle",
-          error: null,
-          createdAt: Date.now(),
-          closed: t.closed ?? false,
-          notes: t.notes,
-          notesWidth: t.notesWidth,
-          slashCommands: t.slashCommands,
-        });
-        this.transcripts.set(t.id, saved.transcripts[t.id] ?? []);
-      }
     }
 
     this.bus.on("event", (event: MasterEvent) => {
@@ -91,7 +100,7 @@ export class TabManager {
       this.persistTimer = null;
     }
     const state: PersistedState = {
-      version: 1,
+      version: 3,
       activeTabId: this.activeTabId,
       tabs: [...this.tabs.values()].map((t) => ({
         id: t.id,
@@ -104,10 +113,12 @@ export class TabManager {
         notesWidth: t.notesWidth,
         slashCommands: t.slashCommands,
       })),
-      transcripts: Object.fromEntries(this.transcripts),
-      masterEvents: this.bus.list(),
     };
     await saveState(state);
+    await saveSwitchboardEvents(this.bus.list());
+    await Promise.all(
+      [...this.transcripts].map(([tabId, items]) => saveTranscript(tabId, items)),
+    );
   }
 
   list() {
@@ -224,6 +235,7 @@ export class TabManager {
     }
     this.tabs.delete(tabId);
     this.transcripts.delete(tabId);
+    await deleteTranscript(tabId);
     if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
     const events = this.bus.removeTab(tabId);
     this.emitTabs();

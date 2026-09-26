@@ -120,7 +120,7 @@ export interface CreateTabInput {
 }
 
 export interface PersistedState {
-  version: 1;
+  version: 3;
   activeTabId: ActiveTabId;
   tabs: Array<{
     id: string;
@@ -133,8 +133,6 @@ export interface PersistedState {
     notesWidth?: number;
     slashCommands?: SlashCommand[];
   }>;
-  transcripts: Record<string, TranscriptItem[]>;
-  masterEvents: MasterEvent[];
 }
 
 export interface SwitcherooApi {
