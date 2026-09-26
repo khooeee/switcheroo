@@ -61,7 +61,7 @@ test("transcript JSONL lives at sessions/<id>/transcript.jsonl", async (t) => {
 test("meta and notes round-trip beside the transcript", async (t) => {
   const { sessions, meta, notes } = await fixture(t);
   await meta.saveSessionMeta("tab-1", {
-    title: "Demo", agentKind: "codex", cwd: "/tmp", sessionId: null, notesWidth: 280,
+    title: "Demo", agentKind: "codex", cwd: "/tmp", agentSessionId: null, notesWidth: 280,
   });
   await notes.saveSessionNotes("tab-1", "# hello\n");
   assert.equal((await meta.loadSessionMeta("tab-1")).title, "Demo");

@@ -3,14 +3,14 @@ import path from "node:path";
 import started from "electron-squirrel-startup";
 import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
-import { TabManager } from "./main/tabs";
+import { SessionManager } from "./main/sessions";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { openInCursor } from "./main/openInCursor";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
 import { ControlServer } from "./main/control/ControlServer";
-import type { ActiveTabId, CreateTabInput } from "./shared/types";
+import type { ActiveSessionId, CreateSessionInput } from "./shared/types";
 
 if (started) {
   app.quit();
@@ -18,12 +18,12 @@ if (started) {
 
 app.setName("Switcheroo");
 
-const tabs = new TabManager();
+const sessions = new SessionManager();
 const control = new ControlServer();
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = async () => {
-  await tabs.init();
+  await sessions.init();
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -43,7 +43,7 @@ const createWindow = async () => {
   });
 
   installExternalLinks(mainWindow.webContents);
-  tabs.setWindow(mainWindow);
+  sessions.setWindow(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -59,43 +59,43 @@ const createWindow = async () => {
 };
 
 function registerIpc(): void {
-  ipcMain.handle("files:openInCursor", async (_event, tabId: string, filePath: string) => {
-    await openInCursor(requireTab(tabId).cwd, filePath);
+  ipcMain.handle("files:openInCursor", async (_event, sessionId: string, filePath: string) => {
+    await openInCursor(requireSession(sessionId).cwd, filePath);
   });
-  ipcMain.handle("tabs:list", () => tabs.list());
-  ipcMain.handle("tabs:create", (_e, input: CreateTabInput) => tabs.createTab(input));
-  ipcMain.handle("tabs:fork", (_e, tabId: string, eventId?: string) => tabs.forkTab(tabId, eventId));
-  ipcMain.handle("tabs:close", (_e, tabId: string) => tabs.closeTab(tabId));
-  ipcMain.handle("tabs:rename", (_e, tabId: string, title: string) => {
-    tabs.renameTab(tabId, title);
+  ipcMain.handle("sessions:list", () => sessions.list());
+  ipcMain.handle("sessions:create", (_e, input: CreateSessionInput) => sessions.createSession(input));
+  ipcMain.handle("sessions:fork", (_e, sessionId: string, eventId?: string) => sessions.forkSession(sessionId, eventId));
+  ipcMain.handle("sessions:close", (_e, sessionId: string) => sessions.closeSession(sessionId));
+  ipcMain.handle("sessions:rename", (_e, sessionId: string, title: string) => {
+    sessions.renameSession(sessionId, title);
   });
-  ipcMain.handle("tabs:setNotes", (_e, tabId: string, notes: string) => {
-    tabs.setTabNotes(tabId, notes);
+  ipcMain.handle("sessions:setNotes", (_e, sessionId: string, notes: string) => {
+    sessions.setSessionNotes(sessionId, notes);
   });
-  ipcMain.handle("tabs:setNotesWidth", (_e, tabId: string, width: number) => {
-    tabs.setTabNotesWidth(tabId, width);
+  ipcMain.handle("sessions:setNotesWidth", (_e, sessionId: string, width: number) => {
+    sessions.setSessionNotesWidth(sessionId, width);
   });
-  ipcMain.handle("tabs:reorder", (_e, tabIds: string[]) => {
-    tabs.reorderTabs(tabIds);
+  ipcMain.handle("sessions:reorder", (_e, sessionIds: string[]) => {
+    sessions.reorderSessions(sessionIds);
   });
-  ipcMain.handle("tabs:setActive", (_e, tabId: ActiveTabId) => {
-    tabs.setActiveTab(tabId);
+  ipcMain.handle("sessions:setActive", (_e, sessionId: ActiveSessionId) => {
+    sessions.setActiveSession(sessionId);
   });
-  ipcMain.handle("tabs:navigateEvent", (_e, tabId: string, eventId: string) => {
-    tabs.navigateToEvent(tabId, eventId);
+  ipcMain.handle("sessions:navigateEvent", (_e, sessionId: string, eventId: string) => {
+    sessions.navigateToEvent(sessionId, eventId);
   });
-  ipcMain.handle("session:prompt", (_e, tabId: string, text: string) =>
-    tabs.sendPrompt(tabId, text),
+  ipcMain.handle("session:prompt", (_e, sessionId: string, text: string) =>
+    sessions.sendPrompt(sessionId, text),
   );
-  ipcMain.handle("session:cancel", (_e, tabId: string) => tabs.cancelPrompt(tabId));
+  ipcMain.handle("session:cancel", (_e, sessionId: string) => sessions.cancelPrompt(sessionId));
   ipcMain.handle(
     "session:permission",
     (_e, requestId: string, optionId: string | "cancelled") => {
-      tabs.respondPermission(requestId, optionId);
+      sessions.respondPermission(requestId, optionId);
     },
   );
   ipcMain.handle("session:askQuestion", (_e, requestId: string, outcome: unknown) => {
-    tabs.respondAskQuestion(requestId, outcome);
+    sessions.respondAskQuestion(requestId, outcome);
   });
   ipcMain.handle("fs:pickFolder", async () => {
     const result = await dialog.showOpenDialog(mainWindow!, {
@@ -103,23 +103,23 @@ function registerIpc(): void {
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
-  ipcMain.handle("images:savePaste", async (_e, tabId: string, mimeType: string, bytes: Uint8Array) => {
-    requireTab(tabId);
+  ipcMain.handle("images:savePaste", async (_e, sessionId: string, mimeType: string, bytes: Uint8Array) => {
+    requireSession(sessionId);
     return savePastedImage(bytes, mimeType);
   });
-  ipcMain.handle("images:saveClipboard", async (_e, tabId: string) => {
-    requireTab(tabId);
+  ipcMain.handle("images:saveClipboard", async (_e, sessionId: string) => {
+    requireSession(sessionId);
     const png = readClipboardPng();
     if (!png) return null;
     return savePastedImage(png, "image/png");
   });
-  ipcMain.handle("transcript:get", (_e, tabId: string) => tabs.getTranscript(tabId));
+  ipcMain.handle("transcript:get", (_e, sessionId: string) => sessions.getTranscript(sessionId));
 }
 
-function requireTab(tabId: string) {
-  const tab = tabs.list().tabs.find((item) => item.id === tabId);
-  if (!tab) throw new Error("This agent tab no longer exists.");
-  return tab;
+function requireSession(sessionId: string) {
+  const session = sessions.list().sessions.find((item) => item.id === sessionId);
+  if (!session) throw new Error("This agent session no longer exists.");
+  return session;
 }
 
 function buildMenu(): void {
@@ -228,7 +228,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     registerIpc();
     buildMenu();
     void createWindow();
-    void control.start(tabs);
+    void control.start(sessions);
   });
 
   app.on("window-all-closed", () => {
@@ -240,7 +240,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
   });
 
   installQuitHandler(async () => {
-    await tabs.disposeAll();
+    await sessions.disposeAll();
     await control.stop();
   });
 }

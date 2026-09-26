@@ -20,16 +20,16 @@ const { GlobalEventBus } = load("src/main/events.ts");
 test("append with the same id updates in place and keeps the original at", () => {
   const bus = new GlobalEventBus();
   const first = bus.append({
-    id: "e1", tabId: "t1", agentKind: "codex", at: 100, kind: "message",
+    id: "e1", sessionId: "t1", agentKind: "codex", at: 100, kind: "message",
     summary: "Hi", navigable: true,
   });
   const second = bus.append({
-    id: "e1", tabId: "t1", agentKind: "codex", at: 999, kind: "message",
-    summary: "Hi there", navigable: true, tabTitle: "Demo",
+    id: "e1", sessionId: "t1", agentKind: "codex", at: 999, kind: "message",
+    summary: "Hi there", navigable: true, sessionTitle: "Demo",
   });
   assert.equal(bus.list().length, 1);
   assert.equal(second.at, 100);
   assert.equal(second.summary, "Hi there");
-  assert.equal(second.tabTitle, "Demo");
+  assert.equal(second.sessionTitle, "Demo");
   assert.equal(first.at, 100);
 });

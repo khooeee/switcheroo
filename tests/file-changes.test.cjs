@@ -38,7 +38,7 @@ test("partial tool updates retain file content and update one transcript and Swi
   const output = new ToolOutput(bus, (item, replaceId) => {
     transcript.set(item.id, item);
     if (replaceId) replacements.push(replaceId);
-  }, (kind, summary, id) => bus.append({ id, kind, summary, tabId: "tab", agentKind: "codex", at: 1, navigable: true }));
+  }, (kind, summary, id) => bus.append({ id, kind, summary, sessionId: "tab", agentKind: "codex", at: 1, navigable: true }));
   output.handle({ toolCallId: "create", title: "Write file", kind: "edit", status: "pending",
     content: [{ type: "diff", path: "/project/new.ts", oldText: null, newText: "hello" }] });
   assert.match(bus.list()[0].summary, /^Create .*\(pending\)$/);

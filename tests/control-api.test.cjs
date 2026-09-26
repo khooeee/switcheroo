@@ -22,15 +22,15 @@ const { controlBootstrapText } = load("src/main/acp/controlBootstrapPrompt.ts");
 test("catalog includes core tab routes", () => {
   const catalog = controlCatalogJson("http://127.0.0.1:9/", "hint");
   assert.equal(catalog.baseUrl, "http://127.0.0.1:9/");
-  assert.ok(catalog.routes.some((r) => r.method === "POST" && r.path === "/tabs"));
-  assert.ok(catalog.routes.some((r) => r.path === "/tabs/:id/prompt"));
+  assert.ok(catalog.routes.some((r) => r.method === "POST" && r.path === "/sessions"));
+  assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/prompt"));
   assert.ok(!catalog.routes.some((r) => r.method === "DELETE"));
 });
 
 test("openapi omits root catalog paths", () => {
   const doc = controlOpenApi("http://127.0.0.1:9/");
   assert.equal(doc.openapi, "3.0.3");
-  assert.ok(doc.paths["/tabs"]);
+  assert.ok(doc.paths["/sessions"]);
   assert.equal(doc.paths["/"], undefined);
 });
 

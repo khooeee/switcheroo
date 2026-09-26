@@ -1,13 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
-  ActiveTabId,
-  CreateTabInput,
+  ActiveSessionId,
+  CreateSessionInput,
   CursorAskQuestionRequest,
   MasterEvent,
   PermissionRequest,
-  SessionTab,
+  Session,
   SwitcherooApi,
-  TabStatus,
+  SessionStatus,
   TranscriptItem,
 } from "./shared/types";
 
@@ -18,54 +18,54 @@ function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
 }
 
 const api: SwitcherooApi = {
-  openInCursor: (tabId, filePath) => ipcRenderer.invoke("files:openInCursor", tabId, filePath),
-  createTab: (input: CreateTabInput) => ipcRenderer.invoke("tabs:create", input),
-  forkTab: (tabId, eventId) =>
-    ipcRenderer.invoke("tabs:fork", tabId, eventId),
-  closeTab: (tabId: string) => ipcRenderer.invoke("tabs:close", tabId),
-  renameTab: (tabId: string, title: string) =>
-    ipcRenderer.invoke("tabs:rename", tabId, title),
-  setTabNotes: (tabId, notes) => ipcRenderer.invoke("tabs:setNotes", tabId, notes),
-  setTabNotesWidth: (tabId, width) =>
-    ipcRenderer.invoke("tabs:setNotesWidth", tabId, width),
-  reorderTabs: (tabIds: string[]) => ipcRenderer.invoke("tabs:reorder", tabIds),
-  setActiveTab: (tabId: ActiveTabId) => ipcRenderer.invoke("tabs:setActive", tabId),
-  listTabs: () => ipcRenderer.invoke("tabs:list"),
-  sendPrompt: (tabId: string, text: string) =>
-    ipcRenderer.invoke("session:prompt", tabId, text),
-  cancelPrompt: (tabId: string) => ipcRenderer.invoke("session:cancel", tabId),
+  openInCursor: (sessionId, filePath) => ipcRenderer.invoke("files:openInCursor", sessionId, filePath),
+  createSession: (input: CreateSessionInput) => ipcRenderer.invoke("sessions:create", input),
+  forkSession: (sessionId, eventId) =>
+    ipcRenderer.invoke("sessions:fork", sessionId, eventId),
+  closeSession: (sessionId: string) => ipcRenderer.invoke("sessions:close", sessionId),
+  renameSession: (sessionId: string, title: string) =>
+    ipcRenderer.invoke("sessions:rename", sessionId, title),
+  setSessionNotes: (sessionId, notes) => ipcRenderer.invoke("sessions:setNotes", sessionId, notes),
+  setSessionNotesWidth: (sessionId, width) =>
+    ipcRenderer.invoke("sessions:setNotesWidth", sessionId, width),
+  reorderSessions: (sessionIds: string[]) => ipcRenderer.invoke("sessions:reorder", sessionIds),
+  setActiveSession: (sessionId: ActiveSessionId) => ipcRenderer.invoke("sessions:setActive", sessionId),
+  listSessions: () => ipcRenderer.invoke("sessions:list"),
+  sendPrompt: (sessionId: string, text: string) =>
+    ipcRenderer.invoke("session:prompt", sessionId, text),
+  cancelPrompt: (sessionId: string) => ipcRenderer.invoke("session:cancel", sessionId),
   respondPermission: (requestId, optionId) =>
     ipcRenderer.invoke("session:permission", requestId, optionId),
   respondAskQuestion: (requestId, outcome) =>
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
   pickFolder: () => ipcRenderer.invoke("fs:pickFolder"),
-  savePastedImage: (tabId, image) =>
-    ipcRenderer.invoke("images:savePaste", tabId, image.mimeType, image.bytes),
-  saveClipboardImage: (tabId) => ipcRenderer.invoke("images:saveClipboard", tabId),
-  getTranscript: (tabId: string) => ipcRenderer.invoke("transcript:get", tabId),
-  navigateToEvent: (tabId: string, eventId: string) =>
-    ipcRenderer.invoke("tabs:navigateEvent", tabId, eventId),
-  onTabsChanged: (cb) =>
-    subscribe<{ tabs: SessionTab[]; activeTabId: ActiveTabId }>("tabs:changed", cb),
+  savePastedImage: (sessionId, image) =>
+    ipcRenderer.invoke("images:savePaste", sessionId, image.mimeType, image.bytes),
+  saveClipboardImage: (sessionId) => ipcRenderer.invoke("images:saveClipboard", sessionId),
+  getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
+  navigateToEvent: (sessionId: string, eventId: string) =>
+    ipcRenderer.invoke("sessions:navigateEvent", sessionId, eventId),
+  onSessionsChanged: (cb) =>
+    subscribe<{ sessions: Session[]; activeSessionId: ActiveSessionId }>("sessions:changed", cb),
   onMasterEvent: (cb) => subscribe<MasterEvent>("master:event", cb),
   onTranscript: (cb) =>
-    subscribe<{ tabId: string; item: TranscriptItem; replaceId?: string }>(
+    subscribe<{ sessionId: string; item: TranscriptItem; replaceId?: string }>(
       "transcript",
       cb,
     ),
   onTranscriptReset: (cb) =>
-    subscribe<{ tabId: string; items: TranscriptItem[] }>("transcript:reset", cb),
+    subscribe<{ sessionId: string; items: TranscriptItem[] }>("transcript:reset", cb),
   onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
-  onPromptComplete: (cb) => subscribe<{ tabId: string }>("prompt:complete", cb),
-  onTabStatus: (cb) =>
-    subscribe<{ tabId: string; status: TabStatus; error: string | null }>(
-      "tab-status",
+  onPromptComplete: (cb) => subscribe<{ sessionId: string }>("prompt:complete", cb),
+  onSessionStatus: (cb) =>
+    subscribe<{ sessionId: string; status: SessionStatus; error: string | null }>(
+      "session-status",
       cb,
     ),
   onNavigateToEvent: (cb) =>
-    subscribe<{ tabId: string; eventId: string }>("navigate-event", cb),
+    subscribe<{ sessionId: string; eventId: string }>("navigate-event", cb),
 };
 
 contextBridge.exposeInMainWorld("switcheroo", api);

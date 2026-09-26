@@ -47,7 +47,7 @@ function fixture() {
     items.push(item);
   }, (kind, summary, id) => {
     masters.push({ kind, summary, id });
-    bus.append({ id, kind, summary, tabId: "tab", agentKind: "codex", at: 1, navigable: true });
+    bus.append({ id, kind, summary, sessionId: "tab", agentKind: "codex", at: 1, navigable: true });
   });
   return { output, items, masters };
 }

@@ -1,39 +1,39 @@
 import { useCompletionSound } from "./features/sound/useCompletionSound";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
-  ActiveTabId,
+  ActiveSessionId,
   AgentKind,
   MasterEvent,
   PermissionRequest,
-  SessionTab,
+  Session,
   TranscriptItem,
 } from "../shared/types";
-import { MASTER_TAB_ID } from "../shared/types";
-import { TabRail } from "./features/tabs/TabRail";
+import { SWITCHBOARD_ID } from "../shared/types";
+import { SessionRail } from "./features/sessions/SessionRail";
 import { MasterFeed } from "./features/master/MasterFeed";
 import { ChatPanel } from "./features/chat/ChatPanel";
-import { useTabScrollPosition } from "./features/tabs/useTabScrollPosition";
-import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
+import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
+import { useSessionShortcuts } from "./features/sessions/useSessionShortcuts";
 import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusShortcuts";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
-import { NewTabModal } from "./features/tabs/NewTabModal";
+import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
-import { TabNotes } from "./features/notes/TabNotes";
+import { SessionNotes } from "./features/notes/SessionNotes";
 import { defaultNotesWidth } from "./features/notes/clampNotesWidth";
 import { useSessionNotes } from "./features/notes/useSessionNotes";
 
 export function App() {
   useCompletionSound();
-  const [tabs, setTabs] = useState<SessionTab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<ActiveTabId>(MASTER_TAB_ID);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<ActiveSessionId>(SWITCHBOARD_ID);
   const [masterEvents, setMasterEvents] = useState<MasterEvent[]>([]);
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptItem[]>>({});
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
-  const askQuestion = useAgentQuestions(activeTabId);
-  const [showNewTab, setShowNewTab] = useState(false);
+  const askQuestion = useAgentQuestions(activeSessionId);
+  const [showNewSession, setShowNewTab] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
@@ -41,29 +41,29 @@ export function App() {
   const chatRef = useRef<HTMLDivElement>(null);
   const masterRef = useRef<HTMLDivElement>(null);
   const notesScrollRef = useRef<HTMLTextAreaElement>(null);
-  useTabScrollPosition(activeTabId, activeTabId === MASTER_TAB_ID ? masterRef : chatRef);
-  useTabScrollPosition(activeTabId === MASTER_TAB_ID ? "" : activeTabId, notesScrollRef, false);
+  useSessionScrollPosition(activeSessionId, activeSessionId === SWITCHBOARD_ID ? masterRef : chatRef);
+  useSessionScrollPosition(activeSessionId === SWITCHBOARD_ID ? "" : activeSessionId, notesScrollRef, false);
 
   useEffect(() => {
-    void window.switcheroo.listTabs().then(async (data) => {
-      setTabs(data.tabs);
-      setActiveTabId(data.activeTabId);
+    void window.switcheroo.listSessions().then(async (data) => {
+      setSessions(data.sessions);
+      setActiveSessionId(data.activeSessionId);
       setMasterEvents(data.masterEvents);
-      sessionNotes.hydrate(data.tabs);
+      sessionNotes.hydrate(data.sessions);
       setTranscripts({});
-      if (data.activeTabId !== MASTER_TAB_ID) {
-        const items = await window.switcheroo.getTranscript(data.activeTabId);
-        setTranscripts({ [data.activeTabId]: items });
+      if (data.activeSessionId !== SWITCHBOARD_ID) {
+        const items = await window.switcheroo.getTranscript(data.activeSessionId);
+        setTranscripts({ [data.activeSessionId]: items });
       }
     });
 
     const unsubs = [
-      window.switcheroo.onTabsChanged(({ tabs: t, activeTabId: a }) => {
+      window.switcheroo.onSessionsChanged(({ sessions: t, activeSessionId: a }) => {
         const ids = new Set(t.map((tab) => tab.id));
         sessionNotes.prune(ids);
-        sessionNotes.syncFromTabs(t);
-        setTabs(t);
-        setActiveTabId(a);
+        sessionNotes.syncFromSessions(t);
+        setSessions(t);
+        setActiveSessionId(a);
       }),
       window.switcheroo.onMasterEvent((event) => {
         setMasterEvents((prev) => {
@@ -76,24 +76,24 @@ export function App() {
           return [...prev, event].slice(-2000);
         });
       }),
-      window.switcheroo.onTranscript(({ tabId, item, replaceId }) => {
+      window.switcheroo.onTranscript(({ sessionId, item, replaceId }) => {
         setTranscripts((prev) => {
-          const list = [...(prev[tabId] ?? [])];
+          const list = [...(prev[sessionId] ?? [])];
           if (replaceId) {
             const idx = list.findIndex((i) => i.id === replaceId);
             if (idx >= 0) {
               list[idx] = item;
-              return { ...prev, [tabId]: list };
+              return { ...prev, [sessionId]: list };
             }
           }
           const existing = list.findIndex((i) => i.id === item.id);
           if (existing >= 0) list[existing] = item;
           else list.push(item);
-          return { ...prev, [tabId]: list };
+          return { ...prev, [sessionId]: list };
         });
       }),
-      window.switcheroo.onTranscriptReset(({ tabId, items }) => {
-        setTranscripts((prev) => ({ ...prev, [tabId]: items }));
+      window.switcheroo.onTranscriptReset(({ sessionId, items }) => {
+        setTranscripts((prev) => ({ ...prev, [sessionId]: items }));
       }),
       window.switcheroo.onPermission((req) => setPermission(req)),
       window.switcheroo.onNavigateToEvent(({ eventId }) => {
@@ -127,48 +127,48 @@ export function App() {
     };
   }, []);
 
-  const activeTab = useMemo(
-    () => tabs.find((t) => t.id === activeTabId) ?? null,
-    [tabs, activeTabId],
+  const activeSession = useMemo(
+    () => sessions.find((t) => t.id === activeSessionId) ?? null,
+    [sessions, activeSessionId],
   );
 
-  const selectTab = useCallback((id: ActiveTabId) => {
-    void window.switcheroo.setActiveTab(id);
+  const selectSession = useCallback((id: ActiveSessionId) => {
+    void window.switcheroo.setActiveSession(id);
     setFocusEventId(null);
   }, []);
 
-  const promptFocus = useSessionFocusShortcuts(activeTabId, showNewTab);
-  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab);
+  const promptFocus = useSessionFocusShortcuts(activeSessionId, showNewSession);
+  useSessionShortcuts(sessions, activeSessionId, selectSession, showNewSession);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (document.querySelector("dialog[open]")) return;
       if (e.key === "Escape") {
-        if (e.defaultPrevented || e.repeat || e.isComposing || showNewTab) return;
+        if (e.defaultPrevented || e.repeat || e.isComposing || showNewSession) return;
         if (document.querySelector('[role="menu"]')) return;
         if (findOpen) {
           setFindOpen(false);
           setFindQuery("");
           return;
         }
-        if (activeTab?.status !== "running") return;
+        if (activeSession?.status !== "running") return;
         e.preventDefault();
-        void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
+        void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
         return;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeTab, showNewTab, findOpen]);
+  }, [activeSession, showNewSession, findOpen]);
 
-  const createTab = useCallback((
+  const createSession = useCallback((
     agentKind: AgentKind,
     cwd: string,
     title: string,
     switcherooAware: boolean,
   ) => {
     setShowNewTab(false);
-    void window.switcheroo.createTab({ agentKind, cwd, title, switcherooAware }).then((tab) => {
+    void window.switcheroo.createSession({ agentKind, cwd, title, switcherooAware }).then((tab) => {
       setTranscripts((prev) => ({ ...prev, [tab.id]: prev[tab.id] ?? [] }));
     });
     return Promise.resolve();
@@ -176,37 +176,37 @@ export function App() {
 
   const sendPrompt = useCallback(
     async (text: string) => {
-      if (!activeTab) return;
-      await window.switcheroo.sendPrompt(activeTab.id, text);
+      if (!activeSession) return;
+      await window.switcheroo.sendPrompt(activeSession.id, text);
     },
-    [activeTab],
+    [activeSession],
   );
 
   const onMasterClick = useCallback((event: MasterEvent) => {
     if (!event.navigable) return;
-    void window.switcheroo.navigateToEvent(event.tabId, event.id);
+    void window.switcheroo.navigateToEvent(event.sessionId, event.id);
   }, []);
 
   return (
     <div className="app">
-      <TabRail
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onSelect={selectTab}
+      <SessionRail
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSelect={selectSession}
         onAdd={() => setShowNewTab(true)}
-        onClose={(id) => void window.switcheroo.closeTab(id)}
-        onRename={(id, title) => void window.switcheroo.renameTab(id, title)}
-        onFork={(id) => void window.switcheroo.forkTab(id)}
-        onReorder={(ids) => void window.switcheroo.reorderTabs(ids)}
+        onClose={(id) => void window.switcheroo.closeSession(id)}
+        onRename={(id, title) => void window.switcheroo.renameSession(id, title)}
+        onFork={(id) => void window.switcheroo.forkSession(id)}
+        onReorder={(ids) => void window.switcheroo.reorderSessions(ids)}
       />
 
       <div className="main relative">
         {findOpen && (
           <FindBar
-            key={activeTabId}
+            key={activeSessionId}
             query={findQuery}
             onQuery={setFindQuery}
-            rootRef={activeTabId === MASTER_TAB_ID ? masterRef : chatRef}
+            rootRef={activeSessionId === SWITCHBOARD_ID ? masterRef : chatRef}
             onClose={() => {
               setFindOpen(false);
               setFindQuery("");
@@ -214,7 +214,7 @@ export function App() {
           />
         )}
 
-        {activeTabId === MASTER_TAB_ID ? (
+        {activeSessionId === SWITCHBOARD_ID ? (
           <section className="panel">
             <div className="panel-header">
               <h2>Switchboard</h2>
@@ -222,31 +222,31 @@ export function App() {
             <div className="scroll" ref={masterRef}>
               <MasterFeed
                 events={masterEvents}
-                tabs={tabs}
+                sessions={sessions}
                 onClick={onMasterClick}
               />
-              {tabs.some((tab) => tab.status === "running") && <ThinkingIndicator />}
+              {sessions.some((tab) => tab.status === "running") && <ThinkingIndicator />}
             </div>
           </section>
-        ) : activeTab ? (
+        ) : activeSession ? (
           <div className="session-split">
             <ChatPanel
-              tab={activeTab}
-              draft={drafts[activeTab.id] ?? ""}
+              tab={activeSession}
+              draft={drafts[activeSession.id] ?? ""}
               onDraftChange={(text) => {
-                setDrafts((previous) => ({ ...previous, [activeTab.id]: text }));
+                setDrafts((previous) => ({ ...previous, [activeSession.id]: text }));
               }}
-              items={transcripts[activeTab.id] ?? []}
+              items={transcripts[activeSession.id] ?? []}
               focusEventId={focusEventId}
               promptFocus={promptFocus}
               chatRef={chatRef}
               onSend={sendPrompt}
               onInterrupt={() => {
-                void window.switcheroo.cancelPrompt(activeTab.id).catch(console.error);
+                void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
               }}
-              onClose={() => void window.switcheroo.closeTab(activeTab.id)}
-              permission={permission?.tabId === activeTab.id ? permission : null}
-              askQuestion={askQuestion?.tabId === activeTab.id ? askQuestion : null}
+              onClose={() => void window.switcheroo.closeSession(activeSession.id)}
+              permission={permission?.sessionId === activeSession.id ? permission : null}
+              askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
               onPermission={(optionId) => {
                 if (!permission) return;
                 void window.switcheroo.respondPermission(permission.requestId, optionId);
@@ -257,13 +257,13 @@ export function App() {
                 void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
               }}
             />
-            <TabNotes
-              tabId={activeTab.id}
-              value={sessionNotes.notes[activeTab.id] ?? ""}
-              width={sessionNotes.widths[activeTab.id] ?? defaultNotesWidth}
+            <SessionNotes
+              sessionId={activeSession.id}
+              value={sessionNotes.notes[activeSession.id] ?? ""}
+              width={sessionNotes.widths[activeSession.id] ?? defaultNotesWidth}
               scrollRef={notesScrollRef}
-              onChange={(text) => sessionNotes.setNote(activeTab.id, text)}
-              onWidthChange={(width) => sessionNotes.setWidth(activeTab.id, width)}
+              onChange={(text) => sessionNotes.setNote(activeSession.id, text)}
+              onWidthChange={(width) => sessionNotes.setWidth(activeSession.id, width)}
             />
           </div>
         ) : (
@@ -273,7 +273,7 @@ export function App() {
         )}
       </div>
 
-      {permission && activeTabId === MASTER_TAB_ID && (
+      {permission && activeSessionId === SWITCHBOARD_ID && (
         <PermissionBar
           request={permission}
           onRespond={(optionId) => {
@@ -284,10 +284,10 @@ export function App() {
       )}
 
 
-      {showNewTab && (
-        <NewTabModal
+      {showNewSession && (
+        <NewSessionModal
           onCancel={() => setShowNewTab(false)}
-          onCreate={createTab}
+          onCreate={createSession}
         />
       )}
     </div>

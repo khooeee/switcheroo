@@ -1,4 +1,4 @@
-import type { MasterEvent, SessionTab } from "../../../shared/types";
+import type { MasterEvent, Session } from "../../../shared/types";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { MasterFileEvent } from "./MasterFileEvent";
@@ -7,13 +7,13 @@ import { masterEventCardProps } from "./masterEventCardProps";
 
 interface Props {
   events: MasterEvent[];
-  tabs: SessionTab[];
+  sessions: Session[];
   onClick: (event: MasterEvent) => void;
 }
 
-export function MasterFeed({ events, tabs, onClick }: Props) {
+export function MasterFeed({ events, sessions, onClick }: Props) {
   const titleFor = (event: MasterEvent) =>
-    tabs.find((tab) => tab.id === event.tabId)?.title ?? event.tabTitle ?? "Closed session";
+    sessions.find((tab) => tab.id === event.sessionId)?.title ?? event.sessionTitle ?? "Closed session";
   if (events.length === 0) {
     return (
       <div className="empty">
@@ -32,7 +32,7 @@ export function MasterFeed({ events, tabs, onClick }: Props) {
         const title = titleFor(event);
         if (event.fileChanges?.length) {
           return <MasterFileEvent key={event.id} event={event} title={title}
-            cwd={tabs.find((tab) => tab.id === event.tabId)?.cwd} onClick={onClick} />;
+            cwd={sessions.find((tab) => tab.id === event.sessionId)?.cwd} onClick={onClick} />;
         }
         const detail = event.kind === "status" || event.kind === "tool" || event.kind === "permission";
         return (

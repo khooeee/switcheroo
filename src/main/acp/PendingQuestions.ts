@@ -5,7 +5,7 @@ export class PendingQuestions {
   private pending = new Map<string, (outcome: unknown) => void>();
 
   constructor(
-    private tabId: string,
+    private sessionId: string,
     private publish: (request: CursorAskQuestionRequest) => void,
     private settled: (requestId: string) => void,
   ) {}
@@ -22,7 +22,7 @@ export class PendingQuestions {
       });
       signal?.addEventListener("abort", cancel, { once: true });
       this.publish({
-        requestId, tabId: this.tabId,
+        requestId, sessionId: this.sessionId,
         toolCallId: String(params.toolCallId ?? ""),
         title: params.title as string | undefined,
         questions: (params.questions as CursorAskQuestionRequest["questions"]) ?? [],

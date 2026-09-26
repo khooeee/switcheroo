@@ -160,7 +160,7 @@ button {
   background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
 }
 
-.rail-tab {
+.rail-session {
   width: calc(100% - 16px);
   height: 40px;
   border: 1px solid transparent;
@@ -176,11 +176,11 @@ button {
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.rail-tab:focus {
+.rail-session:focus {
   outline: none;
 }
 
-.rail-tab:focus-visible {
+.rail-session:focus-visible {
   border-color: var(--accent);
 }
 
@@ -205,20 +205,20 @@ button {
   outline: none;
 }
 
-.rail-tab:hover {
+.rail-session:hover {
   border-color: var(--accent);
 }
 
-.rail-tab.active {
+.rail-session.active {
   background: var(--bg-2);
   color: var(--text);
 }
 
-.rail-tab.creating {
+.rail-session.creating {
   opacity: 0.45;
 }
 
-.rail-tab.dragging {
+.rail-session.dragging {
   opacity: 0.55;
   cursor: grabbing;
 }
@@ -232,7 +232,7 @@ button {
   padding: 0 6px;
 }
 
-.rail-master-row .rail-tab {
+.rail-master-row .rail-session {
   flex: 1 0 auto;
   width: auto;
   min-width: max-content;
@@ -317,7 +317,7 @@ button {
   padding-right: 8px;
 }
 
-.rail-settings .rail-tab {
+.rail-settings .rail-session {
   width: 40px;
   flex: none;
   justify-content: center;

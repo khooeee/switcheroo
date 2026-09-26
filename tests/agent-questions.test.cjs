@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const { test } = require("node:test");
 const ts = require("typescript");
 
-test("questions across tabs and within a tab remain answerable until settled", () => {
+test("questions across sessions and within a session remain answerable until settled", () => {
   let state = [];
   let mounted = false;
   let receive, settle;
@@ -23,9 +23,9 @@ test("questions across tabs and within a tab remain answerable until settled", (
   }) });
   const render = exports.useAgentQuestions;
   assert.equal(render("a"), null);
-  receive({ requestId: "a1", tabId: "a" });
-  receive({ requestId: "b1", tabId: "b" });
-  receive({ requestId: "a2", tabId: "a" });
+  receive({ requestId: "a1", sessionId: "a" });
+  receive({ requestId: "b1", sessionId: "b" });
+  receive({ requestId: "a2", sessionId: "a" });
   assert.equal(render("a").requestId, "a1");
   assert.equal(render("b").requestId, "b1");
   settle({ requestId: "a1" });

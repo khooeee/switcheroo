@@ -38,11 +38,11 @@ export class GlobalEventBus extends EventEmitter {
     return [...this.events];
   }
 
-  setTabTitle(tabId: string, title: string): MasterEvent[] {
+  setSessionTitle(sessionId: string, title: string): MasterEvent[] {
     const updated: MasterEvent[] = [];
     for (const event of this.events) {
-      if (event.tabId !== tabId || event.tabTitle === title) continue;
-      event.tabTitle = title;
+      if (event.sessionId !== sessionId || event.sessionTitle === title) continue;
+      event.sessionTitle = title;
       updated.push(event);
     }
     return updated;

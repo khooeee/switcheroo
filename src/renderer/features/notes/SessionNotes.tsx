@@ -8,10 +8,10 @@ import {
 } from "react";
 import { clampNotesWidth } from "./clampNotesWidth";
 import { NotesMarkdownPreview } from "./NotesMarkdownPreview";
-import "./tabNotes.css";
+import "./sessionNotes.css";
 
 interface Props {
-  tabId: string;
+  sessionId: string;
   value: string;
   width: number;
   scrollRef: RefObject<HTMLTextAreaElement | null>;
@@ -19,7 +19,7 @@ interface Props {
   onWidthChange: (width: number) => void;
 }
 
-export function TabNotes({ tabId, value, width, scrollRef, onChange, onWidthChange }: Props) {
+export function SessionNotes({ sessionId, value, width, scrollRef, onChange, onWidthChange }: Props) {
   const [paneWidth, setPaneWidth] = useState(() => clampNotesWidth(width));
   const paneWidthRef = useRef(paneWidth);
   const drag = useRef<{ x: number; width: number } | null>(null);
@@ -30,7 +30,7 @@ export function TabNotes({ tabId, value, width, scrollRef, onChange, onWidthChan
     const next = clampNotesWidth(width);
     paneWidthRef.current = next;
     setPaneWidth(next);
-  }, [tabId, width]);
+  }, [sessionId, width]);
 
   const apply = (next: number, persist = false) => {
     const clamped = clampNotesWidth(next);
@@ -57,16 +57,16 @@ export function TabNotes({ tabId, value, width, scrollRef, onChange, onWidthChan
   };
 
   const syncScroll = (event: UIEvent<HTMLTextAreaElement>) => {
-    const preview = editorRef.current?.querySelector<HTMLElement>(".tab-notes-md");
+    const preview = editorRef.current?.querySelector<HTMLElement>(".session-notes-md");
     if (!preview) return;
     preview.scrollTop = event.currentTarget.scrollTop;
     preview.scrollLeft = event.currentTarget.scrollLeft;
   };
 
   return (
-    <aside className="tab-notes" style={{ width: paneWidth }} aria-label="Tab notes">
+    <aside className="session-notes" style={{ width: paneWidth }} aria-label="Session notes">
       <div
-        className="tab-notes-resize"
+        className="session-notes-resize"
         role="separator"
         aria-label="Resize notes"
         aria-orientation="vertical"
@@ -88,7 +88,7 @@ export function TabNotes({ tabId, value, width, scrollRef, onChange, onWidthChan
           apply(paneWidth + (event.key === "ArrowLeft" ? 24 : -24), true);
         }}
       />
-      <div className="tab-notes-editor" ref={editorRef}>
+      <div className="session-notes-editor" ref={editorRef}>
         <NotesMarkdownPreview text={value} />
         <textarea
           ref={scrollRef}

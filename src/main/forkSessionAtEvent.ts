@@ -1,35 +1,35 @@
-import type { SessionTab, TranscriptItem } from "../shared/types";
+import type { Session, TranscriptItem } from "../shared/types";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { GlobalEventBus } from "./events";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
 
-interface ForkTabHost {
-  getTab(tabId: string): SessionTab | undefined;
-  getTranscript(tabId: string): TranscriptItem[];
+interface ForkSessionHost {
+  getSession(sessionId: string): Session | undefined;
+  getTranscript(sessionId: string): TranscriptItem[];
   listTitles(): string[];
-  ensureSession(tab: SessionTab): Promise<AcpSession>;
-  callbacksFor(tab: SessionTab): SessionCallbacks;
+  ensureSession(session: Session): Promise<AcpSession>;
+  callbacksFor(session: Session): SessionCallbacks;
   bus(): GlobalEventBus;
-  setSession(tabId: string, session: AcpSession): void;
-  addTab(tab: SessionTab, transcript: TranscriptItem[]): void;
-  setActiveTab(tabId: string): void;
-  emitTabs(): void;
+  setSession(sessionId: string, session: AcpSession): void;
+  addSession(tab: Session, transcript: TranscriptItem[]): void;
+  setActiveSession(sessionId: string): void;
+  emitSessions(): void;
   send(channel: string, payload: unknown): void;
   persist(): Promise<void>;
 }
 
-/** Create a forked tab. With `eventId`, history ends there; otherwise the full transcript is kept. */
-export async function forkTabAtEvent(
-  host: ForkTabHost,
-  tabId: string,
+/** Create a forked session. With `eventId`, history ends there; otherwise the full transcript is kept. */
+export async function forkSessionAtEvent(
+  host: ForkSessionHost,
+  sessionId: string,
   eventId?: string,
-): Promise<SessionTab> {
-  const source = host.getTab(tabId);
+): Promise<Session> {
+  const source = host.getSession(sessionId);
   if (!source) throw new Error("Session not found");
 
-  const items = host.getTranscript(tabId);
+  const items = host.getTranscript(sessionId);
   let clipped: TranscriptItem[];
   let rewindTo: string | undefined;
   if (eventId) {
@@ -45,20 +45,20 @@ export async function forkTabAtEvent(
   const sourceSession = await host.ensureSession(source);
 
   const id = newSessionId();
-  const tab: SessionTab = {
+  const tab: Session = {
     id,
     title: nextForkTitle(source.title, host.listTitles()),
     agentKind: source.agentKind,
     cwd: source.cwd,
-    sessionId: null,
+    agentSessionId: null,
     status: "connecting",
     error: null,
     createdAt: Date.now(),
   };
-  host.addTab(tab, clipped);
-  host.setActiveTab(id);
-  host.emitTabs();
-  host.send("transcript:reset", { tabId: id, items: clipped });
+  host.addSession(tab, clipped);
+  host.setActiveSession(id);
+  host.emitSessions();
+  host.send("transcript:reset", { sessionId: id, items: clipped });
 
   try {
     const session = await sourceSession.forkSibling(
@@ -68,15 +68,15 @@ export async function forkTabAtEvent(
       rewindTo,
     );
     host.setSession(id, session);
-    tab.sessionId = session.sessionId;
+    tab.agentSessionId = session.sessionId;
     tab.status = "ready";
     tab.error = null;
-    host.emitTabs();
+    host.emitSessions();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     tab.status = "error";
     tab.error = msg;
-    host.emitTabs();
+    host.emitSessions();
     throw err;
   }
 

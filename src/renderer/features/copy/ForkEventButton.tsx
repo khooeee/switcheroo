@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./eventActionButton.css";
 
 /** Fork icon control for agent transcripts; creates a session branched at this event. */
-export function ForkEventButton({ tabId, eventId }: { tabId: string; eventId: string }) {
+export function ForkEventButton({ sessionId, eventId }: { sessionId: string; eventId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const label = error ? "Fork failed" : busy ? "Forking…" : "Fork";
@@ -20,7 +20,7 @@ export function ForkEventButton({ tabId, eventId }: { tabId: string; eventId: st
         event.stopPropagation();
         setBusy(true);
         setError(false);
-        void window.switcheroo.forkTab(tabId, eventId)
+        void window.switcheroo.forkSession(sessionId, eventId)
           .catch((err) => {
             console.error(err);
             setError(true);

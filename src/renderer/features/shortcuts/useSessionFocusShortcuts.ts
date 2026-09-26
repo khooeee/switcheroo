@@ -1,28 +1,28 @@
 import { useCallback, useState } from "react";
-import type { ActiveTabId } from "../../../shared/types";
-import { MASTER_TAB_ID } from "../../../shared/types";
+import type { ActiveSessionId } from "../../../shared/types";
+import { SWITCHBOARD_ID } from "../../../shared/types";
 import { useFocusShortcut } from "../shortcuts/useFocusShortcut";
 
 /** Prompt/rail/notes focus shortcuts; returns a nonce ChatPanel watches for Cmd+I. */
-export function useSessionFocusShortcuts(activeTabId: ActiveTabId, blocked: boolean): number {
+export function useSessionFocusShortcuts(activeSessionId: ActiveSessionId, blocked: boolean): number {
   const [promptFocus, setPromptFocus] = useState(0);
-  const sessionUi = activeTabId !== MASTER_TAB_ID && !blocked;
+  const sessionUi = activeSessionId !== SWITCHBOARD_ID && !blocked;
 
   const focusPrompt = useCallback(() => {
-    if (activeTabId === MASTER_TAB_ID) return;
+    if (activeSessionId === SWITCHBOARD_ID) return;
     setPromptFocus((n) => n + 1);
-  }, [activeTabId]);
+  }, [activeSessionId]);
 
   const focusRail = useCallback(() => {
     const el = document.querySelector<HTMLElement>(
-      `.rail [data-rail-id="${CSS.escape(activeTabId)}"]`,
+      `.rail [data-rail-id="${CSS.escape(activeSessionId)}"]`,
     );
     el?.focus();
     el?.scrollIntoView({ block: "nearest" });
-  }, [activeTabId]);
+  }, [activeSessionId]);
 
   const focusNotes = useCallback(() => {
-    document.querySelector<HTMLTextAreaElement>(".tab-notes textarea")?.focus();
+    document.querySelector<HTMLTextAreaElement>(".session-notes textarea")?.focus();
   }, []);
 
   useFocusShortcut({

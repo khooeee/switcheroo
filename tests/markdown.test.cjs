@@ -67,9 +67,9 @@ test("Switchboard opens navigable events from the whole card", () => {
   const events = [
     { id: "m", kind: "message", summary: "**Formatted** [link](https://example.com)", navigable: true },
     { id: "t", kind: "tool", summary: "literal *tool*", navigable: false },
-  ].map((event) => ({ ...event, tabId: "tab", at: 1 }));
+  ].map((event) => ({ ...event, sessionId: "tab", at: 1 }));
   const clicks = [];
-  const tree = MasterFeed({ events, tabs: [{ id: "tab", title: "Session" }], onClick: (event) => clicks.push(event.id) });
+  const tree = MasterFeed({ events, sessions: [{ id: "tab", title: "Session" }], onClick: (event) => clicks.push(event.id) });
   const html = renderToStaticMarkup(tree);
   assert.match(html, /<strong>Formatted<\/strong>/);
   assert.match(html, /literal \*tool\*/);
@@ -86,10 +86,10 @@ test("Switchboard opens navigable events from the whole card", () => {
 
 test("Switchboard keeps the session title after the tab is closed", () => {
   const events = [{
-    id: "m", tabId: "gone", tabTitle: "Lucky falcon", at: 1, kind: "user",
+    id: "m", sessionId: "gone", sessionTitle: "Lucky falcon", at: 1, kind: "user",
     summary: "hi", navigable: true,
   }];
-  const html = renderToStaticMarkup(MasterFeed({ events, tabs: [], onClick() {} }));
+  const html = renderToStaticMarkup(MasterFeed({ events, sessions: [], onClick() {} }));
   assert.match(html, /Lucky falcon/);
   assert.doesNotMatch(html, /Closed session/);
 });

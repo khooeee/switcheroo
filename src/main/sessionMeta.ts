@@ -6,29 +6,36 @@ export interface SessionMeta {
   title: string;
   agentKind: AgentKind;
   cwd: string;
-  sessionId: string | null;
+  agentSessionId: string | null;
   notesWidth?: number;
 }
 
 let pendingSave: Promise<void> = Promise.resolve();
 
-export async function loadSessionMeta(tabId: string): Promise<SessionMeta | null> {
+export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | null> {
   try {
-    const raw = await fs.readFile(sessionMetaPath(tabId), "utf8");
+    const raw = await fs.readFile(sessionMetaPath(sessionId), "utf8");
     if (!raw.trim()) return null;
-    return JSON.parse(raw) as SessionMeta;
+    const parsed = JSON.parse(raw) as SessionMeta & { sessionId?: string | null };
+    return {
+      title: parsed.title,
+      agentKind: parsed.agentKind,
+      cwd: parsed.cwd,
+      agentSessionId: parsed.agentSessionId ?? parsed.sessionId ?? null,
+      notesWidth: parsed.notesWidth,
+    };
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw err;
   }
 }
 
-export async function saveSessionMeta(tabId: string, meta: SessionMeta): Promise<void> {
-  const target = sessionMetaPath(tabId);
+export async function saveSessionMeta(sessionId: string, meta: SessionMeta): Promise<void> {
+  const target = sessionMetaPath(sessionId);
   const tmp = `${target}.${process.pid}.tmp`;
   const snapshot = JSON.stringify(meta, null, 2);
   const save = pendingSave.then(async () => {
-    await fs.mkdir(sessionDir(tabId), { recursive: true });
+    await fs.mkdir(sessionDir(sessionId), { recursive: true });
     await fs.writeFile(tmp, snapshot, "utf8");
     await fs.rename(tmp, target);
   });

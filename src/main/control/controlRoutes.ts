@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { isAgentKind, type CreateTabInput } from "../../shared/types";
-import type { TabManager } from "../tabs";
+import { isAgentKind, type CreateSessionInput } from "../../shared/types";
+import type { SessionManager } from "../sessions";
 import { bearerAuthorized } from "./controlAuth";
 import { controlCatalogJson, controlOpenApi } from "./controlCatalog";
 
@@ -11,7 +11,7 @@ export async function handleControlRequest(
   res: ServerResponse,
   token: string,
   baseUrl: string,
-  tabs: TabManager,
+  sessions: SessionManager,
 ): Promise<void> {
   try {
     const url = new URL(req.url ?? "/", baseUrl);
@@ -29,28 +29,28 @@ export async function handleControlRequest(
       return json(res, 401, { error: "Unauthorized" });
     }
 
-    if (method === "GET" && pathname === "/tabs") {
-      return json(res, 200, tabs.list());
+    if (method === "GET" && pathname === "/sessions") {
+      return json(res, 200, sessions.list());
     }
 
-    if (method === "POST" && pathname === "/tabs") {
+    if (method === "POST" && pathname === "/sessions") {
       const body = await readJson(req);
       const input = parseCreateTab(body);
-      const tab = await tabs.createTab(input);
+      const tab = await sessions.createSession(input);
       return json(res, 200, tab);
     }
 
-    const tabMatch = /^\/tabs\/([^/]+)(?:\/(prompt|cancel|close|transcript|wait))?$/.exec(pathname);
-    if (!tabMatch) return json(res, 404, { error: "Not found" });
-    const tabId = decodeURIComponent(tabMatch[1]!);
-    const action = tabMatch[2];
+    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript|wait))?$/.exec(pathname);
+    if (!sessionMatch) return json(res, 404, { error: "Not found" });
+    const sessionId = decodeURIComponent(sessionMatch[1]!);
+    const action = sessionMatch[2];
 
     if (method === "GET" && action === "transcript") {
-      return json(res, 200, { tabId, items: await tabs.getTranscript(tabId) });
+      return json(res, 200, { sessionId, items: await sessions.getTranscript(sessionId) });
     }
     if (method === "GET" && action === "wait") {
       const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);
-      const result = await tabs.waitUntilSettled(tabId, timeout);
+      const result = await sessions.waitUntilSettled(sessionId, timeout);
       return json(res, 200, result);
     }
     if (method === "POST" && action === "prompt") {
@@ -59,31 +59,31 @@ export async function handleControlRequest(
       if (!text.trim()) return json(res, 400, { error: "text is required" });
       const wait = url.searchParams.get("wait") === "1";
       const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);
-      await tabs.sendPrompt(tabId, text);
+      await sessions.sendPrompt(sessionId, text);
       if (wait) {
-        const settled = await tabs.waitUntilSettled(tabId, timeout);
+        const settled = await sessions.waitUntilSettled(sessionId, timeout);
         return json(res, 200, { ok: true, waited: true, ...settled });
       }
-      return json(res, 200, { tabId, ok: true, waited: false });
+      return json(res, 200, { sessionId, ok: true, waited: false });
     }
     if (method === "POST" && action === "cancel") {
-      await tabs.cancelPrompt(tabId);
-      return json(res, 200, { tabId, ok: true });
+      await sessions.cancelPrompt(sessionId);
+      return json(res, 200, { sessionId, ok: true });
     }
     if (method === "POST" && action === "close") {
-      await tabs.closeTab(tabId);
-      return json(res, 200, { tabId, ok: true });
+      await sessions.closeSession(sessionId);
+      return json(res, 200, { sessionId, ok: true });
     }
 
     return json(res, 404, { error: "Not found" });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    const status = /not found|no tab/i.test(msg) ? 404 : 400;
+    const status = /not found|no session/i.test(msg) ? 404 : 400;
     return json(res, status, { error: msg });
   }
 }
 
-function parseCreateTab(body: Record<string, unknown>): CreateTabInput {
+function parseCreateTab(body: Record<string, unknown>): CreateSessionInput {
   const agentKind = body.agentKind;
   if (!isAgentKind(agentKind)) {
     throw new Error("agentKind must be claude, codex, cursor, or pi");

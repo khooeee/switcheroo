@@ -1,28 +1,28 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
-import type { ActiveTabId, SessionTab } from "../../../shared/types";
-import { MASTER_TAB_ID } from "../../../shared/types";
+import type { ActiveSessionId, Session } from "../../../shared/types";
+import { SWITCHBOARD_ID } from "../../../shared/types";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
-import { getTabDropTarget } from "./getTabDropTarget";
+import { getSessionDropTarget } from "./getSessionDropTarget";
 import { handleRailKeyDown } from "./handleRailKeyDown";
-import "./tabSpinner.css";
-import "./tabDropIndicator.css";
+import "./sessionSpinner.css";
+import "./sessionDropIndicator.css";
 
 interface Props {
-  tabs: SessionTab[];
-  activeTabId: ActiveTabId;
-  onSelect: (id: ActiveTabId) => void;
+  sessions: Session[];
+  activeSessionId: ActiveSessionId;
+  onSelect: (id: ActiveSessionId) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onFork: (id: string) => void;
-  onReorder: (tabIds: string[]) => void;
+  onReorder: (sessionIds: string[]) => void;
 }
 
-export function TabRail({
-  tabs,
-  activeTabId,
+export function SessionRail({
+  sessions,
+  activeSessionId,
   onSelect,
   onAdd,
   onClose,
@@ -30,8 +30,8 @@ export function TabRail({
   onFork,
   onReorder,
 }: Props) {
-  const [menu, setMenu] = useState<{ tab: SessionTab; x: number; y: number } | null>(null);
-  const [rename, setRename] = useState<SessionTab | null>(null);
+  const [menu, setMenu] = useState<{ tab: Session; x: number; y: number } | null>(null);
+  const [rename, setRename] = useState<Session | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropBeforeId, setDropBeforeId] = useState<string | null | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -78,23 +78,23 @@ export function TabRail({
     window.addEventListener("pointerup", stop);
   };
 
-  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>, tabId: string) => {
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>, sessionId: string) => {
     if (event.button !== 0) return;
     const startY = event.clientY;
     let pointerY = startY;
     let dragging = false;
-    let order = tabs.map((tab) => tab.id);
+    let order = sessions.map((tab) => tab.id);
     const previousCursor = document.body.style.cursor;
     const previousSelect = document.body.style.userSelect;
     const scroll = scrollRef.current;
     const updateTarget = () => {
       if (!dragging || !scroll) return;
-      const rows = [...scroll.querySelectorAll<HTMLElement>("[data-tab-id]")].map((row) => ({
-        id: row.dataset.tabId ?? "",
+      const rows = [...scroll.querySelectorAll<HTMLElement>("[data-session-id]")].map((row) => ({
+        id: row.dataset.sessionId ?? "",
         top: row.getBoundingClientRect().top,
         height: row.getBoundingClientRect().height,
       }));
-      const target = getTabDropTarget(rows, tabId, pointerY);
+      const target = getSessionDropTarget(rows, sessionId, pointerY);
       order = target.order;
       setDropBeforeId(target.beforeId);
     };
@@ -106,7 +106,7 @@ export function TabRail({
         dragging = true;
         document.body.style.cursor = "grabbing";
         document.body.style.userSelect = "none";
-        setDragId(tabId);
+        setDragId(sessionId);
       }
       updateTarget();
     };
@@ -114,7 +114,7 @@ export function TabRail({
       if (dragging && ev.type === "pointerup") {
         pointerY = ev.clientY;
         updateTarget();
-        skipClick.current = tabId;
+        skipClick.current = sessionId;
         onReorder(order);
       }
       setDragId(null);
@@ -136,7 +136,7 @@ export function TabRail({
     <aside
       ref={railRef}
       className="rail"
-      aria-label="Session tabs"
+      aria-label="Sessions"
       onKeyDown={(event) => {
         if (railRef.current) handleRailKeyDown(event, railRef.current, onSelect);
       }}
@@ -145,15 +145,15 @@ export function TabRail({
         className="rail-resize"
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize session tabs"
+        aria-label="Resize sessions"
         onPointerDown={resize}
       />
       <div className="rail-master-row">
         <button
           type="button"
-          data-rail-id={MASTER_TAB_ID}
-          className={`rail-tab ${activeTabId === MASTER_TAB_ID ? "active" : ""}`}
-          onClick={() => onSelect(MASTER_TAB_ID)}
+          data-rail-id={SWITCHBOARD_ID}
+          className={`rail-session ${activeSessionId === SWITCHBOARD_ID ? "active" : ""}`}
+          onClick={() => onSelect(SWITCHBOARD_ID)}
         >
           <span className="rail-label">Switchboard</span>
         </button>
@@ -163,7 +163,7 @@ export function TabRail({
       </div>
       <div className="rail-sessions">
         <div className="rail-scroll" ref={scrollRef}>
-          {tabs.map((tab, index) =>
+          {sessions.map((tab, index) =>
             rename?.id === tab.id ? (
               <RailRename
                 key={tab.id}
@@ -178,9 +178,9 @@ export function TabRail({
               <button
                 key={tab.id}
                 type="button"
-                data-tab-id={tab.id}
+                data-session-id={tab.id}
                 data-rail-id={tab.id}
-                className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
+                className={`rail-session ${activeSessionId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === sessions.length - 1 ? "drop-after" : ""}`}
                 data-tooltip={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
                 data-tooltip-side="right"
                 onPointerDown={(e) => startDrag(e, tab.id)}

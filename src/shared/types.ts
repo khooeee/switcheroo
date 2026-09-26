@@ -6,11 +6,11 @@ export function isAgentKind(value: unknown): value is AgentKind {
   return typeof value === "string" && AGENT_KINDS.has(value as AgentKind);
 }
 
-export const MASTER_TAB_ID = "master" as const;
+export const SWITCHBOARD_ID = "master" as const;
 
-export type ActiveTabId = typeof MASTER_TAB_ID | string;
+export type ActiveSessionId = typeof SWITCHBOARD_ID | string;
 
-export type TabStatus = "idle" | "connecting" | "ready" | "running" | "error";
+export type SessionStatus = "idle" | "connecting" | "ready" | "running" | "error";
 
 export type MasterEventKind =
   | "message"
@@ -24,9 +24,9 @@ export type MasterEventKind =
 
 export interface MasterEvent {
   id: string;
-  tabId: string;
+  sessionId: string;
   /** Session title at event time (kept after soft-close) */
-  tabTitle?: string;
+  sessionTitle?: string;
   agentKind: AgentKind;
   at: number;
   kind: MasterEventKind;
@@ -43,13 +43,14 @@ export interface SessionUsage {
   cost?: { amount: number; currency: string };
 }
 
-export interface SessionTab {
+export interface Session {
   id: string;
   title: string;
   agentKind: AgentKind;
   cwd: string;
-  sessionId: string | null;
-  status: TabStatus;
+  /** ACP agent session id (not the Switcheroo session folder id). */
+  agentSessionId: string | null;
+  status: SessionStatus;
   supportsSteering?: boolean;
   error: string | null;
   createdAt: number;
@@ -93,14 +94,14 @@ export interface DiffPayload {
 
 export interface PermissionRequest {
   requestId: string;
-  tabId: string;
+  sessionId: string;
   toolCallTitle: string;
   options: Array<{ optionId: string; name: string; kind: string }>;
 }
 
 export interface CursorAskQuestionRequest {
   requestId: string;
-  tabId: string;
+  sessionId: string;
   toolCallId: string;
   title?: string;
   questions: Array<{
@@ -111,7 +112,7 @@ export interface CursorAskQuestionRequest {
   }>;
 }
 
-export interface CreateTabInput {
+export interface CreateSessionInput {
   agentKind: AgentKind;
   cwd: string;
   title?: string;
@@ -119,35 +120,35 @@ export interface CreateTabInput {
   switcherooAware?: boolean;
 }
 
-export interface PersistedTab {
+export interface PersistedSession {
   id: string;
   title: string;
 }
 
 export interface PersistedState {
   version: 1;
-  activeTabId: ActiveTabId;
+  activeSessionId: ActiveSessionId;
   /** Open sessions in rail order. Soft-closed sessions are omitted but kept on disk. */
-  tabs: PersistedTab[];
+  sessions: PersistedSession[];
 }
 
 export interface SwitcherooApi {
-  openInCursor: (tabId: string, filePath: string) => Promise<void>;
-  createTab: (input: CreateTabInput) => Promise<SessionTab>;
-  forkTab: (tabId: string, eventId?: string) => Promise<SessionTab>;
-  closeTab: (tabId: string) => Promise<void>;
-  renameTab: (tabId: string, title: string) => Promise<void>;
-  setTabNotes: (tabId: string, notes: string) => Promise<void>;
-  setTabNotesWidth: (tabId: string, width: number) => Promise<void>;
-  reorderTabs: (tabIds: string[]) => Promise<void>;
-  setActiveTab: (tabId: ActiveTabId) => Promise<void>;
-  listTabs: () => Promise<{
-    tabs: SessionTab[];
-    activeTabId: ActiveTabId;
+  openInCursor: (sessionId: string, filePath: string) => Promise<void>;
+  createSession: (input: CreateSessionInput) => Promise<Session>;
+  forkSession: (sessionId: string, eventId?: string) => Promise<Session>;
+  closeSession: (sessionId: string) => Promise<void>;
+  renameSession: (sessionId: string, title: string) => Promise<void>;
+  setSessionNotes: (sessionId: string, notes: string) => Promise<void>;
+  setSessionNotesWidth: (sessionId: string, width: number) => Promise<void>;
+  reorderSessions: (sessionIds: string[]) => Promise<void>;
+  setActiveSession: (sessionId: ActiveSessionId) => Promise<void>;
+  listSessions: () => Promise<{
+    sessions: Session[];
+    activeSessionId: ActiveSessionId;
     masterEvents: MasterEvent[];
   }>;
-  sendPrompt: (tabId: string, text: string) => Promise<void>;
-  cancelPrompt: (tabId: string) => Promise<void>;
+  sendPrompt: (sessionId: string, text: string) => Promise<void>;
+  cancelPrompt: (sessionId: string) => Promise<void>;
   respondPermission: (
     requestId: string,
     optionId: string | "cancelled",
@@ -164,24 +165,24 @@ export interface SwitcherooApi {
   ) => Promise<void>;
   pickFolder: () => Promise<string | null>;
   savePastedImage: (
-    tabId: string,
+    sessionId: string,
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
-  saveClipboardImage: (tabId: string) => Promise<string | null>;
-  getTranscript: (tabId: string) => Promise<TranscriptItem[]>;
-  onTabsChanged: (cb: (payload: { tabs: SessionTab[]; activeTabId: ActiveTabId }) => void) => () => void;
+  saveClipboardImage: (sessionId: string) => Promise<string | null>;
+  getTranscript: (sessionId: string) => Promise<TranscriptItem[]>;
+  onSessionsChanged: (cb: (payload: { sessions: Session[]; activeSessionId: ActiveSessionId }) => void) => () => void;
   onMasterEvent: (cb: (event: MasterEvent) => void) => () => void;
   onTranscript: (
-    cb: (payload: { tabId: string; item: TranscriptItem; replaceId?: string }) => void,
+    cb: (payload: { sessionId: string; item: TranscriptItem; replaceId?: string }) => void,
   ) => () => void;
-  onTranscriptReset: (cb: (payload: { tabId: string; items: TranscriptItem[] }) => void) => () => void;
+  onTranscriptReset: (cb: (payload: { sessionId: string; items: TranscriptItem[] }) => void) => () => void;
   onPermission: (cb: (req: PermissionRequest) => void) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
-  onPromptComplete: (cb: (payload: { tabId: string }) => void) => () => void;
-  onTabStatus: (cb: (payload: { tabId: string; status: TabStatus; error: string | null }) => void) => () => void;
-  onNavigateToEvent: (cb: (payload: { tabId: string; eventId: string }) => void) => () => void;
-  navigateToEvent: (tabId: string, eventId: string) => Promise<void>;
+  onPromptComplete: (cb: (payload: { sessionId: string }) => void) => () => void;
+  onSessionStatus: (cb: (payload: { sessionId: string; status: SessionStatus; error: string | null }) => void) => () => void;
+  onNavigateToEvent: (cb: (payload: { sessionId: string; eventId: string }) => void) => () => void;
+  navigateToEvent: (sessionId: string, eventId: string) => Promise<void>;
 }
 
 declare global {

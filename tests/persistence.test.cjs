@@ -71,8 +71,8 @@ async function fixture(t, overrides) {
 function state() {
   return {
     version: 1,
-    activeTabId: "agent-1",
-    tabs: [{ id: "agent-1", title: "Saved agent" }],
+    activeSessionId: "agent-1",
+    sessions: [{ id: "agent-1", title: "Saved agent" }],
   };
 }
 
@@ -101,12 +101,12 @@ test("overlapping saves finish in order and capture the state at call time", asy
   for (let i = 0; i < 50; i++) {
     saves.push(store.saveState({
       version: 1,
-      activeTabId: `agent-${i}`,
-      tabs: [{ id: "agent-1", title: "Saved agent" }],
+      activeSessionId: `agent-${i}`,
+      sessions: [{ id: "agent-1", title: "Saved agent" }],
     }));
   }
   await Promise.all(saves);
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "agent-49");
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId, "agent-49");
 });
 
 test("a failed write preserves the previous file and allows a retry", async (t) => {
@@ -119,11 +119,11 @@ test("a failed write preserves the previous file and allows a retry", async (t) 
   });
   await store.saveState(state());
   fail = true;
-  await assert.rejects(store.saveState({ ...state(), activeTabId: "master" }), /Disk full/);
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "agent-1");
+  await assert.rejects(store.saveState({ ...state(), activeSessionId: "master" }), /Disk full/);
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId, "agent-1");
   fail = false;
-  await store.saveState({ ...state(), activeTabId: "master" });
-  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeTabId, "master");
+  await store.saveState({ ...state(), activeSessionId: "master" });
+  assert.equal(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId, "master");
 });
 
 for (const contents of ["{broken", '{"version":2}']) {

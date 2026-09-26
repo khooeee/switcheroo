@@ -14,7 +14,7 @@ function fixture() {
   }
   const exports = {};
   const source = fs.readFileSync(path.join(__dirname,
-    "../src/renderer/features/tabs/trackScrollPosition.ts"), "utf8");
+    "../src/renderer/features/sessions/trackScrollPosition.ts"), "utf8");
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   });
@@ -42,7 +42,7 @@ function fixture() {
   };
 }
 
-test("new tabs start at the bottom and follow streaming growth and viewport resizing", () => {
+test("new sessions start at the bottom and follow streaming growth and viewport resizing", () => {
   const f = fixture();
   f.track({ top: 0, pinned: true });
   assert.equal(f.element.scrollTop, 800);
@@ -70,7 +70,7 @@ test("scrolling up stops following; returning to the bottom resumes it", () => {
   assert.equal(position.pinned, true);
 });
 
-test("switching tabs restores independent positions, including after background growth", () => {
+test("switching sessions restores independent positions, including after background growth", () => {
   const f = fixture();
   const first = { top: 0, pinned: true };
   const second = { top: 0, pinned: true };
@@ -103,7 +103,7 @@ test("temporary short content does not erase a saved position", () => {
   assert.equal(f.element.scrollTop, 500);
 });
 
-test("leaving a tab disconnects tracking so future events cannot change its state", () => {
+test("leaving a session disconnects tracking so future events cannot change its state", () => {
   const f = fixture();
   const position = { top: 300, pinned: false };
   const stop = f.track(position);

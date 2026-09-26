@@ -22,7 +22,7 @@ import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
 
 export class AcpSession {
-  readonly tabId: string;
+  readonly id: string;
   readonly agentKind: AgentKind;
   readonly cwd: string;
   sessionId: string | null = null;
@@ -70,19 +70,19 @@ export class AcpSession {
   });
 
   constructor(
-    tabId: string,
+    id: string,
     agentKind: AgentKind,
     cwd: string,
     bus: GlobalEventBus,
     cb: SessionCallbacks,
   ) {
-    this.tabId = tabId;
+    this.id = id;
     this.agentKind = agentKind;
     this.cwd = cwd;
     this.bus = bus;
     this.cb = cb;
     this.files = new SessionFiles(cwd);
-    this.questions = new PendingQuestions(tabId, cb.onAskQuestion, (id) => cb.onQuestionSettled?.(id));
+    this.questions = new PendingQuestions(id, cb.onAskQuestion, (id) => cb.onQuestionSettled?.(id));
     this.output = new SessionOutput(
       agentKind,
       bus,
@@ -169,14 +169,14 @@ export class AcpSession {
 
   /** Fork on this connection and return a sibling session sharing the agent process. */
   async forkSibling(
-    tabId: string,
+    id: string,
     bus: GlobalEventBus,
     cb: SessionCallbacks,
     atMessageId?: string,
   ): Promise<AcpSession> {
     const forkedId = await this.fork(atMessageId);
     const owner = this.connectionOwner ?? this;
-    const child = new AcpSession(tabId, this.agentKind, this.cwd, bus, cb);
+    const child = new AcpSession(id, this.agentKind, this.cwd, bus, cb);
     child.connection = this.connection;
     child.proc = null;
     child.connectionOwner = owner;
@@ -443,8 +443,8 @@ export class AcpSession {
     if (this.disposed || !this.mirrorUpdates) return;
     this.bus.append({
       id: id ?? randomUUID(),
-      tabId: this.tabId,
-      tabTitle: this.cb.getTabTitle(),
+      sessionId: this.id,
+      sessionTitle: this.cb.getSessionTitle(),
       agentKind: this.agentKind,
       at: Date.now(),
       kind,

@@ -43,8 +43,8 @@ async function fixture(t) {
 }
 
 const events = [
-  { id: "e1", tabId: "t1", agentKind: "codex", at: 1, kind: "user", summary: "Hi", navigable: true },
-  { id: "e2", tabId: "t1", agentKind: "codex", at: 2, kind: "message", summary: "Hello", navigable: true },
+  { id: "e1", sessionId: "t1", agentKind: "codex", at: 1, kind: "user", summary: "Hi", navigable: true },
+  { id: "e2", sessionId: "t1", agentKind: "codex", at: 2, kind: "message", summary: "Hello", navigable: true },
 ];
 
 test("switchboard JSONL round-trips at switchboard.jsonl", async (t) => {

@@ -1,21 +1,21 @@
 import { createServer, type Server } from "node:http";
 import { randomBytes } from "node:crypto";
-import type { TabManager } from "../tabs";
+import type { SessionManager } from "../sessions";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlAuth";
 import { handleControlRequest } from "./controlRoutes";
 
-/** Localhost HTTP control plane for TabManager (curl / scripts). */
+/** Localhost HTTP control plane for SessionManager (curl / scripts). */
 export class ControlServer {
   private server: Server | null = null;
   private endpoint: ControlEndpoint | null = null;
 
-  async start(tabs: TabManager): Promise<ControlEndpoint | null> {
+  async start(sessions: SessionManager): Promise<ControlEndpoint | null> {
     if (process.env.SWITCHEROO_CONTROL === "0") return null;
 
     const token = randomBytes(24).toString("hex");
     this.server = createServer((req, res) => {
       const baseUrl = this.endpoint?.spec ?? "http://127.0.0.1/";
-      void handleControlRequest(req, res, token, baseUrl, tabs);
+      void handleControlRequest(req, res, token, baseUrl, sessions);
     });
 
     await new Promise<void>((resolve, reject) => {

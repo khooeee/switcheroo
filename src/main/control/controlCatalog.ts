@@ -28,16 +28,16 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
     },
     {
       method: "GET",
-      path: "/tabs",
+      path: "/sessions",
       auth: true,
-      summary: "List tabs and active tab id",
-      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/tabs`,
+      summary: "List sessions and active session id",
+      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions`,
     },
     {
       method: "POST",
-      path: "/tabs",
+      path: "/sessions",
       auth: true,
-      summary: "Create a tab",
+      summary: "Create a session",
       body: {
         agentKind: "claude | codex | cursor | pi",
         cwd: "absolute workspace path",
@@ -46,47 +46,47 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       },
       example:
         `curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" ` +
-        `-d '{"agentKind":"cursor","cwd":"/path","title":"A"}' ${b}/tabs`,
+        `-d '{"agentKind":"cursor","cwd":"/path","title":"A"}' ${b}/sessions`,
     },
     {
       method: "POST",
-      path: "/tabs/:id/prompt",
+      path: "/sessions/:id/prompt",
       auth: true,
       summary: "Send a prompt; ?wait=1 blocks until the turn completes",
       body: { text: "prompt string" },
       query: { wait: "1 to wait for turn complete" },
       example:
         `curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" ` +
-        `-d '{"text":"hello"}' "${b}/tabs/<id>/prompt?wait=1"`,
+        `-d '{"text":"hello"}' "${b}/sessions/<id>/prompt?wait=1"`,
     },
     {
       method: "POST",
-      path: "/tabs/:id/cancel",
+      path: "/sessions/:id/cancel",
       auth: true,
       summary: "Cancel the running prompt",
-      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/tabs/<id>/cancel`,
+      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/cancel`,
     },
     {
       method: "POST",
-      path: "/tabs/:id/close",
+      path: "/sessions/:id/close",
       auth: true,
-      summary: "Close the tab (keeps history; does not delete)",
-      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/tabs/<id>/close`,
+      summary: "Close the session (keeps history; does not delete)",
+      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/close`,
     },
     {
       method: "GET",
-      path: "/tabs/:id/transcript",
+      path: "/sessions/:id/transcript",
       auth: true,
-      summary: "Get the tab transcript",
-      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/tabs/<id>/transcript`,
+      summary: "Get the session transcript",
+      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/transcript`,
     },
     {
       method: "GET",
-      path: "/tabs/:id/wait",
+      path: "/sessions/:id/wait",
       auth: true,
-      summary: "Block until tab status is ready or error",
+      summary: "Block until session status is ready or error",
       query: { timeout: "milliseconds (default 600000)" },
-      example: `curl -s -H "Authorization: Bearer $TOKEN" "${b}/tabs/<id>/wait?timeout=60000"`,
+      example: `curl -s -H "Authorization: Bearer $TOKEN" "${b}/sessions/<id>/wait?timeout=60000"`,
     },
   ];
 }

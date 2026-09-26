@@ -1,5 +1,5 @@
-.rail-tab.drop-before::before,
-.rail-tab.drop-after::after {
+.rail-session.drop-before::before,
+.rail-session.drop-after::after {
   content: "";
   position: absolute;
   left: 0;
@@ -10,14 +10,14 @@
   pointer-events: none;
 }
 
-.rail-tab.drop-before::before {
+.rail-session.drop-before::before {
   top: -5px;
 }
 
-.rail-tab.drop-before:first-child::before {
+.rail-session.drop-before:first-child::before {
   top: 0;
 }
 
-.rail-tab.drop-after::after {
+.rail-session.drop-after::after {
   bottom: 0;
 }

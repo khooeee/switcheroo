@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import type {
   CursorAskQuestionRequest,
   PermissionRequest,
-  SessionTab,
+  Session,
   TranscriptItem,
 } from "../../../shared/types";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -20,7 +20,7 @@ import { ForkEventButton } from "../copy/ForkEventButton";
 import { formatSessionUsage } from "./formatSessionUsage";
 
 interface Props {
-  tab: SessionTab;
+  tab: Session;
   draft: string;
   onDraftChange: (text: string) => void;
   items: TranscriptItem[];
@@ -60,7 +60,7 @@ export function ChatPanel({
   onPermission,
   onAsk,
 }: Props) {
-  const [sendError, setSendError] = useState<{ tabId: string; message: string } | null>(null);
+  const [sendError, setSendError] = useState<{ sessionId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: tab.id, status: tab.status });
   const showStop = tab.status === "running" && !draft.trim();
@@ -75,7 +75,7 @@ export function ChatPanel({
     onDraftChange("");
     setSendError(null);
     void onSend(text).catch((error: unknown) => {
-      setSendError({ tabId: tab.id, message: `Could not send “${text}”: ${formatAgentError(error)}` });
+      setSendError({ sessionId: tab.id, message: `Could not send “${text}”: ${formatAgentError(error)}` });
     });
   };
 
@@ -143,12 +143,12 @@ export function ChatPanel({
                   </span>
                 </div>}
                 {item.fileChanges?.length ? (
-                  <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} tabId={tab.id} />
+                  <FileChanges changes={item.fileChanges} status={item.toolStatus} cwd={tab.cwd} sessionId={tab.id} />
                 ) : item.role === "assistant" || item.role === "user" || item.role === "thought"
                   ? <MarkdownBody text={text} />
                   : <div className="body">{text}</div>}
                 <div className="event-actions">
-                  <ForkEventButton tabId={tab.id} eventId={item.id} />
+                  <ForkEventButton sessionId={tab.id} eventId={item.id} />
                   {text ? <CopyEventButton text={text} /> : null}
                 </div>
               </div>
@@ -214,11 +214,11 @@ export function ChatPanel({
           onPaste={(e) => {
             void applyPromptImagePaste({
               event: e.nativeEvent,
-              tabId: tab.id,
+              sessionId: tab.id,
               draft,
               textarea: e.currentTarget,
               onDraftChange,
-              onError: (message) => setSendError({ tabId: tab.id, message }),
+              onError: (message) => setSendError({ sessionId: tab.id, message }),
             });
           }}
           onKeyDown={(e) => {
@@ -251,7 +251,7 @@ export function ChatPanel({
             return false;
           }}
         />
-        {sendError?.tabId === tab.id && <div role="alert">{sendError.message}</div>}
+        {sendError?.sessionId === tab.id && <div role="alert">{sendError.message}</div>}
         <div className="composer-actions">
           {usageLabel ? (
             <div className="composer-usage" data-tooltip={usageLabel.detail}>

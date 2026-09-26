@@ -11,7 +11,7 @@ export interface SessionCallbacks {
   onPermission: (req: PermissionRequest) => void;
   onAskQuestion: (req: {
     requestId: string;
-    tabId: string;
+    sessionId: string;
     toolCallId: string;
     title?: string;
     questions: Array<{
@@ -21,5 +21,5 @@ export interface SessionCallbacks {
       allowMultiple?: boolean;
     }>;
   }) => void;
-  getTabTitle: () => string;
+  getSessionTitle: () => string;
 }

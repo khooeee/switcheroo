@@ -52,7 +52,7 @@ function rememberSession(agentKind: AgentKind, cwd: string, switcherooAware: boo
   }
 }
 
-export function NewTabModal({ onCancel, onCreate }: Props) {
+export function NewSessionModal({ onCancel, onCreate }: Props) {
   const [agentKind, setAgentKind] = useState<AgentKind>(readLastAgent);
   const [cwd, setCwd] = useState(readLastCwd);
   const [title, setTitle] = useState(randomSessionTitle);

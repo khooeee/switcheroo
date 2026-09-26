@@ -1,11 +1,11 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
-import type { ActiveTabId } from "../../../shared/types";
+import type { ActiveSessionId } from "../../../shared/types";
 
 /** Arrow/Space/Enter navigation while a rail tab button is focused. */
 export function handleRailKeyDown(
   event: ReactKeyboardEvent,
   rail: HTMLElement,
-  onSelect: (id: ActiveTabId) => void,
+  onSelect: (id: ActiveSessionId) => void,
 ): void {
   const target = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-rail-id]");
   if (!target || !rail.contains(target)) return;
@@ -25,6 +25,6 @@ export function handleRailKeyDown(
 
   if (event.key === " " || event.key === "Enter") {
     event.preventDefault();
-    onSelect(target.dataset.railId as ActiveTabId);
+    onSelect(target.dataset.railId as ActiveSessionId);
   }
 }

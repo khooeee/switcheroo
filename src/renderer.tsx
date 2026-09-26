@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./renderer/App";
 import { applyStoredTheme } from "./renderer/features/theme/theme";
 import { applyStoredDetails } from "./renderer/features/settings/details";
-import { applyRailWidth, readRailWidth } from "./renderer/features/tabs/railWidth";
+import { applyRailWidth, readRailWidth } from "./renderer/features/sessions/railWidth";
 import { composerHeight } from "./renderer/features/chat/composerHeight";
 import { installInstantTooltips } from "./renderer/features/tooltip/installInstantTooltips";
 import "./renderer/styles.css";

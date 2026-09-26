@@ -3,20 +3,20 @@ import { sessionDir, sessionNotesPath } from "./userDataPaths";
 
 let pendingSave: Promise<void> = Promise.resolve();
 
-export async function loadSessionNotes(tabId: string): Promise<string> {
+export async function loadSessionNotes(sessionId: string): Promise<string> {
   try {
-    return await fs.readFile(sessionNotesPath(tabId), "utf8");
+    return await fs.readFile(sessionNotesPath(sessionId), "utf8");
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return "";
     throw err;
   }
 }
 
-export async function saveSessionNotes(tabId: string, notes: string): Promise<void> {
-  const target = sessionNotesPath(tabId);
+export async function saveSessionNotes(sessionId: string, notes: string): Promise<void> {
+  const target = sessionNotesPath(sessionId);
   const tmp = `${target}.${process.pid}.tmp`;
   const save = pendingSave.then(async () => {
-    await fs.mkdir(sessionDir(tabId), { recursive: true });
+    await fs.mkdir(sessionDir(sessionId), { recursive: true });
     if (!notes) {
       try {
         await fs.unlink(target);

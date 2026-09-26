@@ -1,4 +1,4 @@
-.tab-notes {
+.session-notes {
   position: relative;
   flex: 0 0 auto;
   display: flex;
@@ -8,7 +8,7 @@
   background: var(--bg-1);
 }
 
-.tab-notes-resize {
+.session-notes-resize {
   position: absolute;
   top: 0;
   left: 0;
@@ -19,7 +19,7 @@
   touch-action: none;
 }
 
-.tab-notes-resize::after {
+.session-notes-resize::after {
   content: "";
   position: absolute;
   top: 0;
@@ -29,21 +29,21 @@
   transition: background 0.15s ease;
 }
 
-.tab-notes-resize:hover::after,
-.tab-notes-resize:active::after,
-.tab-notes-resize:focus-visible::after {
+.session-notes-resize:hover::after,
+.session-notes-resize:active::after,
+.session-notes-resize:focus-visible::after {
   background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
 }
 
-.tab-notes-editor {
+.session-notes-editor {
   position: relative;
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
-.tab-notes-md,
-.tab-notes textarea {
+.session-notes-md,
+.session-notes textarea {
   position: absolute;
   inset: 0;
   margin: 0;
@@ -60,13 +60,13 @@
   tab-size: 2;
 }
 
-.tab-notes-md {
+.session-notes-md {
   color: var(--text);
   pointer-events: none;
   z-index: 0;
 }
 
-.tab-notes textarea {
+.session-notes textarea {
   z-index: 1;
   width: 100%;
   height: 100%;
@@ -77,33 +77,33 @@
   outline: none;
 }
 
-.tab-notes textarea::placeholder {
+.session-notes textarea::placeholder {
   color: var(--placeholder);
   opacity: 1;
 }
 
-.tab-notes textarea::selection {
+.session-notes textarea::selection {
   background: color-mix(in srgb, var(--codex) 35%, transparent);
 }
 
-.tab-notes-md-bold {
+.session-notes-md-bold {
   font-weight: 700;
 }
 
-.tab-notes-md-italic {
+.session-notes-md-italic {
   font-style: italic;
 }
 
-.tab-notes-md-strike {
+.session-notes-md-strike {
   text-decoration: line-through;
 }
 
-.tab-notes-md-heading {
+.session-notes-md-heading {
   font-weight: 700;
   font-size: inherit;
 }
 
-.tab-notes-md-code {
+.session-notes-md-code {
   font-family: var(--font-mono);
   background: var(--code-bg);
   border-radius: 3px;
@@ -111,8 +111,8 @@
 }
 
 /* One block row per source line: full-width bg without shifting caret alignment. */
-.tab-notes-md-codeBlock,
-.tab-notes-md-blockquote {
+.session-notes-md-codeBlock,
+.session-notes-md-blockquote {
   display: block;
   box-sizing: border-box;
   width: calc(100% + 24px);
@@ -122,12 +122,12 @@
   font-size: inherit;
 }
 
-.tab-notes-md-codeBlock {
+.session-notes-md-codeBlock {
   font-family: var(--font-mono);
   background: var(--code-bg);
 }
 
-.tab-notes-md-blockquote {
+.session-notes-md-blockquote {
   background: color-mix(in srgb, var(--code-bg) 70%, var(--bg-2));
   border-left: 3px solid var(--border);
   padding-left: 9px;

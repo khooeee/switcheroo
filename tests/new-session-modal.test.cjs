@@ -8,7 +8,7 @@ const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
 function load() {
-  const file = path.resolve(__dirname, "../src/renderer/features/tabs/NewTabModal.tsx");
+  const file = path.resolve(__dirname, "../src/renderer/features/sessions/NewSessionModal.tsx");
   const exports = {};
   const { outputText } = ts.transpileModule(fs.readFileSync(file, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
@@ -17,6 +17,11 @@ function load() {
     exports,
     require(name) {
       if (name === "./sessionTitle") return { randomSessionTitle: () => "Cedar" };
+      if (name.endsWith("/shared/types") || name.endsWith("shared/types")) {
+        return {
+          isAgentKind: (value) => ["claude", "codex", "cursor", "pi"].includes(value),
+        };
+      }
       return require(name);
     },
   });
@@ -24,9 +29,9 @@ function load() {
 }
 
 test("title is the first field in the new session modal", () => {
-  const { NewTabModal } = load();
+  const { NewSessionModal } = load();
   const html = renderToStaticMarkup(
-    React.createElement(NewTabModal, { onCancel() {}, onCreate: async () => {} }),
+    React.createElement(NewSessionModal, { onCancel() {}, onCreate: async () => {} }),
   );
   const title = html.indexOf(">Title<");
   const agent = html.indexOf(">Agent<");

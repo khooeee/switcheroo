@@ -9,16 +9,16 @@ interface Props {
   changes: FileChange[];
   status?: string;
   cwd?: string;
-  tabId?: string;
+  sessionId?: string;
 }
 
-export function FileChanges({ changes, status, cwd, tabId }: Props) {
+export function FileChanges({ changes, status, cwd, sessionId }: Props) {
   return <div className="file-changes">
-    {changes.map((change, index) => <FileEntry key={`${change.path}:${index}`} change={change} status={status} cwd={cwd} tabId={tabId} />)}
+    {changes.map((change, index) => <FileEntry key={`${change.path}:${index}`} change={change} status={status} cwd={cwd} sessionId={sessionId} />)}
   </div>;
 }
 
-function FileEntry({ change, status, cwd, tabId }: { change: FileChange; status?: string; cwd?: string; tabId?: string }) {
+function FileEntry({ change, status, cwd, sessionId }: { change: FileChange; status?: string; cwd?: string; sessionId?: string }) {
   const [open, setOpen] = useState(false);
   const prefix = cwd?.replace(/[\\/]$/, "");
   const path = prefix && (change.path.startsWith(`${prefix}/`) || change.path.startsWith(`${prefix}\\`))
@@ -35,7 +35,7 @@ function FileEntry({ change, status, cwd, tabId }: { change: FileChange; status?
       ) : <div className="file-change-label" data-tooltip={change.path}>
         {label}<span className="file-diff-note"> · Diff not provided</span>
       </div>}
-      {tabId && <OpenInCursor tabId={tabId} filePath={change.path} />}
+      {sessionId && <OpenInCursor sessionId={sessionId} filePath={change.path} />}
     </div>
   );
 }

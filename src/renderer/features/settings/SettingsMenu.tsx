@@ -90,7 +90,7 @@ export function SettingsMenu() {
         )}
       <button
         type="button"
-        className={`rail-tab ${open ? "active" : ""}`}
+        className={`rail-session ${open ? "active" : ""}`}
         data-tooltip="Settings"
         data-tooltip-align="center"
         aria-label="Settings"

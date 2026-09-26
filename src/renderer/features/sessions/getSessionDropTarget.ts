@@ -4,7 +4,7 @@ interface TabRow {
   height: number;
 }
 
-export function getTabDropTarget(rows: TabRow[], draggedId: string, pointerY: number) {
+export function getSessionDropTarget(rows: TabRow[], draggedId: string, pointerY: number) {
   const remaining = rows.filter((row) => row.id !== draggedId);
   const index = remaining.findIndex((row) => pointerY < row.top + row.height / 2);
   const insertion = index < 0 ? remaining.length : index;

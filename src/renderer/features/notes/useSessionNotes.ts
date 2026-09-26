@@ -1,27 +1,27 @@
 import { useCallback, useState } from "react";
-import type { SessionTab } from "../../shared/types";
+import type { Session } from "../../../shared/types";
 import { defaultNotesWidth } from "./clampNotesWidth";
 
 export function useSessionNotes() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [widths, setWidths] = useState<Record<string, number>>({});
 
-  const hydrate = useCallback((tabs: SessionTab[]) => {
-    setNotes(Object.fromEntries(tabs.map((tab) => [tab.id, tab.notes ?? ""])));
-    setWidths(Object.fromEntries(tabs.map((tab) => [tab.id, tab.notesWidth ?? defaultNotesWidth])));
+  const hydrate = useCallback((sessions: Session[]) => {
+    setNotes(Object.fromEntries(sessions.map((session) => [session.id, session.notes ?? ""])));
+    setWidths(Object.fromEntries(sessions.map((session) => [session.id, session.notesWidth ?? defaultNotesWidth])));
   }, []);
 
-  const syncFromTabs = useCallback((tabs: SessionTab[]) => {
+  const syncFromSessions = useCallback((sessions: Session[]) => {
     setNotes((prev) => {
       const next = { ...prev };
-      for (const tab of tabs) {
+      for (const tab of sessions) {
         if (tab.notes !== undefined) next[tab.id] = tab.notes;
       }
       return next;
     });
     setWidths((prev) => {
       const next = { ...prev };
-      for (const tab of tabs) {
+      for (const tab of sessions) {
         if (tab.notesWidth !== undefined) next[tab.id] = tab.notesWidth;
       }
       return next;
@@ -34,15 +34,15 @@ export function useSessionNotes() {
     setWidths((prev) => Object.fromEntries(Object.entries(prev).filter(keep)));
   }, []);
 
-  const setNote = useCallback((tabId: string, text: string) => {
-    setNotes((prev) => ({ ...prev, [tabId]: text }));
-    void window.switcheroo.setTabNotes(tabId, text);
+  const setNote = useCallback((sessionId: string, text: string) => {
+    setNotes((prev) => ({ ...prev, [sessionId]: text }));
+    void window.switcheroo.setSessionNotes(sessionId, text);
   }, []);
 
-  const setWidth = useCallback((tabId: string, width: number) => {
-    setWidths((prev) => ({ ...prev, [tabId]: width }));
-    void window.switcheroo.setTabNotesWidth(tabId, width);
+  const setWidth = useCallback((sessionId: string, width: number) => {
+    setWidths((prev) => ({ ...prev, [sessionId]: width }));
+    void window.switcheroo.setSessionNotesWidth(sessionId, width);
   }, []);
 
-  return { notes, widths, hydrate, syncFromTabs, prune, setNote, setWidth };
+  return { notes, widths, hydrate, syncFromSessions, prune, setNote, setWidth };
 }

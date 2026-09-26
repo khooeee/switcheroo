@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function OpenInCursor({ tabId, filePath }: { tabId: string; filePath: string }) {
+export function OpenInCursor({ sessionId, filePath }: { sessionId: string; filePath: string }) {
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
@@ -13,7 +13,7 @@ export function OpenInCursor({ tabId, filePath }: { tabId: string; filePath: str
         onClick={() => {
           setOpening(true);
           setError(null);
-          void window.switcheroo.openInCursor(tabId, filePath)
+          void window.switcheroo.openInCursor(sessionId, filePath)
             .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)))
             .finally(() => setOpening(false));
         }}

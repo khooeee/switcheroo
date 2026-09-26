@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import { trackScrollPosition } from "./trackScrollPosition";
 
-export function useTabScrollPosition(
-  tabId: string,
+export function useSessionScrollPosition(
+  sessionId: string,
   scrollRef: RefObject<HTMLElement | null>,
   pinByDefault = true,
 ): void {
@@ -10,9 +10,9 @@ export function useTabScrollPosition(
 
   useLayoutEffect(() => {
     const element = scrollRef.current;
-    if (!element || !tabId) return;
-    const position = positions.current.get(tabId) ?? { top: 0, pinned: pinByDefault };
-    positions.current.set(tabId, position);
+    if (!element || !sessionId) return;
+    const position = positions.current.get(sessionId) ?? { top: 0, pinned: pinByDefault };
+    positions.current.set(sessionId, position);
     return trackScrollPosition(element, position);
-  }, [tabId, scrollRef, pinByDefault]);
+  }, [sessionId, scrollRef, pinByDefault]);
 }

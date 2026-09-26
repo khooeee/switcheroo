@@ -3,7 +3,7 @@ import { pasteImageFiles } from "./pasteImageFiles";
 
 interface Args {
   event: ClipboardEvent;
-  tabId: string;
+  sessionId: string;
   draft: string;
   textarea: HTMLTextAreaElement;
   onDraftChange: (text: string) => void;
@@ -12,7 +12,7 @@ interface Args {
 
 export async function applyPromptImagePaste({
   event,
-  tabId,
+  sessionId,
   draft,
   textarea,
   onDraftChange,
@@ -27,13 +27,13 @@ export async function applyPromptImagePaste({
     const paths: string[] = [];
     for (const file of files) {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      paths.push(await window.switcheroo.savePastedImage(tabId, {
+      paths.push(await window.switcheroo.savePastedImage(sessionId, {
         mimeType: file.type || "image/png",
         bytes,
       }));
     }
     if (!paths.length) {
-      const saved = await window.switcheroo.saveClipboardImage(tabId);
+      const saved = await window.switcheroo.saveClipboardImage(sessionId);
       if (saved) paths.push(saved);
     }
     if (!paths.length) return;
