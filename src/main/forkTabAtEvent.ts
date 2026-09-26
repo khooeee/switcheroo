@@ -1,9 +1,9 @@
-import { randomUUID } from "node:crypto";
 import type { SessionTab, TranscriptItem } from "../shared/types";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { GlobalEventBus } from "./events";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
+import { newSessionId } from "./newSessionId";
 
 interface ForkTabHost {
   getTab(tabId: string): SessionTab | undefined;
@@ -44,7 +44,7 @@ export async function forkTabAtEvent(
 
   const sourceSession = await host.ensureSession(source);
 
-  const id = randomUUID();
+  const id = newSessionId();
   const tab: SessionTab = {
     id,
     title: nextForkTitle(source.title, host.listTitles()),
