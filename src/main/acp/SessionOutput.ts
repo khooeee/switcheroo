@@ -33,9 +33,14 @@ export class SessionOutput {
   handleUpdate(update: acp.SessionUpdate): void {
     switch (update.sessionUpdate) {
       case "agent_message_chunk": {
+        this.streamingThoughtId = null;
         const raw = contentText(update.content);
         const chunk = this.agentKind === "cursor" ? stripCursorStreamNoise(raw) : raw;
         if (!chunk) return;
+        if (update.messageId && this.streamingAssistantId && update.messageId !== this.streamingAssistantId) {
+          this.streamingAssistantId = null;
+          this.streamingAssistantText = "";
+        }
         if (!this.streamingAssistantId) {
           this.streamingAssistantId = update.messageId ?? randomUUID();
           const item: TranscriptItem = {
@@ -61,6 +66,8 @@ export class SessionOutput {
         break;
       }
       case "agent_thought_chunk": {
+        this.streamingAssistantId = null;
+        this.streamingAssistantText = "";
         const chunk = contentText(update.content);
         if (!chunk) return;
         if (!this.streamingThoughtId) {
@@ -86,6 +93,9 @@ export class SessionOutput {
       }
       case "tool_call":
       case "tool_call_update": {
+        this.streamingAssistantId = null;
+        this.streamingAssistantText = "";
+        this.streamingThoughtId = null;
         this.tools.handle(update);
         break;
       }
