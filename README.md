@@ -37,13 +37,15 @@ npm start
 
 ## History management
 
-- Todo
+We don't manage history for you.  Nothing gets archived or deleted unless you do it.  Hence, if things start to get slow, you can always do the following (it's very quick & painless I assure you):
+
+- If your session list on the left has too many items, you can shift click to select a range, right click and select Archive.
 
 ## Shortcuts
 
 **Ctrl+C**: Stop agent (prompt, while running)
 
-**Ctrl+D**: Close session (empty prompt)
+**Ctrl+D**: Archive session (empty prompt)
 
 **Ctrl+0**: Switchboard
 
