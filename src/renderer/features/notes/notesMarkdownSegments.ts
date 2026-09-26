@@ -1,6 +1,14 @@
 /** Lightweight notes markup: styles spans but keeps source characters (*, #, backticks). */
 
-export type NotesMdKind = "text" | "bold" | "italic" | "code" | "codeBlock" | "heading" | "strike";
+export type NotesMdKind =
+  | "text"
+  | "bold"
+  | "italic"
+  | "code"
+  | "codeBlock"
+  | "blockquote"
+  | "heading"
+  | "strike";
 
 export interface NotesMdSegment {
   kind: NotesMdKind;
@@ -34,6 +42,25 @@ export function notesMarkdownSegments(source: string): NotesMdSegment[] {
         continue;
       }
       take("codeBlock", source.length);
+      continue;
+    }
+
+    if (lineStart() && source[i] === ">") {
+      let end = i;
+      for (;;) {
+        const eol = source.indexOf("\n", end);
+        if (eol === -1) {
+          end = source.length;
+          break;
+        }
+        if (source[eol + 1] === ">") {
+          end = eol + 1;
+          continue;
+        }
+        end = eol;
+        break;
+      }
+      take("blockquote", end);
       continue;
     }
 

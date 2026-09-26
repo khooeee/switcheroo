@@ -103,18 +103,31 @@
   font-size: inherit;
 }
 
-.tab-notes-md-code,
-.tab-notes-md-codeBlock {
+.tab-notes-md-code {
   font-family: var(--font-mono);
   background: var(--code-bg);
   border-radius: 3px;
-}
-
-.tab-notes-md-code {
   padding: 0.05em 0.2em;
 }
 
+.tab-notes-md-codeBlock,
+.tab-notes-md-blockquote {
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 24px);
+  margin: 0 -12px;
+  padding: 0 12px;
+  border-radius: 0;
+  font-size: inherit;
+}
+
 .tab-notes-md-codeBlock {
-  display: inline;
-  padding: 0.05em 0.25em;
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+}
+
+.tab-notes-md-blockquote {
+  background: color-mix(in srgb, var(--code-bg) 70%, var(--bg-2));
+  border-left: 3px solid var(--border);
+  padding-left: 9px;
 }
