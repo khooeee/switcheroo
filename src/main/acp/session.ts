@@ -35,6 +35,7 @@ export class AcpSession {
   private remoteTurnActive: boolean | null = null;
   private canLoad = false;
   private canResume = false;
+  private initializationMeta: unknown;
   private bus: GlobalEventBus;
   private cb: SessionCallbacks;
   private questions: PendingQuestions;
@@ -162,6 +163,23 @@ export class AcpSession {
     child.connectionOwner = owner;
     owner.connectionUsers += 1;
     child.setSessionId(forkedId);
+    child.initializationMeta = this.initializationMeta;
+    child.delivery.configure(this.initializationMeta);
+    try {
+      // Codex forks are unsubscribed. Resume before prompting so turn updates
+      // and completion arrive; register the child first to route startup updates.
+      if (this.agentKind === "codex") {
+        if (!child.connection) throw new Error("Session closed while forking");
+        await child.connection.agent.request(acp.methods.agent.session.resume, {
+          sessionId: forkedId,
+          cwd: this.cwd,
+          mcpServers: [],
+        });
+      }
+    } catch (error) {
+      await child.dispose();
+      throw error;
+    }
     child.cb.onStatus("ready");
     return child;
   }
@@ -248,7 +266,8 @@ export class AcpSession {
     const caps = initialized.agentCapabilities;
     this.canLoad = caps?.loadSession === true;
     this.canResume = caps?.sessionCapabilities?.resume != null;
-    this.delivery.configure(initialized._meta);
+    this.initializationMeta = initialized._meta;
+    this.delivery.configure(this.initializationMeta);
 
     if (preset.authMethodId) {
       try {
