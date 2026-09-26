@@ -13,9 +13,8 @@ export function useTabShortcuts(
       if (disabled || event.defaultPrevented || event.isComposing) return;
       const sessions = tabs.filter((tab) => !tab.closed).map((tab) => tab.id);
       const order: ActiveTabId[] = [MASTER_TAB_ID, ...sessions];
-      const mod = event.metaKey || event.ctrlKey;
-
-      if (mod && !event.altKey && !event.shiftKey && /^[0-9]$/.test(event.key)) {
+      if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey
+        && /^[0-9]$/.test(event.key)) {
         const target = event.key === "0" ? MASTER_TAB_ID : sessions[Number(event.key) - 1];
         if (target === undefined) return;
         event.preventDefault();
