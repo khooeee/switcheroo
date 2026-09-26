@@ -161,47 +161,50 @@ export function TabRail({
           +
         </button>
       </div>
-      <div className="rail-scroll" ref={scrollRef}>
-        {tabs.map((tab, index) =>
-          rename?.id === tab.id ? (
-            <RailRename
-              key={tab.id}
-              title={tab.title}
-              onSave={(title) => {
-                onRename(tab.id, title);
-                setRename(null);
-              }}
-              onCancel={() => setRename(null)}
-            />
-          ) : (
-            <button
-              key={tab.id}
-              type="button"
-              data-tab-id={tab.id}
-              data-rail-id={tab.id}
-              className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
-              data-tooltip={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
-              data-tooltip-side="right"
-              onPointerDown={(e) => startDrag(e, tab.id)}
-              onClick={(event) => {
-                if (skipClick.current === tab.id) {
-                  skipClick.current = null;
-                  return;
-                }
-                onSelect(tab.id);
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                setMenu({ tab, x: e.clientX, y: e.clientY });
-              }}
-            >
-              <span className="rail-label">{tab.title}</span>
-              {tab.status === "running" && (
-                <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-              )}
-            </button>
-          ),
-        )}
+      <div className="rail-sessions">
+        <div className="rail-scroll" ref={scrollRef}>
+          {tabs.map((tab, index) =>
+            rename?.id === tab.id ? (
+              <RailRename
+                key={tab.id}
+                title={tab.title}
+                onSave={(title) => {
+                  onRename(tab.id, title);
+                  setRename(null);
+                }}
+                onCancel={() => setRename(null)}
+              />
+            ) : (
+              <button
+                key={tab.id}
+                type="button"
+                data-tab-id={tab.id}
+                data-rail-id={tab.id}
+                className={`rail-tab ${activeTabId === tab.id ? "active" : ""} ${tab.status === "connecting" ? "creating" : ""} ${dragId === tab.id ? "dragging" : ""} ${dropBeforeId === tab.id ? "drop-before" : ""} ${dropBeforeId === null && index === tabs.length - 1 ? "drop-after" : ""}`}
+                data-tooltip={`${tab.title}\n${tab.cwd}\n(${tab.status === "connecting" ? "Creating" : tab.status})`}
+                data-tooltip-side="right"
+                onPointerDown={(e) => startDrag(e, tab.id)}
+                onClick={(event) => {
+                  if (skipClick.current === tab.id) {
+                    skipClick.current = null;
+                    return;
+                  }
+                  onSelect(tab.id);
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setMenu({ tab, x: e.clientX, y: e.clientY });
+                }}
+              >
+                <span className="rail-label">{tab.title}</span>
+                {tab.status === "running" && (
+                  <span className="rail-spinner" role="status" aria-label="Agent thinking" />
+                )}
+              </button>
+            ),
+          )}
+        </div>
+        <div className="rail-fade" aria-hidden="true" />
       </div>
       <div className="rail-footer">
         <SettingsMenu />
