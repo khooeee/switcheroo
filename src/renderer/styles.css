@@ -246,11 +246,16 @@ button {
   flex: 1;
   min-height: 0;
   width: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+.rail-scroll > * {
+  flex-shrink: 0;
 }
 
 .rail-footer {
