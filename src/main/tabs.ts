@@ -173,7 +173,7 @@ export class TabManager {
     return pending;
   }
 
-  async forkTab(tabId: string, eventId: string): Promise<SessionTab> {
+  async forkTab(tabId: string, eventId?: string): Promise<SessionTab> {
     return forkTabAtEvent({
       getTab: (id) => this.tabs.get(id),
       getTranscript: (id) => this.getTranscript(id),

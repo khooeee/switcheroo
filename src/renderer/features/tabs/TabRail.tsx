@@ -17,6 +17,7 @@ interface Props {
   onClose: (id: string) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, title: string) => void;
+  onFork: (id: string) => void;
   onReorder: (tabIds: string[]) => void;
 }
 
@@ -28,6 +29,7 @@ export function TabRail({
   onClose,
   onDelete,
   onRename,
+  onFork,
   onReorder,
 }: Props) {
   const [menu, setMenu] = useState<{ tab: SessionTab; x: number; y: number } | null>(null);
@@ -227,6 +229,17 @@ export function TabRail({
               }}
             >
               Rename...
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="context-item"
+              onClick={() => {
+                onFork(menu.tab.id);
+                setMenu(null);
+              }}
+            >
+              Fork
             </button>
             <button
               type="button"

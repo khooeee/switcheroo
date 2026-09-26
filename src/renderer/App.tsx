@@ -202,6 +202,7 @@ export function App() {
         onClose={(id) => void window.switcheroo.closeTab(id)}
         onDelete={(id) => setDeleteTab(tabs.find((tab) => tab.id === id) ?? null)}
         onRename={(id, title) => void window.switcheroo.renameTab(id, title)}
+        onFork={(id) => void window.switcheroo.forkTab(id)}
         onReorder={(ids) => void window.switcheroo.reorderTabs(ids)}
       />
 

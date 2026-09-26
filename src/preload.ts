@@ -20,7 +20,7 @@ function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
 const api: SwitcherooApi = {
   openInCursor: (tabId, filePath) => ipcRenderer.invoke("files:openInCursor", tabId, filePath),
   createTab: (input: CreateTabInput) => ipcRenderer.invoke("tabs:create", input),
-  forkTab: (tabId: string, eventId: string) =>
+  forkTab: (tabId, eventId) =>
     ipcRenderer.invoke("tabs:fork", tabId, eventId),
   closeTab: (tabId: string) => ipcRenderer.invoke("tabs:close", tabId),
   deleteTab: (tabId: string) => ipcRenderer.invoke("tabs:delete", tabId),

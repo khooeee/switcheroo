@@ -20,21 +20,27 @@ interface ForkTabHost {
   persist(): Promise<void>;
 }
 
-/** Create a forked tab whose transcript ends at `eventId`, via ACP session/fork. */
+/** Create a forked tab. With `eventId`, history ends there; otherwise the full transcript is kept. */
 export async function forkTabAtEvent(
   host: ForkTabHost,
   tabId: string,
-  eventId: string,
+  eventId?: string,
 ): Promise<SessionTab> {
   const source = host.getTab(tabId);
   if (!source || source.closed) throw new Error("Session not found");
 
   const items = host.getTranscript(tabId);
-  const index = items.findIndex((item) => item.id === eventId);
-  if (index < 0) throw new Error("Event not found in this session");
-  const clipped = items.slice(0, index + 1).map((item) => ({ ...item }));
-  const rewindTo =
-    [...clipped].reverse().find((item) => item.role === "assistant")?.id ?? eventId;
+  let clipped: TranscriptItem[];
+  let rewindTo: string | undefined;
+  if (eventId) {
+    const index = items.findIndex((item) => item.id === eventId);
+    if (index < 0) throw new Error("Event not found in this session");
+    clipped = items.slice(0, index + 1).map((item) => ({ ...item }));
+    rewindTo =
+      [...clipped].reverse().find((item) => item.role === "assistant")?.id ?? eventId;
+  } else {
+    clipped = items.map((item) => ({ ...item }));
+  }
 
   const sourceSession = await host.ensureSession(source);
 
