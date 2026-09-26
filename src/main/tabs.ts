@@ -61,7 +61,6 @@ export class TabManager {
           createdAt: Date.now(),
           notes: await loadSessionNotes(id),
           notesWidth: meta.notesWidth,
-          slashCommands: meta.slashCommands,
         });
         this.transcripts.set(id, await loadTranscript(id));
       }
@@ -417,7 +416,6 @@ export class TabManager {
   private refreshCommandsIfNeeded(tabId: string): void {
     const tab = this.tabs.get(tabId);
     if (!tab || !tab.sessionId) return;
-    if (tab.slashCommands && tab.slashCommands.length > 0) return;
     void this.refreshCommands(tab).catch((error) => {
       console.error("[tabs] failed to refresh slash commands", error);
     });
@@ -448,6 +446,8 @@ export class TabManager {
       this.sessions.set(tab.id, session);
     }
     if (session.sessionId) return session;
+    tab.slashCommands = undefined;
+    this.emitTabs();
     if (tab.sessionId) await session.attachExisting(tab.sessionId, options);
     else await session.start();
     tab.sessionId = session.sessionId;
@@ -473,7 +473,6 @@ export class TabManager {
       onAvailableCommands: (commands) => {
         tab.slashCommands = commands;
         this.emitTabs();
-        this.queuePersist();
       },
       onPermission: (req) => {
         this.permissionOwners.set(req.requestId, tab.id);
@@ -505,7 +504,6 @@ export class TabManager {
       createdAt: Date.now(),
       notes: await loadSessionNotes(tabId),
       notesWidth: meta.notesWidth,
-      slashCommands: meta.slashCommands,
     };
     this.prependTab(tab);
     this.transcripts.set(tabId, items);
@@ -525,6 +523,5 @@ function metaFromTab(tab: SessionTab): SessionMeta {
     cwd: tab.cwd,
     sessionId: tab.sessionId,
     notesWidth: tab.notesWidth,
-    slashCommands: tab.slashCommands,
   };
 }

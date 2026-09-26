@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { AgentKind, SlashCommand } from "../shared/types";
+import type { AgentKind } from "../shared/types";
 import { sessionDir, sessionMetaPath } from "./userDataPaths";
 
 export interface SessionMeta {
@@ -8,7 +8,6 @@ export interface SessionMeta {
   cwd: string;
   sessionId: string | null;
   notesWidth?: number;
-  slashCommands?: SlashCommand[];
 }
 
 let pendingSave: Promise<void> = Promise.resolve();

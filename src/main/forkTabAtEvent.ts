@@ -54,7 +54,6 @@ export async function forkTabAtEvent(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
-    slashCommands: source.slashCommands ? [...source.slashCommands] : undefined,
   };
   host.addTab(tab, clipped);
   host.setActiveTab(id);
