@@ -17,7 +17,6 @@ import { useTabShortcuts } from "./features/tabs/useTabShortcuts";
 import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusShortcuts";
 import { ThinkingIndicator } from "./features/chat/ThinkingIndicator";
 import { FindBar } from "./features/find/FindBar";
-import { DeleteTabModal } from "./features/tabs/DeleteTabModal";
 import { NewTabModal } from "./features/tabs/NewTabModal";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
@@ -35,7 +34,6 @@ export function App() {
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const askQuestion = useAgentQuestions(activeTabId);
   const [showNewTab, setShowNewTab] = useState(false);
-  const [deleteTab, setDeleteTab] = useState<SessionTab | null>(null);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [focusEventId, setFocusEventId] = useState<string | null>(null);
@@ -67,7 +65,6 @@ export function App() {
         setTabs(t);
         setActiveTabId(a);
       }),
-      window.switcheroo.onMasterReset(setMasterEvents),
       window.switcheroo.onMasterEvent((event) => {
         setMasterEvents((prev) => {
           const idx = prev.findIndex((entry) => entry.id === event.id);
@@ -140,8 +137,8 @@ export function App() {
     setFocusEventId(null);
   }, []);
 
-  const promptFocus = useSessionFocusShortcuts(activeTabId, showNewTab || !!deleteTab);
-  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab || !!deleteTab);
+  const promptFocus = useSessionFocusShortcuts(activeTabId, showNewTab);
+  useTabShortcuts(tabs, activeTabId, selectTab, showNewTab);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -198,7 +195,6 @@ export function App() {
         onSelect={selectTab}
         onAdd={() => setShowNewTab(true)}
         onClose={(id) => void window.switcheroo.closeTab(id)}
-        onDelete={(id) => setDeleteTab(tabs.find((tab) => tab.id === id) ?? null)}
         onRename={(id, title) => void window.switcheroo.renameTab(id, title)}
         onFork={(id) => void window.switcheroo.forkTab(id)}
         onReorder={(ids) => void window.switcheroo.reorderTabs(ids)}
@@ -287,8 +283,6 @@ export function App() {
         />
       )}
 
-      {deleteTab && <DeleteTabModal tab={deleteTab} onCancel={() => setDeleteTab(null)}
-        onDelete={(id) => window.switcheroo.deleteTab(id)} />}
 
       {showNewTab && (
         <NewTabModal

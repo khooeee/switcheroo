@@ -66,7 +66,6 @@ function registerIpc(): void {
   ipcMain.handle("tabs:create", (_e, input: CreateTabInput) => tabs.createTab(input));
   ipcMain.handle("tabs:fork", (_e, tabId: string, eventId?: string) => tabs.forkTab(tabId, eventId));
   ipcMain.handle("tabs:close", (_e, tabId: string) => tabs.closeTab(tabId));
-  ipcMain.handle("tabs:delete", (_e, tabId: string) => tabs.deleteTab(tabId));
   ipcMain.handle("tabs:rename", (_e, tabId: string, title: string) => {
     tabs.renameTab(tabId, title);
   });

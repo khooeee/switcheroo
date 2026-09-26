@@ -15,7 +15,6 @@ interface Props {
   onSelect: (id: ActiveTabId) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
-  onDelete: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onFork: (id: string) => void;
   onReorder: (tabIds: string[]) => void;
@@ -27,7 +26,6 @@ export function TabRail({
   onSelect,
   onAdd,
   onClose,
-  onDelete,
   onRename,
   onFork,
   onReorder,
@@ -251,17 +249,6 @@ export function TabRail({
               }}
             >
               Close
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="context-item"
-              onClick={() => {
-                onDelete(menu.tab.id);
-                setMenu(null);
-              }}
-            >
-              Delete
             </button>
           </div>,
           document.body,

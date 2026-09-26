@@ -68,14 +68,3 @@ test("meta and notes round-trip beside the transcript", async (t) => {
   assert.equal(await notes.loadSessionNotes("tab-1"), "# hello\n");
   assert.equal(await fs.readFile(path.join(sessions, "tab-1", "notes.md"), "utf8"), "# hello\n");
 });
-
-test("deleteSessionFolder removes the whole session directory", async (t) => {
-  const { sessions, transcripts, meta } = await fixture(t);
-  await transcripts.saveTranscript("tab-1", items);
-  await meta.saveSessionMeta("tab-1", {
-    title: "Demo", agentKind: "codex", cwd: "/tmp", sessionId: null,
-  });
-  await meta.deleteSessionFolder("tab-1");
-  await assert.rejects(fs.access(path.join(sessions, "tab-1")));
-  assert.equal(JSON.stringify(await transcripts.loadTranscript("tab-1")), "[]");
-});

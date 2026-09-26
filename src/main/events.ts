@@ -48,11 +48,6 @@ export class GlobalEventBus extends EventEmitter {
     return updated;
   }
 
-  removeTab(tabId: string): MasterEvent[] {
-    this.events = this.events.filter((event) => event.tabId !== tabId);
-    return this.list();
-  }
-
   restore(events: MasterEvent[]): void {
     this.events = events.slice(-MAX_EVENTS);
   }

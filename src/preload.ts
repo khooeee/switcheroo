@@ -23,7 +23,6 @@ const api: SwitcherooApi = {
   forkTab: (tabId, eventId) =>
     ipcRenderer.invoke("tabs:fork", tabId, eventId),
   closeTab: (tabId: string) => ipcRenderer.invoke("tabs:close", tabId),
-  deleteTab: (tabId: string) => ipcRenderer.invoke("tabs:delete", tabId),
   renameTab: (tabId: string, title: string) =>
     ipcRenderer.invoke("tabs:rename", tabId, title),
   setTabNotes: (tabId, notes) => ipcRenderer.invoke("tabs:setNotes", tabId, notes),
@@ -49,7 +48,6 @@ const api: SwitcherooApi = {
   onTabsChanged: (cb) =>
     subscribe<{ tabs: SessionTab[]; activeTabId: ActiveTabId }>("tabs:changed", cb),
   onMasterEvent: (cb) => subscribe<MasterEvent>("master:event", cb),
-  onMasterReset: (cb) => subscribe<MasterEvent[]>("master:reset", cb),
   onTranscript: (cb) =>
     subscribe<{ tabId: string; item: TranscriptItem; replaceId?: string }>(
       "transcript",

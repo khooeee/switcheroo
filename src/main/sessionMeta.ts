@@ -35,7 +35,3 @@ export async function saveSessionMeta(tabId: string, meta: SessionMeta): Promise
   pendingSave = save.catch(() => undefined);
   await save;
 }
-
-export async function deleteSessionFolder(tabId: string): Promise<void> {
-  await fs.rm(sessionDir(tabId), { recursive: true, force: true });
-}

@@ -15,7 +15,7 @@ import { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { agentLabel } from "./acp/presets";
 import { loadState, saveState } from "./persist";
-import { deleteSessionFolder, loadSessionMeta, saveSessionMeta, type SessionMeta } from "./sessionMeta";
+import { loadSessionMeta, saveSessionMeta, type SessionMeta } from "./sessionMeta";
 import { loadSessionNotes, saveSessionNotes } from "./sessionNotes";
 import { loadTranscript, saveTranscript } from "./sessionTranscripts";
 import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvents";
@@ -232,28 +232,6 @@ export class TabManager {
     if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
     this.emitTabs();
     void this.persist();
-  }
-
-  async deleteTab(tabId: string): Promise<void> {
-    if (!this.tabs.has(tabId) && !(await loadSessionMeta(tabId))) return;
-    const session = this.sessions.get(tabId);
-    this.sessions.delete(tabId);
-    if (session) {
-      try {
-        await session.dispose();
-      } catch {
-        /* the session is being removed either way */
-      }
-    }
-    this.tabs.delete(tabId);
-    this.transcripts.delete(tabId);
-    this.hydrated.delete(tabId);
-    await deleteSessionFolder(tabId);
-    if (this.activeTabId === tabId) this.activeTabId = MASTER_TAB_ID;
-    const events = this.bus.removeTab(tabId);
-    this.emitTabs();
-    this.send("master:reset", events);
-    await this.persist();
   }
 
   renameTab(tabId: string, title: string): void {

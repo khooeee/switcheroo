@@ -136,7 +136,6 @@ export interface SwitcherooApi {
   createTab: (input: CreateTabInput) => Promise<SessionTab>;
   forkTab: (tabId: string, eventId?: string) => Promise<SessionTab>;
   closeTab: (tabId: string) => Promise<void>;
-  deleteTab: (tabId: string) => Promise<void>;
   renameTab: (tabId: string, title: string) => Promise<void>;
   setTabNotes: (tabId: string, notes: string) => Promise<void>;
   setTabNotesWidth: (tabId: string, width: number) => Promise<void>;
@@ -172,7 +171,6 @@ export interface SwitcherooApi {
   getTranscript: (tabId: string) => Promise<TranscriptItem[]>;
   onTabsChanged: (cb: (payload: { tabs: SessionTab[]; activeTabId: ActiveTabId }) => void) => () => void;
   onMasterEvent: (cb: (event: MasterEvent) => void) => () => void;
-  onMasterReset: (cb: (events: MasterEvent[]) => void) => () => void;
   onTranscript: (
     cb: (payload: { tabId: string; item: TranscriptItem; replaceId?: string }) => void,
   ) => () => void;
