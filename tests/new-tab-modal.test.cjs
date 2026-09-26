@@ -7,9 +7,12 @@ const ts = require("typescript");
 const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 
-function load() {
-  const file = path.resolve(__dirname, "../src/renderer/features/tabs/NewTabModal.tsx");
+const cache = new Map();
+function load(relative) {
+  const file = path.resolve(__dirname, "..", relative);
+  if (cache.has(file)) return cache.get(file);
   const exports = {};
+  cache.set(file, exports);
   const { outputText } = ts.transpileModule(fs.readFileSync(file, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   });
@@ -17,14 +20,16 @@ function load() {
     exports,
     require(name) {
       if (name === "./sessionTitle") return { randomSessionTitle: () => "Cedar" };
-      return require(name);
+      if (!name.startsWith(".")) return require(name);
+      const target = path.resolve(path.dirname(file), name);
+      return load(fs.existsSync(`${target}.ts`) ? `${target}.ts` : `${target}.tsx`);
     },
   });
   return exports;
 }
 
 test("title is the first field in the new session modal", () => {
-  const { NewTabModal } = load();
+  const { NewTabModal } = load("src/renderer/features/tabs/NewTabModal.tsx");
   const html = renderToStaticMarkup(
     React.createElement(NewTabModal, { onCancel() {}, onCreate: async () => {} }),
   );
