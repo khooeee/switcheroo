@@ -290,8 +290,7 @@ export class TabManager {
     if (!tab) return;
     if (tab.closed) {
       tab.closed = false;
-      this.tabs.delete(tabId);
-      this.tabs.set(tabId, tab);
+      this.prependTab(tab);
     }
     this.activeTabId = tabId;
     this.emitTabs();
