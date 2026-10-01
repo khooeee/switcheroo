@@ -70,6 +70,30 @@ export function SessionRail({
     };
   }, [menu]);
 
+  useEffect(() => {
+    const startRename = () => {
+      if (activeSessionId === SWITCHBOARD_ID) return;
+      const session = allSessions.find((item) => item.id === activeSessionId);
+      if (!session) return;
+      setMenu(null);
+      setRename(session);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+      if (event.defaultPrevented || event.isComposing || event.repeat) return;
+      if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return;
+      if (event.shiftKey || event.altKey || event.key.toLowerCase() !== "r") return;
+      event.preventDefault();
+      startRename();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("switcheroo:rename-session", startRename);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("switcheroo:rename-session", startRename);
+    };
+  }, [activeSessionId, allSessions]);
+
   useScrollActiveRailSession(scrollRef, activeSessionId);
 
   const resize = (event: ReactPointerEvent) => {
@@ -116,6 +140,7 @@ export function SessionRail({
           onSave={(title) => {
             onRename(session.id, title);
             setRename(null);
+            window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
           }}
           onCancel={() => setRename(null)}
         />

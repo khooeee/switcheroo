@@ -90,4 +90,8 @@ I put this here to remind myself of all the little features this app has that is
 
 **Cmd/Ctrl+N**: New agent session
 
+**Cmd/Ctrl+R**: Rename selected session
+
 **Cmd/Ctrl+P**: Pin/unpin selected session
+
+**Cmd/Ctrl+Shift+R**: Reload app

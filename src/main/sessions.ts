@@ -93,6 +93,12 @@ export class SessionManager {
     );
   }
 
+  activeRenameMenuEnabled(): boolean {
+    return (
+      this.activeSessionId !== SWITCHBOARD_ID && this.sessions.has(this.activeSessionId)
+    );
+  }
+
   async init(): Promise<void> {
     const saved = await loadState();
     hydrateAppSettings(saved?.settings);

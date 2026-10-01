@@ -12,7 +12,7 @@ import { openSettingsFile } from "./main/openSettingsFile";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
 import { ControlServer } from "./main/control/ControlServer";
-import { buildAppMenu, refreshSessionPinMenu } from "./main/buildAppMenu";
+import { buildAppMenu, refreshSessionMenuItems } from "./main/buildAppMenu";
 import type { ActiveSessionId, AppSettings, CreateSessionInput } from "./shared/types";
 
 if (started) {
@@ -27,7 +27,10 @@ let mainWindow: BrowserWindow | null = null;
 
 const createWindow = async () => {
   await sessions.init();
-  refreshSessionPinMenu(sessions.activePinMenuState());
+  refreshSessionMenuItems(
+    sessions.activePinMenuState(),
+    sessions.activeRenameMenuEnabled(),
+  );
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -143,11 +146,15 @@ if (installSingleInstanceLock(() => mainWindow)) {
     applyAppIcon();
     registerIpc();
     sessions.setOnSessionsChanged(() => {
-      refreshSessionPinMenu(sessions.activePinMenuState());
+      refreshSessionMenuItems(
+        sessions.activePinMenuState(),
+        sessions.activeRenameMenuEnabled(),
+      );
     });
     buildAppMenu({
       getMainWindow: () => mainWindow,
       getPinMenuState: () => sessions.activePinMenuState(),
+      getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
     });
     void createWindow();
     void control.start(sessions);

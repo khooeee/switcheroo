@@ -40,8 +40,10 @@ export function SessionRailMenu({
           onRename(session);
           onDismiss();
         }}
+        aria-keyshortcuts="Meta+R Control+R"
       >
         Rename...
+        <kbd className="settings-shortcut">⌘R</kbd>
       </button>
       <button
         type="button"

@@ -2,11 +2,13 @@ import { Menu, app, type BrowserWindow } from "electron";
 import type { SessionPinMenuState } from "./sessionPinMenuState";
 
 const PIN_MENU_ID = "session-toggle-pin";
+const RENAME_MENU_ID = "session-rename";
 
-/** Build the application menu; pin item label/enabled come from `getPinMenuState`. */
+/** Build the application menu; session item state comes from getters. */
 export function buildAppMenu(opts: {
   getMainWindow: () => BrowserWindow | null;
   getPinMenuState: () => SessionPinMenuState;
+  getRenameEnabled: () => boolean;
 }): void {
   const win = () => opts.getMainWindow();
   const pin = opts.getPinMenuState();
@@ -38,6 +40,15 @@ export function buildAppMenu(opts: {
           accelerator: "CmdOrCtrl+N",
           click: () => {
             win()?.webContents.send("session:new");
+          },
+        },
+        {
+          id: RENAME_MENU_ID,
+          label: "Rename Session",
+          enabled: opts.getRenameEnabled(),
+          accelerator: "CmdOrCtrl+R",
+          click: () => {
+            win()?.webContents.send("session:rename");
           },
         },
         {
@@ -81,7 +92,7 @@ export function buildAppMenu(opts: {
     {
       label: "View",
       submenu: [
-        { role: "reload" },
+        { role: "reload", accelerator: "CmdOrCtrl+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },
         { role: "resetZoom" },
@@ -126,9 +137,17 @@ export function buildAppMenu(opts: {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-export function refreshSessionPinMenu(state: SessionPinMenuState): void {
-  const item = Menu.getApplicationMenu()?.getMenuItemById(PIN_MENU_ID);
-  if (!item) return;
-  item.label = state.label;
-  item.enabled = state.enabled;
+export function refreshSessionMenuItems(
+  pin: SessionPinMenuState,
+  renameEnabled: boolean,
+): void {
+  const menu = Menu.getApplicationMenu();
+  if (!menu) return;
+  const pinItem = menu.getMenuItemById(PIN_MENU_ID);
+  if (pinItem) {
+    pinItem.label = pin.label;
+    pinItem.enabled = pin.enabled;
+  }
+  const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
+  if (renameItem) renameItem.enabled = renameEnabled;
 }
