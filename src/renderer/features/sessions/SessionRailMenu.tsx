@@ -97,12 +97,14 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        aria-keyshortcuts="Meta+W Control+W"
         onClick={() => {
           onClose(session.id);
           onDismiss();
         }}
       >
         Close
+        <kbd className="settings-shortcut">⌘W</kbd>
       </button>
     </div>
   );

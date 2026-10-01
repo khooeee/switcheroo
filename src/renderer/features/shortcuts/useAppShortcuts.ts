@@ -56,7 +56,6 @@ export function useAppShortcuts({
   useEffect(() => {
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
-      if (!isComposerDraftEmpty(activeId.current)) return;
       void window.switcheroo.closeSession(activeId.current);
     };
     const forkActive = () => {
@@ -122,6 +121,14 @@ export function useAppShortcuts({
       }
 
       if (document.querySelector("dialog[open]")) return;
+
+      if (modKey(event, "w")) {
+        if (event.repeat) return;
+        if (activeId.current === SWITCHBOARD_ID) return;
+        event.preventDefault();
+        closeActive();
+        return;
+      }
 
       if (modKey(event, "f", true)) {
         event.preventDefault();

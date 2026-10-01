@@ -89,6 +89,7 @@ export function buildAppMenu(opts: {
           id: CLOSE_MENU_ID,
           label: "Close",
           enabled: opts.getRenameEnabled(),
+          accelerator: "CmdOrCtrl+W",
           click: () => {
             win()?.webContents.send("session:close");
           },
