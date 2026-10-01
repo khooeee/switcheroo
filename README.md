@@ -7,17 +7,16 @@ Run Claude Code, Codex, Cursor, or Pi side-by-side and track all agent logs thro
 ## Prerequisites
 
 - Node.js 22 LTS (`>=22.12.0 <23`)
-- At least one ACP agent installed and authenticated:
+- At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with `npm install`):
   - **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
-  - **Codex**: `codex login` or `OPENAI_API_KEY`
+  - **Codex**: Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
   - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
-  - **Pi**: `pi` on `PATH` via `@earendil-works/pi-coding-agent`
+  - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
 
 ## Develop
 
 ```bash
 npm install
-npx electron-rebuild -f -w node-pty
 npm start
 ```
 
@@ -31,10 +30,10 @@ On the top left, you'll see **Switchboard** which will show you a live feed of a
 ## Defaults
 
 - All agents are started in bypass permissions/YOLO mode.
-- Zen mode is on because it's generally not useful to look at all the tool calls, timestamps, etc.  You can always turn it on to see those details as needed.
+- Zen mode is on because it's generally not useful to look at all the tool calls, timestamps, etc.  You can always turn it off to see those details as needed.
 - While a turn is running, follow-up messages **steer** if the agent advertises ACP steering support (typically Claude Code & Codex); otherwise they are **queued**.
 - Switchboard events older than 30 days are cleaned up on app startup.  Sessions will still be on disk.
-- The unpinned session list is capped to 200 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed (still on disk).  You can still find them through "Find in History".
+- The session rail is capped to 200 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
 
 ## Steer or Queue?
 
@@ -64,15 +63,18 @@ I put this here to remind myself of all the little features this app has that is
   - Autocomplete slash commands
 - Sessions
   - Pre-warmed session so time to first prompt is very fast
+  - Fork a session (or fork from a transcript event)
 - Session list
   - Pin/unpin sessions
   - Reorder pinned sessions by dragging (unpinned sessions are not draggable)
 
 ## Shortcuts
 
-**Ctrl+C**: Stop agent (prompt, while running)
+**Ctrl+C**: Stop agent (while running); clear prompt when idle with text
 
 **Ctrl+D**: Close session on empty prompt
+
+**Escape**: Stop agent (while running)
 
 **Ctrl+0**: Switchboard
 
@@ -95,3 +97,7 @@ I put this here to remind myself of all the little features this app has that is
 **Cmd/Ctrl+P**: Pin/unpin selected session
 
 **Cmd/Ctrl+W**: Close selected session
+
+**Cmd/Ctrl+Y**: Fork selected session
+
+**Cmd+/**: Toggle zen mode
