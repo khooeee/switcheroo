@@ -31,15 +31,16 @@ async function send(delivery, text, id = "msg") {
   return delivery.send(text, id);
 }
 
-test("enqueue keeps the completion promise nested so await does not unwrap it", async () => {
+test("enqueue keeps prompt mode deferred until startPrompt", async () => {
   let finish;
   const f = fixture({
     isRunning: () => false,
     prompt: () => new Promise((resolve) => { finish = resolve; }),
   });
-  const pending = f.delivery.enqueue("hello", "msg-1");
-  const { completion } = await pending;
-  assert.equal(typeof completion.then, "function");
+  const decision = await f.delivery.enqueue("hello", "msg-1");
+  assert.equal(decision.mode, "prompt");
+  assert.deepEqual(f.prompts, []);
+  const completion = f.delivery.startPrompt("hello", "msg-1");
   let done = false;
   void completion.then(() => { done = true; });
   await new Promise(setImmediate);
@@ -50,6 +51,13 @@ test("enqueue keeps the completion promise nested so await does not unwrap it", 
   assert.deepEqual(f.prompts, ["hello"]);
 });
 
+test("send still starts a deferred prompt", async () => {
+  const f = fixture({ isRunning: () => false });
+  await send(f.delivery, "hello");
+  assert.deepEqual(f.prompts, ["hello"]);
+});
+
+test("steering requires an explicit supported flag under _meta.steering", async () => {
   for (const metadata of [undefined, null, {}, { steering: false },
     { steering: { supported: false } }, { steering: { supported: "true" } },
     { agentCapabilities: { steering: { supported: true } } }]) {

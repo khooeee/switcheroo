@@ -91,14 +91,22 @@ export class AcpSession {
       (req) => this.cb.onAskQuestion(req),
       (requestId) => this.cb.onQuestionSettled?.(requestId),
     );
+    // Lifecycle emits (open/complete/stop) must always reach the UI. Only gate
+    // streamed agent updates below — load/resume replay sets mirrorUpdates false.
     this.turns = new TurnBuilder((turn) => {
-      if (!this.mirrorUpdates) return;
       this.cb.onTurn(turn);
     });
     this.output = new SessionOutput(agent, (item, replaceId) => {
       if (!this.mirrorUpdates) return;
       this.turns.apply(item, replaceId);
     });
+  }
+
+  /** Fork siblings share one agent process; warm-pool sessions must not steal updates. */
+  isSameAgentConnection(other: AcpSession): boolean {
+    const self = this.connectionOwner ?? this;
+    const peer = other.connectionOwner ?? other;
+    return self === peer;
   }
 
   /** Replace in-memory turns after hydrate/fork (does not emit). */
@@ -147,12 +155,22 @@ export class AcpSession {
       mcpServers: [],
     });
     this.setSessionId(session.sessionId);
+    this.turnRunning = false;
+    this.remoteTurnActive = null;
     this.cb.onStatus("ready");
   }
 
   private async attachSession(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
     await this.connectAgent(options);
     if (!this.connection) throw new Error("Session closed");
+    // Never-prompted sessions often have an agent id / session-env but no
+    // transcript. Resuming them yields a hollow session that completes with no
+    // assistant text. Mint a fresh agent session instead.
+    if (this.turns.list().length === 0) {
+      this.mirrorUpdates = false;
+      await this.createAgentSession();
+      return;
+    }
     const params = { sessionId, cwd: this.cwd, mcpServers: [] as [] };
     // Prefer load: older agents (incl. Cursor) advertise loadSession, not session/resume.
     const methods: Array<typeof acp.methods.agent.session.load | typeof acp.methods.agent.session.resume> = [];
@@ -168,19 +186,33 @@ export class AcpSession {
         // load/resume often replays history as session updates — keep those off the
         // transcript until the next prompt (replay can arrive after the RPC returns).
         this.mirrorUpdates = false;
-        await this.connection.agent.request(method, params);
+        this.turnRunning = false;
+        this.remoteTurnActive = null;
+        const response = await this.connection.agent.request(method, params) as {
+          sessionId?: string;
+        } | void;
+        const resumedId =
+          response && typeof response === "object" && typeof response.sessionId === "string"
+            ? response.sessionId
+            : sessionId;
+        this.setSessionId(resumedId);
+        // Replay may have flipped turnRunning via status updates; we are idle until the next prompt.
+        this.turnRunning = false;
+        this.remoteTurnActive = null;
         this.output.reset();
         this.cb.onStatus("ready");
         return;
       } catch (err) {
         this.clearSessionId();
-        errors.push(err instanceof Error ? err.message : String(err));
+        this.turnRunning = false;
+        this.remoteTurnActive = null;
+        errors.push(formatAgentError(err));
       }
     }
     const detail = errors.join("; ");
-    // Cursor returns Invalid params / not found for session/new ids that were never
-    // prompted (no store.db). Reuse this connection and mint a fresh agent session.
-    if (/invalid params|not found/i.test(detail)) {
+    // Empty / never-prompted agent sessions often fail load/resume (Cursor: not found;
+    // Codex: no rollout for the thread id). Reuse this connection and mint a fresh one.
+    if (/invalid params|not found|no conversation|no rollout/i.test(detail)) {
       this.mirrorUpdates = false;
       await this.createAgentSession();
       return;
@@ -358,6 +390,9 @@ export class AcpSession {
       ? codex.threadStatus : null;
     if (status && typeof status === "object" && "type" in status) {
       if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+        // Ignore live-status during load/resume replay — it would leave turnRunning
+        // stuck true and the next user message would be sent as a steer.
+        if (!this.mirrorUpdates) return;
         if (status.type !== "active") this.finishPending(status.type === "idle" ? "status unavailable" : "interrupted");
         this.completion.status(status.type);
         this.remoteTurnActive = status.type === "active";
@@ -383,33 +418,47 @@ export class AcpSession {
     };
     // Decide steer vs prompt before opening a turn so an inject lands on the
     // in-flight turn as an event instead of a sibling user-only turn.
-    const { mode, completion } = await this.delivery.enqueue(text, userItem.id);
+    // Prompt mode must NOT start the agent request until the turn exists —
+    // otherwise a fast end_turn drops every streamed chunk.
+    const decision = await this.delivery.enqueue(text, userItem.id);
 
     let turnId: string;
-    if (mode === "injected") {
+    let completion: Promise<void>;
+    if (decision.mode === "injected") {
       // Start a fresh assistant bubble after the steer so chunks don't splice into pre-steer text.
       this.output.reset();
       this.turns.apply(userItem);
       turnId = this.turns.activeTurnId() ?? userItem.id;
+      completion = decision.completion;
+    } else if (decision.mode === "startedNewTurn") {
+      const turn = this.turns.open(userItem);
+      turnId = turn.id;
+      this.completion.detached();
+      this.turns.activateLatestRunning();
+      if (this.remoteTurnActive !== false) {
+        this.turnRunning = true;
+        this.cb.onStatus("running");
+      }
+      completion = decision.completion;
     } else {
       const turn = this.turns.open(userItem);
       turnId = turn.id;
-      if (mode === "startedNewTurn") {
-        this.completion.detached();
-        this.turns.activateLatestRunning();
-        if (this.remoteTurnActive !== false) {
-          this.turnRunning = true;
-          this.cb.onStatus("running");
-        }
-      }
+      completion = this.delivery.startPrompt(text, userItem.id);
     }
 
-    const finished = completion.then(() => {
-      if (mode === "injected") return;
-      // Steering startedNewTurn finishes without runPrompt; prompt mode waits on the queue.
-      if (!this.turnRunning) this.turns.complete();
-      else this.turns.completeIfOrphan(userItem.id);
-    });
+    const finished = completion.then(
+      () => {
+        if (decision.mode === "injected") return;
+        // Steering startedNewTurn finishes without runPrompt; prompt mode waits on the queue.
+        if (!this.turnRunning) this.turns.complete();
+        else this.turns.completeIfOrphan(userItem.id);
+      },
+      (error) => {
+        // Errors must clear the thinking state even when PromptCompletion cancels.
+        this.turns.complete();
+        throw error;
+      },
+    );
     if (options?.wait === false) {
       void finished.catch(() => undefined);
       return turnId;
@@ -428,26 +477,52 @@ export class AcpSession {
     this.output.reset();
 
     try {
-      const response = await this.connection.agent.request(acp.methods.agent.session.prompt, {
-        sessionId: this.sessionId,
-        prompt: [{ type: "text", text }],
-      });
-      if (this.remoteTurnActive !== true) this.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
-      this.completion.finish(response.stopReason);
-      if (this.remoteTurnActive !== true && !this.disposed) {
-        this.turnRunning = false;
-        this.cb.onStatus("ready");
-      }
+      await this.requestPrompt(text);
     } catch (err) {
-      this.finishPending("interrupted");
-      this.completion.finish("error");
       const msg = formatAgentError(err);
-      this.noteSystem(msg);
-      if (this.remoteTurnActive !== true && !this.disposed) {
-        this.turnRunning = false;
-        this.cb.onStatus("error", msg);
+      if (!/session not found/i.test(msg) || this.disposed || !this.connection) {
+        this.failPrompt(msg);
+        throw err;
       }
-      throw err;
+      // Stale agent session after restart: mint a fresh one and retry once.
+      this.clearSessionId();
+      await this.createAgentSession();
+      this.mirrorUpdates = true;
+      this.turnRunning = true;
+      this.remoteTurnActive = null;
+      this.cb.onStatus("running");
+      try {
+        await this.requestPrompt(text);
+      } catch (retryErr) {
+        this.failPrompt(formatAgentError(retryErr));
+        throw retryErr;
+      }
+    }
+  }
+
+  private async requestPrompt(text: string): Promise<void> {
+    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
+    const response = await this.connection.agent.request(acp.methods.agent.session.prompt, {
+      sessionId: this.sessionId,
+      prompt: [{ type: "text", text }],
+    });
+    if (this.remoteTurnActive !== true) this.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
+    this.completion.finish(response.stopReason);
+    if (this.remoteTurnActive !== true && !this.disposed) {
+      this.turnRunning = false;
+      this.cb.onStatus("ready");
+    }
+  }
+
+  private failPrompt(msg: string): void {
+    this.finishPending("interrupted");
+    // finish("error") cancels PromptCompletion (no done-sound) — still end the turn.
+    this.completion.finish("error");
+    this.noteSystem(msg);
+    this.turns.complete();
+    if (this.remoteTurnActive !== true && !this.disposed) {
+      this.turnRunning = false;
+      this.cb.onStatus("error", msg);
     }
   }
 

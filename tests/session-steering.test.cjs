@@ -88,12 +88,30 @@ test("completion sounds stay silent on startup, failures, and disposal", async (
   f.failures[0](new Error("Agent failed"));
   await rejection;
   assert.equal(f.completions.length, 0);
+  assert.equal(f.transcripts.at(-1)?.status, "complete");
   const disposed = f.session.prompt("close before done");
   await tick();
   await f.session.dispose();
   f.turns[1]({ stopReason: "end_turn" });
   await disposed;
   assert.equal(f.completions.length, 0);
+});
+
+test("session-not-found on prompt retries with a fresh session and completes the turn", async () => {
+  const f = await fixture();
+  const pending = f.session.prompt("hi");
+  await tick();
+  f.failures[0](Object.assign(new Error("Internal error"), { data: { details: "Session not found" } }));
+  await tick();
+  assert.equal(f.turns.length, 2);
+  f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Hello" } });
+  f.turns[1]({ stopReason: "end_turn" });
+  await pending;
+  const turn = f.transcripts.at(-1);
+  assert.equal(turn.status, "complete");
+  assert.equal(turn.assistant?.text, "Hello");
+  assert.equal(f.completions.length, 1);
+  assert.ok(f.requests.some((request) => request.method === "new"));
 });
 
 test("idle updates do not duplicate completion or announce it before the response", async () => {

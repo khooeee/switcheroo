@@ -163,7 +163,7 @@ export class TurnBuilder {
   }
 
   complete(): void {
-    const turn = this.activeTurn();
+    const turn = this.activeTurn() ?? this.latestRunning();
     if (!turn || turn.status !== "running") return;
     turn.status = "complete";
     this.activeId = null;
@@ -221,6 +221,15 @@ export class TurnBuilder {
   private activeTurn(): TranscriptTurn | null {
     if (!this.activeId) return null;
     return this.turns.find((turn) => turn.id === this.activeId) ?? null;
+  }
+
+  /** Newest running turn — used when activeId was cleared or never set (e.g. hydrate). */
+  private latestRunning(): TranscriptTurn | null {
+    for (let i = this.turns.length - 1; i >= 0; i -= 1) {
+      const turn = this.turns[i]!;
+      if (turn.status === "running") return turn;
+    }
+    return null;
   }
 
   /** Prefer the in-flight turn; fall back to the latest for late tool updates. */

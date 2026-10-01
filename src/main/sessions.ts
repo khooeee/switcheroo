@@ -548,7 +548,12 @@ export class SessionManager {
     this.emitSessions();
     const acp = await this.ensureSession(session);
     try {
-      return await acp.prompt(text, { wait });
+      const turnId = await acp.prompt(text, { wait });
+      if (session.agentSessionId !== acp.sessionId) {
+        session.agentSessionId = acp.sessionId;
+        this.emitSessions();
+      }
+      return turnId;
     } catch (error) {
       throw new Error(formatAgentError(error));
     } finally {
