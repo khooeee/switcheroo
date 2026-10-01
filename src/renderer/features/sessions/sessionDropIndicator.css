@@ -1,0 +1,23 @@
+.rail-session.drop-before::before,
+.rail-session.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--codex);
+  pointer-events: none;
+}
+
+.rail-session.drop-before::before {
+  top: -5px;
+}
+
+.rail-session.drop-before:first-child::before {
+  top: 0;
+}
+
+.rail-session.drop-after::after {
+  bottom: 0;
+}

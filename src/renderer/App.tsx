@@ -1,0 +1,337 @@
+import { useCompletionSound } from "./features/sound/useCompletionSound";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type {
+  ActiveSessionId,
+  AgentKind,
+  SwitchboardEvent,
+  PermissionRequest,
+  Session,
+  TranscriptItem,
+} from "../shared/types";
+import { SWITCHBOARD_ID } from "../shared/types";
+import { SessionRail } from "./features/sessions/SessionRail";
+import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
+import { ChatPanel } from "./features/chat/ChatPanel";
+import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
+import { useSessionShortcuts } from "./features/sessions/useSessionShortcuts";
+import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusShortcuts";
+import { FindBar } from "./features/find/FindBar";
+import { FindInHistoryModal } from "./features/find/FindInHistoryModal";
+import { NewSessionModal } from "./features/sessions/NewSessionModal";
+import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
+import { PermissionBar } from "./features/permissions/PermissionBar";
+import { flatRailSessions } from "./features/sessions/flatRailSessions";
+
+export function App() {
+  useCompletionSound();
+  const [pinnedSessions, setPinnedSessions] = useState<Session[]>([]);
+  const [unpinnedSessions, setUnpinnedSessions] = useState<Session[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<ActiveSessionId>(SWITCHBOARD_ID);
+  const [switchboardEvents, setSwitchboardEvents] = useState<SwitchboardEvent[]>([]);
+  const [transcripts, setTranscripts] = useState<Record<string, TranscriptItem[]>>({});
+  const [permission, setPermission] = useState<PermissionRequest | null>(null);
+  const askQuestion = useAgentQuestions(activeSessionId);
+  const [showNewSession, setShowNewSession] = useState(false);
+  const [showFindInSessions, setShowFindInSessions] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState("");
+  const [focusEvent, setFocusEvent] = useState<{ id: string; key: number } | null>(null);
+  const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const switchboardRef = useRef<HTMLDivElement>(null);
+  const findInSessionsOpen = useRef(false);
+  findInSessionsOpen.current = showFindInSessions;
+  const pinTranscriptToBottom = useSessionScrollPosition(
+    activeSessionId,
+    activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
+  );
+
+  useEffect(() => {
+    void window.switcheroo.listSessions().then(async (data) => {
+      setPinnedSessions(data.pinned);
+      setUnpinnedSessions(data.unpinned);
+      setActiveSessionId(data.activeSessionId);
+      setSwitchboardEvents(data.switchboardEvents);
+      setTranscripts({});
+      if (data.activeSessionId !== SWITCHBOARD_ID) {
+        const items = await window.switcheroo.getTranscript(data.activeSessionId);
+        setTranscripts({ [data.activeSessionId]: items });
+      }
+    });
+
+    const unsubs = [
+      window.switcheroo.onSessionsChanged(({ pinned: p, unpinned: u, activeSessionId: a }) => {
+        setPinnedSessions(p);
+        setUnpinnedSessions(u);
+        setActiveSessionId(a);
+      }),
+      window.switcheroo.onSwitchboardEvent((event) => {
+        setSwitchboardEvents((prev) => {
+          const idx = prev.findIndex((entry) => entry.id === event.id);
+          if (idx >= 0) {
+            const next = prev.slice();
+            next[idx] = event;
+            return next;
+          }
+          return [...prev, event].slice(-2000);
+        });
+      }),
+      window.switcheroo.onSwitchboardEvents((events) => setSwitchboardEvents(events)),
+      window.switcheroo.onSwitchboardSessionRemoved(({ sessionId, message }) => {
+        setSwitchboardEvents((prev) => prev.filter((event) => event.sessionId !== sessionId));
+        setSwitchboardNotice(message);
+        setActiveSessionId(SWITCHBOARD_ID);
+      }),
+      window.switcheroo.onTranscript(({ sessionId, item, replaceId }) => {
+        setTranscripts((prev) => {
+          const list = [...(prev[sessionId] ?? [])];
+          if (replaceId) {
+            const idx = list.findIndex((i) => i.id === replaceId);
+            if (idx >= 0) {
+              list[idx] = item;
+              return { ...prev, [sessionId]: list };
+            }
+          }
+          const existing = list.findIndex((i) => i.id === item.id);
+          if (existing >= 0) list[existing] = item;
+          else list.push(item);
+          return { ...prev, [sessionId]: list };
+        });
+      }),
+      window.switcheroo.onTranscriptReset(({ sessionId, items }) => {
+        setTranscripts((prev) => ({ ...prev, [sessionId]: items }));
+      }),
+      window.switcheroo.onPermission((req) => setPermission(req)),
+      window.switcheroo.onNavigateToEvent(({ eventId }) => {
+        setFocusEvent((prev) => ({ id: eventId, key: (prev?.key ?? 0) + 1 }));
+      }),
+    ];
+
+    const onFind = () => {
+      if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
+      setFindOpen(true);
+    };
+    const onFindSessions = () => {
+      if (document.querySelector("dialog[open]")) return;
+      setFindOpen(false);
+      setFindQuery("");
+      setShowFindInSessions(true);
+    };
+    const onNewSession = () => { if (!document.querySelector("dialog[open]")) setShowNewSession(true); };
+    window.addEventListener("switcheroo:find", onFind);
+    window.addEventListener("switcheroo:find-sessions", onFindSessions);
+    window.addEventListener("switcheroo:new-session", onNewSession);
+    const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+      if ((e.metaKey || e.ctrlKey) && !(e.metaKey && e.ctrlKey) && e.shiftKey && !e.altKey
+        && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setFindOpen(false);
+        setFindQuery("");
+        setShowFindInSessions(true);
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && !(e.metaKey && e.ctrlKey) && !e.shiftKey && !e.altKey
+        && e.key.toLowerCase() === "f") {
+        if (findInSessionsOpen.current) return;
+        e.preventDefault();
+        setFindOpen(true);
+      }
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setShowNewSession(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      unsubs.forEach((u) => u());
+      window.removeEventListener("switcheroo:find", onFind);
+      window.removeEventListener("switcheroo:find-sessions", onFindSessions);
+      window.removeEventListener("switcheroo:new-session", onNewSession);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeSessionId === SWITCHBOARD_ID) return;
+    let cancelled = false;
+    void window.switcheroo.getTranscript(activeSessionId).then((items) => {
+      if (cancelled) return;
+      setTranscripts((prev) => ({ ...prev, [activeSessionId]: items }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSessionId]);
+
+  const openSessions = useMemo(
+    () => flatRailSessions(pinnedSessions, unpinnedSessions),
+    [pinnedSessions, unpinnedSessions],
+  );
+  const activeSession = useMemo(
+    () => openSessions.find((t) => t.id === activeSessionId) ?? null,
+    [openSessions, activeSessionId],
+  );
+
+  const selectSession = useCallback((id: ActiveSessionId) => {
+    void window.switcheroo.setActiveSession(id);
+    setFocusEvent(null);
+  }, []);
+
+  const promptFocus = useSessionFocusShortcuts(activeSessionId, showNewSession || showFindInSessions);
+  useSessionShortcuts(
+    pinnedSessions,
+    unpinnedSessions,
+    activeSessionId,
+    selectSession,
+    showNewSession || showFindInSessions,
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+      if (e.key === "Escape") {
+        if (e.defaultPrevented || e.repeat || e.isComposing || showNewSession || showFindInSessions) return;
+        if (document.querySelector('[role="menu"]')) return;
+        if (findOpen) {
+          setFindOpen(false);
+          setFindQuery("");
+          return;
+        }
+        if (activeSession?.status !== "running") return;
+        e.preventDefault();
+        void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeSession, showNewSession, showFindInSessions, findOpen]);
+
+  const createSession = useCallback((
+    agent: AgentKind,
+    cwd: string,
+    title: string,
+    switcherooAware: boolean,
+  ) => {
+    setShowNewSession(false);
+    void window.switcheroo.createSession({ agent, cwd, title, switcherooAware }).then((session) => {
+      setTranscripts((prev) => ({ ...prev, [session.id]: prev[session.id] ?? [] }));
+    });
+    return Promise.resolve();
+  }, []);
+
+  const sendPrompt = useCallback(
+    async (text: string) => {
+      if (!activeSession) return;
+      pinTranscriptToBottom();
+      await window.switcheroo.sendPrompt(activeSession.id, text);
+    },
+    [activeSession, pinTranscriptToBottom],
+  );
+
+  const onSwitchboardClick = useCallback((event: SwitchboardEvent) => {
+    void window.switcheroo.navigateToEvent(event.sessionId, event.id);
+  }, []);
+
+  return (
+    <div className="app">
+      <SessionRail
+        pinned={pinnedSessions}
+        unpinned={unpinnedSessions}
+        activeSessionId={activeSessionId}
+        onSelect={selectSession}
+        onAdd={() => setShowNewSession(true)}
+        onClose={(id) => void window.switcheroo.closeSession(id)}
+        onRename={(id, title) => void window.switcheroo.renameSession(id, title)}
+        onFork={(id) => void window.switcheroo.forkSession(id)}
+        onPin={(id) => void window.switcheroo.pinSession(id)}
+        onUnpin={(id) => void window.switcheroo.unpinSession(id)}
+        onReorderPinned={(ids) => void window.switcheroo.reorderPinnedSessions(ids)}
+      />
+
+      <div className="main relative">
+        {findOpen && (
+          <FindBar
+            key={activeSessionId}
+            query={findQuery}
+            onQuery={setFindQuery}
+            rootRef={activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef}
+            onClose={() => {
+              setFindOpen(false);
+              setFindQuery("");
+            }}
+          />
+        )}
+
+        {activeSessionId === SWITCHBOARD_ID ? (
+          <SwitchboardPanel
+            events={switchboardEvents}
+            sessions={openSessions}
+            notice={switchboardNotice}
+            scrollRef={switchboardRef}
+            onNoticeDismiss={() => setSwitchboardNotice(null)}
+            onEventClick={onSwitchboardClick}
+          />
+        ) : activeSession ? (
+          <ChatPanel
+            session={activeSession}
+            items={transcripts[activeSession.id] ?? []}
+            focusEventId={focusEvent?.id ?? null}
+            focusEventKey={focusEvent?.key ?? 0}
+            promptFocus={promptFocus}
+            chatRef={chatRef}
+            onSend={sendPrompt}
+            onInterrupt={() => {
+              void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
+            }}
+            onClose={() => void window.switcheroo.closeSession(activeSession.id)}
+            permission={permission?.sessionId === activeSession.id ? permission : null}
+            askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
+            onPermission={(optionId) => {
+              if (!permission) return;
+              void window.switcheroo.respondPermission(permission.requestId, optionId);
+              setPermission(null);
+            }}
+            onAsk={(outcome) => {
+              if (!askQuestion) return;
+              void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
+            }}
+          />
+        ) : (
+          <section className="panel">
+            <div className="empty">Select or create a session to begin.</div>
+          </section>
+        )}
+      </div>
+
+      {permission && activeSessionId === SWITCHBOARD_ID && (
+        <PermissionBar
+          request={permission}
+          onRespond={(optionId) => {
+            void window.switcheroo.respondPermission(permission.requestId, optionId);
+            setPermission(null);
+          }}
+        />
+      )}
+
+
+      {showNewSession && (
+        <NewSessionModal
+          onCancel={() => setShowNewSession(false)}
+          onCreate={createSession}
+        />
+      )}
+
+      <FindInHistoryModal
+        open={showFindInSessions}
+        onCancel={() => setShowFindInSessions(false)}
+        onSelect={(hit) => {
+          setShowFindInSessions(false);
+          void window.switcheroo.navigateToEvent(hit.sessionId, hit.eventId);
+        }}
+      />
+    </div>
+  );
+}
