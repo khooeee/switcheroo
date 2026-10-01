@@ -11,6 +11,7 @@ import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
 import { startPinnedSessionDrag } from "./startPinnedSessionDrag";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
+import { useSessionDoneDots } from "./useSessionDoneDots";
 import "./sessionSpinner.css";
 import "./sessionDropIndicator.css";
 import "./sessionRailPin.css";
@@ -54,6 +55,7 @@ export function SessionRail({
   const allSessions = flatRailSessions(pinned, unpinned);
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
+  const doneDots = useSessionDoneDots(activeSessionId);
 
   useEffect(() => {
     if (!menu) return;
@@ -170,9 +172,11 @@ export function SessionRail({
       >
         <span className="rail-label">{session.title}</span>
         <span className="rail-session-trailing">
-          {session.status === "running" && (
+          {session.status === "running" ? (
             <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-          )}
+          ) : doneDots.has(session.id) ? (
+            <span className="rail-done" role="status" aria-label="Turn complete" />
+          ) : null}
           {(isPinned || canPin) && (
             <SessionRailPinButton
               pinned={isPinned}

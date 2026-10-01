@@ -11,6 +11,15 @@
   animation: rail-spinner-turn 0.8s linear infinite;
 }
 
+.rail-done {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+  border-radius: 50%;
+  background: #9ed4b0;
+}
+
 @keyframes rail-spinner-turn {
   to {
     transform: rotate(360deg);

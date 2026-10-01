@@ -32,6 +32,7 @@
   flex-shrink: 0;
 }
 
-.rail-session-trailing .rail-spinner {
+.rail-session-trailing .rail-spinner,
+.rail-session-trailing .rail-done {
   margin-left: 0;
 }
