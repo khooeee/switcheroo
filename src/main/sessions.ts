@@ -28,6 +28,7 @@ import { overflowSessionIds } from "./overflowSessionIds";
 import {
   loadListsFromPersisted,
   pinSessionInLists,
+  prependPinnedInLists,
   prependUnpinnedInLists,
   removeSessionFromLists,
   reorderPinnedInLists,
@@ -261,7 +262,7 @@ export class SessionManager {
       error: null,
       createdAt: Date.now(),
     };
-    this.prependSession(session);
+    this.prependSession(session, input.pin === true);
     this.transcripts.set(id, []);
     this.hydrated.add(id);
     this.activeSessionId = id;
@@ -631,9 +632,11 @@ export class SessionManager {
     }, 300);
   }
 
-  private prependSession(session: Session): void {
+  private prependSession(session: Session, pin = false): void {
     this.sessions.set(session.id, session);
-    this.railLists = prependUnpinnedInLists(this.railLists, session.id);
+    this.railLists = pin
+      ? prependPinnedInLists(this.railLists, session.id)
+      : prependUnpinnedInLists(this.railLists, session.id);
   }
 
   private bumpUnpinnedSession(sessionId: string): void {

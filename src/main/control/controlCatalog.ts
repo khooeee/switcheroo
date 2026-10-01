@@ -43,6 +43,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
         cwd: "absolute workspace path",
         title: "optional string",
         switcherooAware: "optional boolean — inject control API bootstrap prompt",
+        pin: "optional boolean — pin the session at the top of the rail",
       },
       example:
         `curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" ` +

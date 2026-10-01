@@ -6,19 +6,22 @@ import { randomSessionTitle } from "./sessionTitle";
 
 interface Props {
   onCancel: () => void;
+  canPin: boolean;
   onCreate: (
     agent: AgentKind,
     cwd: string,
     title: string,
     switcherooAware: boolean,
+    pin: boolean,
   ) => Promise<void>;
 }
 
-export function NewSessionModal({ onCancel, onCreate }: Props) {
+export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const prefs = getAppSettingsCache();
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
   const [title, setTitle] = useState(randomSessionTitle);
+  const [pin, setPin] = useState(prefs.lastPin);
   const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,10 +43,11 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
     void patchAppSettings({
       lastAgent: agent,
       lastCwd: cwd,
+      lastPin: pin,
       lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(agent, cwd, sessionTitle, switcherooAware);
+      await onCreate(agent, cwd, sessionTitle, switcherooAware, canPin && pin);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
@@ -130,15 +134,26 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
             </button>
           </div>
         </label>
-        <label className="modal-check">
-          <input
-            type="checkbox"
-            checked={switcherooAware}
-            disabled={busy}
-            onChange={(e) => setSwitcherooAware(e.target.checked)}
-          />
-          Switcheroo aware
-        </label>
+        <div className="modal-checks">
+          <label className="modal-check">
+            <input
+              type="checkbox"
+              checked={canPin && pin}
+              disabled={busy || !canPin}
+              onChange={(e) => setPin(e.target.checked)}
+            />
+            Pin
+          </label>
+          <label className="modal-check">
+            <input
+              type="checkbox"
+              checked={switcherooAware}
+              disabled={busy}
+              onChange={(e) => setSwitcherooAware(e.target.checked)}
+            />
+            Switcheroo aware
+          </label>
+        </div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
           <button type="button" className="btn" disabled={busy} onClick={onCancel}>

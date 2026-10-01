@@ -128,6 +128,8 @@ export interface CreateSessionInput {
   title?: string;
   /** When true, send a visible bootstrap prompt about the control API after the session is ready. */
   switcherooAware?: boolean;
+  /** When true, add the session to the top of the pinned rail section. */
+  pin?: boolean;
 }
 
 export type Theme = "light" | "dark";
@@ -142,6 +144,7 @@ export interface AppSettings {
   lastAgent: AgentKind;
   lastCwd: string;
   lastSwitcherooAware: boolean;
+  lastPin: boolean;
   /** Drop Switchboard events older than this many days on startup. */
   cleanSwitchboardEventsOlderThanDays: number;
   /** Soft-close oldest rail sessions on startup when over this (0 = unlimited). */
@@ -158,6 +161,7 @@ export function defaultAppSettings(): AppSettings {
     lastAgent: "claude",
     lastCwd: "",
     lastSwitcherooAware: false,
+    lastPin: false,
     cleanSwitchboardEventsOlderThanDays: 30,
     sessionListMax: 200,
   };

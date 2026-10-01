@@ -18,6 +18,7 @@ import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusSh
 import { FindBar } from "./features/find/FindBar";
 import { FindInHistoryModal } from "./features/find/FindInHistoryModal";
 import { NewSessionModal } from "./features/sessions/NewSessionModal";
+import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { flatRailSessions } from "./features/sessions/flatRailSessions";
@@ -214,9 +215,10 @@ export function App() {
     cwd: string,
     title: string,
     switcherooAware: boolean,
+    pin: boolean,
   ) => {
     setShowNewSession(false);
-    void window.switcheroo.createSession({ agent, cwd, title, switcherooAware }).then((session) => {
+    void window.switcheroo.createSession({ agent, cwd, title, switcherooAware, pin }).then((session) => {
       setTranscripts((prev) => ({ ...prev, [session.id]: prev[session.id] ?? [] }));
     });
     return Promise.resolve();
@@ -319,6 +321,7 @@ export function App() {
 
       {showNewSession && (
         <NewSessionModal
+          canPin={pinnedSessions.length < MAX_PINNED_SESSIONS}
           onCancel={() => setShowNewSession(false)}
           onCreate={createSession}
         />

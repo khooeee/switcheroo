@@ -92,7 +92,8 @@ function parseCreateSession(body: Record<string, unknown>): CreateSessionInput {
   if (typeof cwd !== "string" || !cwd.trim()) throw new Error("cwd is required");
   const title = typeof body.title === "string" ? body.title : undefined;
   const switcherooAware = body.switcherooAware === true;
-  return { agent, cwd, title, switcherooAware };
+  const pin = body.pin === true;
+  return { agent, cwd, title, switcherooAware, pin };
 }
 
 function json(res: ServerResponse, status: number, payload: unknown): void {
