@@ -63,32 +63,55 @@ test("partial streaming content can be rendered before and after fences close", 
   assert.match(complete, /<p>Done\.<\/p>/);
 });
 
-test("Switchboard opens events from the whole card", () => {
-  const events = [
-    { id: "m", kind: "message", summary: "**Formatted** [link](https://example.com)", navigable: true },
-    { id: "t", kind: "tool", summary: "literal *tool*", navigable: false },
-  ].map((event) => ({ ...event, sessionId: "session-1", at: 1 }));
-  const clicks = [];
-  const tree = SwitchboardFeed({ events, sessions: [{ id: "session-1", title: "Session" }], onClick: (event) => clicks.push(event.id) });
+test("Switchboard renders turn cards with session titles", () => {
+  const turns = [
+    {
+      id: "t1",
+      at: 1,
+      user: { id: "u1", role: "user", text: "**Formatted** hi", at: 1 },
+      assistant: { id: "a1", role: "assistant", text: "literal *tool*", at: 2 },
+      events: [],
+      fileChanges: [],
+      status: "complete",
+      sessionId: "session-1",
+      agent: "codex",
+      navigable: true,
+    },
+  ];
+  const tree = SwitchboardFeed({
+    turns,
+    sessions: [{ id: "session-1", title: "Session", agent: "codex", cwd: "/tmp", agentSessionId: null, status: "ready", error: null, createdAt: 1 }],
+    isExpanded: () => true,
+    onToggle() {},
+    onClick() {},
+  });
   const html = renderToStaticMarkup(tree);
-  assert.match(html, /<strong>Formatted<\/strong>/);
-  assert.match(html, /literal \*tool\*/);
-  assert.doesNotMatch(html, /<button[^>]*class="feed-item/);
-  assert.match(html, /aria-label="Open Session at this event"/);
-  assert.match(html, /aria-label="Copy"/);
+  assert.match(html, /Session/);
   assert.match(html, /class="[^"]*\bnavigable\b/);
-  const cards = tree.props.children;
-  cards[0].props.onClick({ target: { closest: () => null } });
-  cards[1].props.onClick({ target: { closest: () => null } });
-  assert.deepEqual(clicks, ["m", "t"]);
+  assert.match(html, /aria-label="Copy"/);
 });
 
 test("Switchboard keeps the session title after the session is closed", () => {
-  const events = [{
-    id: "m", sessionId: "gone", sessionTitle: "Lucky falcon", at: 1, kind: "user",
-    summary: "hi", navigable: true,
+  const turns = [{
+    id: "t1",
+    at: 1,
+    user: { id: "u1", role: "user", text: "hi", at: 1 },
+    assistant: null,
+    events: [],
+    fileChanges: [],
+    status: "complete",
+    sessionId: "gone",
+    sessionTitle: "Lucky falcon",
+    agent: "codex",
+    navigable: true,
   }];
-  const html = renderToStaticMarkup(SwitchboardFeed({ events, sessions: [], onClick() {} }));
+  const html = renderToStaticMarkup(SwitchboardFeed({
+    turns,
+    sessions: [],
+    isExpanded: () => false,
+    onToggle() {},
+    onClick() {},
+  }));
   assert.match(html, /Lucky falcon/);
   assert.doesNotMatch(html, /Closed session/);
 });

@@ -1,13 +1,19 @@
-import type { AgentKind, FindInSessionsHit, TranscriptItem } from "../shared/types";
+import type { AgentKind, FindInSessionsHit, TranscriptItem, TranscriptTurn } from "../shared/types";
 
 export interface SessionTranscriptSource {
   sessionId: string;
   title: string;
   agent: AgentKind;
-  items: TranscriptItem[];
+  turns: TranscriptTurn[];
 }
 
 export type { FindInSessionsHit };
+
+function turnItems(turn: TranscriptTurn): TranscriptItem[] {
+  const items = [turn.user, ...turn.events];
+  if (turn.assistant) items.push(turn.assistant);
+  return items;
+}
 
 /** Case-insensitive substring search; hits sorted by match timestamp descending. */
 export function findInSessionSources(
@@ -19,17 +25,20 @@ export function findInSessionSources(
   if (!needle || limit <= 0) return [];
   const hits: FindInSessionsHit[] = [];
   for (const source of sources) {
-    for (const item of source.items) {
-      if (!item.text.toLowerCase().includes(needle)) continue;
-      hits.push({
-        sessionId: source.sessionId,
-        eventId: item.id,
-        title: source.title,
-        agent: source.agent,
-        role: item.role,
-        snippet: matchSnippet(item.text, needle),
-        at: item.at,
-      });
+    for (const turn of source.turns) {
+      for (const item of turnItems(turn)) {
+        if (!item.text.toLowerCase().includes(needle)) continue;
+        hits.push({
+          sessionId: source.sessionId,
+          turnId: turn.id,
+          eventId: item.id,
+          title: source.title,
+          agent: source.agent,
+          role: item.role,
+          snippet: matchSnippet(item.text, needle),
+          at: item.at,
+        });
+      }
     }
   }
   hits.sort((a, b) => b.at - a.at);

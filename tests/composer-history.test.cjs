@@ -29,10 +29,21 @@ const { userPromptHistory } = load("../src/renderer/features/chat/userPromptHist
 test("userPromptHistory is newest-first non-empty user texts", () => {
   assert.deepEqual(
     plain(userPromptHistory([
-      { id: "1", role: "user", text: "first", at: 1 },
-      { id: "2", role: "assistant", text: "ok", at: 2 },
-      { id: "3", role: "user", text: "  ", at: 3 },
-      { id: "4", role: "user", text: "second\n", at: 4 },
+      {
+        id: "t1", at: 1, status: "complete", events: [], fileChanges: [],
+        user: { id: "1", role: "user", text: "first", at: 1 },
+        assistant: { id: "2", role: "assistant", text: "ok", at: 2 },
+      },
+      {
+        id: "t2", at: 3, status: "complete", events: [], fileChanges: [],
+        user: { id: "3", role: "user", text: "  ", at: 3 },
+        assistant: null,
+      },
+      {
+        id: "t3", at: 4, status: "complete", events: [], fileChanges: [],
+        user: { id: "4", role: "user", text: "second\n", at: 4 },
+        assistant: null,
+      },
     ])),
     ["second", "first"],
   );

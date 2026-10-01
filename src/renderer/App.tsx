@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActiveSessionId,
   AgentKind,
-  SwitchboardEvent,
+  SwitchboardTurn,
   PermissionRequest,
   Session,
-  TranscriptItem,
+  TranscriptTurn,
 } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
 import { SessionRail } from "./features/sessions/SessionRail";
@@ -27,15 +27,19 @@ export function App() {
   const [pinnedSessions, setPinnedSessions] = useState<Session[]>([]);
   const [unpinnedSessions, setUnpinnedSessions] = useState<Session[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<ActiveSessionId>(SWITCHBOARD_ID);
-  const [switchboardEvents, setSwitchboardEvents] = useState<SwitchboardEvent[]>([]);
-  const [transcripts, setTranscripts] = useState<Record<string, TranscriptItem[]>>({});
+  const [switchboardTurns, setSwitchboardTurns] = useState<SwitchboardTurn[]>([]);
+  const [transcripts, setTranscripts] = useState<Record<string, TranscriptTurn[]>>({});
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const askQuestion = useAgentQuestions(activeSessionId);
   const [showNewSession, setShowNewSession] = useState(false);
   const [showFindInSessions, setShowFindInSessions] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
-  const [focusEvent, setFocusEvent] = useState<{ id: string; key: number } | null>(null);
+  const [focusEvent, setFocusEvent] = useState<{
+    id: string;
+    turnId: string;
+    key: number;
+  } | null>(null);
   const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
@@ -49,11 +53,11 @@ export function App() {
       setPinnedSessions(data.pinned);
       setUnpinnedSessions(data.unpinned);
       setActiveSessionId(data.activeSessionId);
-      setSwitchboardEvents(data.switchboardEvents);
+      setSwitchboardTurns(data.switchboardTurns);
       setTranscripts({});
       if (data.activeSessionId !== SWITCHBOARD_ID) {
-        const items = await window.switcheroo.getTranscript(data.activeSessionId);
-        setTranscripts({ [data.activeSessionId]: items });
+        const turns = await window.switcheroo.getTranscript(data.activeSessionId);
+        setTranscripts({ [data.activeSessionId]: turns });
       }
     });
 
@@ -63,45 +67,42 @@ export function App() {
         setUnpinnedSessions(u);
         setActiveSessionId(a);
       }),
-      window.switcheroo.onSwitchboardEvent((event) => {
-        setSwitchboardEvents((prev) => {
-          const idx = prev.findIndex((entry) => entry.id === event.id);
+      window.switcheroo.onSwitchboardTurn((turn) => {
+        setSwitchboardTurns((prev) => {
+          const idx = prev.findIndex((entry) => entry.id === turn.id);
           if (idx >= 0) {
             const next = prev.slice();
-            next[idx] = event;
+            next[idx] = turn;
             return next;
           }
-          return [...prev, event].slice(-2000);
+          return [...prev, turn].slice(-2000);
         });
       }),
-      window.switcheroo.onSwitchboardEvents((events) => setSwitchboardEvents(events)),
+      window.switcheroo.onSwitchboardTurns((turns) => setSwitchboardTurns(turns)),
       window.switcheroo.onSwitchboardSessionRemoved(({ sessionId, message }) => {
-        setSwitchboardEvents((prev) => prev.filter((event) => event.sessionId !== sessionId));
+        setSwitchboardTurns((prev) => prev.filter((turn) => turn.sessionId !== sessionId));
         setSwitchboardNotice(message);
         setActiveSessionId(SWITCHBOARD_ID);
       }),
-      window.switcheroo.onTranscript(({ sessionId, item, replaceId }) => {
+      window.switcheroo.onTranscript(({ sessionId, turn }) => {
         setTranscripts((prev) => {
           const list = [...(prev[sessionId] ?? [])];
-          if (replaceId) {
-            const idx = list.findIndex((i) => i.id === replaceId);
-            if (idx >= 0) {
-              list[idx] = item;
-              return { ...prev, [sessionId]: list };
-            }
-          }
-          const existing = list.findIndex((i) => i.id === item.id);
-          if (existing >= 0) list[existing] = item;
-          else list.push(item);
+          const idx = list.findIndex((entry) => entry.id === turn.id);
+          if (idx >= 0) list[idx] = turn;
+          else list.push(turn);
           return { ...prev, [sessionId]: list };
         });
       }),
-      window.switcheroo.onTranscriptReset(({ sessionId, items }) => {
-        setTranscripts((prev) => ({ ...prev, [sessionId]: items }));
+      window.switcheroo.onTranscriptReset(({ sessionId, turns }) => {
+        setTranscripts((prev) => ({ ...prev, [sessionId]: turns }));
       }),
       window.switcheroo.onPermission((req) => setPermission(req)),
-      window.switcheroo.onNavigateToEvent(({ eventId }) => {
-        setFocusEvent((prev) => ({ id: eventId, key: (prev?.key ?? 0) + 1 }));
+      window.switcheroo.onNavigateToEvent(({ turnId, eventId }) => {
+        setFocusEvent((prev) => ({
+          id: eventId,
+          turnId,
+          key: (prev?.key ?? 0) + 1,
+        }));
       }),
     ];
 
@@ -113,9 +114,9 @@ export function App() {
   useEffect(() => {
     if (activeSessionId === SWITCHBOARD_ID) return;
     let cancelled = false;
-    void window.switcheroo.getTranscript(activeSessionId).then((items) => {
+    void window.switcheroo.getTranscript(activeSessionId).then((turns) => {
       if (cancelled) return;
-      setTranscripts((prev) => ({ ...prev, [activeSessionId]: items }));
+      setTranscripts((prev) => ({ ...prev, [activeSessionId]: turns }));
     });
     return () => {
       cancelled = true;
@@ -174,8 +175,8 @@ export function App() {
     [activeSession, pinTranscriptToBottom],
   );
 
-  const onSwitchboardClick = useCallback((event: SwitchboardEvent) => {
-    void window.switcheroo.navigateToEvent(event.sessionId, event.id);
+  const onSwitchboardClick = useCallback((turn: SwitchboardTurn) => {
+    void window.switcheroo.navigateToEvent(turn.sessionId, turn.id, turn.user.id);
   }, []);
 
   return (
@@ -211,18 +212,19 @@ export function App() {
 
         {activeSessionId === SWITCHBOARD_ID ? (
           <SwitchboardPanel
-            events={switchboardEvents}
+            turns={switchboardTurns}
             sessions={openSessions}
             notice={switchboardNotice}
             scrollRef={switchboardRef}
             onNoticeDismiss={() => setSwitchboardNotice(null)}
-            onEventClick={onSwitchboardClick}
+            onTurnClick={onSwitchboardClick}
           />
         ) : activeSession ? (
           <ChatPanel
             session={activeSession}
-            items={transcripts[activeSession.id] ?? []}
+            turns={transcripts[activeSession.id] ?? []}
             focusEventId={focusEvent?.id ?? null}
+            focusTurnId={focusEvent?.turnId ?? null}
             focusEventKey={focusEvent?.key ?? 0}
             promptFocus={promptFocus}
             chatRef={chatRef}
@@ -273,7 +275,7 @@ export function App() {
         onCancel={() => setShowFindInSessions(false)}
         onSelect={(hit) => {
           setShowFindInSessions(false);
-          void window.switcheroo.navigateToEvent(hit.sessionId, hit.eventId);
+          void window.switcheroo.navigateToEvent(hit.sessionId, hit.turnId, hit.eventId);
         }}
       />
     </div>

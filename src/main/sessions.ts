@@ -1,16 +1,15 @@
 import * as path from "node:path";
-import { randomUUID } from "node:crypto";
 import type { BrowserWindow } from "electron";
 import type {
   ActiveSessionId,
   AgentKind,
   AppSettings,
   CreateSessionInput,
-  SwitchboardEvent,
+  SwitchboardTurn,
   PersistedState,
   Session,
   SessionStatus,
-  TranscriptItem,
+  TranscriptTurn,
   FindInSessionsHit,
 } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
@@ -22,7 +21,7 @@ import { loadState, saveState } from "./persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "./appSettings";
 import { loadSessionMeta, saveSessionMeta, type SessionMeta } from "./sessionMeta";
 import { loadTranscript, saveTranscript } from "./sessionTranscripts";
-import { loadSwitchboardEvents, saveSwitchboardEvents } from "./switchboardEvents";
+import { loadSwitchboardTurns, saveSwitchboardTurns } from "./switchboardEvents";
 import { switchboardCleanupCutoff } from "./switchboardCleanup";
 import { overflowSessionIds } from "./overflowSessionIds";
 import {
@@ -51,8 +50,7 @@ const warmCallbacks: SessionCallbacks = {
   onSteeringSupport: () => undefined,
   onAvailableCommands: () => undefined,
   onUsage: () => undefined,
-  onTranscript: () => undefined,
-  onTranscriptPatch: () => undefined,
+  onTurn: () => undefined,
   onStatus: () => undefined,
   onPermission: () => undefined,
   onAskQuestion: () => undefined,
@@ -63,7 +61,7 @@ export class SessionManager {
   private sessions = new Map<string, Session>();
   private railLists: SessionRailLists = { pinnedIds: [], unpinnedIds: [] };
   private agents = new Map<string, AcpSession>();
-  private transcripts = new Map<string, TranscriptItem[]>();
+  private transcripts = new Map<string, TranscriptTurn[]>();
   private hydrated = new Set<string>();
   private activeSessionId: ActiveSessionId = SWITCHBOARD_ID;
   private bus = new GlobalEventBus();
@@ -132,13 +130,13 @@ export class SessionManager {
           ? saved.activeSessionId
           : SWITCHBOARD_ID;
       const openSessionIds = new Set(openIds);
-      const switchboardEvents = await loadSwitchboardEvents();
+      const switchboardTurns = await loadSwitchboardTurns();
       const navigableIds = new Set(openSessionIds);
       const titles = new Map<string, string>(
         [...this.sessions.entries()].map(([id, session]) => [id, session.title]),
       );
       const closedIds = [
-        ...new Set(switchboardEvents.map((e) => e.sessionId)),
+        ...new Set(switchboardTurns.map((e) => e.sessionId)),
       ].filter((id) => id && !openSessionIds.has(id));
       await Promise.all(
         closedIds.map(async (sessionId) => {
@@ -149,7 +147,7 @@ export class SessionManager {
         }),
       );
       this.bus.restore(
-        switchboardEvents.map((e) => ({
+        switchboardTurns.map((e) => ({
           ...e,
           sessionTitle: titles.get(e.sessionId) ?? e.sessionTitle,
           navigable: navigableIds.has(e.sessionId),
@@ -158,8 +156,8 @@ export class SessionManager {
       if (this.activeSessionId !== SWITCHBOARD_ID) await this.ensureHydrated(this.activeSessionId);
     }
 
-    this.bus.on("event", (event: SwitchboardEvent) => {
-      this.send("switchboard:event", event);
+    this.bus.on("turn", (turn: SwitchboardTurn) => {
+      this.send("switchboard:turn", turn);
     });
     if (await this.enforceSessionListMax()) await this.persistStateFile();
     await this.maybeCleanSwitchboard();
@@ -172,7 +170,7 @@ export class SessionManager {
       this.persistTimer = null;
     }
     await this.persistStateFile();
-    await saveSwitchboardEvents(this.bus.list());
+    await saveSwitchboardTurns(this.bus.list());
     await Promise.all(
       [...this.sessions.values()].map(async (session) => {
         await saveSessionMeta(session.id, metaFromSession(session));
@@ -209,8 +207,8 @@ export class SessionManager {
     if (cutoff == null) return;
     const removed = this.bus.removeOlderThan(cutoff);
     if (removed === 0) return;
-    this.send("switchboard:events", this.bus.list());
-    await saveSwitchboardEvents(this.bus.list());
+    this.send("switchboard:turns", this.bus.list());
+    await saveSwitchboardTurns(this.bus.list());
   }
 
   /** Soft-close oldest rail sessions on startup when over sessionListMax. */
@@ -234,8 +232,8 @@ export class SessionManager {
   private async softCloseSession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (!session) return;
-    for (const event of this.bus.setSessionTitle(sessionId, session.title)) {
-      this.send("switchboard:event", event);
+    for (const turn of this.bus.setSessionTitle(sessionId, session.title)) {
+      this.send("switchboard:turn", turn);
     }
     if (this.hydrated.has(sessionId)) {
       await saveSessionMeta(sessionId, metaFromSession(session));
@@ -263,7 +261,7 @@ export class SessionManager {
   list() {
     return {
       ...this.sessionListPayload(),
-      switchboardEvents: this.bus.list(),
+      switchboardTurns: this.bus.list(),
     };
   }
 
@@ -309,16 +307,6 @@ export class SessionManager {
         this.agents.set(id, claimed);
         session.agentSessionId = claimed.sessionId;
         this.setStatus(id, "ready", null);
-        this.bus.append({
-          id: randomUUID(),
-          sessionId: id,
-          sessionTitle: session.title,
-          agent: session.agent,
-          at: Date.now(),
-          kind: "status",
-          summary: `${agentLabel(session.agent)} session ready`,
-          navigable: true,
-        });
         if (input.switcherooAware) {
           await claimed.prompt(controlBootstrapText());
         }
@@ -391,8 +379,8 @@ export class SessionManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
     session.title = title;
-    for (const event of this.bus.setSessionTitle(sessionId, title)) {
-      this.send("switchboard:event", event);
+    for (const turn of this.bus.setSessionTitle(sessionId, title)) {
+      this.send("switchboard:turn", turn);
     }
     this.emitSessions();
     void this.persist();
@@ -428,7 +416,7 @@ export class SessionManager {
     if (sessionId !== SWITCHBOARD_ID) this.refreshCommandsIfNeeded(sessionId);
   }
 
-  async navigateToEvent(sessionId: string, eventId: string): Promise<void> {
+  async navigateToEvent(sessionId: string, turnId: string, eventId: string): Promise<void> {
     if (!this.sessions.has(sessionId)) {
       const reopened = await this.reopenSession(sessionId);
       if (!reopened) {
@@ -442,7 +430,7 @@ export class SessionManager {
     this.activeSessionId = sessionId;
     this.emitSessions();
     this.pushTranscript(sessionId);
-    this.send("navigate-event", { sessionId, eventId });
+    this.send("navigate-event", { sessionId, turnId, eventId });
     void this.persist();
     this.refreshCommandsIfNeeded(sessionId);
   }
@@ -512,7 +500,7 @@ export class SessionManager {
             sessionId,
             title: session.title,
             agent: session.agent,
-            items: this.transcripts.get(sessionId) ?? [],
+            turns: this.transcripts.get(sessionId) ?? [],
           };
         }
       } else {
@@ -522,7 +510,7 @@ export class SessionManager {
             sessionId,
             title: meta.title,
             agent: meta.agent,
-            items: await loadTranscript(sessionId),
+            turns: await loadTranscript(sessionId),
           };
         }
       }
@@ -591,7 +579,7 @@ export class SessionManager {
     this.agents.get(sessionId)?.respondAskQuestion(requestId, outcome);
   }
 
-  async getTranscript(sessionId: string): Promise<TranscriptItem[]> {
+  async getTranscript(sessionId: string): Promise<TranscriptTurn[]> {
     await this.ensureHydrated(sessionId);
     return this.transcripts.get(sessionId) ?? [];
   }
@@ -604,45 +592,29 @@ export class SessionManager {
     }
   }
 
-  private handleTranscript(
-    sessionId: string,
-    item: TranscriptItem,
-    replaceId?: string,
-  ): void {
-    if (!this.sessions.has(sessionId)) return;
+  private handleTurn(sessionId: string, turn: TranscriptTurn): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
     const list = this.transcripts.get(sessionId) ?? [];
-    if (replaceId) {
-      const idx = list.findIndex((i) => i.id === replaceId);
-      if (idx >= 0) {
-        list[idx] = item.role === "tool" ? item : {
-          ...list[idx],
-          text: list[idx].text + item.text,
-          at: item.at,
-        };
-        this.transcripts.set(sessionId, list);
-        this.send("transcript", { sessionId, item: list[idx], replaceId });
-        return;
-      }
-    }
-    list.push(item);
+    const idx = list.findIndex((entry) => entry.id === turn.id);
+    if (idx >= 0) list[idx] = turn;
+    else list.push(turn);
     this.transcripts.set(sessionId, list);
-    this.send("transcript", { sessionId, item });
+    this.send("transcript", { sessionId, turn });
+    this.bus.append({
+      ...turn,
+      sessionId,
+      sessionTitle: session.title,
+      agent: session.agent,
+      navigable: true,
+    });
   }
 
-  private patchTranscript(
-    sessionId: string,
-    id: string,
-    patch: Pick<TranscriptItem, "queued">,
-  ): void {
+  private removeTurn(sessionId: string, turnId: string): void {
     if (!this.sessions.has(sessionId)) return;
-    const list = this.transcripts.get(sessionId) ?? [];
-    const idx = list.findIndex((item) => item.id === id);
-    if (idx < 0) return;
-    const next = { ...list[idx], ...patch };
-    if (!patch.queued) delete next.queued;
-    list[idx] = next;
+    const list = (this.transcripts.get(sessionId) ?? []).filter((turn) => turn.id !== turnId);
     this.transcripts.set(sessionId, list);
-    this.send("transcript", { sessionId, item: next, replaceId: id });
+    this.pushTranscript(sessionId);
   }
 
   private setStatus(
@@ -696,7 +668,10 @@ export class SessionManager {
   }
 
   private openSession(session: Session): AcpSession {
-    return new AcpSession(session.id, session.agent, session.cwd, this.bus, this.callbacksFor(session));
+    const acp = new AcpSession(session.id, session.agent, session.cwd, this.bus, this.callbacksFor(session));
+    const turns = this.transcripts.get(session.id);
+    if (turns?.length) acp.restoreTurns(turns);
+    return acp;
   }
 
   private ensureWarm(agent: AgentKind, cwd: string): void {
@@ -787,8 +762,8 @@ export class SessionManager {
       onPromptComplete: () => {
         this.send("prompt:complete", { sessionId: session.id });
       },
-      onTranscript: (item, replaceId) => this.handleTranscript(session.id, item, replaceId),
-      onTranscriptPatch: (id, patch) => this.patchTranscript(session.id, id, patch),
+      onTurn: (turn) => this.handleTurn(session.id, turn),
+      onTurnRemoved: (turnId) => this.removeTurn(session.id, turnId),
       onStatus: (status, error) => this.setStatus(session.id, status, error ?? null),
       onSteeringSupport: (supported) => {
         session.supportsSteering = supported;
@@ -867,7 +842,7 @@ export class SessionManager {
   private pushTranscript(sessionId: string): void {
     this.send("transcript:reset", {
       sessionId,
-      items: this.transcripts.get(sessionId) ?? [],
+      turns: this.transcripts.get(sessionId) ?? [],
     });
   }
 

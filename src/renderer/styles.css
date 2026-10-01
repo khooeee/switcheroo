@@ -428,10 +428,40 @@ button {
   background: var(--user-bg);
 }
 
-html[data-details="hidden"] .feed-item.detail,
-html[data-details="hidden"] .message.tool:not(.has-file-changes),
-html[data-details="hidden"] .message.thought {
-  display: none;
+.session-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-turn + .session-turn {
+  margin-top: 12px;
+}
+
+.turn-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 10px;
+  border-left: 2px solid var(--bg-3);
+}
+
+.message.turn-toggle {
+  cursor: pointer;
+}
+
+.message.turn-toggle:hover {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.event-title.openable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+}
+
+.event-title.openable:hover {
+  text-decoration-color: currentColor;
 }
 
 .event-title {
@@ -461,16 +491,6 @@ html[data-details="hidden"] .message.thought {
   padding: 2px 6px;
   border-radius: 4px;
   background: var(--bg-3);
-}
-
-html[data-details="hidden"] .kind-pill,
-html[data-details="hidden"] .feed-item .event-timestamp,
-html[data-details="hidden"] .message.has-file-changes .event-timestamp {
-  display: none;
-}
-
-html[data-details="hidden"] .message .row:not(:has(.tool-status)) {
-  display: none;
 }
 
 .kind-pill.permission,

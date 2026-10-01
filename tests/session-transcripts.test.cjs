@@ -43,18 +43,25 @@ async function fixture(t) {
   };
 }
 
-const items = [
-  { id: "a", role: "user", text: "Hi", at: 1 },
-  { id: "b", role: "assistant", text: "Hello\nthere", at: 2 },
+const turns = [
+  {
+    id: "t1",
+    at: 1,
+    user: { id: "a", role: "user", text: "Hi", at: 1 },
+    assistant: { id: "b", role: "assistant", text: "Hello\nthere", at: 2 },
+    events: [],
+    fileChanges: [],
+    status: "complete",
+  },
 ];
 
-test("transcript JSONL lives at sessions/<id>/transcript.jsonl", async (t) => {
+test("transcript JSON lives at sessions/<id>/transcript.json", async (t) => {
   const { sessions, transcripts } = await fixture(t);
-  await transcripts.saveTranscript("session-1", items);
-  const file = path.join(sessions, "session-1", "transcript.jsonl");
+  await transcripts.saveTranscript("session-1", turns);
+  const file = path.join(sessions, "session-1", "transcript.json");
   const raw = await fs.readFile(file, "utf8");
-  assert.equal(raw.trim().split("\n").length, 2);
-  assert.equal(JSON.stringify(await transcripts.loadTranscript("session-1")), JSON.stringify(items));
+  assert.ok(raw.includes('"id":"t1"'));
+  assert.equal(JSON.stringify(await transcripts.loadTranscript("session-1")), JSON.stringify(turns));
 });
 
 test("meta round-trips beside the transcript", async (t) => {

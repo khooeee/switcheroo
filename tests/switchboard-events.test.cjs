@@ -37,28 +37,38 @@ async function fixture(t) {
   const electron = { app: { getPath: () => dir } };
   return {
     dir,
-    path: path.join(dir, "switchboard.jsonl"),
+    path: path.join(dir, "switchboard.json"),
     store: load(path.join(__dirname, "../src/main/switchboardEvents.ts"), electron),
   };
 }
 
-const events = [
-  { id: "e1", sessionId: "t1", agent: "codex", at: 1, kind: "user", summary: "Hi", navigable: true },
-  { id: "e2", sessionId: "t1", agent: "codex", at: 2, kind: "message", summary: "Hello", navigable: true },
+const turns = [
+  {
+    id: "t1",
+    at: 1,
+    user: { id: "u1", role: "user", text: "Hi", at: 1 },
+    assistant: { id: "a1", role: "assistant", text: "Hello", at: 2 },
+    events: [],
+    fileChanges: [],
+    status: "complete",
+    sessionId: "s1",
+    agent: "codex",
+    navigable: true,
+  },
 ];
 
-test("switchboard JSONL round-trips at switchboard.jsonl", async (t) => {
+test("switchboard JSON round-trips at switchboard.json", async (t) => {
   const { path: file, store } = await fixture(t);
-  await store.saveSwitchboardEvents(events);
+  await store.saveSwitchboardTurns(turns);
   const raw = await fs.readFile(file, "utf8");
-  assert.equal(raw.trim().split("\n").length, 2);
-  assert.equal(JSON.stringify(await store.loadSwitchboardEvents()), JSON.stringify(events));
+  assert.ok(raw.includes('"id":"t1"'));
+  assert.equal(JSON.stringify(await store.loadSwitchboardTurns()), JSON.stringify(turns));
 });
 
 test("empty switchboard save writes an empty file", async (t) => {
   const { path: file, store } = await fixture(t);
-  await store.saveSwitchboardEvents(events);
-  await store.saveSwitchboardEvents([]);
+  await store.saveSwitchboardTurns(turns);
+  await store.saveSwitchboardTurns([]);
   assert.equal(await fs.readFile(file, "utf8"), "");
-  assert.equal(JSON.stringify(await store.loadSwitchboardEvents()), "[]");
+  assert.equal(JSON.stringify(await store.loadSwitchboardTurns()), "[]");
 });

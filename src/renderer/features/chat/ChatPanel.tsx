@@ -3,7 +3,7 @@ import type {
   CursorAskQuestionRequest,
   PermissionRequest,
   Session,
-  TranscriptItem,
+  TranscriptTurn,
 } from "../../../shared/types";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { SessionTranscript } from "./SessionTranscript";
@@ -11,8 +11,9 @@ import { ChatComposer } from "./ChatComposer";
 
 interface Props {
   session: Session;
-  items: TranscriptItem[];
+  turns: TranscriptTurn[];
   focusEventId: string | null;
+  focusTurnId: string | null;
   focusEventKey: number;
   promptFocus: number;
   chatRef: RefObject<HTMLDivElement | null>;
@@ -34,8 +35,9 @@ interface Props {
 
 export function ChatPanel({
   session,
-  items,
+  turns,
   focusEventId,
+  focusTurnId,
   focusEventKey,
   promptFocus,
   chatRef,
@@ -61,8 +63,9 @@ export function ChatPanel({
 
       <SessionTranscript
         session={session}
-        items={items}
+        turns={turns}
         focusEventId={focusEventId}
+        focusTurnId={focusTurnId}
         focusEventKey={focusEventKey}
         chatRef={chatRef}
       />
@@ -106,7 +109,7 @@ export function ChatPanel({
 
       <ChatComposer
         session={session}
-        items={items}
+        turns={turns}
         promptFocus={promptFocus}
         onSend={onSend}
         onInterrupt={onInterrupt}

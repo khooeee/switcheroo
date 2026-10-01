@@ -25,43 +25,39 @@ function load(relative) {
   return exports;
 }
 const { ToolOutput } = load("src/main/acp/ToolOutput.ts");
-const { GlobalEventBus } = load("src/main/events.ts");
 const { toolFileChanges } = load("src/main/acp/toolFileChanges.ts");
 const { diffLines } = load("src/renderer/features/files/diffLines.ts");
 const { FileChanges } = load("src/renderer/features/files/FileChanges.tsx");
 const { FileDiff } = load("src/renderer/features/files/FileDiff.tsx");
 
-test("partial tool updates retain file content and update one transcript and Switchboard event", () => {
-  const bus = new GlobalEventBus();
+test("partial tool updates retain file content across updates", () => {
   const transcript = new Map();
   const replacements = [];
-  const output = new ToolOutput(bus, (item, replaceId) => {
+  const output = new ToolOutput((item, replaceId) => {
     transcript.set(item.id, item);
     if (replaceId) replacements.push(replaceId);
-  }, (kind, summary, id) => bus.append({ id, kind, summary, sessionId: "session-1", agent: "codex", at: 1, navigable: true }));
+  });
   output.handle({ toolCallId: "create", title: "Write file", kind: "edit", status: "pending",
     content: [{ type: "diff", path: "/project/new.ts", oldText: null, newText: "hello" }] });
-  assert.match(bus.list()[0].summary, /^Create .*\(pending\)$/);
+  const first = [...transcript.values()][0];
+  assert.match(first.text, /^Create .*\(pending\)$/);
   output.handle({ toolCallId: "create", status: "completed", title: null, content: null });
-  assert.equal(bus.list().length, 1);
   assert.equal(transcript.size, 1);
   assert.equal(replacements.length, 1);
-  const event = bus.list()[0];
-  assert.equal(event.summary, "Created /project/new.ts");
-  assert.equal(event.fileChanges[0].newText, "hello");
-  assert.equal(event.toolStatus, "completed");
-  assert.equal(transcript.get(event.id).fileChanges[0].kind, "created");
+  const item = [...transcript.values()][0];
+  assert.equal(item.text, "Created /project/new.ts");
+  assert.equal(item.fileChanges[0].newText, "hello");
+  assert.equal(item.toolStatus, "completed");
+  assert.equal(item.fileChanges[0].kind, "created");
 });
 
 test("updates without an initial tool call still produce a file entry", () => {
-  const bus = new GlobalEventBus();
   let item;
-  const output = new ToolOutput(bus, (value) => { item = value; },
-    (kind, summary, id) => bus.append({ id, kind, summary }));
+  const output = new ToolOutput((value) => { item = value; });
   output.handle({ toolCallId: "late", kind: "edit", status: "failed",
     content: [{ type: "diff", path: "a.ts", oldText: "before", newText: "after" }] });
   assert.equal(item.text, "Update a.ts (failed)");
-  assert.equal(bus.list()[0].toolStatus, "failed");
+  assert.equal(item.toolStatus, "failed");
 });
 
 test("read locations are not edits; deletes and moves do not require a diff", () => {
@@ -115,19 +111,14 @@ test("file entries render relative paths, collapsible diffs, and missing-content
   assert.doesNotMatch(diff, /<script>/);
 });
 
-
 test("finishing a turn settles only unfinished tools and accepts late final updates", () => {
-  const bus = new GlobalEventBus();
   const transcript = new Map();
-  const output = new ToolOutput(bus, (item) => transcript.set(item.toolCallId, item),
-    (kind, summary, id) => bus.append({ id, kind, summary }));
+  const output = new ToolOutput((item) => transcript.set(item.toolCallId, item));
   output.handle({ toolCallId: "pending", title: "Waiting", status: "pending" });
   output.handle({ toolCallId: "done", title: "Done", status: "completed" });
   output.finish("interrupted");
   assert.equal(transcript.get("pending").toolStatus, "interrupted");
   assert.equal(transcript.get("done").toolStatus, "completed");
-  assert.equal(bus.list()[0].toolStatus, "interrupted");
   output.handle({ toolCallId: "pending", status: "completed" });
   assert.equal(transcript.get("pending").toolStatus, "completed");
-  assert.equal(bus.list().length, 2);
 });

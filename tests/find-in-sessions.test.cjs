@@ -18,12 +18,26 @@ function load(relative) {
 const { findInSessionSources, matchSnippet } = load("../src/main/findInSessionSources.ts");
 const { groupFindHits } = load("../src/renderer/features/find/groupFindHits.ts");
 
+function turn(id, userText, assistantText, at) {
+  return {
+    id,
+    at,
+    user: { id: `${id}-u`, role: "user", text: userText, at },
+    assistant: assistantText
+      ? { id: `${id}-a`, role: "assistant", text: assistantText, at: at + 1 }
+      : null,
+    events: [],
+    fileChanges: [],
+    status: "complete",
+  };
+}
+
 test("empty query returns no hits", () => {
   assert.equal(findInSessionSources([{
     sessionId: "s1",
     title: "Demo",
     agent: "claude",
-    items: [{ id: "a", role: "user", text: "hello world", at: 1 }],
+    turns: [turn("t1", "hello world", null, 1)],
   }], "  ").length, 0);
 });
 
@@ -33,27 +47,25 @@ test("hits sorted by timestamp descending across sessions", () => {
       sessionId: "old",
       title: "Old",
       agent: "claude",
-      items: [
-        { id: "1", role: "user", text: "alpha", at: 1 },
-        { id: "2", role: "assistant", text: "find ME please", at: 10 },
-      ],
+      turns: [turn("t1", "alpha", "find ME please", 1)],
     },
     {
       sessionId: "new",
       title: "New",
       agent: "cursor",
-      items: [{ id: "3", role: "user", text: "Find me too", at: 5 }],
+      turns: [turn("t2", "Find me too", null, 5)],
     },
   ], "FIND ME");
-  assert.equal(hits.map((hit) => hit.eventId).join(","), "2,3");
-  assert.equal(hits[0].at, 10);
+  assert.equal(hits.map((hit) => hit.eventId).join(","), "t1-a,t2-u");
+  assert.equal(hits[0].turnId, "t1");
+  assert.equal(hits[0].at, 2);
 });
 
 test("groupFindHits keeps session order from newest match", () => {
   const groups = groupFindHits([
-    { sessionId: "b", eventId: "2", title: "B", agent: "claude", role: "user", snippet: "x", at: 20 },
-    { sessionId: "a", eventId: "1", title: "A", agent: "claude", role: "user", snippet: "x", at: 15 },
-    { sessionId: "b", eventId: "3", title: "B", agent: "claude", role: "assistant", snippet: "y", at: 5 },
+    { sessionId: "b", turnId: "tb", eventId: "2", title: "B", agent: "claude", role: "user", snippet: "x", at: 20 },
+    { sessionId: "a", turnId: "ta", eventId: "1", title: "A", agent: "claude", role: "user", snippet: "x", at: 15 },
+    { sessionId: "b", turnId: "tb", eventId: "3", title: "B", agent: "claude", role: "assistant", snippet: "y", at: 5 },
   ]);
   assert.equal(groups.map((group) => group.sessionId).join(","), "b,a");
   assert.equal(groups[0].hits.map((hit) => hit.eventId).join(","), "2,3");
@@ -61,34 +73,24 @@ test("groupFindHits keeps session order from newest match", () => {
 });
 
 test("optional limit still applies when provided", () => {
-  const items = Array.from({ length: 5 }, (_, i) => ({
-    id: String(i),
-    role: "user",
-    text: "needle",
-    at: i,
-  }));
+  const turns = Array.from({ length: 5 }, (_, i) => turn(`t${i}`, "needle", null, i));
   const hits = findInSessionSources([{
     sessionId: "s",
     title: "T",
     agent: "codex",
-    items,
+    turns,
   }], "needle", 2);
   assert.equal(hits.length, 2);
   assert.equal(hits.map((hit) => hit.at).join(","), "4,3");
 });
 
 test("uncapped by default", () => {
-  const items = Array.from({ length: 5 }, (_, i) => ({
-    id: String(i),
-    role: "user",
-    text: "needle",
-    at: i,
-  }));
+  const turns = Array.from({ length: 5 }, (_, i) => turn(`t${i}`, "needle", null, i));
   assert.equal(findInSessionSources([{
     sessionId: "s",
     title: "T",
     agent: "codex",
-    items,
+    turns,
   }], "needle").length, 5);
 });
 

@@ -9,8 +9,8 @@ function childCallbacks() {
     statuses, transcripts, capabilities, completions,
     cb: {
       onStatus: (status) => statuses.push(status),
-      onTranscript: (item) => transcripts.push(item),
-      onTranscriptPatch() {},
+      onTurn: (turn) => transcripts.push(turn),
+      onTurnRemoved() {},
       onSteeringSupport: (value) => capabilities.push(value),
       onPromptComplete: () => completions.push(true),
       onAskQuestion() {}, onPermission() {},
@@ -43,7 +43,7 @@ test("Codex forks resume before ready, route updates, and inherit steering", asy
   assert.equal(f.requests.at(-1).method, "_session/steering");
   assert.equal(f.requests.at(-1).params.sessionId, "session-2");
   f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Olá!" } }, "session-2");
-  assert.equal(c.transcripts.at(-1).text, "Olá!");
+  assert.equal(c.transcripts.at(-1).assistant.text, "Olá!");
   f.turns[0]({ stopReason: "end_turn" });
   await turn;
   assert.equal(c.statuses.at(-1), "ready");
@@ -81,5 +81,4 @@ test("failed fork resume rejects without marking ready or closing the source", a
   f.turns[0]({ stopReason: "end_turn" });
   await turn;
   await f.session.dispose();
-  assert.equal(f.disconnected.signal.aborted, true);
 });

@@ -1,4 +1,4 @@
-import type { PermissionRequest, SessionUsage, SlashCommand, TranscriptItem } from "../../shared/types";
+import type { PermissionRequest, SessionUsage, SlashCommand, TranscriptTurn } from "../../shared/types";
 
 export interface SessionCallbacks {
   onQuestionSettled?: (requestId: string) => void;
@@ -6,8 +6,8 @@ export interface SessionCallbacks {
   onSteeringSupport: (supported: boolean) => void;
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
-  onTranscript: (item: TranscriptItem, replaceId?: string) => void;
-  onTranscriptPatch: (id: string, patch: Pick<TranscriptItem, "queued">) => void;
+  onTurn: (turn: TranscriptTurn) => void;
+  onTurnRemoved?: (turnId: string) => void;
   onStatus: (status: "connecting" | "ready" | "running" | "error" | "idle", error?: string | null) => void;
   onPermission: (req: PermissionRequest) => void;
   onAskQuestion: (req: {

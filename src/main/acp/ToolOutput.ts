@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { ToolCallUpdate } from "@agentclientprotocol/sdk";
-import type { SwitchboardEvent, TranscriptItem } from "../../shared/types";
-import type { GlobalEventBus } from "../events";
+import type { TranscriptItem } from "../../shared/types";
 import { toolFileChanges } from "./toolFileChanges";
 import { fileChangeLabel } from "../../shared/fileChangeLabel";
 
@@ -15,11 +14,7 @@ export class ToolOutput {
     this.unfinished.clear();
   }
 
-  constructor(
-    private bus: GlobalEventBus,
-    private onTranscript: (item: TranscriptItem, replaceId?: string) => void,
-    private pushSwitchboard: (kind: SwitchboardEvent["kind"], summary: string, id?: string) => void,
-  ) {}
+  constructor(private onTranscript: (item: TranscriptItem, replaceId?: string) => void) {}
 
   handle(update: ToolCallUpdate, displayStatus?: string): void {
     const previous = this.tools.get(update.toolCallId);
@@ -47,7 +42,5 @@ export class ToolOutput {
       fileChanges,
     };
     this.onTranscript(item, previous ? id : undefined);
-    if (!previous) this.pushSwitchboard("tool", text, id);
-    this.bus.updateEvent(id, { summary: text, toolStatus: item.toolStatus, fileChanges });
   }
 }

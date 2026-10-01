@@ -94,10 +94,10 @@ async function fixture(supported = true, options = {}) {
   const session = new AcpSession("session-1", agent, "/tmp", { append(event) { events.push(event); }, updateEvent() {} }, {
     onPromptComplete: () => completions.push(true),
     onStatus: (status) => statuses.push(status),
-    onTranscript: (item) => transcripts.push(item),
-    onTranscriptPatch: (id, patch) => {
-      const item = transcripts.find((entry) => entry.id === id);
-      if (item) Object.assign(item, patch);
+    onTurn: (turn) => transcripts.push(turn),
+    onTurnRemoved: (turnId) => {
+      const idx = transcripts.findIndex((entry) => entry.id === turnId);
+      if (idx >= 0) transcripts.splice(idx, 1);
     },
     onSteeringSupport: (value) => capabilities.push(value),
     onPermission() {}, onAskQuestion: (req) => questions.push(req),

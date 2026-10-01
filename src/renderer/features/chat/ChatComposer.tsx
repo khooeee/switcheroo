@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Session, TranscriptItem } from "../../../shared/types";
+import type { Session, TranscriptTurn } from "../../../shared/types";
 import { formatAgentError } from "../../../shared/formatAgentError";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
@@ -16,13 +16,13 @@ import { userPromptHistory } from "./userPromptHistory";
 
 export function ChatComposer({
   session,
-  items,
+  turns,
   promptFocus,
   onSend,
   onInterrupt,
 }: {
   session: Session;
-  items: TranscriptItem[];
+  turns: TranscriptTurn[];
   promptFocus: number;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
@@ -32,7 +32,7 @@ export function ChatComposer({
   const [sendError, setSendError] = useState<{ sessionId: string; message: string } | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const previousSession = useRef({ id: session.id, status: session.status });
-  const history = useMemo(() => userPromptHistory(items), [items]);
+  const history = useMemo(() => userPromptHistory(turns), [turns]);
   const showStop = session.status === "running" && !draft.trim();
   const sendLabel = showStop ? "Stop agent (Escape / Ctrl+C)" : session.status === "running"
     ? (session.supportsSteering ? "Steer agent" : "Queue message")

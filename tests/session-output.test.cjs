@@ -26,13 +26,10 @@ function load(relative) {
 }
 
 const { SessionOutput } = load("src/main/acp/SessionOutput.ts");
-const { GlobalEventBus } = load("src/main/events.ts");
 
 function fixture() {
   const items = [];
-  const boardEvents = [];
-  const bus = new GlobalEventBus();
-  const output = new SessionOutput("codex", bus, (item, replaceId) => {
+  const output = new SessionOutput("codex", (item, replaceId) => {
     if (replaceId) {
       const idx = items.findIndex((entry) => entry.id === replaceId);
       if (idx >= 0) {
@@ -45,11 +42,8 @@ function fixture() {
       }
     }
     items.push(item);
-  }, (kind, summary, id) => {
-    boardEvents.push({ kind, summary, id });
-    bus.append({ id, kind, summary, sessionId: "session-1", agent: "codex", at: 1, navigable: true });
   });
-  return { output, items, boardEvents };
+  return { output, items };
 }
 
 function message(text, messageId) {
@@ -101,15 +95,15 @@ test("assistant → thought → assistant yields two assistants with the thought
   ]);
 });
 
-test("plan updates do not split a continuous assistant stream", () => {
-  const { output, items, boardEvents } = fixture();
+test("plan updates become system items and do not split a continuous assistant stream", () => {
+  const { output, items } = fixture();
   output.handleUpdate(message("Before."));
   output.handleUpdate({ sessionUpdate: "plan" });
   output.handleUpdate(message(" After."));
   assert.deepEqual(items.map((item) => [item.role, item.text]), [
     ["assistant", "Before. After."],
+    ["system", "Plan updated"],
   ]);
-  assert.equal(boardEvents.filter((entry) => entry.kind === "plan").length, 1);
 });
 
 test("a new messageId starts a new assistant bubble", () => {

@@ -6,7 +6,7 @@
  *   node scripts/seed-find-history.mjs
  *   node scripts/seed-find-history.mjs --sessions 80 --messages 300
  *
- * Defaults: 5000 sessions × 200 messages.
+ * Defaults: 5000 sessions × 200 messages (100 turns).
  * Writes under:
  *   ~/Library/Application Support/Switcheroo/sessions/
  *
@@ -49,22 +49,27 @@ async function writeSession(index) {
     agentSessionId: null,
   };
   await fs.writeFile(path.join(dir, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
-  const lines = [];
+  const turns = [];
   const base = Date.now() - index * 86_400_000;
-  for (let m = 0; m < messagesPerSession; m++) {
-    const role = m % 2 === 0 ? "user" : "assistant";
-    const includeToken = m % 17 === 0;
-    const text = includeToken
-      ? `Message ${m} mentions ${token} in session ${title}.`
-      : `Filler message ${m} for ${title} with some padding text to make the transcript larger.`;
-    lines.push(JSON.stringify({
+  const turnCount = Math.ceil(messagesPerSession / 2);
+  for (let t = 0; t < turnCount; t++) {
+    const includeToken = t % 17 === 0;
+    const userText = includeToken
+      ? `Message ${t} mentions ${token} in session ${title}.`
+      : `Filler message ${t} for ${title} with some padding text to make the transcript larger.`;
+    const assistantText = `Reply ${t} for ${title}.`;
+    const at = base + t * 60_000;
+    turns.push({
       id: randomUUID(),
-      role,
-      text,
-      at: base + m * 60_000,
-    }));
+      at,
+      user: { id: randomUUID(), role: "user", text: userText, at },
+      assistant: { id: randomUUID(), role: "assistant", text: assistantText, at: at + 1 },
+      events: [],
+      fileChanges: [],
+      status: "complete",
+    });
   }
-  await fs.writeFile(path.join(dir, "transcript.jsonl"), `${lines.join("\n")}\n`);
+  await fs.writeFile(path.join(dir, "transcript.json"), `${JSON.stringify(turns)}\n`);
   return { id, title };
 }
 
@@ -79,7 +84,7 @@ async function main() {
     const made = await writeSession(i);
     if ((i + 1) % 10 === 0 || i === 0) console.log(`  ${i + 1}/${sessionCount} ${made.title}`);
   }
-  console.log(`Done. In Find in History, search for: ${token}`);
+  console.log("Done. Search Find in History for:", token);
 }
 
 main().catch((error) => {

@@ -12,27 +12,28 @@ export type ActiveSessionId = typeof SWITCHBOARD_ID | string;
 
 export type SessionStatus = "idle" | "connecting" | "ready" | "running" | "error";
 
-export type SwitchboardEventKind =
-  | "message"
-  | "tool"
-  | "permission"
-  | "plan"
-  | "error"
-  | "status"
-  | "stopped"
-  | "user";
+export type TurnStatus = "running" | "complete" | "stopped";
 
-export interface SwitchboardEvent {
+/** One user prompt and the session updates that followed it. */
+export interface TranscriptTurn {
   id: string;
+  /** User message time — used for Switchboard / find sort order. */
+  at: number;
+  user: TranscriptItem;
+  /** Latest assistant message; prior assistants live in `events`. */
+  assistant: TranscriptItem | null;
+  events: TranscriptItem[];
+  /** Aggregated from tool events in this turn. */
+  fileChanges: FileChange[];
+  status: TurnStatus;
+}
+
+/** A session turn mirrored into the Switchboard feed. */
+export interface SwitchboardTurn extends TranscriptTurn {
   sessionId: string;
   /** Session title at event time (kept after soft-close) */
   sessionTitle?: string;
   agent: AgentKind;
-  at: number;
-  kind: SwitchboardEventKind;
-  summary: string;
-  fileChanges?: FileChange[];
-  toolStatus?: string;
   /** True when the session folder still exists and can be reopened */
   navigable: boolean;
 }
@@ -84,6 +85,7 @@ export interface TranscriptItem {
 /** One transcript hit from Find in History (Cmd+Shift+F). */
 export interface FindInSessionsHit {
   sessionId: string;
+  turnId: string;
   eventId: string;
   title: string;
   agent: AgentKind;
@@ -197,7 +199,7 @@ export interface SwitcherooApi {
   pinSession: (sessionId: string) => Promise<void>;
   unpinSession: (sessionId: string) => Promise<void>;
   setActiveSession: (sessionId: ActiveSessionId) => Promise<void>;
-  listSessions: () => Promise<SessionListPayload & { switchboardEvents: SwitchboardEvent[] }>;
+  listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;
   respondPermission: (
@@ -224,7 +226,7 @@ export interface SwitcherooApi {
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
-  getTranscript: (sessionId: string) => Promise<TranscriptItem[]>;
+  getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;
   stopFindInSessions: () => Promise<void>;
   onFindProgress: (
@@ -242,22 +244,22 @@ export interface SwitcherooApi {
     cb: (payload: { searchId: number; stopped: boolean }) => void,
   ) => () => void;
   onSessionsChanged: (cb: (payload: SessionListPayload) => void) => () => void;
-  onSwitchboardEvent: (cb: (event: SwitchboardEvent) => void) => () => void;
-  onSwitchboardEvents: (cb: (events: SwitchboardEvent[]) => void) => () => void;
+  onSwitchboardTurn: (cb: (turn: SwitchboardTurn) => void) => () => void;
+  onSwitchboardTurns: (cb: (turns: SwitchboardTurn[]) => void) => () => void;
   onSwitchboardSessionRemoved: (
     cb: (payload: { sessionId: string; message: string }) => void,
   ) => () => void;
   onTranscript: (
-    cb: (payload: { sessionId: string; item: TranscriptItem; replaceId?: string }) => void,
+    cb: (payload: { sessionId: string; turn: TranscriptTurn }) => void,
   ) => () => void;
-  onTranscriptReset: (cb: (payload: { sessionId: string; items: TranscriptItem[] }) => void) => () => void;
+  onTranscriptReset: (cb: (payload: { sessionId: string; turns: TranscriptTurn[] }) => void) => () => void;
   onPermission: (cb: (req: PermissionRequest) => void) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   onPromptComplete: (cb: (payload: { sessionId: string }) => void) => () => void;
   onSessionStatus: (cb: (payload: { sessionId: string; status: SessionStatus; error: string | null }) => void) => () => void;
-  onNavigateToEvent: (cb: (payload: { sessionId: string; eventId: string }) => void) => () => void;
-  navigateToEvent: (sessionId: string, eventId: string) => Promise<void>;
+  onNavigateToEvent: (cb: (payload: { sessionId: string; turnId: string; eventId: string }) => void) => () => void;
+  navigateToEvent: (sessionId: string, turnId: string, eventId: string) => Promise<void>;
 }
 
 declare global {

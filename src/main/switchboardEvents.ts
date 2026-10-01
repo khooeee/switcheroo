@@ -1,28 +1,25 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { SwitchboardEvent } from "../shared/types";
+import type { SwitchboardTurn } from "../shared/types";
 import { switchboardPath } from "./userDataPaths";
 
 let pendingSave: Promise<void> = Promise.resolve();
 
-export async function loadSwitchboardEvents(): Promise<SwitchboardEvent[]> {
+export async function loadSwitchboardTurns(): Promise<SwitchboardTurn[]> {
   try {
     const raw = await fs.readFile(switchboardPath(), "utf8");
     if (!raw.trim()) return [];
-    return raw
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => JSON.parse(line) as SwitchboardEvent);
+    return JSON.parse(raw) as SwitchboardTurn[];
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw err;
   }
 }
 
-export async function saveSwitchboardEvents(events: SwitchboardEvent[]): Promise<void> {
+export async function saveSwitchboardTurns(turns: SwitchboardTurn[]): Promise<void> {
   const target = switchboardPath();
   const tmp = `${target}.${process.pid}.tmp`;
-  const body = events.length ? `${events.map((event) => JSON.stringify(event)).join("\n")}\n` : "";
+  const body = turns.length ? `${JSON.stringify(turns)}\n` : "";
   const save = pendingSave.then(async () => {
     await fs.mkdir(path.dirname(target), { recursive: true });
     await fs.writeFile(tmp, body, "utf8");

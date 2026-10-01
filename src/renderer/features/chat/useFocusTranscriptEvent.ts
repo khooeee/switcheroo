@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
-import type { TranscriptItem } from "../../../shared/types";
-import { ensureDetailsVisible } from "../settings/details";
+import type { TranscriptTurn } from "../../../shared/types";
 
-/** Scroll to and flash a transcript event; reveals zen-hidden details first if needed. */
+/** Scroll to and flash a transcript event after its turn is expanded. */
 export function useFocusTranscriptEvent(
   focusEventId: string | null,
   focusEventKey: number,
   sessionId: string,
-  items: TranscriptItem[],
+  turns: TranscriptTurn[],
+  turnExpanded = true,
 ): void {
   const appliedFocusKey = useRef<number | null>(null);
 
@@ -16,14 +16,12 @@ export function useFocusTranscriptEvent(
       appliedFocusKey.current = null;
       return;
     }
+    if (!turnExpanded) return;
     const el = document.querySelector(
       `[data-event-id="${CSS.escape(focusEventId)}"]`,
     ) as HTMLElement | null;
-    // Transcript may not be painted yet; retry when items arrive.
+    // Transcript may not be painted yet; retry when turns arrive / expand.
     if (!el) return;
-
-    const wasHidden = getComputedStyle(el).display === "none";
-    if (wasHidden) ensureDetailsVisible();
 
     const sameFocus = appliedFocusKey.current === focusEventKey;
     appliedFocusKey.current = focusEventKey;
@@ -41,19 +39,14 @@ export function useFocusTranscriptEvent(
       t = window.setTimeout(() => el.classList.remove("highlight"), 1200);
     };
 
-    if (wasHidden) {
-      // Animations started in the same frame as display:none → visible are skipped; wait for paint.
-      raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(flash);
-      });
-    } else {
-      flash();
-    }
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(flash);
+    });
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
       clearTimeout(t);
     };
-  }, [focusEventId, focusEventKey, sessionId, items]);
+  }, [focusEventId, focusEventKey, sessionId, turns, turnExpanded]);
 }

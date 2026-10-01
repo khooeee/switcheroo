@@ -46,7 +46,7 @@ export async function handleControlRequest(
     const action = sessionMatch[2];
 
     if (method === "GET" && action === "transcript") {
-      return json(res, 200, { sessionId, items: await sessions.getTranscript(sessionId) });
+      return json(res, 200, { sessionId, turns: await sessions.getTranscript(sessionId) });
     }
     if (method === "GET" && action === "wait") {
       const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);

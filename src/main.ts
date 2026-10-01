@@ -89,8 +89,8 @@ function registerIpc(): void {
   ipcMain.handle("sessions:setActive", (_e, sessionId: ActiveSessionId) =>
     sessions.setActiveSession(sessionId),
   );
-  ipcMain.handle("sessions:navigateEvent", (_e, sessionId: string, eventId: string) =>
-    sessions.navigateToEvent(sessionId, eventId),
+  ipcMain.handle("sessions:navigateEvent", (_e, sessionId: string, turnId: string, eventId: string) =>
+    sessions.navigateToEvent(sessionId, turnId, eventId),
   );
   ipcMain.handle("sessions:findInSessions", (_e, query: string, searchId: number) =>
     sessions.startFindInSessions(query, searchId),

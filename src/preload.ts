@@ -5,12 +5,12 @@ import type {
   CreateSessionInput,
   CursorAskQuestionRequest,
   FindInSessionsHit,
-  SwitchboardEvent,
+  SwitchboardTurn,
   PermissionRequest,
   SessionListPayload,
   SwitcherooApi,
   SessionStatus,
-  TranscriptItem,
+  TranscriptTurn,
 } from "./shared/types";
 
 function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
@@ -52,21 +52,18 @@ const api: SwitcherooApi = {
   findInSessions: (query: string, searchId: number) =>
     ipcRenderer.invoke("sessions:findInSessions", query, searchId) as Promise<{ searchId: number }>,
   stopFindInSessions: () => ipcRenderer.invoke("sessions:stopFindInSessions"),
-  navigateToEvent: (sessionId: string, eventId: string) =>
-    ipcRenderer.invoke("sessions:navigateEvent", sessionId, eventId),
+  navigateToEvent: (sessionId: string, turnId: string, eventId: string) =>
+    ipcRenderer.invoke("sessions:navigateEvent", sessionId, turnId, eventId),
   onSessionsChanged: (cb) =>
     subscribe<SessionListPayload>("sessions:changed", cb),
-  onSwitchboardEvent: (cb) => subscribe<SwitchboardEvent>("switchboard:event", cb),
-  onSwitchboardEvents: (cb) => subscribe<SwitchboardEvent[]>("switchboard:events", cb),
+  onSwitchboardTurn: (cb) => subscribe<SwitchboardTurn>("switchboard:turn", cb),
+  onSwitchboardTurns: (cb) => subscribe<SwitchboardTurn[]>("switchboard:turns", cb),
   onSwitchboardSessionRemoved: (cb) =>
     subscribe<{ sessionId: string; message: string }>("switchboard:session-removed", cb),
   onTranscript: (cb) =>
-    subscribe<{ sessionId: string; item: TranscriptItem; replaceId?: string }>(
-      "transcript",
-      cb,
-    ),
+    subscribe<{ sessionId: string; turn: TranscriptTurn }>("transcript", cb),
   onTranscriptReset: (cb) =>
-    subscribe<{ sessionId: string; items: TranscriptItem[] }>("transcript:reset", cb),
+    subscribe<{ sessionId: string; turns: TranscriptTurn[] }>("transcript:reset", cb),
   onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
@@ -77,7 +74,7 @@ const api: SwitcherooApi = {
       cb,
     ),
   onNavigateToEvent: (cb) =>
-    subscribe<{ sessionId: string; eventId: string }>("navigate-event", cb),
+    subscribe<{ sessionId: string; turnId: string; eventId: string }>("navigate-event", cb),
   onFindProgress: (cb) =>
     subscribe<{
       searchId: number;

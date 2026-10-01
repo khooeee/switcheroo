@@ -1,62 +1,55 @@
 import { EventEmitter } from "node:events";
-import type { SwitchboardEvent } from "../shared/types";
+import type { SwitchboardTurn } from "../shared/types";
 
-const MAX_EVENTS = 2000;
+const MAX_TURNS = 2000;
 
 export class GlobalEventBus extends EventEmitter {
-  private events: SwitchboardEvent[] = [];
+  private turns: SwitchboardTurn[] = [];
 
-  append(event: SwitchboardEvent): SwitchboardEvent {
-    const existing = this.events.findIndex((entry) => entry.id === event.id);
+  append(turn: SwitchboardTurn): SwitchboardTurn {
+    const existing = this.turns.findIndex((entry) => entry.id === turn.id);
     if (existing >= 0) {
       // Keep the original timestamp so Switchboard order stays stable on updates.
-      const at = this.events[existing]!.at;
-      this.events[existing] = { ...event, at };
-      this.emit("event", this.events[existing]);
-      return this.events[existing]!;
+      const at = this.turns[existing]!.at;
+      this.turns[existing] = { ...turn, at };
+      this.emit("turn", this.turns[existing]);
+      return this.turns[existing]!;
     }
-    this.events.push(event);
-    if (this.events.length > MAX_EVENTS) {
-      this.events = this.events.slice(-MAX_EVENTS);
+    this.turns.push(turn);
+    if (this.turns.length > MAX_TURNS) {
+      this.turns = this.turns.slice(-MAX_TURNS);
     }
-    this.emit("event", event);
-    return event;
+    this.emit("turn", turn);
+    return turn;
   }
 
-  updateEvent(id: string, patch: Partial<Pick<SwitchboardEvent, "summary" | "toolStatus" | "fileChanges">>): void {
-    const event = this.events.find((entry) => entry.id === id);
-    if (!event) return;
-    Object.assign(event, patch);
-    this.emit("event", event);
+  list(): SwitchboardTurn[] {
+    return [...this.turns];
   }
 
-  list(): SwitchboardEvent[] {
-    return [...this.events];
-  }
-
-  setSessionTitle(sessionId: string, title: string): SwitchboardEvent[] {
-    const updated: SwitchboardEvent[] = [];
-    for (const event of this.events) {
-      if (event.sessionId !== sessionId || event.sessionTitle === title) continue;
-      event.sessionTitle = title;
-      updated.push(event);
+  setSessionTitle(sessionId: string, title: string): SwitchboardTurn[] {
+    const updated: SwitchboardTurn[] = [];
+    for (const turn of this.turns) {
+      if (turn.sessionId !== sessionId || turn.sessionTitle === title) continue;
+      turn.sessionTitle = title;
+      updated.push(turn);
     }
     return updated;
   }
 
-  /** Drop every Switchboard event for a session (e.g. folder gone from disk). */
+  /** Drop every Switchboard turn for a session (e.g. folder gone from disk). */
   removeSession(sessionId: string): void {
-    this.events = this.events.filter((event) => event.sessionId !== sessionId);
+    this.turns = this.turns.filter((turn) => turn.sessionId !== sessionId);
   }
 
-  /** Remove events with `at` strictly before cutoff. Returns how many were dropped. */
+  /** Remove turns with `at` strictly before cutoff. Returns how many were dropped. */
   removeOlderThan(cutoffAt: number): number {
-    const before = this.events.length;
-    this.events = this.events.filter((event) => event.at >= cutoffAt);
-    return before - this.events.length;
+    const before = this.turns.length;
+    this.turns = this.turns.filter((turn) => turn.at >= cutoffAt);
+    return before - this.turns.length;
   }
 
-  restore(events: SwitchboardEvent[]): void {
-    this.events = events.slice(-MAX_EVENTS);
+  restore(turns: SwitchboardTurn[]): void {
+    this.turns = turns.slice(-MAX_TURNS);
   }
 }

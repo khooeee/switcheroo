@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type * as acp from "@agentclientprotocol/sdk";
-import type { AgentKind, SwitchboardEvent, TranscriptItem } from "../../shared/types";
-import type { GlobalEventBus } from "../events";
+import type { AgentKind, TranscriptItem } from "../../shared/types";
 import { stripCursorStreamNoise } from "../../shared/cursorStreamNoise";
 import { ToolOutput } from "./ToolOutput";
 
@@ -13,11 +12,9 @@ export class SessionOutput {
 
   constructor(
     private agent: AgentKind,
-    private bus: GlobalEventBus,
     private onTranscript: (item: TranscriptItem, replaceId?: string) => void,
-    private pushSwitchboard: (kind: SwitchboardEvent["kind"], summary: string, id?: string) => void,
   ) {
-    this.tools = new ToolOutput(bus, onTranscript, pushSwitchboard);
+    this.tools = new ToolOutput(onTranscript);
   }
 
   finish(status: string): void {
@@ -51,10 +48,8 @@ export class SessionOutput {
           };
           this.onTranscript(item);
           this.streamingAssistantText = chunk;
-          this.pushSwitchboard("message", this.streamingAssistantText, item.id);
         } else {
           this.streamingAssistantText += chunk;
-          this.bus.updateEvent(this.streamingAssistantId, { summary: this.streamingAssistantText });
           const item: TranscriptItem = {
             id: this.streamingAssistantId,
             role: "assistant",
@@ -100,7 +95,12 @@ export class SessionOutput {
         break;
       }
       case "plan": {
-        this.pushSwitchboard("plan", "Plan updated");
+        this.onTranscript({
+          id: randomUUID(),
+          role: "system",
+          text: "Plan updated",
+          at: Date.now(),
+        });
         break;
       }
       default:

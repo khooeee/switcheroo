@@ -2,12 +2,8 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { Readable, Writable } from "node:stream";
 import { randomUUID } from "node:crypto";
 import * as acp from "@agentclientprotocol/sdk";
-import type {
-  AgentKind,
-  SwitchboardEvent,
-  TranscriptItem,
-} from "../../shared/types";
-import { AGENT_PRESETS, agentLabel } from "./presets";
+import type { AgentKind, TranscriptItem, TranscriptTurn } from "../../shared/types";
+import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import type { GlobalEventBus } from "../events";
 import { SessionOutput } from "./SessionOutput";
@@ -21,6 +17,7 @@ import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
 import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
+import { TurnBuilder } from "./TurnBuilder";
 
 export class AcpSession {
   id: string;
@@ -38,22 +35,28 @@ export class AcpSession {
   private canLoad = false;
   private canResume = false;
   private initializationMeta: unknown;
-  private bus: GlobalEventBus;
   private cb: SessionCallbacks;
   private questions: PendingQuestions;
   private files: SessionFiles;
   private output: SessionOutput;
+  private turns: TurnBuilder;
   private disposed = false;
   /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
   private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
-  private completion = new PromptCompletion(() => this.cb.onPromptComplete());
+  private completion = new PromptCompletion(() => {
+    this.turns.complete();
+    this.cb.onPromptComplete();
+  });
   private prompts = new PromptQueue(
     (text) => this.runPrompt(text),
     {
-      onWaiting: (id) => this.setTranscriptQueued(id, true),
-      onReleased: (id) => this.setTranscriptQueued(id, false),
-      onDiscarded: (id) => this.setTranscriptQueued(id, false),
+      onWaiting: (id) => this.turns.setQueued(id, true),
+      onReleased: (id) => this.turns.activate(id),
+      onDiscarded: (id) => {
+        const removed = this.turns.discard(id);
+        if (removed) this.cb.onTurnRemoved?.(removed.id);
+      },
     },
   );
   private delivery = new PromptDelivery({
@@ -70,6 +73,7 @@ export class AcpSession {
     onSupport: (supported) => this.cb.onSteeringSupport(supported),
     onDetachedTurn: () => {
       this.completion.detached();
+      this.turns.activateLatestRunning();
       if (this.remoteTurnActive !== false) {
         this.turnRunning = true;
         this.cb.onStatus("running");
@@ -81,13 +85,12 @@ export class AcpSession {
     id: string,
     agent: AgentKind,
     cwd: string,
-    bus: GlobalEventBus,
+    _bus: GlobalEventBus,
     cb: SessionCallbacks,
   ) {
     this.id = id;
     this.agent = agent;
     this.cwd = cwd;
-    this.bus = bus;
     this.cb = cb;
     this.files = new SessionFiles(cwd);
     this.questions = new PendingQuestions(
@@ -95,15 +98,23 @@ export class AcpSession {
       (req) => this.cb.onAskQuestion(req),
       (requestId) => this.cb.onQuestionSettled?.(requestId),
     );
-    this.output = new SessionOutput(
-      agent,
-      bus,
-      (item, replaceId) => {
-        if (!this.mirrorUpdates) return;
-        this.cb.onTranscript(item, replaceId);
-      },
-      (kind, text, itemId) => this.pushSwitchboard(kind, text, itemId),
-    );
+    this.turns = new TurnBuilder((turn) => {
+      if (!this.mirrorUpdates) return;
+      this.cb.onTurn(turn);
+    });
+    this.output = new SessionOutput(agent, (item, replaceId) => {
+      if (!this.mirrorUpdates) return;
+      this.turns.apply(item, replaceId);
+    });
+  }
+
+  /** Replace in-memory turns after hydrate/fork (does not emit). */
+  restoreTurns(turns: TranscriptTurn[]): void {
+    this.turns.restore(turns);
+  }
+
+  clipTurnsThrough(eventId: string): TranscriptTurn[] {
+    return this.turns.clipThrough(eventId) ?? [];
   }
 
   /** Rebind Switcheroo session id + callbacks after claiming from the warm pool. */
@@ -133,9 +144,6 @@ export class AcpSession {
   private async startSession(options?: { quiet?: boolean }): Promise<void> {
     await this.connectAgent(options);
     await this.createAgentSession();
-    if (!options?.quiet) {
-      this.pushSwitchboard("status", `${agentLabel(this.agent)} session ready`);
-    }
   }
 
   /** Allocate a new agent session on the current connection. */
@@ -170,11 +178,6 @@ export class AcpSession {
         await this.connection.agent.request(method, params);
         this.output.reset();
         this.cb.onStatus("ready");
-        if (!options?.quiet) {
-          this.mirrorUpdates = true;
-          this.pushSwitchboard("status", `${agentLabel(this.agent)} session attached`);
-          this.mirrorUpdates = false;
-        }
         return;
       } catch (err) {
         this.clearSessionId();
@@ -187,11 +190,6 @@ export class AcpSession {
     if (/invalid params|not found/i.test(detail)) {
       this.mirrorUpdates = false;
       await this.createAgentSession();
-      if (!options?.quiet) {
-        this.mirrorUpdates = true;
-        this.pushSwitchboard("status", `${agentLabel(this.agent)} session reconnected`);
-        this.mirrorUpdates = false;
-      }
       return;
     }
     throw new Error(
@@ -299,11 +297,11 @@ export class AcpSession {
       })
       .onRequest("cursor/ask_question", (params: unknown) => params as Record<string, unknown>, async (ctx) => {
         if (this.disposed || this.stopRequested) return { outcome: "cancelled" };
-        this.pushSwitchboard("permission", "Question from agent");
+        this.noteSystem("Question from agent");
         return this.questions.request(ctx.params, ctx.signal);
       })
       .onNotification("cursor/update_todos", (params: unknown) => params, async () => {
-        this.pushSwitchboard("plan", "Todos updated");
+        this.noteSystem("Todos updated");
       })
       .onNotification(acp.methods.client.session.update, (ctx) => {
         const target = sessionForUpdate(ctx.params.sessionId, this);
@@ -389,9 +387,11 @@ export class AcpSession {
       text,
       at: Date.now(),
     };
-    this.emitTranscript(userItem);
-    this.pushSwitchboard("user", text, userItem.id);
+    this.turns.open(userItem);
     await this.delivery.send(text, userItem.id);
+    // Steering inject finishes without runPrompt — close the orphan or active turn.
+    if (!this.turnRunning) this.turns.complete();
+    else this.turns.completeIfOrphan(userItem.id);
   }
 
   private async runPrompt(text: string): Promise<void> {
@@ -410,7 +410,6 @@ export class AcpSession {
       });
       if (this.remoteTurnActive !== true) this.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
       this.completion.finish(response.stopReason);
-      this.pushSwitchboard("status", `Turn ended (${response.stopReason})`);
       if (this.remoteTurnActive !== true && !this.disposed) {
         this.turnRunning = false;
         this.cb.onStatus("ready");
@@ -419,11 +418,11 @@ export class AcpSession {
       this.finishPending("interrupted");
       this.completion.finish("error");
       const msg = formatAgentError(err);
+      this.noteSystem(msg);
       if (this.remoteTurnActive !== true && !this.disposed) {
         this.turnRunning = false;
         this.cb.onStatus("error", msg);
       }
-      this.pushSwitchboard("error", msg);
       throw err;
     }
   }
@@ -438,9 +437,7 @@ export class AcpSession {
       await this.connection.agent.notify(acp.methods.agent.session.cancel, {
         sessionId: this.sessionId,
       });
-      const id = randomUUID();
-      this.emitTranscript({ id, role: "stopped", text: "Stopped", at: Date.now() });
-      this.pushSwitchboard("stopped", "Stopped", id);
+      this.turns.stop({ id: randomUUID(), role: "stopped", text: "Stopped", at: Date.now() });
     } catch (error) {
       this.stopRequested = false;
       throw error;
@@ -466,37 +463,16 @@ export class AcpSession {
   ): Promise<acp.RequestPermissionResponse> {
     const title = params.toolCall?.title ?? "Permission requested";
     const optionId = autoApprovePermission(params.options ?? []);
-    this.pushSwitchboard("permission", optionId ? `Auto-approved: ${title}` : title);
+    this.noteSystem(optionId ? `Auto-approved: ${title}` : title);
     if (!optionId) {
       return { outcome: { outcome: "cancelled" } };
     }
     return { outcome: { outcome: "selected", optionId } };
   }
 
-  private emitTranscript(item: TranscriptItem): void {
-    this.cb.onTranscript(item);
-  }
-
-  private setTranscriptQueued(id: string, queued: boolean): void {
-    this.cb.onTranscriptPatch(id, { queued });
-  }
-
-  private pushSwitchboard(
-    kind: SwitchboardEvent["kind"],
-    summary: string,
-    id?: string,
-  ): void {
+  private noteSystem(text: string): void {
     if (this.disposed || !this.mirrorUpdates) return;
-    this.bus.append({
-      id: id ?? randomUUID(),
-      sessionId: this.id,
-      sessionTitle: this.cb.getSessionTitle(),
-      agent: this.agent,
-      at: Date.now(),
-      kind,
-      summary,
-      navigable: true,
-    });
+    this.turns.apply({ id: randomUUID(), role: "system", text, at: Date.now() });
   }
 
   async dispose(): Promise<void> {

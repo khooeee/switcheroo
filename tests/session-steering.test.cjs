@@ -3,7 +3,11 @@ const { test } = require("node:test");
 const { fixture } = require("./session-fixture.cjs");
 const tick = () => new Promise(setImmediate);
 
-test("interrupting adds one stopped event per turn and ignores idle interruptions", async () => {
+function toolEvent(turn) {
+  return [...turn.events].reverse().find((event) => event.role === "tool");
+}
+
+test("interrupting adds one stopped turn per cancel and ignores idle interruptions", async () => {
   const f = await fixture();
   await f.session.cancel();
   assert.equal(f.cancellations.length, 0);
@@ -12,12 +16,8 @@ test("interrupting adds one stopped event per turn and ignores idle interruption
     await tick();
     await Promise.all([f.session.cancel(), f.session.cancel()]);
     assert.equal(f.cancellations.length, i + 1);
-    assert.equal(f.transcripts.filter((item) => item.role === "stopped" && item.text === "Stopped").length, i + 1);
-    const stopped = f.events.filter((event) => event.kind === "stopped");
-    assert.equal(stopped.length, i + 1);
-    assert.equal(stopped.at(-1).id, f.transcripts.at(-1).id);
-    assert.equal(stopped.at(-1).summary, "Stopped");
-    assert.equal(stopped.at(-1).navigable, true);
+    assert.equal(f.transcripts.filter((entry) => entry.status === "stopped").length, i + 1);
+    assert.ok(f.transcripts.at(-1).events.some((event) => event.role === "stopped"));
     f.turns[i]({ stopReason: "cancelled" });
     await turn;
     assert.equal(f.completions.length, 0);
@@ -35,8 +35,8 @@ test("startup capability enables steering without a second prompt or duplicate t
   assert.equal(steer.params.sessionId, "session-1");
   assert.equal(f.turns.length, 1);
   f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Steered output" } });
-  assert.equal(f.transcripts.at(-1).text, "Steered output");
-  assert.equal(f.transcripts.filter((item) => item.role === "user").length, 2);
+  assert.equal(f.transcripts.at(-1).assistant.text, "Steered output");
+  assert.equal(f.transcripts.length, 2);
   f.turns[0]({ stopReason: "end_turn" });
   await original;
   assert.equal(f.statuses.at(-1), "ready");
@@ -71,12 +71,11 @@ test("a detached Codex continuation keeps streaming after the original prompt re
   assert.equal(f.statuses.at(-1), "running");
   assert.equal(f.completions.length, 0);
   f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Continuation" } });
-  assert.equal(f.transcripts.at(-1).text, "Continuation");
+  assert.equal(f.transcripts.at(-1).assistant.text, "Continuation");
   f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "idle" } } } });
   assert.equal(f.statuses.at(-1), "ready");
   assert.equal(f.completions.length, 1);
 });
-
 
 test("completion sounds stay silent on startup, failures, and disposal", async () => {
   const f = await fixture();
@@ -108,7 +107,6 @@ test("idle updates do not duplicate completion or announce it before the respons
   status("idle");
   assert.equal(f.completions.length, 1);
 });
-
 
 test("parallel questions settle independently and cancellation releases remaining requests", async () => {
   const f = await fixture();
@@ -146,9 +144,9 @@ test("turn end clears stale tools but keeps tools active during a remote continu
   f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "active" } } } });
   f.turns[0]({ stopReason: "end_turn" });
   await turn;
-  assert.equal(f.transcripts.at(-1).toolStatus, "pending");
+  assert.equal(toolEvent(f.transcripts.at(-1)).toolStatus, "pending");
   f.update({ sessionUpdate: "session_info_update", _meta: { codex: { threadStatus: { type: "idle" } } } });
-  assert.equal(f.transcripts.at(-1).toolStatus, "status unavailable");
+  assert.equal(toolEvent(f.transcripts.at(-1)).toolStatus, "status unavailable");
   f.update({ sessionUpdate: "tool_call_update", toolCallId: "tool", status: "completed" });
-  assert.equal(f.transcripts.at(-1).toolStatus, "completed");
+  assert.equal(toolEvent(f.transcripts.at(-1)).toolStatus, "completed");
 });

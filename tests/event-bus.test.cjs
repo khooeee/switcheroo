@@ -17,49 +17,50 @@ function load(relative) {
 
 const { GlobalEventBus } = load("src/main/events.ts");
 
+function turn(id, sessionId, at, text = id) {
+  return {
+    id,
+    at,
+    user: { id: `${id}-u`, role: "user", text, at },
+    assistant: null,
+    events: [],
+    fileChanges: [],
+    status: "complete",
+    sessionId,
+    agent: "codex",
+    navigable: true,
+  };
+}
+
 test("append with the same id updates in place and keeps the original at", () => {
   const bus = new GlobalEventBus();
-  const first = bus.append({
-    id: "e1", sessionId: "t1", agent: "codex", at: 100, kind: "message",
-    summary: "Hi", navigable: true,
-  });
+  const first = bus.append(turn("e1", "t1", 100, "Hi"));
   const second = bus.append({
-    id: "e1", sessionId: "t1", agent: "codex", at: 999, kind: "message",
-    summary: "Hi there", navigable: true, sessionTitle: "Demo",
+    ...turn("e1", "t1", 999, "Hi there"),
+    sessionTitle: "Demo",
+    assistant: { id: "a1", role: "assistant", text: "Hi there", at: 999 },
   });
   assert.equal(bus.list().length, 1);
   assert.equal(second.at, 100);
-  assert.equal(second.summary, "Hi there");
+  assert.equal(second.assistant.text, "Hi there");
   assert.equal(second.sessionTitle, "Demo");
   assert.equal(first.at, 100);
 });
 
-test("removeSession drops every event for that session", () => {
+test("removeSession drops every turn for that session", () => {
   const bus = new GlobalEventBus();
-  bus.append({
-    id: "e1", sessionId: "a", agent: "codex", at: 1, kind: "message",
-    summary: "A", navigable: true,
-  });
-  bus.append({
-    id: "e2", sessionId: "b", agent: "codex", at: 2, kind: "message",
-    summary: "B", navigable: true,
-  });
-  bus.append({
-    id: "e3", sessionId: "a", agent: "codex", at: 3, kind: "user",
-    summary: "A2", navigable: true,
-  });
+  bus.append(turn("e1", "a", 1, "A"));
+  bus.append(turn("e2", "b", 2, "B"));
+  bus.append(turn("e3", "a", 3, "A2"));
   bus.removeSession("a");
   assert.equal(bus.list().length, 1);
   assert.equal(bus.list()[0].id, "e2");
 });
 
-test("removeOlderThan drops events strictly before the cutoff", () => {
+test("removeOlderThan drops turns strictly before the cutoff", () => {
   const bus = new GlobalEventBus();
   for (const [id, at] of [["a", 10], ["b", 20], ["c", 30]]) {
-    bus.append({
-      id, sessionId: "s", agent: "codex", at, kind: "message",
-      summary: id, navigable: true,
-    });
+    bus.append(turn(id, "s", at));
   }
   assert.equal(bus.removeOlderThan(20), 1);
   assert.equal(bus.list().map((e) => e.id).join(","), "b,c");
