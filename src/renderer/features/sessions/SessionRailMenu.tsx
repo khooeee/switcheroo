@@ -68,12 +68,14 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        aria-keyshortcuts="Meta+Y Control+Y"
         onClick={() => {
           onFork(session.id);
           onDismiss();
         }}
       >
         Fork
+        <kbd className="settings-shortcut">⌘Y</kbd>
       </button>
       <div className="context-separator" role="separator" />
       <button

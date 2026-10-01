@@ -3,6 +3,7 @@ import type { SessionPinMenuState } from "./sessionPinMenuState";
 
 const PIN_MENU_ID = "session-toggle-pin";
 const RENAME_MENU_ID = "session-rename";
+const FORK_MENU_ID = "session-fork";
 const STOP_MENU_ID = "session-stop";
 const CLOSE_MENU_ID = "session-close";
 
@@ -61,6 +62,15 @@ export function buildAppMenu(opts: {
           accelerator: "CmdOrCtrl+P",
           click: () => {
             win()?.webContents.send("session:toggle-pin");
+          },
+        },
+        {
+          id: FORK_MENU_ID,
+          label: "Fork",
+          enabled: opts.getRenameEnabled(),
+          accelerator: "CmdOrCtrl+Y",
+          click: () => {
+            win()?.webContents.send("session:fork");
           },
         },
         { type: "separator" },
@@ -175,6 +185,8 @@ export function refreshSessionMenuItems(
   }
   const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
   if (renameItem) renameItem.enabled = renameEnabled;
+  const forkItem = menu.getMenuItemById(FORK_MENU_ID);
+  if (forkItem) forkItem.enabled = renameEnabled;
   const stopItem = menu.getMenuItemById(STOP_MENU_ID);
   if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);

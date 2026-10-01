@@ -11,7 +11,7 @@ function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
   return event.key.toLowerCase() === key;
 }
 
-/** Window-level shortcuts: find, sessions, pin, focus, rename, stop, close, zen, Escape. */
+/** Window-level shortcuts: find, sessions, pin, focus, rename, fork, stop, close, zen, Escape. */
 export function useAppShortcuts({
   pinned,
   unpinned,
@@ -56,6 +56,10 @@ export function useAppShortcuts({
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
       void window.switcheroo.closeSession(activeId.current);
+    };
+    const forkActive = () => {
+      if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
+      void window.switcheroo.forkSession(activeId.current).catch(console.error);
     };
     const stopActive = () => {
       const id = runningId.current;
@@ -132,6 +136,12 @@ export function useAppShortcuts({
         setShowNewSession(true);
         return;
       }
+      if (modKey(event, "y")) {
+        if (event.repeat) return;
+        event.preventDefault();
+        forkActive();
+        return;
+      }
       if (modKey(event, "r")) {
         if (event.repeat) return;
         event.preventDefault();
@@ -142,6 +152,7 @@ export function useAppShortcuts({
     window.addEventListener("switcheroo:find", openFind);
     window.addEventListener("switcheroo:find-sessions", openFindSessions);
     window.addEventListener("switcheroo:new-session", openNewSession);
+    window.addEventListener("switcheroo:fork-session", forkActive);
     window.addEventListener("switcheroo:close-session", closeActive);
     window.addEventListener("switcheroo:stop-session", stopActive);
     window.addEventListener("keydown", onKey);
@@ -149,6 +160,7 @@ export function useAppShortcuts({
       window.removeEventListener("switcheroo:find", openFind);
       window.removeEventListener("switcheroo:find-sessions", openFindSessions);
       window.removeEventListener("switcheroo:new-session", openNewSession);
+      window.removeEventListener("switcheroo:fork-session", forkActive);
       window.removeEventListener("switcheroo:close-session", closeActive);
       window.removeEventListener("switcheroo:stop-session", stopActive);
       window.removeEventListener("keydown", onKey);
