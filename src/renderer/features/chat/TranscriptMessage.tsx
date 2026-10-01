@@ -55,7 +55,9 @@ export function TranscriptMessage({
     >
       {item.role !== "stopped" && (
         <div className="row">
-          <span className="kind-pill">{item.role}</span>
+          {item.role !== "user" && item.role !== "assistant" ? (
+            <span className="kind-pill">{item.role}</span>
+          ) : null}
           {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
           <span className="event-timestamp" style={{ marginLeft: "auto" }}>
             {formatDetailTimestamp(item.at)}
