@@ -15,6 +15,7 @@ import { autoApprovePermission } from "./autoApprovePermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
+import { drainAgentStream } from "./drainAgentStream";
 import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
@@ -267,10 +268,7 @@ export class AcpSession {
       throw new Error(message);
     }
 
-    this.proc.stderr.on("data", (buf: Buffer) => {
-      const line = buf.toString();
-      if (line.trim()) console.error(`[acp:${this.agent}]`, line.trim());
-    });
+    drainAgentStream(this.proc.stderr);
 
     this.proc.on("exit", (code) => {
       if (!this.disposed) {
@@ -335,8 +333,8 @@ export class AcpSession {
         await agent.request(acp.methods.agent.authenticate, {
           methodId: preset.authMethodId,
         });
-      } catch (err) {
-        console.error("[acp] authenticate failed", err);
+      } catch {
+        // Auth is optional for some agents; avoid console.error (EPIPE under Electron).
       }
     }
   }
@@ -392,7 +390,7 @@ export class AcpSession {
       at: Date.now(),
     };
     const turn = this.turns.open(userItem);
-    const completion = await this.delivery.enqueue(text, userItem.id);
+    const { completion } = await this.delivery.enqueue(text, userItem.id);
     const finished = completion.then(() => {
       // Steering inject finishes without runPrompt — close the orphan or active turn.
       if (!this.turnRunning) this.turns.complete();

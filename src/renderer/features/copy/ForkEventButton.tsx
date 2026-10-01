@@ -21,6 +21,11 @@ export function ForkEventButton({ sessionId, eventId }: { sessionId: string; eve
         setBusy(true);
         setError(false);
         void window.switcheroo.forkSession(sessionId, eventId)
+          .then((session) => {
+            if (!session.error) return;
+            setError(true);
+            window.setTimeout(() => setError(false), 2000);
+          })
           .catch((err) => {
             console.error(err);
             setError(true);

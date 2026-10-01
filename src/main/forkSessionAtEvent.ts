@@ -101,7 +101,8 @@ export async function forkSessionAtEvent(
     session.status = "error";
     session.error = msg;
     host.emitSessions();
-    throw err;
+    // Match createSession: keep the session row and do not reject IPC (Electron
+    // replyWithError → console.error can crash the app with write EPIPE).
   }
 
   await host.persist();

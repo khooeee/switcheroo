@@ -33,7 +33,25 @@ async function send(delivery, text, id = "msg") {
   return delivery.send(text, id);
 }
 
-test("only an explicit top-level steering capability enables injection", async () => {
+test("enqueue keeps the completion promise nested so await does not unwrap it", async () => {
+  let finish;
+  const f = fixture({
+    isRunning: () => false,
+    prompt: () => new Promise((resolve) => { finish = resolve; }),
+  });
+  const pending = f.delivery.enqueue("hello", "msg-1");
+  const { completion } = await pending;
+  assert.equal(typeof completion.then, "function");
+  let done = false;
+  void completion.then(() => { done = true; });
+  await new Promise(setImmediate);
+  assert.equal(done, false);
+  finish();
+  await completion;
+  assert.equal(done, true);
+  assert.deepEqual(f.prompts, ["hello"]);
+});
+
   for (const metadata of [undefined, null, {}, { steering: false },
     { steering: { supported: false } }, { steering: { supported: "true" } },
     { agentCapabilities: { steering: { supported: true } } }]) {

@@ -21,15 +21,18 @@ export class PromptDelivery {
   }
 
   send(text: string, id: string): Promise<void> {
-    return this.enqueue(text, id).then((completion) => completion);
+    return this.enqueue(text, id).then(({ completion }) => completion);
   }
 
-  /** Resolve once delivery is decided; caller may await the returned completion separately. */
-  enqueue(text: string, id: string): Promise<Promise<void>> {
+  /**
+   * Resolve once delivery is decided. The nested `completion` promise must stay
+   * inside a plain object — `await` would unwrap `Promise<Promise<void>>` to void.
+   */
+  enqueue(text: string, id: string): Promise<{ completion: Promise<void> }> {
     // Serialize delivery decisions, but don't hold this lock for a whole prompt.
     const delivery = this.dispatch.then(() => this.deliver(text, id));
     this.dispatch = delivery.then(() => undefined, () => undefined);
-    return delivery.then(({ completion }) => completion);
+    return delivery;
   }
 
   private async deliver(text: string, id: string): Promise<{ completion: Promise<void> }> {

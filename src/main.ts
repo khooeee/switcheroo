@@ -6,6 +6,7 @@ import { installExternalLinks } from "./main/installExternalLinks";
 import { SessionManager } from "./main/sessions";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
+import { installStdioGuards } from "./main/installStdioGuards";
 import { openInCursor } from "./main/openInCursor";
 import { openTranscriptsFolder } from "./main/openTranscriptsFolder";
 import { openSettingsFile } from "./main/openSettingsFile";
@@ -14,6 +15,15 @@ import { savePastedImage } from "./main/savePastedImage";
 import { ControlServer } from "./main/control/ControlServer";
 import { buildAppMenu, refreshSessionMenuItems } from "./main/buildAppMenu";
 import type { ActiveSessionId, AppSettings, CreateSessionInput } from "./shared/types";
+
+installStdioGuards((error) => {
+  if (app.isReady()) {
+    dialog.showErrorBox(
+      "A JavaScript error occurred in the main process",
+      error.stack ?? String(error),
+    );
+  }
+});
 
 if (started) {
   app.quit();

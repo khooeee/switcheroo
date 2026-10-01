@@ -67,6 +67,11 @@ export function spawnAgentProcess(
     const onSpawn = () => {
       proc.off("error", onError);
       proc.off("spawn", onSpawn);
+      // Closed pipes after kill must not become uncaught EPIPE.
+      const ignore = (): void => undefined;
+      proc.stdin.on("error", ignore);
+      proc.stdout.on("error", ignore);
+      proc.stderr.on("error", ignore);
       resolve(proc);
     };
     proc.once("error", onError);

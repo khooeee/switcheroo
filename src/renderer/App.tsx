@@ -190,7 +190,7 @@ export function App() {
         onClose={(id) => void window.switcheroo.closeSession(id)}
         onStop={(id) => void window.switcheroo.cancelPrompt(id).catch(console.error)}
         onRename={(id, title) => void window.switcheroo.renameSession(id, title)}
-        onFork={(id) => void window.switcheroo.forkSession(id)}
+        onFork={(id) => void window.switcheroo.forkSession(id).catch(console.error)}
         onPin={(id) => void window.switcheroo.pinSession(id)}
         onUnpin={(id) => void window.switcheroo.unpinSession(id)}
         onReorderPinned={(ids) => void window.switcheroo.reorderPinnedSessions(ids)}

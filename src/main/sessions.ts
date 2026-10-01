@@ -680,12 +680,7 @@ export class SessionManager {
   private refreshCommandsIfNeeded(sessionId: string): void {
     const session = this.sessions.get(sessionId);
     if (!session || !session.agentSessionId) return;
-    void this.refreshCommands(session).catch((error) => {
-      const message = error instanceof Error ? error.message : String(error);
-      // Missing cwd is expected for stale sessions; logging it can EPIPE in Electron.
-      if (/^Working directory /.test(message)) return;
-      console.error("[sessions] failed to refresh slash commands", error);
-    });
+    void this.refreshCommands(session).catch(() => undefined);
   }
 
   private async refreshCommands(session: Session): Promise<void> {
