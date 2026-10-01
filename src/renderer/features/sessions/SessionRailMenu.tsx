@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { Session } from "../../../shared/types";
+import "../settings/settingsShortcuts.css";
 
 export function SessionRailMenu({
   menuRef,
@@ -47,6 +48,7 @@ export function SessionRailMenu({
         role="menuitem"
         className="context-item"
         disabled={pinDisabled}
+        aria-keyshortcuts="Meta+P Control+P"
         onClick={() => {
           if (pinDisabled) return;
           if (pinned) onUnpin(session.id);
@@ -55,6 +57,7 @@ export function SessionRailMenu({
         }}
       >
         {pinned ? "Unpin" : "Pin"}
+        <kbd className="settings-shortcut">⌘P</kbd>
       </button>
       <button
         type="button"
