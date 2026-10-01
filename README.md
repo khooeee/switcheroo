@@ -1,6 +1,6 @@
 # Switcheroo
 
-Multi-session agent development environment
+High productivity agent development environment that blends the best of CLI coding agents & chat UIs
 
 Run Claude Code, Codex, Cursor, or Pi side-by-side and track all agent logs through a central event feed (aka the switchboard).
 
