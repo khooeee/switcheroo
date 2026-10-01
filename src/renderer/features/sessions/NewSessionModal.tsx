@@ -141,6 +141,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
               checked={canPin && pin}
               disabled={busy || !canPin}
               onChange={(e) => setPin(e.target.checked)}
+              onKeyDown={createOnEnter}
             />
             Pin
           </label>
@@ -150,6 +151,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
               checked={switcherooAware}
               disabled={busy}
               onChange={(e) => setSwitcherooAware(e.target.checked)}
+              onKeyDown={createOnEnter}
             />
             Switcheroo aware
           </label>
