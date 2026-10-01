@@ -24,7 +24,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   session: Session | undefined;
   expanded: boolean;
   onToggle: () => void;
-  onOpen: (turn: SwitchboardTurn) => void;
+  onOpen: (turn: SwitchboardTurn, eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const userText =
@@ -35,11 +35,13 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       : turn.assistant.text
     : "";
 
-  const toggleOnly = (event: MouseEvent | KeyboardEvent) => {
+  /** Navigable turns open the session event; otherwise expand/collapse. */
+  const activate = (event: MouseEvent | KeyboardEvent, eventId: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
-    onToggle();
+    if (turn.navigable) onOpen(turn, eventId);
+    else onToggle();
   };
 
   return (
@@ -53,11 +55,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         data-event-id={turn.user.id}
         role="button"
         tabIndex={0}
-        onClick={toggleOnly}
+        onClick={(e) => activate(e, turn.user.id)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            onToggle();
+            activate(e, turn.user.id);
           }
         }}
       >
@@ -68,7 +70,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
             onClick={(e) => {
               if (!turn.navigable) return;
               e.stopPropagation();
-              onOpen(turn);
+              onOpen(turn, turn.user.id);
             }}
           >
             {title}
@@ -84,7 +86,13 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       </div>
 
-      {expanded && session ? <TurnEvents session={session} events={turn.events} /> : null}
+      {expanded && session ? (
+        <TurnEvents
+          session={session}
+          events={turn.events}
+          onActivate={turn.navigable ? (eventId) => onOpen(turn, eventId) : undefined}
+        />
+      ) : null}
       {expanded && !session && turn.events.length > 0 ? (
         <div className="turn-events">
           {turn.events.map((item) => (
@@ -103,11 +111,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           data-event-id={turn.assistant.id}
           role="button"
           tabIndex={0}
-          onClick={toggleOnly}
+          onClick={(e) => activate(e, turn.assistant!.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              onToggle();
+              activate(e, turn.assistant!.id);
             }
           }}
         >

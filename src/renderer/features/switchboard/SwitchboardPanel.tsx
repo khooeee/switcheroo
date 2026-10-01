@@ -10,7 +10,7 @@ interface Props {
   notice: string | null;
   scrollRef: RefObject<HTMLDivElement | null>;
   onNoticeDismiss: () => void;
-  onTurnClick: (turn: SwitchboardTurn) => void;
+  onTurnClick: (turn: SwitchboardTurn, eventId: string) => void;
 }
 
 /** Switchboard panel: header, optional missing-session notice, and feed. */
