@@ -43,6 +43,7 @@ import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { newSessionId } from "./newSessionId";
 import { SessionWaiters } from "./sessionWaiters";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
+import { sessionPinMenuState, type SessionPinMenuState } from "./sessionPinMenuState";
 
 const warmCallbacks: SessionCallbacks = {
   onPromptComplete: () => undefined,
@@ -72,10 +73,24 @@ export class SessionManager {
   private waiters = new SessionWaiters();
   private findGeneration = 0;
   private warm = new WarmSessionPool<AcpSession>();
+  private onSessionsChanged: (() => void) | null = null;
 
   setWindow(win: BrowserWindow): void {
     this.window = win;
     if (this.activeSessionId !== SWITCHBOARD_ID) this.refreshCommandsIfNeeded(this.activeSessionId);
+  }
+
+  setOnSessionsChanged(cb: (() => void) | null): void {
+    this.onSessionsChanged = cb;
+  }
+
+  /** Label/enabled for Session → Pin/Unpin based on the active session. */
+  activePinMenuState(): SessionPinMenuState {
+    return sessionPinMenuState(
+      this.activeSessionId,
+      this.railLists.pinnedIds,
+      this.sessions.has(this.activeSessionId),
+    );
   }
 
   async init(): Promise<void> {
@@ -658,6 +673,7 @@ export class SessionManager {
 
   private emitSessions(): void {
     this.send("sessions:changed", this.sessionListPayload());
+    this.onSessionsChanged?.();
   }
 
   private openSession(session: Session): AcpSession {

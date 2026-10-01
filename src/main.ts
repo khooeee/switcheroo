@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { applyAppIcon } from "./main/applyAppIcon";
@@ -12,6 +12,7 @@ import { openSettingsFile } from "./main/openSettingsFile";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
 import { ControlServer } from "./main/control/ControlServer";
+import { buildAppMenu, refreshSessionPinMenu } from "./main/buildAppMenu";
 import type { ActiveSessionId, AppSettings, CreateSessionInput } from "./shared/types";
 
 if (started) {
@@ -26,6 +27,7 @@ let mainWindow: BrowserWindow | null = null;
 
 const createWindow = async () => {
   await sessions.init();
+  refreshSessionPinMenu(sessions.activePinMenuState());
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -136,126 +138,17 @@ function requireSession(sessionId: string) {
   return session;
 }
 
-function buildMenu(): void {
-  const isMac = process.platform === "darwin";
-  const template: Electron.MenuItemConstructorOptions[] = [
-    ...(isMac
-      ? [
-          {
-            label: app.name,
-            submenu: [
-              { role: "about" as const },
-              { type: "separator" as const },
-              { role: "services" as const },
-              { type: "separator" as const },
-              { role: "hide" as const },
-              { role: "hideOthers" as const },
-              { role: "unhide" as const },
-              { type: "separator" as const },
-              { role: "quit" as const },
-            ],
-          },
-        ]
-      : []),
-    {
-      label: "Session",
-      submenu: [
-        {
-          label: "New Session",
-          accelerator: "CmdOrCtrl+N",
-          click: () => {
-            mainWindow?.webContents.send("session:new");
-          },
-        },
-        {
-          label: "Pin/Unpin Session",
-          accelerator: "CmdOrCtrl+P",
-          click: () => {
-            mainWindow?.webContents.send("session:toggle-pin");
-          },
-        },
-      ],
-    },
-    {
-      label: "Edit",
-      submenu: [
-        { role: "undo" },
-        { role: "redo" },
-        { type: "separator" },
-        { role: "cut" },
-        { role: "copy" },
-        { role: "paste" },
-        { role: "selectAll" },
-        { type: "separator" },
-        {
-          label: "Find",
-          accelerator: "CmdOrCtrl+F",
-          click: () => {
-            mainWindow?.webContents.send("find:open");
-          },
-        },
-        {
-          label: "Find in History",
-          accelerator: "CmdOrCtrl+Shift+F",
-          click: () => {
-            mainWindow?.webContents.send("find-sessions:open");
-          },
-        },
-      ],
-    },
-    {
-      label: "View",
-      submenu: [
-        { role: "reload" },
-        { role: "toggleDevTools" },
-        { type: "separator" },
-        { role: "resetZoom" },
-        { role: "zoomIn" },
-        { role: "zoomOut" },
-        { type: "separator" },
-        { role: "togglefullscreen" },
-      ],
-    },
-    {
-      label: "Go",
-      submenu: [
-        {
-          label: "Go to Next Session",
-          accelerator: "Ctrl+Tab",
-          click: () => {
-            mainWindow?.webContents.send("session:next");
-          },
-        },
-        {
-          label: "Go to Previous Session",
-          accelerator: "Ctrl+Shift+Tab",
-          click: () => {
-            mainWindow?.webContents.send("session:prev");
-          },
-        },
-        { type: "separator" },
-        {
-          label: "Go to Prompt",
-          accelerator: "CmdOrCtrl+I",
-          click: () => {
-            mainWindow?.webContents.send("prompt:focus");
-          },
-        },
-      ],
-    },
-    {
-      label: "Window",
-      submenu: [{ role: "minimize" }, { role: "close" }],
-    },
-  ];
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-}
-
 if (installSingleInstanceLock(() => mainWindow)) {
   app.on("ready", () => {
     applyAppIcon();
     registerIpc();
-    buildMenu();
+    sessions.setOnSessionsChanged(() => {
+      refreshSessionPinMenu(sessions.activePinMenuState());
+    });
+    buildAppMenu({
+      getMainWindow: () => mainWindow,
+      getPinMenuState: () => sessions.activePinMenuState(),
+    });
     void createWindow();
     void control.start(sessions);
   });
