@@ -21,6 +21,11 @@ export class PromptDelivery {
   }
 
   send(text: string, id: string): Promise<void> {
+    return this.enqueue(text, id).then((completion) => completion);
+  }
+
+  /** Resolve once delivery is decided; caller may await the returned completion separately. */
+  enqueue(text: string, id: string): Promise<Promise<void>> {
     // Serialize delivery decisions, but don't hold this lock for a whole prompt.
     const delivery = this.dispatch.then(() => this.deliver(text, id));
     this.dispatch = delivery.then(() => undefined, () => undefined);

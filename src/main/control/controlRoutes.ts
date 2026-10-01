@@ -3,8 +3,7 @@ import { isAgentKind, type CreateSessionInput } from "../../shared/types";
 import type { SessionManager } from "../sessions";
 import { bearerAuthorized } from "./controlAuth";
 import { controlCatalogJson, controlOpenApi } from "./controlCatalog";
-
-const DEFAULT_WAIT_MS = 600_000;
+import { applyTranscriptQuery } from "./transcriptQuery";
 
 export async function handleControlRequest(
   req: IncomingMessage,
@@ -40,31 +39,21 @@ export async function handleControlRequest(
       return json(res, 200, session);
     }
 
-    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript|wait))?$/.exec(pathname);
+    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript))?$/.exec(pathname);
     if (!sessionMatch) return json(res, 404, { error: "Not found" });
     const sessionId = decodeURIComponent(sessionMatch[1]!);
     const action = sessionMatch[2];
 
     if (method === "GET" && action === "transcript") {
-      return json(res, 200, { sessionId, turns: await sessions.getTranscript(sessionId) });
-    }
-    if (method === "GET" && action === "wait") {
-      const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);
-      const result = await sessions.waitUntilSettled(sessionId, timeout);
-      return json(res, 200, result);
+      const turns = await sessions.getTranscript(sessionId);
+      return json(res, 200, { sessionId, turns: applyTranscriptQuery(turns, url.searchParams) });
     }
     if (method === "POST" && action === "prompt") {
       const body = await readJson(req);
       const text = typeof body.text === "string" ? body.text : "";
       if (!text.trim()) return json(res, 400, { error: "text is required" });
-      const wait = url.searchParams.get("wait") === "1";
-      const timeout = Number(url.searchParams.get("timeout") ?? DEFAULT_WAIT_MS);
-      await sessions.sendPrompt(sessionId, text);
-      if (wait) {
-        const settled = await sessions.waitUntilSettled(sessionId, timeout);
-        return json(res, 200, { ok: true, waited: true, ...settled });
-      }
-      return json(res, 200, { sessionId, ok: true, waited: false });
+      const turnId = await sessions.enqueuePrompt(sessionId, text);
+      return json(res, 200, { sessionId, turnId, ok: true });
     }
     if (method === "POST" && action === "cancel") {
       await sessions.cancelPrompt(sessionId);

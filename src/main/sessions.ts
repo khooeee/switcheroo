@@ -41,7 +41,6 @@ import { formatAgentError } from "../shared/formatAgentError";
 import { forkSessionAtEvent } from "./forkSessionAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { newSessionId } from "./newSessionId";
-import { SessionWaiters } from "./sessionWaiters";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
 import { sessionPinMenuState, type SessionPinMenuState } from "./sessionPinMenuState";
 
@@ -69,7 +68,6 @@ export class SessionManager {
   private permissionOwners = new Map<string, string>(); // requestId -> sessionId
   private askOwners = new Map<string, string>();
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
-  private waiters = new SessionWaiters();
   private findGeneration = 0;
   private warm = new WarmSessionPool<AcpSession>();
   private onSessionsChanged: (() => void) | null = null;
@@ -330,21 +328,6 @@ export class SessionManager {
     return session;
   }
 
-  waitUntilSettled(
-    sessionId: string,
-    timeoutMs: number,
-  ): Promise<{ sessionId: string; status: string; error: string | null }> {
-    const session = this.sessions.get(sessionId);
-    if (!session) throw new Error("No session");
-    const pending = this.waiters.waitSettled(sessionId, timeoutMs, {
-      status: session.status,
-      error: session.error,
-    });
-    const again = this.sessions.get(sessionId);
-    if (again) this.waiters.notifySettled(sessionId, again.status, again.error);
-    return pending;
-  }
-
   async forkSession(sessionId: string, eventId?: string): Promise<Session> {
     if (!(await this.ensureHydrated(sessionId))) throw new Error("Session not found");
     return forkSessionAtEvent({
@@ -546,13 +529,26 @@ export class SessionManager {
   }
 
   async sendPrompt(sessionId: string, text: string): Promise<void> {
+    await this.promptSession(sessionId, text, true);
+  }
+
+  /** Accept a prompt and return its turn id without waiting for the turn to finish. */
+  async enqueuePrompt(sessionId: string, text: string): Promise<string> {
+    return this.promptSession(sessionId, text, false);
+  }
+
+  private async promptSession(
+    sessionId: string,
+    text: string,
+    wait: boolean,
+  ): Promise<string> {
     const session = await this.ensureHydrated(sessionId);
     if (!session) throw new Error("No session");
     this.bumpSession(session.id);
     this.emitSessions();
     const acp = await this.ensureSession(session);
     try {
-      await acp.prompt(text);
+      return await acp.prompt(text, { wait });
     } catch (error) {
       throw new Error(formatAgentError(error));
     } finally {
@@ -628,7 +624,6 @@ export class SessionManager {
     session.error = error;
     this.send("session-status", { sessionId, status, error });
     this.emitSessions();
-    this.waiters.notifySettled(sessionId, status, error);
   }
 
   private queuePersist(): void {

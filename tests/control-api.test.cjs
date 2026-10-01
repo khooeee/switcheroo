@@ -18,13 +18,19 @@ function load(relative) {
 const { controlCatalogJson, controlOpenApi } = load("src/main/control/controlCatalog.ts");
 const { bearerAuthorized } = load("src/main/control/controlAuth.ts");
 const { controlBootstrapText } = load("src/main/acp/controlBootstrapPrompt.ts");
+const { applyTranscriptQuery } = load("src/main/control/transcriptQuery.ts");
 
-test("catalog includes core session routes", () => {
+test("catalog includes core session routes without blocking wait", () => {
   const catalog = controlCatalogJson("http://127.0.0.1:9/", "hint");
   assert.equal(catalog.baseUrl, "http://127.0.0.1:9/");
   assert.ok(catalog.routes.some((r) => r.method === "POST" && r.path === "/sessions"));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/prompt"));
+  assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/transcript" && r.query?.last));
+  assert.ok(!catalog.routes.some((r) => r.path === "/sessions/:id/wait"));
   assert.ok(!catalog.routes.some((r) => r.method === "DELETE"));
+  const prompt = catalog.routes.find((r) => r.path === "/sessions/:id/prompt");
+  assert.equal(prompt.query, undefined);
+  assert.doesNotMatch(prompt.example, /wait=1/);
 });
 
 test("openapi omits root catalog paths", () => {
@@ -32,6 +38,7 @@ test("openapi omits root catalog paths", () => {
   assert.equal(doc.openapi, "3.0.3");
   assert.ok(doc.paths["/sessions"]);
   assert.equal(doc.paths["/"], undefined);
+  assert.equal(doc.paths["/sessions/{id}/wait"], undefined);
 });
 
 test("bearerAuthorized accepts matching token", () => {
@@ -40,9 +47,28 @@ test("bearerAuthorized accepts matching token", () => {
   assert.equal(bearerAuthorized(undefined, "secret"), false);
 });
 
-test("bootstrap text points at control.json and GET /", () => {
+test("bootstrap text teaches fire-and-poll", () => {
   const text = controlBootstrapText();
   assert.match(text, /~\/\.switcheroo\/control\.json/);
   assert.match(text, /GET \//);
+  assert.match(text, /turnId/);
+  assert.match(text, /transcript\?last=1/);
+  assert.match(text, /GET \/sessions/);
+  assert.doesNotMatch(text, /wait=1/);
   assert.doesNotMatch(text, /Bearer [a-f0-9]{20,}/);
+});
+
+test("applyTranscriptQuery supports last=N", () => {
+  const turns = [{ id: "a" }, { id: "b" }, { id: "c" }];
+  assert.equal(applyTranscriptQuery(turns, new URLSearchParams()).length, 3);
+  assert.deepEqual(
+    applyTranscriptQuery(turns, new URLSearchParams("last=1")).map((t) => t.id),
+    ["c"],
+  );
+  assert.deepEqual(
+    applyTranscriptQuery(turns, new URLSearchParams("last=2")).map((t) => t.id),
+    ["b", "c"],
+  );
+  assert.deepEqual(applyTranscriptQuery(turns, new URLSearchParams("last=0")), []);
+  assert.equal(applyTranscriptQuery(turns, new URLSearchParams("last=nope")).length, 3);
 });

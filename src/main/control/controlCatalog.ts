@@ -30,7 +30,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       method: "GET",
       path: "/sessions",
       auth: true,
-      summary: "List sessions and active session id",
+      summary: "List sessions and active session id (check status while children run)",
       example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions`,
     },
     {
@@ -53,12 +53,11 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       method: "POST",
       path: "/sessions/:id/prompt",
       auth: true,
-      summary: "Send a prompt; ?wait=1 blocks until the turn completes",
+      summary: "Enqueue a prompt; returns { turnId } immediately (does not wait for the turn)",
       body: { text: "prompt string" },
-      query: { wait: "1 to wait for turn complete" },
       example:
         `curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" ` +
-        `-d '{"text":"hello"}' "${b}/sessions/<id>/prompt?wait=1"`,
+        `-d '{"text":"hello"}' ${b}/sessions/<id>/prompt`,
     },
     {
       method: "POST",
@@ -79,15 +78,8 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       path: "/sessions/:id/transcript",
       auth: true,
       summary: "Get the session transcript",
-      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/transcript`,
-    },
-    {
-      method: "GET",
-      path: "/sessions/:id/wait",
-      auth: true,
-      summary: "Block until session status is ready or error",
-      query: { timeout: "milliseconds (default 600000)" },
-      example: `curl -s -H "Authorization: Bearer $TOKEN" "${b}/sessions/<id>/wait?timeout=60000"`,
+      query: { last: "optional — return only the newest N turns (e.g. last=1)" },
+      example: `curl -s -H "Authorization: Bearer $TOKEN" "${b}/sessions/<id>/transcript?last=1"`,
     },
   ];
 }

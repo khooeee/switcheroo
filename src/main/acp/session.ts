@@ -377,7 +377,11 @@ export class AcpSession {
     }
   }
 
-  async prompt(text: string): Promise<void> {
+  /**
+   * Start a prompt. By default waits until the turn finishes.
+   * Pass `{ wait: false }` to return the turn id as soon as delivery is accepted.
+   */
+  async prompt(text: string, options?: { wait?: boolean }): Promise<string> {
     if (!this.sessionId || this.disposed) throw new Error("Session not ready");
     this.mirrorUpdates = true;
     this.output.reset();
@@ -387,11 +391,19 @@ export class AcpSession {
       text,
       at: Date.now(),
     };
-    this.turns.open(userItem);
-    await this.delivery.send(text, userItem.id);
-    // Steering inject finishes without runPrompt — close the orphan or active turn.
-    if (!this.turnRunning) this.turns.complete();
-    else this.turns.completeIfOrphan(userItem.id);
+    const turn = this.turns.open(userItem);
+    const completion = await this.delivery.enqueue(text, userItem.id);
+    const finished = completion.then(() => {
+      // Steering inject finishes without runPrompt — close the orphan or active turn.
+      if (!this.turnRunning) this.turns.complete();
+      else this.turns.completeIfOrphan(userItem.id);
+    });
+    if (options?.wait === false) {
+      void finished.catch(() => undefined);
+      return turn.id;
+    }
+    await finished;
+    return turn.id;
   }
 
   private async runPrompt(text: string): Promise<void> {
