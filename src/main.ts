@@ -167,6 +167,13 @@ function buildMenu(): void {
             mainWindow?.webContents.send("session:new");
           },
         },
+        {
+          label: "Pin/Unpin Session",
+          accelerator: "CmdOrCtrl+P",
+          click: () => {
+            mainWindow?.webContents.send("session:toggle-pin");
+          },
+        },
       ],
     },
     {

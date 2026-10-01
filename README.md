@@ -89,3 +89,5 @@ I put this here to remind myself of all the little features this app has that is
 **Cmd/Ctrl+I**: Focus on prompt
 
 **Cmd/Ctrl+N**: New agent session
+
+**Cmd/Ctrl+P**: Pin/unpin selected session

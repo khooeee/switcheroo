@@ -106,6 +106,10 @@ ipcRenderer.on("session:new", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:new-session"));
 });
 
+ipcRenderer.on("session:toggle-pin", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:toggle-pin"));
+});
+
 ipcRenderer.on("session:next", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:session-next"));
 });
