@@ -1,6 +1,6 @@
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { existsSync } from "node:fs";
 import type { AgentKind } from "../../shared/types";
 
 interface AgentPreset {
@@ -9,6 +9,20 @@ interface AgentPreset {
   command: string;
   args: string[];
   authMethodId?: string;
+}
+
+/** Absolute path to a pinned adapter bin (never go through npx). */
+function packageBin(packageName: string): string {
+  const parts = packageName.split("/");
+  const roots = [process.cwd()];
+  if (typeof process.resourcesPath === "string") {
+    roots.push(join(process.resourcesPath, "app.asar.unpacked"));
+  }
+  for (const root of roots) {
+    const entry = join(root, "node_modules", ...parts, "dist", "index.js");
+    if (existsSync(entry)) return entry;
+  }
+  throw new Error(`ACP adapter not installed: ${packageName}`);
 }
 
 function resolveCursorAgent(): string {
@@ -27,14 +41,18 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   claude: {
     kind: "claude",
     label: "Claude Code",
-    command: "npx",
-    args: ["-y", "@agentclientprotocol/claude-agent-acp"],
+    command: "node",
+    get args() {
+      return [packageBin("@agentclientprotocol/claude-agent-acp")];
+    },
   },
   codex: {
     kind: "codex",
     label: "Codex",
-    command: "npx",
-    args: ["-y", "@agentclientprotocol/codex-acp"],
+    command: "node",
+    get args() {
+      return [packageBin("@agentclientprotocol/codex-acp")];
+    },
   },
   cursor: {
     kind: "cursor",
@@ -48,8 +66,10 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   pi: {
     kind: "pi",
     label: "Pi",
-    command: "npx",
-    args: ["-y", "pi-acp"],
+    command: "node",
+    get args() {
+      return [packageBin("pi-acp")];
+    },
   },
 };
 

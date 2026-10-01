@@ -9,7 +9,11 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: {
+      // System `node` cannot read asar; adapters are spawned as child processes.
+      unpack:
+        "**/node_modules/{@agentclientprotocol,@anthropic-ai,@openai,pi-acp,diff,zod,open,vscode-jsonrpc,cross-spawn,isexe,path-key,shebang-command,shebang-regex,which,default-browser,default-browser-id,bundle-name,run-applescript,is-docker,is-wsl,is-inside-container,define-lazy-prop,wsl-utils}/**",
+    },
     name: "Switcheroo",
     icon: "./assets/icon",
     extraResource: ["./assets/icon.png"],
