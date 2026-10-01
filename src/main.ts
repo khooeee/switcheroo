@@ -220,14 +220,14 @@ function buildMenu(): void {
       label: "Go",
       submenu: [
         {
-          label: "Go to Next Tab",
+          label: "Go to Next Session",
           accelerator: "Ctrl+Tab",
           click: () => {
             mainWindow?.webContents.send("session:next");
           },
         },
         {
-          label: "Go to Previous Tab",
+          label: "Go to Previous Session",
           accelerator: "Ctrl+Shift+Tab",
           click: () => {
             mainWindow?.webContents.send("session:prev");

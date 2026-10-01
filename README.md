@@ -78,9 +78,9 @@ I put this here to remind myself of all the little features this app has that is
 
 **Ctrl+1–9**: Select session list 1–9
 
-**Ctrl+Tab**: Go to next tab
+**Ctrl+Tab**: Go to next session
 
-**Ctrl+Shift+Tab**: Go to previous tab
+**Ctrl+Shift+Tab**: Go to previous session
 
 **Cmd/Ctrl+F**: Find in current session
 
