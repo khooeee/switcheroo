@@ -148,8 +148,8 @@ export interface AppSettings {
   lastPrefix: string;
   lastPin: boolean;
   lastSwitcherooAware: boolean;
-  /** Drop Switchboard events older than this many days on startup. */
-  cleanSwitchboardEventsOlderThanDays: number;
+  /** Drop Switchboard turns older than this many days on startup. */
+  cleanSwitchboardTurnsOlderThanDays: number;
   /** Soft-close oldest rail sessions on startup when over this (0 = unlimited). */
   sessionListMax: number;
 }
@@ -166,7 +166,7 @@ export function defaultAppSettings(): AppSettings {
     lastPrefix: "",
     lastPin: false,
     lastSwitcherooAware: false,
-    cleanSwitchboardEventsOlderThanDays: 30,
+    cleanSwitchboardTurnsOlderThanDays: 30,
     sessionListMax: 200,
   };
 }

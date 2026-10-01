@@ -199,9 +199,9 @@ export class SessionManager {
     await saveState(state);
   }
 
-  /** Age-out old Switchboard events on startup. */
+  /** Age-out old Switchboard turns on startup. */
   private async maybeCleanSwitchboard(): Promise<void> {
-    const cutoff = switchboardCleanupCutoff(getAppSettings().cleanSwitchboardEventsOlderThanDays);
+    const cutoff = switchboardCleanupCutoff(getAppSettings().cleanSwitchboardTurnsOlderThanDays);
     if (cutoff == null) return;
     const removed = this.bus.removeOlderThan(cutoff);
     if (removed === 0) return;

@@ -52,7 +52,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 - If the session is slow due to a long transcript, you should just start a new session.
 - If the unpinned session list on the left becomes large and slow, lower `settings.sessionListMax` in `switcheroo.json`.
-- If the switchboard is slow due to a long event feed, you can edit `settings.cleanSwitchboardEventsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older events in your switchboard.
+- If the switchboard is slow due to a long event feed, you can edit `settings.cleanSwitchboardTurnsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older turns in your switchboard.
 - If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is by when those sessions started).  Keep in mind those sessions might still show up in your session list or switchboard until you click them.  Only then will the app check its existence and remove it from the list/switchboard if it doesn't exist anymore.  This is done to maximize app performance so you rarely have to delete/archive anything.
 
 ## Things you can do
