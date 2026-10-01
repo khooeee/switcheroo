@@ -158,7 +158,7 @@ function buildMenu(): void {
         ]
       : []),
     {
-      label: "File",
+      label: "Session",
       submenu: [
         {
           label: "New Session",
