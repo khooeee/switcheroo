@@ -37,7 +37,7 @@ async function fixture(t) {
   const electron = { app: { getPath: () => dir } };
   return {
     dir,
-    path: path.join(dir, "switchboard.json"),
+    path: path.join(dir, "switchboard.jsonl"),
     store: load(path.join(__dirname, "../src/main/switchboardEvents.ts"), electron),
   };
 }
@@ -57,11 +57,13 @@ const turns = [
   },
 ];
 
-test("switchboard JSON round-trips at switchboard.json", async (t) => {
+test("switchboard JSONL round-trips at switchboard.jsonl", async (t) => {
   const { path: file, store } = await fixture(t);
   await store.saveSwitchboardTurns(turns);
   const raw = await fs.readFile(file, "utf8");
-  assert.ok(raw.includes('"id":"t1"'));
+  const lines = raw.trimEnd().split("\n");
+  assert.equal(lines.length, turns.length);
+  assert.equal(JSON.stringify(JSON.parse(lines[0])), JSON.stringify(turns[0]));
   assert.equal(JSON.stringify(await store.loadSwitchboardTurns()), JSON.stringify(turns));
 });
 

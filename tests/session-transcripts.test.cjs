@@ -55,12 +55,14 @@ const turns = [
   },
 ];
 
-test("transcript JSON lives at sessions/<id>/transcript.json", async (t) => {
+test("transcript JSONL lives at sessions/<id>/transcript.jsonl", async (t) => {
   const { sessions, transcripts } = await fixture(t);
   await transcripts.saveTranscript("session-1", turns);
-  const file = path.join(sessions, "session-1", "transcript.json");
+  const file = path.join(sessions, "session-1", "transcript.jsonl");
   const raw = await fs.readFile(file, "utf8");
-  assert.ok(raw.includes('"id":"t1"'));
+  const lines = raw.trimEnd().split("\n");
+  assert.equal(lines.length, turns.length);
+  assert.equal(JSON.stringify(JSON.parse(lines[0])), JSON.stringify(turns[0]));
   assert.equal(JSON.stringify(await transcripts.loadTranscript("session-1")), JSON.stringify(turns));
 });
 

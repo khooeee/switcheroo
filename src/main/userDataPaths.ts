@@ -18,7 +18,7 @@ export function sessionDir(sessionId: string): string {
 }
 
 export function sessionTranscriptPath(sessionId: string): string {
-  return path.join(sessionDir(sessionId), "transcript.json");
+  return path.join(sessionDir(sessionId), "transcript.jsonl");
 }
 
 export function sessionMetaPath(sessionId: string): string {
@@ -26,5 +26,5 @@ export function sessionMetaPath(sessionId: string): string {
 }
 
 export function switchboardPath(): string {
-  return path.join(userDataDir(), "switchboard.json");
+  return path.join(userDataDir(), "switchboard.jsonl");
 }

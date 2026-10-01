@@ -69,7 +69,8 @@ async function writeSession(index) {
       status: "complete",
     });
   }
-  await fs.writeFile(path.join(dir, "transcript.json"), `${JSON.stringify(turns)}\n`);
+  const body = turns.length ? `${turns.map((turn) => JSON.stringify(turn)).join("\n")}\n` : "";
+  await fs.writeFile(path.join(dir, "transcript.jsonl"), body);
   return { id, title };
 }
 

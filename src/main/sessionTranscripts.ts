@@ -1,5 +1,7 @@
 import * as fs from "node:fs/promises";
 import type { TranscriptItem, TranscriptTurn } from "../shared/types";
+import { encodeJsonl } from "./encodeJsonl";
+import { parseJsonl } from "./parseJsonl";
 import { sessionDir, sessionTranscriptPath } from "./userDataPaths";
 
 let pendingSave: Promise<void> = Promise.resolve();
@@ -22,8 +24,7 @@ export async function loadTranscript(sessionId: string): Promise<TranscriptTurn[
   try {
     const raw = await fs.readFile(sessionTranscriptPath(sessionId), "utf8");
     if (!raw.trim()) return [];
-    const turns = JSON.parse(raw) as TranscriptTurn[];
-    return turns.map(stripTurnQueued);
+    return parseJsonl<TranscriptTurn>(raw).map(stripTurnQueued);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw err;
@@ -33,7 +34,7 @@ export async function loadTranscript(sessionId: string): Promise<TranscriptTurn[
 export async function saveTranscript(sessionId: string, turns: TranscriptTurn[]): Promise<void> {
   const target = sessionTranscriptPath(sessionId);
   const tmp = `${target}.${process.pid}.tmp`;
-  const body = turns.length ? `${JSON.stringify(turns.map(stripTurnQueued))}\n` : "";
+  const body = encodeJsonl(turns.map(stripTurnQueued));
   const save = pendingSave.then(async () => {
     await fs.mkdir(sessionDir(sessionId), { recursive: true });
     await fs.writeFile(tmp, body, "utf8");
