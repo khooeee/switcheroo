@@ -20,6 +20,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const prefs = getAppSettingsCache();
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
+  const [prefix, setPrefix] = useState(prefs.lastPrefix);
   const [title, setTitle] = useState(randomSessionTitle);
   const [pin, setPin] = useState(prefs.lastPin);
   const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
@@ -36,13 +37,15 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   }, []);
 
   const create = async () => {
-    const sessionTitle = title.trim();
-    if (!cwd || !sessionTitle || busy) return;
+    const trimmedTitle = title.trim();
+    if (!cwd || !trimmedTitle || busy) return;
+    const sessionTitle = prefix !== "" ? `${prefix} ${trimmedTitle}` : trimmedTitle;
     setBusy(true);
     setError(null);
     void patchAppSettings({
       lastAgent: agent,
       lastCwd: cwd,
+      lastPrefix: prefix,
       lastPin: pin,
       lastSwitcherooAware: switcherooAware,
     });
@@ -84,6 +87,16 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
     >
       <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>New agent session</h3>
+        <label>
+          Prefix
+          <input
+            value={prefix}
+            disabled={busy}
+            onChange={(e) => setPrefix(e.target.value)}
+            onKeyDown={createOnEnter}
+            spellCheck={false}
+          />
+        </label>
         <label>
           Title
           <input

@@ -145,6 +145,7 @@ export interface AppSettings {
   composerHeight: number;
   lastAgent: AgentKind;
   lastCwd: string;
+  lastPrefix: string;
   lastSwitcherooAware: boolean;
   lastPin: boolean;
   /** Drop Switchboard events older than this many days on startup. */
@@ -162,6 +163,7 @@ export function defaultAppSettings(): AppSettings {
     composerHeight: 72,
     lastAgent: "claude",
     lastCwd: "",
+    lastPrefix: "",
     lastSwitcherooAware: false,
     lastPin: false,
     cleanSwitchboardEventsOlderThanDays: 30,

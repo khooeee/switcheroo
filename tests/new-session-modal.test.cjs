@@ -27,7 +27,9 @@ function load() {
             composerHeight: 72,
             lastAgent: "claude",
             lastCwd: "",
+            lastPrefix: "Acme",
             lastSwitcherooAware: false,
+            lastPin: false,
           }),
           patchAppSettings: async () => ({}),
         };
@@ -41,14 +43,17 @@ function load() {
   return exports;
 }
 
-test("title is the first field in the new session modal", () => {
+test("prefix comes before title; title is still the focused field", () => {
   const { NewSessionModal } = load();
   const html = renderToStaticMarkup(
-    React.createElement(NewSessionModal, { onCancel() {}, onCreate: async () => {} }),
+    React.createElement(NewSessionModal, { onCancel() {}, canPin: true, onCreate: async () => {} }),
   );
+  const prefix = html.indexOf(">Prefix<");
   const title = html.indexOf(">Title<");
   const agent = html.indexOf(">Agent<");
   const folder = html.indexOf(">Folder<");
-  assert.ok(title >= 0 && agent >= 0 && folder >= 0);
-  assert.ok(title < agent && agent < folder);
+  assert.ok(prefix >= 0 && title >= 0 && agent >= 0 && folder >= 0);
+  assert.ok(prefix < title && title < agent && agent < folder);
+  assert.match(html, /value="Acme"/);
+  assert.ok(html.includes('value="Cedar"'));
 });
