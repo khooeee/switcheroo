@@ -1,5 +1,21 @@
-.rail-pin-btn {
+.rail-session-end {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
   flex-shrink: 0;
+}
+
+.rail-session-end .rail-spinner,
+.rail-session-end .rail-done,
+.rail-session-end .rail-pin-btn {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+
+.rail-pin-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,6 +28,7 @@
   color: var(--text-dim);
   opacity: 0;
   cursor: pointer;
+  z-index: 1;
 }
 
 .rail-session:hover .rail-pin-btn,
@@ -19,20 +36,12 @@
   opacity: 1;
 }
 
+.rail-session:hover .rail-session-end:has(.rail-pin-btn) .rail-done,
+.rail-session-end:has(.rail-pin-btn:focus-visible) .rail-done {
+  opacity: 0;
+}
+
 .rail-pin-btn:hover {
   color: var(--text);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
-.rail-session-trailing {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.rail-session-trailing .rail-spinner,
-.rail-session-trailing .rail-done {
-  margin-left: 0;
 }

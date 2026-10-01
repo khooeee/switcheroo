@@ -15,9 +15,12 @@
   width: 10px;
   height: 10px;
   flex-shrink: 0;
-  margin-left: auto;
   border-radius: 50%;
   background: #9ed4b0;
+}
+
+.rail-session-end .rail-spinner {
+  margin-left: 0;
 }
 
 @keyframes rail-spinner-turn {

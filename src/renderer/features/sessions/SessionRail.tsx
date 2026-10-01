@@ -171,19 +171,21 @@ export function SessionRail({
         onContextMenu={(e) => openMenu(e, session, isPinned)}
       >
         <span className="rail-label">{session.title}</span>
-        <span className="rail-session-trailing">
-          {session.status === "running" ? (
-            <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-          ) : doneDots.has(session.id) ? (
-            <span className="rail-done" role="status" aria-label="Turn complete" />
-          ) : null}
-          {(isPinned || canPin) && (
-            <SessionRailPinButton
-              pinned={isPinned}
-              onToggle={() => (isPinned ? onUnpin(session.id) : onPin(session.id))}
-            />
-          )}
-        </span>
+        {(session.status === "running" || doneDots.has(session.id) || isPinned || canPin) && (
+          <span className="rail-session-end">
+            {session.status === "running" ? (
+              <span className="rail-spinner" role="status" aria-label="Agent thinking" />
+            ) : doneDots.has(session.id) ? (
+              <span className="rail-done" role="status" aria-label="Turn complete" />
+            ) : null}
+            {(isPinned || canPin) && (
+              <SessionRailPinButton
+                pinned={isPinned}
+                onToggle={() => (isPinned ? onUnpin(session.id) : onPin(session.id))}
+              />
+            )}
+          </span>
+        )}
       </button>
     );
   };
