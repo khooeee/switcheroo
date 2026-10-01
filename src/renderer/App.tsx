@@ -229,7 +229,6 @@ export function App() {
             onInterrupt={() => {
               void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
             }}
-            onClose={() => void window.switcheroo.closeSession(activeSession.id)}
             permission={permission?.sessionId === activeSession.id ? permission : null}
             askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
             onPermission={(optionId) => {

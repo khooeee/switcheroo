@@ -72,16 +72,19 @@ export function SessionRailMenu({
       >
         Fork
       </button>
+      <div className="context-separator" role="separator" />
       <button
         type="button"
         role="menuitem"
         className="context-item"
+        aria-keyshortcuts="Control+D"
         onClick={() => {
           onClose(session.id);
           onDismiss();
         }}
       >
         Close
+        <kbd className="settings-shortcut">⌃D</kbd>
       </button>
     </div>
   );

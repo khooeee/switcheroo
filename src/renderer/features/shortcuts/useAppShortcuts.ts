@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ActiveSessionId, Session } from "../../../shared/types";
+import { SWITCHBOARD_ID } from "../../../shared/types";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
@@ -10,7 +11,7 @@ function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
   return event.key.toLowerCase() === key;
 }
 
-/** Window-level shortcuts: find, sessions, pin, focus, rename, zen, Escape. */
+/** Window-level shortcuts: find, sessions, pin, focus, rename, close, zen, Escape. */
 export function useAppShortcuts({
   pinned,
   unpinned,
@@ -41,11 +42,19 @@ export function useAppShortcuts({
   const blocked = showNewSession || showFindInSessions;
   const findInSessionsOpen = useRef(false);
   findInSessionsOpen.current = showFindInSessions;
+  const activeId = useRef(activeSessionId);
+  activeId.current = activeSessionId;
+  const blockedRef = useRef(blocked);
+  blockedRef.current = blocked;
 
   const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
   useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);
 
   useEffect(() => {
+    const closeActive = () => {
+      if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
+      void window.switcheroo.closeSession(activeId.current);
+    };
     const openFind = () => {
       if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
       setFindOpen(true);
@@ -67,6 +76,20 @@ export function useAppShortcuts({
         if (event.repeat) return;
         event.preventDefault();
         toggleDetailsVisible();
+        return;
+      }
+
+      if (
+        event.key.toLowerCase() === "d"
+        && event.ctrlKey
+        && !event.metaKey
+        && !event.altKey
+        && !event.shiftKey
+      ) {
+        if (document.querySelector("dialog[open]") || blockedRef.current) return;
+        if (activeId.current === SWITCHBOARD_ID) return;
+        event.preventDefault();
+        closeActive();
         return;
       }
 
@@ -98,11 +121,13 @@ export function useAppShortcuts({
     window.addEventListener("switcheroo:find", openFind);
     window.addEventListener("switcheroo:find-sessions", openFindSessions);
     window.addEventListener("switcheroo:new-session", openNewSession);
+    window.addEventListener("switcheroo:close-session", closeActive);
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("switcheroo:find", openFind);
       window.removeEventListener("switcheroo:find-sessions", openFindSessions);
       window.removeEventListener("switcheroo:new-session", openNewSession);
+      window.removeEventListener("switcheroo:close-session", closeActive);
       window.removeEventListener("keydown", onKey);
     };
   }, [setFindOpen, setFindQuery, setShowFindInSessions, setShowNewSession]);

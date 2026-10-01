@@ -114,6 +114,10 @@ ipcRenderer.on("session:rename", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:rename-session"));
 });
 
+ipcRenderer.on("session:close", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:close-session"));
+});
+
 ipcRenderer.on("session:next", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:session-next"));
 });

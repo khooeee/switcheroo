@@ -18,7 +18,6 @@ interface Props {
   chatRef: RefObject<HTMLDivElement | null>;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
-  onClose: () => void;
   permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
   onPermission: (optionId: string | "cancelled") => void;
@@ -42,7 +41,6 @@ export function ChatPanel({
   chatRef,
   onSend,
   onInterrupt,
-  onClose,
   permission,
   askQuestion,
   onPermission,
@@ -112,7 +110,6 @@ export function ChatPanel({
         promptFocus={promptFocus}
         onSend={onSend}
         onInterrupt={onInterrupt}
-        onClose={onClose}
       />
     </section>
   );

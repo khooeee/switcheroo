@@ -20,14 +20,12 @@ export function ChatComposer({
   promptFocus,
   onSend,
   onInterrupt,
-  onClose,
 }: {
   session: Session;
   items: TranscriptItem[];
   promptFocus: number;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
-  onClose: () => void;
 }) {
   const [draft, setDraft] = useComposerDraft(session.id);
   const [historyState, setHistoryState] = useState<ComposerHistoryState>(emptyComposerHistory);
@@ -133,17 +131,6 @@ export function ChatComposer({
             && session.status === "running"
           ) {
             onInterrupt();
-            return true;
-          }
-          if (
-            e.key.toLowerCase() === "d"
-            && e.ctrlKey
-            && !e.metaKey
-            && !e.altKey
-            && !e.shiftKey
-            && draft === ""
-          ) {
-            onClose();
             return true;
           }
           return false;

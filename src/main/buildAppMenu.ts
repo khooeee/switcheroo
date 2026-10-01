@@ -3,6 +3,7 @@ import type { SessionPinMenuState } from "./sessionPinMenuState";
 
 const PIN_MENU_ID = "session-toggle-pin";
 const RENAME_MENU_ID = "session-rename";
+const CLOSE_MENU_ID = "session-close";
 
 /** Build the application menu; session item state comes from getters. */
 export function buildAppMenu(opts: {
@@ -58,6 +59,16 @@ export function buildAppMenu(opts: {
           accelerator: "CmdOrCtrl+P",
           click: () => {
             win()?.webContents.send("session:toggle-pin");
+          },
+        },
+        { type: "separator" },
+        {
+          id: CLOSE_MENU_ID,
+          label: "Close Session",
+          enabled: opts.getRenameEnabled(),
+          accelerator: "Ctrl+D",
+          click: () => {
+            win()?.webContents.send("session:close");
           },
         },
       ],
@@ -150,4 +161,6 @@ export function refreshSessionMenuItems(
   }
   const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
   if (renameItem) renameItem.enabled = renameEnabled;
+  const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);
+  if (closeItem) closeItem.enabled = renameEnabled;
 }
