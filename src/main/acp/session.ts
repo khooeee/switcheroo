@@ -72,14 +72,6 @@ export class AcpSession {
       });
     },
     onSupport: (supported) => this.cb.onSteeringSupport(supported),
-    onDetachedTurn: () => {
-      this.completion.detached();
-      this.turns.activateLatestRunning();
-      if (this.remoteTurnActive !== false) {
-        this.turnRunning = true;
-        this.cb.onStatus("running");
-      }
-    },
   });
 
   constructor(
@@ -389,19 +381,41 @@ export class AcpSession {
       text,
       at: Date.now(),
     };
-    const turn = this.turns.open(userItem);
-    const { completion } = await this.delivery.enqueue(text, userItem.id);
+    // Decide steer vs prompt before opening a turn so an inject lands on the
+    // in-flight turn as an event instead of a sibling user-only turn.
+    const { mode, completion } = await this.delivery.enqueue(text, userItem.id);
+
+    let turnId: string;
+    if (mode === "injected") {
+      // Start a fresh assistant bubble after the steer so chunks don't splice into pre-steer text.
+      this.output.reset();
+      this.turns.apply(userItem);
+      turnId = this.turns.activeTurnId() ?? userItem.id;
+    } else {
+      const turn = this.turns.open(userItem);
+      turnId = turn.id;
+      if (mode === "startedNewTurn") {
+        this.completion.detached();
+        this.turns.activateLatestRunning();
+        if (this.remoteTurnActive !== false) {
+          this.turnRunning = true;
+          this.cb.onStatus("running");
+        }
+      }
+    }
+
     const finished = completion.then(() => {
-      // Steering inject finishes without runPrompt — close the orphan or active turn.
+      if (mode === "injected") return;
+      // Steering startedNewTurn finishes without runPrompt; prompt mode waits on the queue.
       if (!this.turnRunning) this.turns.complete();
       else this.turns.completeIfOrphan(userItem.id);
     });
     if (options?.wait === false) {
       void finished.catch(() => undefined);
-      return turn.id;
+      return turnId;
     }
     await finished;
-    return turn.id;
+    return turnId;
   }
 
   private async runPrompt(text: string): Promise<void> {

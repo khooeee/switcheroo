@@ -17,16 +17,14 @@ function fixture(overrides = {}) {
   const prompts = [];
   const steers = [];
   const support = [];
-  let detached = 0;
   const delivery = new PromptDelivery({
     isRunning: () => true,
     prompt: async (text) => { prompts.push(text); },
     steer: async (text) => { steers.push(text); return { outcome: "injected" }; },
     onSupport: (value) => support.push(value),
-    onDetachedTurn: () => { detached++; },
     ...overrides,
   });
-  return { delivery, prompts, steers, support, detached: () => detached };
+  return { delivery, prompts, steers, support };
 }
 
 async function send(delivery, text, id = "msg") {
@@ -102,8 +100,8 @@ test("promptRequired falls back once when the turn finished before injection", a
 test("startedNewTurn is tracked without sending a duplicate prompt", async () => {
   const f = fixture({ steer: async () => ({ outcome: "startedNewTurn" }) });
   f.delivery.configure({ steering: { supported: true } });
-  await send(f.delivery, "late message");
-  assert.equal(f.detached(), 1);
+  const result = await f.delivery.enqueue("late message", "msg");
+  assert.equal(result.mode, "startedNewTurn");
   assert.deepEqual(f.prompts, []);
 });
 

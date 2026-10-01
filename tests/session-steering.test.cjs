@@ -34,9 +34,11 @@ test("startup capability enables steering without a second prompt or duplicate t
   assert.equal(steer.params._meta.steering.idleBehavior, "promptRequired");
   assert.equal(steer.params.sessionId, "session-1");
   assert.equal(f.turns.length, 1);
+  const turn = f.transcripts.at(-1);
+  assert.ok(turn.events.some((event) => event.role === "user" && event.text === "steering instruction"));
   f.update({ sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Steered output" } });
   assert.equal(f.transcripts.at(-1).assistant.text, "Steered output");
-  assert.equal(f.transcripts.length, 2);
+  assert.equal(f.transcripts.at(-1).id, turn.id);
   f.turns[0]({ stopReason: "end_turn" });
   await original;
   assert.equal(f.statuses.at(-1), "ready");

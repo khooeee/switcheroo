@@ -123,17 +123,28 @@ export class TurnBuilder {
       return;
     }
 
+    // Mid-turn user steers should appear after the assistant text so far.
+    if (item.role === "user" && turn.assistant) {
+      turn.events = [...turn.events, turn.assistant];
+      turn.assistant = null;
+    }
+
     turn.events = [...turn.events, { ...item }];
     this.refreshFiles(turn);
     this.emit(turn);
   }
 
-  /** Mark a non-active running turn complete (steer-injected user message). */
+  /** Mark a non-active running turn complete (unused prompt orphan). */
   completeIfOrphan(userId: string): void {
     const turn = this.turns.find((entry) => entry.user.id === userId);
     if (!turn || turn.id === this.activeId || turn.status !== "running") return;
     turn.status = "complete";
     this.emit(turn);
+  }
+
+  /** Id of the turn currently receiving agent updates, if any. */
+  activeTurnId(): string | null {
+    return this.activeId;
   }
 
   /** Prefer the newest running turn (steer startedNewTurn). */

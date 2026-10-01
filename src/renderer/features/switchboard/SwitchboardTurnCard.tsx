@@ -1,4 +1,4 @@
-import { memo, useCallback, type KeyboardEvent, type MouseEvent } from "react";
+import { memo, useCallback, useMemo, type KeyboardEvent, type MouseEvent } from "react";
 import type { Session, SwitchboardTurn } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -34,7 +34,10 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       ? stripCursorStreamNoise(turn.assistant.text)
       : turn.assistant.text
     : "";
-
+  const steerEvents = useMemo(
+    () => turn.events.filter((event) => event.role === "user"),
+    [turn.events],
+  );
   const handleToggle = useCallback(() => onToggle(turn.id), [onToggle, turn.id]);
   const handleOpen = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
@@ -99,9 +102,25 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           onActivate={turn.navigable ? handleOpen : undefined}
         />
       ) : null}
+      {!expanded && session && steerEvents.length > 0 ? (
+        <TurnEvents
+          session={session}
+          events={steerEvents}
+          onActivate={turn.navigable ? handleOpen : undefined}
+        />
+      ) : null}
       {expanded && !session && turn.events.length > 0 ? (
         <div className="turn-events">
           {turn.events.map((item) => (
+            <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
+              <div className="body">{item.text}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {!expanded && !session && steerEvents.length > 0 ? (
+        <div className="turn-events">
+          {steerEvents.map((item) => (
             <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
               <div className="body">{item.text}</div>
             </div>
