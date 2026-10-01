@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ActiveSessionId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
+import { isComposerDraftEmpty } from "../chat/useComposerDraft";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
@@ -55,6 +56,7 @@ export function useAppShortcuts({
   useEffect(() => {
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
+      if (!isComposerDraftEmpty(activeId.current)) return;
       void window.switcheroo.closeSession(activeId.current);
     };
     const forkActive = () => {
@@ -113,6 +115,7 @@ export function useAppShortcuts({
       ) {
         if (document.querySelector("dialog[open]") || blockedRef.current) return;
         if (activeId.current === SWITCHBOARD_ID) return;
+        if (!isComposerDraftEmpty(activeId.current)) return;
         event.preventDefault();
         closeActive();
         return;

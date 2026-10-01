@@ -72,7 +72,7 @@ I put this here to remind myself of all the little features this app has that is
 
 **Ctrl+C**: Stop agent (prompt, while running)
 
-**Ctrl+D**: Close session (empty prompt)
+**Ctrl+D**: Close session on empty prompt
 
 **Ctrl+0**: Switchboard
 
