@@ -13,17 +13,6 @@ export function SettingsMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "/" || !event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-      if (event.defaultPrevented || event.repeat || event.isComposing) return;
-      event.preventDefault();
-      toggleDetailsVisible();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
     if (!open) return;
     const place = () => {
       const rect = rootRef.current?.getBoundingClientRect();

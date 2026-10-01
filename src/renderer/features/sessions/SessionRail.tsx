@@ -78,20 +78,8 @@ export function SessionRail({
       setMenu(null);
       setRename(session);
     };
-    const onKey = (event: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
-      if (event.defaultPrevented || event.isComposing || event.repeat) return;
-      if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return;
-      if (event.shiftKey || event.altKey || event.key.toLowerCase() !== "r") return;
-      event.preventDefault();
-      startRename();
-    };
-    window.addEventListener("keydown", onKey);
     window.addEventListener("switcheroo:rename-session", startRename);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("switcheroo:rename-session", startRename);
-    };
+    return () => window.removeEventListener("switcheroo:rename-session", startRename);
   }, [activeSessionId, allSessions]);
 
   useScrollActiveRailSession(scrollRef, activeSessionId);

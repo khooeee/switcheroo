@@ -13,8 +13,7 @@ import { SessionRail } from "./features/sessions/SessionRail";
 import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
-import { useSessionShortcuts } from "./features/sessions/useSessionShortcuts";
-import { useSessionFocusShortcuts } from "./features/shortcuts/useSessionFocusShortcuts";
+import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
 import { FindInHistoryModal } from "./features/find/FindInHistoryModal";
 import { NewSessionModal } from "./features/sessions/NewSessionModal";
@@ -40,8 +39,6 @@ export function App() {
   const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
-  const findInSessionsOpen = useRef(false);
-  findInSessionsOpen.current = showFindInSessions;
   const pinTranscriptToBottom = useSessionScrollPosition(
     activeSessionId,
     activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
@@ -108,49 +105,8 @@ export function App() {
       }),
     ];
 
-    const onFind = () => {
-      if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
-      setFindOpen(true);
-    };
-    const onFindSessions = () => {
-      if (document.querySelector("dialog[open]")) return;
-      setFindOpen(false);
-      setFindQuery("");
-      setShowFindInSessions(true);
-    };
-    const onNewSession = () => { if (!document.querySelector("dialog[open]")) setShowNewSession(true); };
-    window.addEventListener("switcheroo:find", onFind);
-    window.addEventListener("switcheroo:find-sessions", onFindSessions);
-    window.addEventListener("switcheroo:new-session", onNewSession);
-    const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
-      if ((e.metaKey || e.ctrlKey) && !(e.metaKey && e.ctrlKey) && e.shiftKey && !e.altKey
-        && e.key.toLowerCase() === "f") {
-        e.preventDefault();
-        setFindOpen(false);
-        setFindQuery("");
-        setShowFindInSessions(true);
-        return;
-      }
-      if ((e.metaKey || e.ctrlKey) && !(e.metaKey && e.ctrlKey) && !e.shiftKey && !e.altKey
-        && e.key.toLowerCase() === "f") {
-        if (findInSessionsOpen.current) return;
-        e.preventDefault();
-        setFindOpen(true);
-      }
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "n") {
-        e.preventDefault();
-        setShowNewSession(true);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-
     return () => {
       unsubs.forEach((u) => u());
-      window.removeEventListener("switcheroo:find", onFind);
-      window.removeEventListener("switcheroo:find-sessions", onFindSessions);
-      window.removeEventListener("switcheroo:new-session", onNewSession);
-      window.removeEventListener("keydown", onKey);
     };
   }, []);
 
@@ -180,35 +136,20 @@ export function App() {
     setFocusEvent(null);
   }, []);
 
-  const promptFocus = useSessionFocusShortcuts(activeSessionId, showNewSession || showFindInSessions);
-  useSessionShortcuts(
-    pinnedSessions,
-    unpinnedSessions,
+  const promptFocus = useAppShortcuts({
+    pinned: pinnedSessions,
+    unpinned: unpinnedSessions,
     activeSessionId,
+    activeSession,
     selectSession,
-    showNewSession || showFindInSessions,
-  );
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
-      if (e.key === "Escape") {
-        if (e.defaultPrevented || e.repeat || e.isComposing || showNewSession || showFindInSessions) return;
-        if (document.querySelector('[role="menu"]')) return;
-        if (findOpen) {
-          setFindOpen(false);
-          setFindQuery("");
-          return;
-        }
-        if (activeSession?.status !== "running") return;
-        e.preventDefault();
-        void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
-        return;
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [activeSession, showNewSession, showFindInSessions, findOpen]);
+    showNewSession,
+    showFindInSessions,
+    findOpen,
+    setFindOpen,
+    setFindQuery,
+    setShowNewSession,
+    setShowFindInSessions,
+  });
 
   const createSession = useCallback((
     agent: AgentKind,

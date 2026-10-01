@@ -1,0 +1,130 @@
+import { useEffect, useRef } from "react";
+import type { ActiveSessionId, Session } from "../../../shared/types";
+import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
+import { toggleDetailsVisible } from "../settings/details";
+import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
+
+function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
+  if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return false;
+  if (event.altKey || event.shiftKey !== shift) return false;
+  return event.key.toLowerCase() === key;
+}
+
+/** Window-level shortcuts: find, sessions, pin, focus, rename, zen, Escape. */
+export function useAppShortcuts({
+  pinned,
+  unpinned,
+  activeSessionId,
+  activeSession,
+  selectSession,
+  showNewSession,
+  showFindInSessions,
+  findOpen,
+  setFindOpen,
+  setFindQuery,
+  setShowNewSession,
+  setShowFindInSessions,
+}: {
+  pinned: Session[];
+  unpinned: Session[];
+  activeSessionId: ActiveSessionId;
+  activeSession: Session | null;
+  selectSession: (id: ActiveSessionId) => void;
+  showNewSession: boolean;
+  showFindInSessions: boolean;
+  findOpen: boolean;
+  setFindOpen: (open: boolean) => void;
+  setFindQuery: (query: string) => void;
+  setShowNewSession: (open: boolean) => void;
+  setShowFindInSessions: (open: boolean) => void;
+}): number {
+  const blocked = showNewSession || showFindInSessions;
+  const findInSessionsOpen = useRef(false);
+  findInSessionsOpen.current = showFindInSessions;
+
+  const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
+  useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);
+
+  useEffect(() => {
+    const openFind = () => {
+      if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
+      setFindOpen(true);
+    };
+    const openFindSessions = () => {
+      if (document.querySelector("dialog[open]")) return;
+      setFindOpen(false);
+      setFindQuery("");
+      setShowFindInSessions(true);
+    };
+    const openNewSession = () => {
+      if (!document.querySelector("dialog[open]")) setShowNewSession(true);
+    };
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing) return;
+
+      if (event.key === "/" && event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+        if (event.repeat) return;
+        event.preventDefault();
+        toggleDetailsVisible();
+        return;
+      }
+
+      if (document.querySelector("dialog[open]")) return;
+
+      if (modKey(event, "f", true)) {
+        event.preventDefault();
+        openFindSessions();
+        return;
+      }
+      if (modKey(event, "f")) {
+        if (findInSessionsOpen.current) return;
+        event.preventDefault();
+        setFindOpen(true);
+        return;
+      }
+      if (modKey(event, "n")) {
+        event.preventDefault();
+        setShowNewSession(true);
+        return;
+      }
+      if (modKey(event, "r")) {
+        if (event.repeat) return;
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("switcheroo:rename-session"));
+      }
+    };
+
+    window.addEventListener("switcheroo:find", openFind);
+    window.addEventListener("switcheroo:find-sessions", openFindSessions);
+    window.addEventListener("switcheroo:new-session", openNewSession);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("switcheroo:find", openFind);
+      window.removeEventListener("switcheroo:find-sessions", openFindSessions);
+      window.removeEventListener("switcheroo:new-session", openNewSession);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [setFindOpen, setFindQuery, setShowFindInSessions, setShowNewSession]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+      if (event.key !== "Escape") return;
+      if (event.defaultPrevented || event.repeat || event.isComposing || blocked) return;
+      if (document.querySelector('[role="menu"]')) return;
+      if (findOpen) {
+        setFindOpen(false);
+        setFindQuery("");
+        return;
+      }
+      if (activeSession?.status !== "running") return;
+      event.preventDefault();
+      void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeSession, blocked, findOpen, setFindOpen, setFindQuery]);
+
+  return promptFocus;
+}
