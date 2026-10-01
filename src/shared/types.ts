@@ -146,8 +146,8 @@ export interface AppSettings {
   lastAgent: AgentKind;
   lastCwd: string;
   lastPrefix: string;
-  lastSwitcherooAware: boolean;
   lastPin: boolean;
+  lastSwitcherooAware: boolean;
   /** Drop Switchboard events older than this many days on startup. */
   cleanSwitchboardEventsOlderThanDays: number;
   /** Soft-close oldest rail sessions on startup when over this (0 = unlimited). */
@@ -164,8 +164,8 @@ export function defaultAppSettings(): AppSettings {
     lastAgent: "claude",
     lastCwd: "",
     lastPrefix: "",
-    lastSwitcherooAware: false,
     lastPin: false,
+    lastSwitcherooAware: false,
     cleanSwitchboardEventsOlderThanDays: 30,
     sessionListMax: 200,
   };
