@@ -42,7 +42,7 @@ export const SessionTranscript = memo(function SessionTranscript({
               session={session}
               turn={turn}
               expanded={isExpanded(turn.id)}
-              onToggle={() => toggle(turn.id)}
+              onToggle={toggle}
             />
           ))}
           {session.status === "connecting" && <ThinkingIndicator label="Creating session" />}

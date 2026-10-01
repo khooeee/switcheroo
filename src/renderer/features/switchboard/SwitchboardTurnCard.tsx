@@ -1,4 +1,4 @@
-import { memo, type KeyboardEvent, type MouseEvent } from "react";
+import { memo, useCallback, type KeyboardEvent, type MouseEvent } from "react";
 import type { Session, SwitchboardTurn } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -23,8 +23,8 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   cwd?: string;
   session: Session | undefined;
   expanded: boolean;
-  onToggle: () => void;
-  onOpen: (turn: SwitchboardTurn, eventId: string) => void;
+  onToggle: (turnId: string) => void;
+  onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const userText =
@@ -35,13 +35,19 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       : turn.assistant.text
     : "";
 
+  const handleToggle = useCallback(() => onToggle(turn.id), [onToggle, turn.id]);
+  const handleOpen = useCallback(
+    (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
+    [onOpen, turn.sessionId, turn.id],
+  );
+
   /** Navigable turns open the session event; otherwise expand/collapse. */
   const activate = (event: MouseEvent | KeyboardEvent, eventId: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
-    if (turn.navigable) onOpen(turn, eventId);
-    else onToggle();
+    if (turn.navigable) handleOpen(eventId);
+    else handleToggle();
   };
 
   return (
@@ -70,7 +76,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
             onClick={(e) => {
               if (!turn.navigable) return;
               e.stopPropagation();
-              onOpen(turn, turn.user.id);
+              handleOpen(turn.user.id);
             }}
           >
             {title}
@@ -90,7 +96,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <TurnEvents
           session={session}
           events={turn.events}
-          onActivate={turn.navigable ? (eventId) => onOpen(turn, eventId) : undefined}
+          onActivate={turn.navigable ? handleOpen : undefined}
         />
       ) : null}
       {expanded && !session && turn.events.length > 0 ? (

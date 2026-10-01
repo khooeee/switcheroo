@@ -6,7 +6,7 @@ interface Props {
   sessions: Session[];
   isExpanded: (turnId: string) => boolean;
   onToggle: (turnId: string) => void;
-  onClick: (turn: SwitchboardTurn, eventId: string) => void;
+  onClick: (sessionId: string, turnId: string, eventId: string) => void;
 }
 
 export function SwitchboardFeed({ turns, sessions, isExpanded, onToggle, onClick }: Props) {
@@ -35,7 +35,7 @@ export function SwitchboardFeed({ turns, sessions, isExpanded, onToggle, onClick
             cwd={session?.cwd}
             session={session}
             expanded={isExpanded(turn.id)}
-            onToggle={() => onToggle(turn.id)}
+            onToggle={onToggle}
             onOpen={onClick}
           />
         );

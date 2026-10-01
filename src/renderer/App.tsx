@@ -175,8 +175,8 @@ export function App() {
     [activeSession, pinTranscriptToBottom],
   );
 
-  const onSwitchboardClick = useCallback((turn: SwitchboardTurn, eventId: string) => {
-    void window.switcheroo.navigateToEvent(turn.sessionId, turn.id, eventId);
+  const onSwitchboardClick = useCallback((sessionId: string, turnId: string, eventId: string) => {
+    void window.switcheroo.navigateToEvent(sessionId, turnId, eventId);
   }, []);
 
   return (

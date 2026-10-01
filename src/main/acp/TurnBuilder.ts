@@ -60,7 +60,10 @@ export class TurnBuilder {
     if (!turn) return;
     this.activeId = turn.id;
     turn.status = "running";
-    delete turn.user.queued;
+    if (turn.user.queued) {
+      const { queued: _q, ...user } = turn.user;
+      turn.user = user;
+    }
     this.emit(turn);
   }
 
@@ -102,10 +105,11 @@ export class TurnBuilder {
       const idx = turn.events.findIndex((event) => event.id === replaceId);
       if (idx >= 0) {
         const prev = turn.events[idx]!;
-        turn.events[idx] =
+        const next =
           item.role === "tool"
             ? { ...item }
             : { ...prev, text: prev.text + item.text, at: item.at };
+        turn.events = turn.events.map((event, i) => (i === idx ? next : event));
         this.refreshFiles(turn);
         this.emit(turn);
         return;
@@ -113,13 +117,13 @@ export class TurnBuilder {
     }
 
     if (item.role === "assistant") {
-      if (turn.assistant) turn.events.push(turn.assistant);
+      if (turn.assistant) turn.events = [...turn.events, turn.assistant];
       turn.assistant = { ...item };
       this.emit(turn);
       return;
     }
 
-    turn.events.push({ ...item });
+    turn.events = [...turn.events, { ...item }];
     this.refreshFiles(turn);
     this.emit(turn);
   }
@@ -138,7 +142,10 @@ export class TurnBuilder {
       const turn = this.turns[i]!;
       if (turn.status !== "running") continue;
       this.activeId = turn.id;
-      delete turn.user.queued;
+      if (turn.user.queued) {
+        const { queued: _q, ...user } = turn.user;
+        turn.user = user;
+      }
       this.emit(turn);
       return;
     }
@@ -155,7 +162,7 @@ export class TurnBuilder {
   stop(stopped: TranscriptItem): void {
     const turn = this.activeTurn();
     if (!turn) return;
-    turn.events.push({ ...stopped });
+    turn.events = [...turn.events, { ...stopped }];
     turn.status = "stopped";
     this.activeId = null;
     this.emit(turn);
@@ -214,7 +221,11 @@ export class TurnBuilder {
     turn.fileChanges = aggregateFileChanges(turn.events);
   }
 
+  /**
+   * Shallow-clone the turn for listeners while preserving nested object identity
+   * for unchanged events/user/assistant (React.memo structural sharing).
+   */
   private emit(turn: TranscriptTurn): void {
-    this.onTurn(cloneTurn(turn));
+    this.onTurn({ ...turn });
   }
 }

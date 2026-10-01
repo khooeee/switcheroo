@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { FileChange, Session, TranscriptItem } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -7,7 +8,7 @@ import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
 
 /** Renders one transcript leaf (user / assistant / thought / tool / …). */
-export function TranscriptMessage({
+export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
   onActivate,
@@ -87,4 +88,4 @@ export function TranscriptMessage({
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
@@ -13,23 +13,24 @@ export const SessionTurn = memo(function SessionTurn({
   session: Session;
   turn: TranscriptTurn;
   expanded: boolean;
-  onToggle: () => void;
+  onToggle: (turnId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
+  const handleToggle = useCallback(() => onToggle(turn.id), [onToggle, turn.id]);
 
   return (
     <div className={`session-turn${expanded ? " expanded" : " collapsed"}`} data-turn-id={turn.id}>
-      <TranscriptMessage session={session} item={turn.user} onActivate={onToggle} />
+      <TranscriptMessage session={session} item={turn.user} onActivate={handleToggle} />
       {expanded ? <TurnEvents session={session} events={turn.events} /> : null}
       {running && expanded && turn.assistant ? (
-        <TranscriptMessage session={session} item={turn.assistant} onActivate={onToggle} />
+        <TranscriptMessage session={session} item={turn.assistant} onActivate={handleToggle} />
       ) : null}
       {running ? <ThinkingIndicator /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          onActivate={onToggle}
+          onActivate={handleToggle}
           extraFileChanges={turn.fileChanges}
         />
       ) : null}
