@@ -36,7 +36,7 @@ const createWindow = async () => {
     backgroundColor: "#0e1114",
     icon: applyAppIcon(),
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       autoplayPolicy: "no-user-gesture-required",
       nodeIntegration: false,
