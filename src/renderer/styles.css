@@ -469,6 +469,21 @@ button {
   font: inherit;
 }
 
+html[data-details="hidden"] .event-timestamp {
+  display: none;
+}
+
+html[data-details="hidden"] .message.user .kind-pill,
+html[data-details="hidden"] .message.assistant .kind-pill {
+  display: none;
+}
+
+/* Drop the header row when zen hid everything in it (user/assistant only had pill + timestamp). */
+html[data-details="hidden"] .message.user .row:not(:has(.event-title)):not(:has(.tool-status)),
+html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(:has(.tool-status)) {
+  display: none;
+}
+
 .feed-item:not(.navigable) .event-title {
   opacity: 0.55;
 }

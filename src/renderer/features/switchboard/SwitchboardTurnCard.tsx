@@ -62,6 +62,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         }}
       >
         <div className="row">
+          <span className="kind-pill">user</span>
           <span
             className={`event-title${turn.navigable ? " openable" : ""}`}
             onClick={(e) => {
@@ -111,6 +112,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           }}
         >
           <div className="row">
+            <span className="kind-pill">assistant</span>
             <span className="event-timestamp" style={{ marginLeft: "auto" }}>
               {formatDetailTimestamp(turn.assistant.at)}
             </span>
