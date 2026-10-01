@@ -13,6 +13,14 @@ export function removeSessionFromLists(lists: SessionRailLists, sessionId: strin
   };
 }
 
+/** Rail order: next after `sessionId`, else previous, else null (caller uses Switchboard). */
+export function nextActiveAfterClose(lists: SessionRailLists, sessionId: string): string | null {
+  const order = [...lists.pinnedIds, ...lists.unpinnedIds];
+  const index = order.indexOf(sessionId);
+  if (index < 0) return null;
+  return order[index + 1] ?? order[index - 1] ?? null;
+}
+
 export function pinSessionInLists(lists: SessionRailLists, sessionId: string): SessionRailLists {
   if (lists.pinnedIds.includes(sessionId)) return lists;
   if (lists.pinnedIds.length >= MAX_PINNED_SESSIONS) return lists;

@@ -29,6 +29,7 @@ const {
   prependUnpinnedInLists,
   reorderPinnedInLists,
   loadListsFromPersisted,
+  nextActiveAfterClose,
 } = load("src/main/sessionRailLists.ts");
 
 const base = { pinnedIds: ["p1", "p2"], unpinnedIds: ["u1", "u2", "u3"] };
@@ -62,4 +63,12 @@ test("loadListsFromPersisted keeps id order and drops duplicates", () => {
   assert.equal(loaded.lists.pinnedIds.join(","), "p1,p2");
   assert.equal(loaded.lists.unpinnedIds.join(","), "u1,u2");
   assert.equal(loaded.openIds.join(","), "p1,p2,u1,u2");
+});
+
+test("nextActiveAfterClose prefers next, then previous, then null", () => {
+  assert.equal(nextActiveAfterClose(base, "u1"), "u2");
+  assert.equal(nextActiveAfterClose(base, "u3"), "u2");
+  assert.equal(nextActiveAfterClose(base, "p1"), "p2");
+  assert.equal(nextActiveAfterClose({ pinnedIds: ["only"], unpinnedIds: [] }, "only"), null);
+  assert.equal(nextActiveAfterClose(base, "missing"), null);
 });

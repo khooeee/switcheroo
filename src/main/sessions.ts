@@ -27,6 +27,7 @@ import { switchboardCleanupCutoff } from "./switchboardCleanup";
 import { overflowSessionIds } from "./overflowSessionIds";
 import {
   loadListsFromPersisted,
+  nextActiveAfterClose,
   pinSessionInLists,
   prependPinnedInLists,
   prependUnpinnedInLists,
@@ -243,8 +244,15 @@ export class SessionManager {
     this.sessions.delete(sessionId);
     this.transcripts.delete(sessionId);
     this.hydrated.delete(sessionId);
+    const wasActive = this.activeSessionId === sessionId;
+    const nextActive = wasActive ? nextActiveAfterClose(this.railLists, sessionId) : null;
     this.railLists = removeSessionFromLists(this.railLists, sessionId);
-    if (this.activeSessionId === sessionId) this.activeSessionId = SWITCHBOARD_ID;
+    if (wasActive) {
+      this.activeSessionId = nextActive ?? SWITCHBOARD_ID;
+      if (this.activeSessionId !== SWITCHBOARD_ID) {
+        this.refreshCommandsIfNeeded(this.activeSessionId);
+      }
+    }
   }
 
   list() {
