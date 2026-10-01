@@ -63,7 +63,7 @@ I put this here to remind myself of all the little features this app has that is
 - Composer
   - Autocomplete slash commands
 - Sessions
-  - Pre-warmed session so new sessions start immediately
+  - Pre-warmed session so time to first prompt is very fast
 - Session list
   - Pin/unpin sessions
   - Reorder pinned sessions by dragging (unpinned sessions are not draggable)
