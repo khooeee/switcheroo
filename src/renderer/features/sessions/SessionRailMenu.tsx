@@ -13,6 +13,7 @@ export function SessionRailMenu({
   onFork,
   onPin,
   onUnpin,
+  onStop,
   onClose,
   onDismiss,
 }: {
@@ -26,10 +27,12 @@ export function SessionRailMenu({
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
+  onStop: (id: string) => void;
   onClose: (id: string) => void;
   onDismiss: () => void;
 }) {
   const pinDisabled = !pinned && !canPin;
+  const stopDisabled = session.status !== "running";
   return (
     <div ref={menuRef} className="context-menu" role="menu" style={{ left: x, top: y }}>
       <button
@@ -73,6 +76,21 @@ export function SessionRailMenu({
         Fork
       </button>
       <div className="context-separator" role="separator" />
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
+        disabled={stopDisabled}
+        aria-keyshortcuts="Control+C"
+        onClick={() => {
+          if (stopDisabled) return;
+          onStop(session.id);
+          onDismiss();
+        }}
+      >
+        Stop
+        <kbd className="settings-shortcut">⌃C</kbd>
+      </button>
       <button
         type="button"
         role="menuitem"

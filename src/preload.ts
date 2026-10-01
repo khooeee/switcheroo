@@ -118,6 +118,10 @@ ipcRenderer.on("session:close", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:close-session"));
 });
 
+ipcRenderer.on("session:stop", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:stop-session"));
+});
+
 ipcRenderer.on("session:next", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:session-next"));
 });

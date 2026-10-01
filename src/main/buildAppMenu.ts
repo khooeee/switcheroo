@@ -3,6 +3,7 @@ import type { SessionPinMenuState } from "./sessionPinMenuState";
 
 const PIN_MENU_ID = "session-toggle-pin";
 const RENAME_MENU_ID = "session-rename";
+const STOP_MENU_ID = "session-stop";
 const CLOSE_MENU_ID = "session-close";
 
 /** Build the application menu; session item state comes from getters. */
@@ -10,6 +11,7 @@ export function buildAppMenu(opts: {
   getMainWindow: () => BrowserWindow | null;
   getPinMenuState: () => SessionPinMenuState;
   getRenameEnabled: () => boolean;
+  getStopEnabled: () => boolean;
 }): void {
   const win = () => opts.getMainWindow();
   const pin = opts.getPinMenuState();
@@ -62,6 +64,17 @@ export function buildAppMenu(opts: {
           },
         },
         { type: "separator" },
+        {
+          id: STOP_MENU_ID,
+          label: "Stop",
+          enabled: opts.getStopEnabled(),
+          // Display-only: registering Ctrl+C steals Edit→Copy and can drop this item on macOS.
+          accelerator: "Ctrl+C",
+          registerAccelerator: false,
+          click: () => {
+            win()?.webContents.send("session:stop");
+          },
+        },
         {
           id: CLOSE_MENU_ID,
           label: "Close",
@@ -151,6 +164,7 @@ export function buildAppMenu(opts: {
 export function refreshSessionMenuItems(
   pin: SessionPinMenuState,
   renameEnabled: boolean,
+  stopEnabled: boolean,
 ): void {
   const menu = Menu.getApplicationMenu();
   if (!menu) return;
@@ -161,6 +175,8 @@ export function refreshSessionMenuItems(
   }
   const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
   if (renameItem) renameItem.enabled = renameEnabled;
+  const stopItem = menu.getMenuItemById(STOP_MENU_ID);
+  if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);
   if (closeItem) closeItem.enabled = renameEnabled;
 }

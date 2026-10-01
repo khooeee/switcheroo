@@ -187,6 +187,7 @@ export function App() {
         onSelect={selectSession}
         onAdd={() => setShowNewSession(true)}
         onClose={(id) => void window.switcheroo.closeSession(id)}
+        onStop={(id) => void window.switcheroo.cancelPrompt(id).catch(console.error)}
         onRename={(id, title) => void window.switcheroo.renameSession(id, title)}
         onFork={(id) => void window.switcheroo.forkSession(id)}
         onPin={(id) => void window.switcheroo.pinSession(id)}

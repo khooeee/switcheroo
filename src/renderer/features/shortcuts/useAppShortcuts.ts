@@ -11,7 +11,7 @@ function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
   return event.key.toLowerCase() === key;
 }
 
-/** Window-level shortcuts: find, sessions, pin, focus, rename, close, zen, Escape. */
+/** Window-level shortcuts: find, sessions, pin, focus, rename, stop, close, zen, Escape. */
 export function useAppShortcuts({
   pinned,
   unpinned,
@@ -46,6 +46,8 @@ export function useAppShortcuts({
   activeId.current = activeSessionId;
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
+  const runningId = useRef<string | null>(null);
+  runningId.current = activeSession?.status === "running" ? activeSession.id : null;
 
   const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
   useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);
@@ -54,6 +56,11 @@ export function useAppShortcuts({
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
       void window.switcheroo.closeSession(activeId.current);
+    };
+    const stopActive = () => {
+      const id = runningId.current;
+      if (!id || blockedRef.current) return;
+      void window.switcheroo.cancelPrompt(id).catch(console.error);
     };
     const openFind = () => {
       if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
@@ -76,6 +83,20 @@ export function useAppShortcuts({
         if (event.repeat) return;
         event.preventDefault();
         toggleDetailsVisible();
+        return;
+      }
+
+      if (
+        event.key.toLowerCase() === "c"
+        && event.ctrlKey
+        && !event.metaKey
+        && !event.altKey
+        && !event.shiftKey
+      ) {
+        if (document.querySelector("dialog[open]") || blockedRef.current) return;
+        if (!runningId.current) return;
+        event.preventDefault();
+        stopActive();
         return;
       }
 
@@ -122,12 +143,14 @@ export function useAppShortcuts({
     window.addEventListener("switcheroo:find-sessions", openFindSessions);
     window.addEventListener("switcheroo:new-session", openNewSession);
     window.addEventListener("switcheroo:close-session", closeActive);
+    window.addEventListener("switcheroo:stop-session", stopActive);
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("switcheroo:find", openFind);
       window.removeEventListener("switcheroo:find-sessions", openFindSessions);
       window.removeEventListener("switcheroo:new-session", openNewSession);
       window.removeEventListener("switcheroo:close-session", closeActive);
+      window.removeEventListener("switcheroo:stop-session", stopActive);
       window.removeEventListener("keydown", onKey);
     };
   }, [setFindOpen, setFindQuery, setShowFindInSessions, setShowNewSession]);

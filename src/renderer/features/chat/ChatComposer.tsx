@@ -122,17 +122,6 @@ export function ChatComposer({
             send();
             return true;
           }
-          if (
-            e.key.toLowerCase() === "c"
-            && e.ctrlKey
-            && !e.metaKey
-            && !e.altKey
-            && !e.shiftKey
-            && session.status === "running"
-          ) {
-            onInterrupt();
-            return true;
-          }
           return false;
         }}
       />

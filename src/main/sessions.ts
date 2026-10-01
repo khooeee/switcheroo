@@ -100,6 +100,11 @@ export class SessionManager {
     );
   }
 
+  activeStopMenuEnabled(): boolean {
+    if (this.activeSessionId === SWITCHBOARD_ID) return false;
+    return this.sessions.get(this.activeSessionId)?.status === "running";
+  }
+
   async init(): Promise<void> {
     const saved = await loadState();
     hydrateAppSettings(saved?.settings);

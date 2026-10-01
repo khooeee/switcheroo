@@ -30,6 +30,7 @@ const createWindow = async () => {
   refreshSessionMenuItems(
     sessions.activePinMenuState(),
     sessions.activeRenameMenuEnabled(),
+    sessions.activeStopMenuEnabled(),
   );
 
   mainWindow = new BrowserWindow({
@@ -149,12 +150,14 @@ if (installSingleInstanceLock(() => mainWindow)) {
       refreshSessionMenuItems(
         sessions.activePinMenuState(),
         sessions.activeRenameMenuEnabled(),
+        sessions.activeStopMenuEnabled(),
       );
     });
     buildAppMenu({
       getMainWindow: () => mainWindow,
       getPinMenuState: () => sessions.activePinMenuState(),
       getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
+      getStopEnabled: () => sessions.activeStopMenuEnabled(),
     });
     void createWindow();
     void control.start(sessions);

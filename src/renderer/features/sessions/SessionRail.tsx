@@ -22,6 +22,7 @@ interface Props {
   onSelect: (id: ActiveSessionId) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
+  onStop: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onFork: (id: string) => void;
   onPin: (id: string) => void;
@@ -36,6 +37,7 @@ export function SessionRail({
   onSelect,
   onAdd,
   onClose,
+  onStop,
   onRename,
   onFork,
   onPin,
@@ -232,6 +234,7 @@ export function SessionRail({
             onFork={onFork}
             onPin={onPin}
             onUnpin={onUnpin}
+            onStop={onStop}
             onClose={onClose}
             onDismiss={() => setMenu(null)}
           />,
