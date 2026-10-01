@@ -37,7 +37,7 @@ export function buildAppMenu(opts: {
       label: "Session",
       submenu: [
         {
-          label: "New Session",
+          label: "New",
           accelerator: "CmdOrCtrl+N",
           click: () => {
             win()?.webContents.send("session:new");
@@ -45,7 +45,7 @@ export function buildAppMenu(opts: {
         },
         {
           id: RENAME_MENU_ID,
-          label: "Rename Session",
+          label: "Rename",
           enabled: opts.getRenameEnabled(),
           accelerator: "CmdOrCtrl+R",
           click: () => {
@@ -64,7 +64,7 @@ export function buildAppMenu(opts: {
         { type: "separator" },
         {
           id: CLOSE_MENU_ID,
-          label: "Close Session",
+          label: "Close",
           enabled: opts.getRenameEnabled(),
           accelerator: "Ctrl+D",
           click: () => {
