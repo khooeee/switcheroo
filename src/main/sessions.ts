@@ -334,7 +334,8 @@ export class SessionManager {
       bus: () => this.bus,
       setSession: (id, session) => { this.agents.set(id, session); },
       addSession: (session, transcript) => {
-        this.prependSession(session);
+        const pin = this.railLists.pinnedIds.includes(sessionId);
+        this.prependSession(session, pin);
         this.transcripts.set(session.id, transcript);
         this.hydrated.add(session.id);
       },
@@ -525,7 +526,7 @@ export class SessionManager {
   async sendPrompt(sessionId: string, text: string): Promise<void> {
     const session = await this.ensureHydrated(sessionId);
     if (!session) throw new Error("No session");
-    this.bumpUnpinnedSession(session.id);
+    this.bumpSession(session.id);
     this.emitSessions();
     const acp = await this.ensureSession(session);
     try {
@@ -639,8 +640,10 @@ export class SessionManager {
       : prependUnpinnedInLists(this.railLists, session.id);
   }
 
-  private bumpUnpinnedSession(sessionId: string): void {
-    this.railLists = prependUnpinnedInLists(this.railLists, sessionId);
+  private bumpSession(sessionId: string): void {
+    this.railLists = this.railLists.pinnedIds.includes(sessionId)
+      ? prependPinnedInLists(this.railLists, sessionId)
+      : prependUnpinnedInLists(this.railLists, sessionId);
   }
 
   private sessionListPayload() {

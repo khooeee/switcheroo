@@ -17,7 +17,7 @@ export function pinSessionInLists(lists: SessionRailLists, sessionId: string): S
   if (lists.pinnedIds.includes(sessionId)) return lists;
   if (lists.pinnedIds.length >= MAX_PINNED_SESSIONS) return lists;
   return {
-    pinnedIds: [...lists.pinnedIds, sessionId],
+    pinnedIds: [sessionId, ...lists.pinnedIds],
     unpinnedIds: lists.unpinnedIds.filter((id) => id !== sessionId),
   };
 }
