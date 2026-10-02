@@ -58,10 +58,10 @@ export function useFeedMessageNav(
           const idx = prev ? ids.indexOf(prev) : -1;
           if (event.key === "ArrowDown") {
             if (idx < 0) return ids[0] ?? null;
-            return ids[Math.min(ids.length - 1, idx + 1)] ?? null;
+            return ids[(idx + 1) % ids.length] ?? null;
           }
           if (idx < 0) return ids[ids.length - 1] ?? null;
-          return ids[Math.max(0, idx - 1)] ?? null;
+          return ids[(idx - 1 + ids.length) % ids.length] ?? null;
         });
         return;
       }
