@@ -22,10 +22,12 @@ export function useAppShortcuts({
   showNewSession,
   showFindInSessions,
   findOpen,
+  rightRailOpen,
   setFindOpen,
   setFindQuery,
   setShowNewSession,
   setShowFindInSessions,
+  onCloseRightRail,
 }: {
   pinned: Session[];
   unpinned: Session[];
@@ -35,10 +37,12 @@ export function useAppShortcuts({
   showNewSession: boolean;
   showFindInSessions: boolean;
   findOpen: boolean;
+  rightRailOpen: boolean;
   setFindOpen: (open: boolean) => void;
   setFindQuery: (query: string) => void;
   setShowNewSession: (open: boolean) => void;
   setShowFindInSessions: (open: boolean) => void;
+  onCloseRightRail: () => void;
 }): number {
   const blocked = showNewSession || showFindInSessions;
   const findInSessionsOpen = useRef(false);
@@ -191,13 +195,26 @@ export function useAppShortcuts({
         setFindQuery("");
         return;
       }
+      if (rightRailOpen) {
+        event.preventDefault();
+        onCloseRightRail();
+        return;
+      }
       if (activeSession?.status !== "running") return;
       event.preventDefault();
       void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeSession, blocked, findOpen, setFindOpen, setFindQuery]);
+  }, [
+    activeSession,
+    blocked,
+    findOpen,
+    rightRailOpen,
+    setFindOpen,
+    setFindQuery,
+    onCloseRightRail,
+  ]);
 
   return promptFocus;
 }

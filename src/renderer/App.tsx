@@ -171,10 +171,12 @@ export function App() {
     showNewSession,
     showFindInSessions,
     findOpen,
+    rightRailOpen: !!rightRailView,
     setFindOpen,
     setFindQuery,
     setShowNewSession,
     setShowFindInSessions,
+    onCloseRightRail: closeRightRail,
   });
 
   const createSession = useCallback((
