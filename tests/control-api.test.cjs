@@ -72,3 +72,53 @@ test("applyTranscriptQuery supports last=N", () => {
   assert.deepEqual(applyTranscriptQuery(turns, new URLSearchParams("last=0")), []);
   assert.equal(applyTranscriptQuery(turns, new URLSearchParams("last=nope")).length, 3);
 });
+
+function loadWithRelative(file) {
+  const exports = {};
+  const { outputText } = ts.transpileModule(fs.readFileSync(file, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  });
+  vm.runInNewContext(outputText, {
+    exports,
+    Buffer,
+    console,
+    URL,
+    require: (name) =>
+      name.startsWith(".") ? loadWithRelative(path.resolve(path.dirname(file), `${name}.ts`)) : require(name),
+  });
+  return exports;
+}
+
+test("POST /sessions creates the session without switching focus to it", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const calls = [];
+  const sessions = {
+    createSession: async (input, options) => {
+      calls.push({ input, options });
+      return { id: "child-1" };
+    },
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end(JSON.stringify({ agent: "claude", cwd: "/tmp", switcherooAware: true }));
+  await done;
+  assert.equal(status, 200);
+  assert.equal(JSON.parse(body).id, "child-1");
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.focus, false);
+  assert.equal(calls[0].input.switcherooAware, true);
+});
