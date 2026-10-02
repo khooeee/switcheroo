@@ -96,7 +96,7 @@ export const RightRail = memo(function RightRail({
   };
 
   return (
-    <aside className="right-rail" aria-label="Turn details">
+    <aside className="right-rail" aria-label="Turn Details">
       <div
         className="right-rail-resize"
         role="separator"
@@ -105,7 +105,7 @@ export const RightRail = memo(function RightRail({
         onPointerDown={resize}
       />
       <div className="right-rail-header">
-        <h2>Turn</h2>
+        <h2>Turn Details</h2>
         <button
           type="button"
           className="btn"

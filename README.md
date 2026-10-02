@@ -103,3 +103,5 @@ I put this here to remind myself of all the little features this app has that is
 **Cmd+/**: Toggle zen mode
 
 **Enter**: Enter key on selected item in switchboard will jump to that transcript
+
+**Space**: Space key on selected item in switchboard or session will toggle the turn details
