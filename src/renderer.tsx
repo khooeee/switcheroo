@@ -5,6 +5,7 @@ import { applyStoredTheme } from "./renderer/features/theme/theme";
 import { applyStoredDetails } from "./renderer/features/settings/details";
 import { loadAppSettings } from "./renderer/features/settings/appSettingsCache";
 import { applyRailWidth, readRailWidth, reclampRailWidth } from "./renderer/features/sessions/railWidth";
+import { reclampRightRailWidth } from "./renderer/features/chat/rightRailWidth";
 import { composerHeight } from "./renderer/features/chat/composerHeight";
 import { installInstantTooltips } from "./renderer/features/tooltip/installInstantTooltips";
 import "./renderer/features/theme/theme.css";
@@ -19,6 +20,7 @@ async function boot(): Promise<void> {
   installInstantTooltips();
   window.addEventListener("resize", () => {
     reclampRailWidth();
+    reclampRightRailWidth();
   });
 
   const root = document.getElementById("root");

@@ -8,22 +8,20 @@ import { CopyEventButton } from "../copy/CopyEventButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { TurnEvents } from "../chat/TurnEvents";
 
-/** One Switchboard turn: user + final assistant (or Thinking), with expandable events. */
+/** One Switchboard turn: user + steers + assistant. Mid-turn events live in the right rail. */
 export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   turn,
   title,
   cwd,
   session,
-  expanded,
-  onToggle,
+  onOpenRightRail,
   onOpen,
 }: {
   turn: SwitchboardTurn;
   title: string;
   cwd?: string;
   session: Session | undefined;
-  expanded: boolean;
-  onToggle: (turnId: string) => void;
+  onOpenRightRail: (turnId: string) => void;
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
@@ -38,24 +36,26 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     () => turn.events.filter((event) => event.role === "user"),
     [turn.events],
   );
-  const handleToggle = useCallback(() => onToggle(turn.id), [onToggle, turn.id]);
+  const handleOpenRail = useCallback(
+    () => onOpenRightRail(turn.id),
+    [onOpenRightRail, turn.id],
+  );
   const handleOpen = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
   );
 
-  /** Navigable turns open the session event; otherwise expand/collapse. */
-  const activate = (event: MouseEvent | KeyboardEvent, eventId: string) => {
+  /** Message click opens the right rail; title still navigates when navigable. */
+  const activate = (event: MouseEvent | KeyboardEvent) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
-    if (turn.navigable) handleOpen(eventId);
-    else handleToggle();
+    handleOpenRail();
   };
 
   return (
     <div
-      className={`session-turn switchboard-turn${expanded ? " expanded" : " collapsed"}${turn.navigable ? " navigable" : ""}`}
+      className={`session-turn switchboard-turn${turn.navigable ? " navigable" : ""}`}
       data-turn-id={turn.id}
       data-find-text={`${title} ${userText} ${assistantText}`}
     >
@@ -64,11 +64,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         data-event-id={turn.user.id}
         role="button"
         tabIndex={0}
-        onClick={(e) => activate(e, turn.user.id)}
+        onClick={(e) => activate(e)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            activate(e, turn.user.id);
+            activate(e);
           }
         }}
       >
@@ -95,30 +95,14 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       </div>
 
-      {expanded && session ? (
-        <TurnEvents
-          session={session}
-          events={turn.events}
-          onActivate={turn.navigable ? handleOpen : undefined}
-        />
-      ) : null}
-      {!expanded && session && steerEvents.length > 0 ? (
+      {session && steerEvents.length > 0 ? (
         <TurnEvents
           session={session}
           events={steerEvents}
           onActivate={turn.navigable ? handleOpen : undefined}
         />
       ) : null}
-      {expanded && !session && turn.events.length > 0 ? (
-        <div className="turn-events">
-          {turn.events.map((item) => (
-            <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
-              <div className="body">{item.text}</div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-      {!expanded && !session && steerEvents.length > 0 ? (
+      {!session && steerEvents.length > 0 ? (
         <div className="turn-events">
           {steerEvents.map((item) => (
             <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
@@ -136,11 +120,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           data-event-id={turn.assistant.id}
           role="button"
           tabIndex={0}
-          onClick={(e) => activate(e, turn.assistant!.id)}
+          onClick={(e) => activate(e)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              activate(e, turn.assistant!.id);
+              activate(e);
             }
           }}
         >

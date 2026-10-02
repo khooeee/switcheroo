@@ -146,6 +146,7 @@ export interface AppSettings {
   zenMode: boolean;
   soundEnabled: boolean;
   railWidth: number;
+  rightRailWidth: number;
   composerHeight: number;
   lastAgent: AgentKind;
   lastCwd: string;
@@ -164,6 +165,7 @@ export function defaultAppSettings(): AppSettings {
     zenMode: true,
     soundEnabled: true,
     railWidth: 160,
+    rightRailWidth: 320,
     composerHeight: 72,
     lastAgent: "claude",
     lastCwd: "",

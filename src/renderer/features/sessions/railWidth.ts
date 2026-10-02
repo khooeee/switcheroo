@@ -1,5 +1,6 @@
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { fitSidePaneWidth } from "../layout/fitSidePaneWidth";
+import { readCssPx } from "../layout/readCssPx";
 
 /** Sora 12px "Switchboard", session padding and border, row padding, gap, and the add button. */
 const MIN_WIDTH = 160;
@@ -11,11 +12,11 @@ function viewportWidth(explicit?: number): number {
 }
 
 export function maxRailWidth(viewport = viewportWidth()): number {
-  return fitSidePaneWidth(Number.POSITIVE_INFINITY, 0, viewport, MIN_WIDTH);
+  return fitSidePaneWidth(Number.POSITIVE_INFINITY, readCssPx("--right-rail"), viewport, MIN_WIDTH);
 }
 
 function clampWidth(width: number, viewport?: number): number {
-  return fitSidePaneWidth(width, 0, viewportWidth(viewport), MIN_WIDTH);
+  return fitSidePaneWidth(width, readCssPx("--right-rail"), viewportWidth(viewport), MIN_WIDTH);
 }
 
 export function readRailWidth(): number {

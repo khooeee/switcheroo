@@ -1,6 +1,5 @@
 import type { RefObject } from "react";
 import type { SwitchboardTurn, Session } from "../../../shared/types";
-import { useTurnExpansion } from "../chat/useTurnExpansion";
 import { SwitchboardFeed } from "./SwitchboardFeed";
 import { SwitchboardNotice } from "./SwitchboardNotice";
 
@@ -11,6 +10,7 @@ interface Props {
   scrollRef: RefObject<HTMLDivElement | null>;
   onNoticeDismiss: () => void;
   onTurnClick: (sessionId: string, turnId: string, eventId: string) => void;
+  onOpenRightRail: (turnId: string) => void;
 }
 
 /** Switchboard panel: header, optional missing-session notice, and feed. */
@@ -21,8 +21,8 @@ export function SwitchboardPanel({
   scrollRef,
   onNoticeDismiss,
   onTurnClick,
+  onOpenRightRail,
 }: Props) {
-  const { isExpanded, toggle } = useTurnExpansion();
   return (
     <section className="panel">
       <div className="panel-header">
@@ -33,8 +33,7 @@ export function SwitchboardPanel({
         <SwitchboardFeed
           turns={turns}
           sessions={sessions}
-          isExpanded={isExpanded}
-          onToggle={toggle}
+          onOpenRightRail={onOpenRightRail}
           onClick={onTurnClick}
         />
       </div>

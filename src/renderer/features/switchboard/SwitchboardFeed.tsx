@@ -4,12 +4,11 @@ import { SwitchboardTurnCard } from "./SwitchboardTurnCard";
 interface Props {
   turns: SwitchboardTurn[];
   sessions: Session[];
-  isExpanded: (turnId: string) => boolean;
-  onToggle: (turnId: string) => void;
+  onOpenRightRail: (turnId: string) => void;
   onClick: (sessionId: string, turnId: string, eventId: string) => void;
 }
 
-export function SwitchboardFeed({ turns, sessions, isExpanded, onToggle, onClick }: Props) {
+export function SwitchboardFeed({ turns, sessions, onOpenRightRail, onClick }: Props) {
   const titleFor = (turn: SwitchboardTurn) =>
     sessions.find((session) => session.id === turn.sessionId)?.title ?? turn.sessionTitle ?? "Closed session";
 
@@ -34,8 +33,7 @@ export function SwitchboardFeed({ turns, sessions, isExpanded, onToggle, onClick
             title={titleFor(turn)}
             cwd={session?.cwd}
             session={session}
-            expanded={isExpanded(turn.id)}
-            onToggle={onToggle}
+            onOpenRightRail={onOpenRightRail}
             onOpen={onClick}
           />
         );

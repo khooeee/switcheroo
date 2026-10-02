@@ -44,7 +44,7 @@ button {
 
 .app {
   display: grid;
-  grid-template-columns: var(--rail) 1fr;
+  grid-template-columns: var(--rail) minmax(0, 1fr) var(--right-rail);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   background: var(--bg-1);
@@ -87,6 +87,68 @@ button {
 
 .rail-resize:hover::after {
   background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+}
+
+.right-rail {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
+  background: var(--rail-bg);
+  backdrop-filter: blur(8px);
+}
+
+.right-rail-resize {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 7;
+}
+
+.right-rail-resize::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  transition: background 0.15s ease;
+}
+
+.right-rail-resize:hover::after {
+  background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+}
+
+.right-rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.right-rail-header h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.right-rail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 14px 24px;
 }
 
 .rail-session {

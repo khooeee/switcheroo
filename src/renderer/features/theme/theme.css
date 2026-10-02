@@ -16,6 +16,7 @@
   --diff-add: color-mix(in srgb, #3dd6a0 14%, transparent);
   --codex: #7eb8da;
   --rail: 160px;
+  --right-rail: 0px;
   --rail-bg: rgba(10, 12, 14, 0.85);
   --header-bg: rgba(18, 22, 26, 0.7);
   --card-bg: var(--bg-1);

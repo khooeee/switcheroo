@@ -17,6 +17,9 @@ interface Props {
   focusEventKey: number;
   promptFocus: number;
   chatRef: RefObject<HTMLDivElement | null>;
+  onOpenRightRail: (turnId: string) => void;
+  onForceOpenRightRail: (turnId: string) => void;
+  rightRailOpen: boolean;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
   permission: PermissionRequest | null;
@@ -41,6 +44,9 @@ export function ChatPanel({
   focusEventKey,
   promptFocus,
   chatRef,
+  onOpenRightRail,
+  onForceOpenRightRail,
+  rightRailOpen,
   onSend,
   onInterrupt,
   permission,
@@ -68,6 +74,9 @@ export function ChatPanel({
         focusTurnId={focusTurnId}
         focusEventKey={focusEventKey}
         chatRef={chatRef}
+        onOpenRightRail={onOpenRightRail}
+        onForceOpenRightRail={onForceOpenRightRail}
+        rightRailOpen={rightRailOpen}
       />
 
       {permission && (

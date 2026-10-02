@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import type { TranscriptTurn } from "../../../shared/types";
 
-/** Scroll to and flash a transcript event after its turn is expanded. */
+/** Scroll to and flash a transcript event (prefers the right rail when open). */
 export function useFocusTranscriptEvent(
   focusEventId: string | null,
   focusEventKey: number,
   sessionId: string,
   turns: TranscriptTurn[],
-  turnExpanded = true,
+  ready = true,
 ): void {
   const appliedFocusKey = useRef<number | null>(null);
 
@@ -16,11 +16,14 @@ export function useFocusTranscriptEvent(
       appliedFocusKey.current = null;
       return;
     }
-    if (!turnExpanded) return;
-    const el = document.querySelector(
+    if (!ready) return;
+
+    const rail = document.querySelector(".right-rail") as HTMLElement | null;
+    const scope: ParentNode = rail ?? document;
+    const el = scope.querySelector(
       `[data-event-id="${CSS.escape(focusEventId)}"]`,
     ) as HTMLElement | null;
-    // Transcript may not be painted yet; retry when turns arrive / expand.
+    // Transcript / rail may not be painted yet; retry when turns arrive.
     if (!el) return;
 
     const sameFocus = appliedFocusKey.current === focusEventKey;
@@ -48,5 +51,5 @@ export function useFocusTranscriptEvent(
       cancelAnimationFrame(raf2);
       clearTimeout(t);
     };
-  }, [focusEventId, focusEventKey, sessionId, turns, turnExpanded]);
+  }, [focusEventId, focusEventKey, sessionId, turns, ready]);
 }

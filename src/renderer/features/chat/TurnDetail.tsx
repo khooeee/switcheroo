@@ -1,40 +1,33 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
 
-/** Compact session turn: user + steers + assistant. Mid-turn events live in the right rail. */
-export const SessionTurn = memo(function SessionTurn({
+/** Full turn body for the right rail: user → events → assistant (no expand/collapse). */
+export const TurnDetail = memo(function TurnDetail({
   session,
   turn,
-  onOpenRightRail,
+  onEventActivate,
 }: {
   session: Session;
   turn: TranscriptTurn;
-  onOpenRightRail: (turnId: string) => void;
+  onEventActivate?: (eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
-  const handleOpen = useCallback(
-    () => onOpenRightRail(turn.id),
-    [onOpenRightRail, turn.id],
-  );
-  // Steers land as user events; keep them visible in the main feed.
-  const steerEvents = useMemo(
-    () => turn.events.filter((event) => event.role === "user"),
-    [turn.events],
-  );
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
-      <TranscriptMessage session={session} item={turn.user} onActivate={handleOpen} forkable />
-      <TurnEvents session={session} events={steerEvents} />
+      <TranscriptMessage session={session} item={turn.user} forkable />
+      <TurnEvents session={session} events={turn.events} onActivate={onEventActivate} />
+      {running && turn.assistant ? (
+        <TranscriptMessage session={session} item={turn.assistant} />
+      ) : null}
       {running ? <ThinkingIndicator /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          onActivate={handleOpen}
           extraFileChanges={turn.fileChanges}
           forkable
         />

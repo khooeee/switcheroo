@@ -12,6 +12,8 @@ import { SWITCHBOARD_ID } from "../shared/types";
 import { SessionRail } from "./features/sessions/SessionRail";
 import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { RightRail } from "./features/chat/RightRail";
+import { useRightRail } from "./features/chat/useRightRail";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
 import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
@@ -134,10 +136,26 @@ export function App() {
     [openSessions, activeSessionId],
   );
 
+  const {
+    rightRailView,
+    closeRightRail,
+    clearRightRail,
+    toggleSessionRightRail,
+    forceSessionRightRail,
+    toggleSwitchboardRightRail,
+  } = useRightRail({
+    activeSessionId,
+    activeSession,
+    transcripts,
+    switchboardTurns,
+    openSessions,
+  });
+
   const selectSession = useCallback((id: ActiveSessionId) => {
     void window.switcheroo.setActiveSession(id);
     setFocusEvent(null);
-  }, []);
+    clearRightRail();
+  }, [clearRightRail]);
 
   const promptFocus = useAppShortcuts({
     pinned: pinnedSessions,
@@ -181,6 +199,14 @@ export function App() {
     void window.switcheroo.navigateToEvent(sessionId, turnId, eventId);
   }, []);
 
+  const onRightRailEventActivate = useCallback(
+    (eventId: string) => {
+      if (!rightRailView?.navigable) return;
+      onSwitchboardClick(rightRailView.sessionId, rightRailView.turn.id, eventId);
+    },
+    [rightRailView, onSwitchboardClick],
+  );
+
   return (
     <div className="app">
       <SessionRail
@@ -220,6 +246,7 @@ export function App() {
             scrollRef={switchboardRef}
             onNoticeDismiss={() => setSwitchboardNotice(null)}
             onTurnClick={onSwitchboardClick}
+            onOpenRightRail={toggleSwitchboardRightRail}
           />
         ) : activeSession ? (
           <ChatPanel
@@ -230,6 +257,9 @@ export function App() {
             focusEventKey={focusEvent?.key ?? 0}
             promptFocus={promptFocus}
             chatRef={chatRef}
+            onOpenRightRail={toggleSessionRightRail}
+            onForceOpenRightRail={forceSessionRightRail}
+            rightRailOpen={!!rightRailView}
             onSend={sendPrompt}
             onInterrupt={() => {
               void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
@@ -253,6 +283,21 @@ export function App() {
         )}
       </div>
 
+      {rightRailView ? (
+        <RightRail
+          session={rightRailView.session}
+          turn={rightRailView.turn}
+          agent={rightRailView.agent}
+          cwd={rightRailView.cwd}
+          onClose={closeRightRail}
+          onEventActivate={
+            activeSessionId === SWITCHBOARD_ID && rightRailView.navigable
+              ? onRightRailEventActivate
+              : undefined
+          }
+        />
+      ) : null}
+
       {permission && activeSessionId === SWITCHBOARD_ID && (
         <PermissionBar
           request={permission}
@@ -262,7 +307,6 @@ export function App() {
           }}
         />
       )}
-
 
       {showNewSession && (
         <NewSessionModal

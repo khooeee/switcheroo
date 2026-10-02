@@ -2,7 +2,6 @@ import { memo, type RefObject, useEffect } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
-import { useTurnExpansion } from "./useTurnExpansion";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
 
 export const SessionTranscript = memo(function SessionTranscript({
@@ -12,6 +11,9 @@ export const SessionTranscript = memo(function SessionTranscript({
   focusTurnId,
   focusEventKey,
   chatRef,
+  onOpenRightRail,
+  onForceOpenRightRail,
+  rightRailOpen,
 }: {
   session: Session;
   turns: TranscriptTurn[];
@@ -19,15 +21,17 @@ export const SessionTranscript = memo(function SessionTranscript({
   focusTurnId: string | null;
   focusEventKey: number;
   chatRef: RefObject<HTMLDivElement | null>;
+  onOpenRightRail: (turnId: string) => void;
+  onForceOpenRightRail: (turnId: string) => void;
+  rightRailOpen: boolean;
 }) {
-  const { isExpanded, toggle, forceExpand } = useTurnExpansion();
-
   useEffect(() => {
-    if (focusTurnId) forceExpand(focusTurnId);
-  }, [focusTurnId, focusEventKey, forceExpand]);
+    if (focusTurnId) onForceOpenRightRail(focusTurnId);
+  }, [focusTurnId, focusEventKey, onForceOpenRightRail]);
 
-  const focusExpanded = focusTurnId ? isExpanded(focusTurnId) : true;
-  useFocusTranscriptEvent(focusEventId, focusEventKey, session.id, turns, focusExpanded);
+  // Wait for the right rail when focusing a turn so mid-turn events can be found.
+  const focusReady = !focusTurnId || rightRailOpen;
+  useFocusTranscriptEvent(focusEventId, focusEventKey, session.id, turns, focusReady);
 
   return (
     <>
@@ -41,8 +45,7 @@ export const SessionTranscript = memo(function SessionTranscript({
               key={turn.id}
               session={session}
               turn={turn}
-              expanded={isExpanded(turn.id)}
-              onToggle={toggle}
+              onOpenRightRail={onOpenRightRail}
             />
           ))}
           {session.status === "connecting" && <ThinkingIndicator label="Creating session" />}
