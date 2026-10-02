@@ -3,6 +3,14 @@ import type { AgentKind } from "../../../shared/types";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
+import { useAvailableAgents } from "./useAvailableAgents";
+
+const AGENT_OPTIONS: Array<{ kind: AgentKind; label: string }> = [
+  { kind: "claude", label: "Claude Code" },
+  { kind: "codex", label: "Codex" },
+  { kind: "cursor", label: "Cursor" },
+  { kind: "pi", label: "Pi" },
+];
 
 interface Props {
   onCancel: () => void;
@@ -28,6 +36,14 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const [error, setError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const available = useAvailableAgents();
+  const agentOptions = AGENT_OPTIONS.filter(
+    (option) => available === null || available.includes(option.kind),
+  );
+  // Fall back when the remembered agent is no longer installed.
+  const selectedAgent = agentOptions.some((option) => option.kind === agent)
+    ? agent
+    : agentOptions[0]?.kind;
 
   useEffect(() => {
     const input = titleRef.current;
@@ -38,19 +54,19 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
 
   const create = async () => {
     const trimmedTitle = title.trim();
-    if (!cwd || !trimmedTitle || busy) return;
+    if (!selectedAgent || !cwd || !trimmedTitle || busy) return;
     const sessionTitle = prefix !== "" ? `${prefix} ${trimmedTitle}` : trimmedTitle;
     setBusy(true);
     setError(null);
     void patchAppSettings({
-      lastAgent: agent,
+      lastAgent: selectedAgent,
       lastCwd: cwd,
       lastPrefix: prefix,
       lastPin: pin,
       lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(agent, cwd, sessionTitle, switcherooAware, canPin && pin);
+      await onCreate(selectedAgent, cwd, sessionTitle, switcherooAware, canPin && pin);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
@@ -111,15 +127,17 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
         <label>
           Agent
           <select
-            value={agent}
-            disabled={busy}
+            value={selectedAgent ?? ""}
+            disabled={busy || !selectedAgent}
             onChange={(e) => setAgent(e.target.value as AgentKind)}
             onKeyDown={createOnEnter}
           >
-            <option value="claude">Claude Code</option>
-            <option value="codex">Codex</option>
-            <option value="cursor">Cursor</option>
-            <option value="pi">Pi</option>
+            {agentOptions.map((option) => (
+              <option key={option.kind} value={option.kind}>
+                {option.label}
+              </option>
+            ))}
+            {!selectedAgent && <option value="">No ACP agents installed</option>}
           </select>
         </label>
         <label>
@@ -177,7 +195,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
           <button
             type="button"
             className="btn primary"
-            disabled={!cwd || !title.trim() || busy}
+            disabled={!selectedAgent || !cwd || !title.trim() || busy}
             onClick={() => void create()}
           >
             {busy ? "Starting…" : "Create"}

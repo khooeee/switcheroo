@@ -11,6 +11,8 @@ interface AgentPreset {
   authMethodId?: string;
   /** Reads the AIR fork point on `session/fork`, so a fork can drop history after a message. */
   forksAtMessage?: boolean;
+  /** External CLI the adapter shells out to; the agent is unavailable without it. */
+  requiredCommand?: string;
 }
 
 /** Absolute path to a pinned adapter bin (never go through npx). */
@@ -73,6 +75,9 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     command: "node",
     get args() {
       return [packageBin("pi-acp")];
+    },
+    get requiredCommand() {
+      return process.env.PI_ACP_PI_COMMAND || "pi";
     },
   },
 };

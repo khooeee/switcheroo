@@ -13,6 +13,7 @@ import { openSettingsFile } from "./main/openSettingsFile";
 import { readClipboardPng } from "./main/readClipboardPng";
 import { savePastedImage } from "./main/savePastedImage";
 import { ControlServer } from "./main/control/ControlServer";
+import { availableAgents } from "./main/acp/availableAgents";
 import { buildAppMenu, refreshSessionMenuItems } from "./main/buildAppMenu";
 import type { ActiveSessionId, AppSettings, CreateSessionInput } from "./shared/types";
 
@@ -81,6 +82,7 @@ function registerIpc(): void {
   ipcMain.handle("files:openInCursor", async (_event, sessionId: string, filePath: string) => {
     await openInCursor(requireSession(sessionId).cwd, filePath);
   });
+  ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle("sessions:list", () => sessions.list());
   ipcMain.handle("sessions:create", (_e, input: CreateSessionInput) => sessions.createSession(input));
   ipcMain.handle("sessions:fork", (_e, sessionId: string, eventId?: string) => sessions.forkSession(sessionId, eventId));
