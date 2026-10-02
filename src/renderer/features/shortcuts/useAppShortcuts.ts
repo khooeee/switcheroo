@@ -201,14 +201,15 @@ export function useAppShortcuts({
         setFindQuery("");
         return;
       }
+      if (activeSession?.status === "running") {
+        event.preventDefault();
+        void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
+        return;
+      }
       if (rightRailOpen) {
         event.preventDefault();
         onCloseRightRail();
-        return;
       }
-      if (activeSession?.status !== "running") return;
-      event.preventDefault();
-      void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
