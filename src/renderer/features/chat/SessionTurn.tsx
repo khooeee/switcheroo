@@ -20,17 +20,17 @@ export const SessionTurn = memo(function SessionTurn({
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const openRail = useCallback(
-    (focusEventId?: string) => {
-      onSelectMessage(focusEventId ?? turn.user.id);
-      onOpenRightRail(turn.id, focusEventId);
+    (eventId: string) => {
+      onSelectMessage(eventId);
+      onOpenRightRail(turn.id, eventId);
     },
-    [onOpenRightRail, onSelectMessage, turn.id, turn.user.id],
+    [onOpenRightRail, onSelectMessage, turn.id],
   );
-  const handleOpenUser = useCallback(() => openRail(), [openRail]);
-  const handleOpenAssistant = useCallback(
-    () => openRail(turn.assistant?.id),
-    [openRail, turn.assistant?.id],
-  );
+  const handleOpenUser = useCallback(() => openRail(turn.user.id), [openRail, turn.user.id]);
+  const handleOpenAssistant = useCallback(() => {
+    if (!turn.assistant) return;
+    openRail(turn.assistant.id);
+  }, [openRail, turn.assistant]);
   // Steers land as user events; keep them visible in the main feed.
   const steerEvents = useMemo(
     () => turn.events.filter((event) => event.role === "user"),

@@ -41,11 +41,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     [turn.events],
   );
   const openRail = useCallback(
-    (focusEventId?: string) => {
-      onSelectMessage(focusEventId ?? turn.user.id);
-      onOpenRightRail(turn.id, focusEventId);
+    (eventId: string) => {
+      onSelectMessage(eventId);
+      onOpenRightRail(turn.id, eventId);
     },
-    [onOpenRightRail, onSelectMessage, turn.id, turn.user.id],
+    [onOpenRightRail, onSelectMessage, turn.id],
   );
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
@@ -53,11 +53,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   );
 
   /** Message click selects + toggles the right rail; title still navigates when navigable. */
-  const activate = (event: MouseEvent | KeyboardEvent, focusEventId?: string) => {
+  const activate = (event: MouseEvent | KeyboardEvent, eventId: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
-    openRail(focusEventId);
+    openRail(eventId);
   };
 
   return (
@@ -73,11 +73,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         aria-selected={selectedEventId === turn.user.id || undefined}
         role="button"
         tabIndex={0}
-        onClick={(e) => activate(e)}
+        onClick={(e) => activate(e, turn.user.id)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            activate(e);
+            activate(e, turn.user.id);
           }
         }}
       >
@@ -131,11 +131,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           aria-selected={selectedEventId === turn.assistant.id || undefined}
           role="button"
           tabIndex={0}
-          onClick={(e) => activate(e, turn.assistant?.id)}
+          onClick={(e) => activate(e, turn.assistant!.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              activate(e, turn.assistant?.id);
+              activate(e, turn.assistant!.id);
             }
           }}
         >

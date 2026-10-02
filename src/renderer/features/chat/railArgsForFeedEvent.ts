@@ -4,10 +4,11 @@ import type { TranscriptTurn } from "../../../shared/types";
 export function railArgsForFeedEvent(
   turns: TranscriptTurn[],
   eventId: string,
-): { turnId: string; focusEventId?: string } | null {
+): { turnId: string; focusEventId: string } | null {
   for (const turn of turns) {
-    if (turn.user.id === eventId) return { turnId: turn.id };
-    if (turn.assistant?.id === eventId) return { turnId: turn.id, focusEventId: eventId };
+    if (turn.user.id === eventId || turn.assistant?.id === eventId) {
+      return { turnId: turn.id, focusEventId: eventId };
+    }
   }
   return null;
 }

@@ -58,12 +58,18 @@ export function useRightRail({
     [],
   );
 
-  /** Toggle closed when re-clicking the same turn; otherwise open (optionally focused). */
+  /** Toggle closed when activating the same message again; otherwise open / switch highlight. */
   const toggleSessionRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
       if (!activeSession) return;
       setRightRail((prev) => {
-        if (prev?.sessionId === activeSession.id && prev.turnId === turnId) return null;
+        if (
+          prev?.sessionId === activeSession.id &&
+          prev.turnId === turnId &&
+          prev.focusEventId === focusEventId
+        ) {
+          return null;
+        }
         return nextSelection(prev, activeSession.id, turnId, focusEventId);
       });
     },
@@ -83,7 +89,13 @@ export function useRightRail({
       const turn = switchboardTurns.find((entry) => entry.id === turnId);
       if (!turn) return;
       setRightRail((prev) => {
-        if (prev?.sessionId === turn.sessionId && prev.turnId === turnId) return null;
+        if (
+          prev?.sessionId === turn.sessionId &&
+          prev.turnId === turnId &&
+          prev.focusEventId === focusEventId
+        ) {
+          return null;
+        }
         return nextSelection(prev, turn.sessionId, turnId, focusEventId);
       });
     },
