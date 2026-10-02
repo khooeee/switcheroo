@@ -5,13 +5,15 @@ import "./findHighlights.css";
 interface Props {
   query: string;
   onQuery: (q: string) => void;
-  rootRef: RefObject<HTMLDivElement | null>;
+  rootRefs: Array<RefObject<HTMLElement | null>>;
+  /** Changes when an optional root (e.g. right rail) mounts or unmounts. */
+  rootsKey?: number;
   onClose: () => void;
 }
 
-export function FindBar({ query, onQuery, rootRef, onClose }: Props) {
+export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { count, index, go } = useFindMatches(rootRef, query);
+  const { count, index, go } = useFindMatches(rootRefs, query, rootsKey);
 
   useEffect(() => {
     const previousFocus = document.activeElement;

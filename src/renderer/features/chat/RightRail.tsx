@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { memo, useEffect, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -20,6 +20,7 @@ export const RightRail = memo(function RightRail({
   turn,
   agent,
   cwd,
+  scrollRef,
   onClose,
   onEventActivate,
 }: {
@@ -28,11 +29,10 @@ export const RightRail = memo(function RightRail({
   /** When session is missing (closed Switchboard turn). */
   agent?: string;
   cwd?: string;
+  scrollRef?: RefObject<HTMLDivElement | null>;
   onClose: () => void;
   onEventActivate?: (eventId: string) => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     showRightRail();
     return () => hideRightRail();

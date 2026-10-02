@@ -46,6 +46,11 @@ export function App() {
   const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
+  const rightRailScrollRef = useRef<HTMLDivElement>(null);
+  const findRootRefs = useMemo(
+    () => [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef, rightRailScrollRef],
+    [activeSessionId],
+  );
   const pinTranscriptToBottom = useSessionScrollPosition(
     activeSessionId,
     activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
@@ -230,7 +235,8 @@ export function App() {
             key={activeSessionId}
             query={findQuery}
             onQuery={setFindQuery}
-            rootRef={activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef}
+            rootRefs={findRootRefs}
+            rootsKey={rightRailView ? 1 : 0}
             onClose={() => {
               setFindOpen(false);
               setFindQuery("");
@@ -289,6 +295,7 @@ export function App() {
           turn={rightRailView.turn}
           agent={rightRailView.agent}
           cwd={rightRailView.cwd}
+          scrollRef={rightRailScrollRef}
           onClose={closeRightRail}
           onEventActivate={
             activeSessionId === SWITCHBOARD_ID && rightRailView.navigable
