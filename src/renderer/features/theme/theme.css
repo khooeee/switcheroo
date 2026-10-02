@@ -36,7 +36,7 @@
   --find-history-bg: #000000;
   --find-expand-icon: #e8eef3;
   --font-ui: "Sora", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
 }
 
 html[data-theme="light"] {
