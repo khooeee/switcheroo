@@ -4,6 +4,18 @@ High productivity keyboard friendly ACP coding agent
 
 Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard
 
+The philosophy is to remove & simplify as much as possible for maximum focus:
+- Steer only where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue.
+- The user message & final assistant summary message are the only messages shown in main content area because most of the time, seeing the tool calls & other events are unnecessary.  However, you can drill down to see them quickly if need be.
+- Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do so you can keep track of small details like issue/PR numbers, etc.
+- No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
+- There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
+- Best paired with [beaver](https://github.com/khooeee/beaver/)
+
+There are also speed optimizations to eliminate unnecessary waiting:
+- Pre-warmed session so time to first prompt is very fast
+- Find in history is a streaming search and has been load tested on a large history.
+
 ## Prerequisites
 
 - Node.js 22 LTS (`>=22.12.0 <23`)
@@ -32,8 +44,6 @@ On the top left, you'll see **Switchboard** which will show you a live feed of a
 - All agents are started in bypass permissions/YOLO mode.
 - Zen mode is on because it's generally not useful to look at all the tool calls, timestamps, etc.  You can always turn it off to see those details as needed.
 - While a turn is running, follow-up messages **steer** if the agent advertises ACP steering support (typically Claude Code & Codex); otherwise they are **queued**.
-- Switchboard events older than 30 days are cleaned up on app startup.  Sessions will still be on disk.
-- The session rail is capped to 200 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
 
 ## Steer or Queue?
 
@@ -51,22 +61,9 @@ When you send a message while the agent is already thinking, we prefer steering 
 It's likely you don't have to read this section ever, but it's here in case the app gets slow.
 
 - If the session is slow due to a long transcript, you should just start a new session.
-- If the unpinned session list on the left becomes large and slow, lower `settings.sessionListMax` in `switcheroo.json`.
-- If the switchboard is slow due to a long event feed, you can edit `settings.cleanSwitchboardTurnsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older turns in your switchboard.
-- If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is by when those sessions started).  Keep in mind those sessions might still show up in your session list or switchboard until you click them.  Only then will the app check its existence and remove it from the list/switchboard if it doesn't exist anymore.  This is done to maximize app performance so you rarely have to delete/archive anything.
-
-## Things you can do
-
-I put this here to remind myself of all the little features this app has that isn't mentioned elsewhere in this README.
-
-- Composer
-  - Autocomplete slash commands
-- Sessions
-  - Pre-warmed session so time to first prompt is very fast
-  - Fork a session (or fork from a transcript event)
-- Session list
-  - Pin/unpin sessions
-  - Reorder pinned sessions by dragging (unpinned sessions are not draggable)
+- Switchboard events older than 30 days are cleaned up on app startup.  Sessions will still be on disk.  If the switchboard is slow due to a long event feed, You can edit `settings.cleanSwitchboardTurnsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older turns in your switchboard.
+- The session list is capped to 200 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
+- If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list or switchboard until you click them.  Only then will the app check its existence and remove it from the list/switchboard if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
 ## Shortcuts
 
@@ -107,3 +104,7 @@ I put this here to remind myself of all the little features this app has that is
 **Space**: Space key on selected item in switchboard or session transcript will toggle the turn details
 
 **Left/right key**: Left/right key in transcript or turn details will allow you to shift focus between the two
+
+**Left/right key**: Left/right key in transcript or turn details will allow you to shift focus between the two
+
+**/**: shows autocomplete of slash commands in the composer
