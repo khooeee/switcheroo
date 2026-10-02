@@ -42,11 +42,13 @@ import { forkSessionAtEvent } from "./forkSessionAtEvent";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { newSessionId } from "./newSessionId";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
+import { AgentForkSupport } from "./acp/AgentForkSupport";
 import { sessionPinMenuState, type SessionPinMenuState } from "./sessionPinMenuState";
 
 const warmCallbacks: SessionCallbacks = {
   onPromptComplete: () => undefined,
   onSteeringSupport: () => undefined,
+  onForkSupport: () => undefined,
   onAvailableCommands: () => undefined,
   onUsage: () => undefined,
   onTurn: () => undefined,
@@ -70,6 +72,7 @@ export class SessionManager {
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
   private findGeneration = 0;
   private warm = new WarmSessionPool<AcpSession>();
+  private forkSupport = new AgentForkSupport();
   private onSessionsChanged: (() => void) | null = null;
 
   setWindow(win: BrowserWindow): void {
@@ -94,6 +97,11 @@ export class SessionManager {
     return (
       this.activeSessionId !== SWITCHBOARD_ID && this.sessions.has(this.activeSessionId)
     );
+  }
+
+  activeForkMenuEnabled(): boolean {
+    const session = this.sessions.get(this.activeSessionId);
+    return !!session && this.forkSupport.flags(session.agent).supportsFork;
   }
 
   activeStopMenuEnabled(): boolean {
@@ -335,6 +343,7 @@ export class SessionManager {
       getTranscript: (id) => this.transcripts.get(id) ?? [],
       listTitles: () => [...this.sessions.values()].map((session) => session.title),
       ensureSession: async (session) => this.ensureSession(session),
+      forkSupport: (agent) => this.forkSupport.flags(agent),
       callbacksFor: (session) => this.callbacksFor(session),
       bus: () => this.bus,
       setSession: (id, session) => { this.agents.set(id, session); },
@@ -654,7 +663,10 @@ export class SessionManager {
 
   private sessionListPayload() {
     const map = (ids: string[]) =>
-      ids.map((id) => this.sessions.get(id)).filter((session): session is Session => !!session);
+      ids
+        .map((id) => this.sessions.get(id))
+        .filter((session): session is Session => !!session)
+        .map((session) => ({ ...session, ...this.forkSupport.flags(session.agent) }));
     return {
       pinned: map(this.railLists.pinnedIds),
       unpinned: map(this.railLists.unpinnedIds),
@@ -675,11 +687,19 @@ export class SessionManager {
   }
 
   private ensureWarm(agent: AgentKind, cwd: string): void {
+    const callbacks: SessionCallbacks = {
+      ...warmCallbacks,
+      onForkSupport: (supported) => this.noteForkSupport(agent, supported),
+    };
     this.warm.ensure(
       agent,
       cwd,
-      () => new AcpSession(newSessionId(), agent, cwd, this.bus, warmCallbacks),
+      () => new AcpSession(newSessionId(), agent, cwd, this.bus, callbacks),
     );
+  }
+
+  private noteForkSupport(agent: AgentKind, supported: boolean): void {
+    if (this.forkSupport.record(agent, supported)) this.emitSessions();
   }
 
   private refreshCommandsIfNeeded(sessionId: string): void {
@@ -764,6 +784,7 @@ export class SessionManager {
         session.supportsSteering = supported;
         this.emitSessions();
       },
+      onForkSupport: (supported) => this.noteForkSupport(session.agent, supported),
       onUsage: (usage) => {
         session.usage = usage;
         this.emitSessions();

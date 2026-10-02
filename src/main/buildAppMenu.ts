@@ -12,6 +12,7 @@ export function buildAppMenu(opts: {
   getMainWindow: () => BrowserWindow | null;
   getPinMenuState: () => SessionPinMenuState;
   getRenameEnabled: () => boolean;
+  getForkEnabled: () => boolean;
   getStopEnabled: () => boolean;
 }): void {
   const win = () => opts.getMainWindow();
@@ -67,7 +68,7 @@ export function buildAppMenu(opts: {
         {
           id: FORK_MENU_ID,
           label: "Fork",
-          enabled: opts.getRenameEnabled(),
+          enabled: opts.getForkEnabled(),
           accelerator: "CmdOrCtrl+Y",
           click: () => {
             win()?.webContents.send("session:fork");
@@ -174,6 +175,7 @@ export function buildAppMenu(opts: {
 export function refreshSessionMenuItems(
   pin: SessionPinMenuState,
   renameEnabled: boolean,
+  forkEnabled: boolean,
   stopEnabled: boolean,
 ): void {
   const menu = Menu.getApplicationMenu();
@@ -186,7 +188,7 @@ export function refreshSessionMenuItems(
   const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
   if (renameItem) renameItem.enabled = renameEnabled;
   const forkItem = menu.getMenuItemById(FORK_MENU_ID);
-  if (forkItem) forkItem.enabled = renameEnabled;
+  if (forkItem) forkItem.enabled = forkEnabled;
   const stopItem = menu.getMenuItemById(STOP_MENU_ID);
   if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);

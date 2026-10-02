@@ -9,6 +9,8 @@ interface AgentPreset {
   command: string;
   args: string[];
   authMethodId?: string;
+  /** Reads the AIR fork point on `session/fork`, so a fork can drop history after a message. */
+  forksAtMessage?: boolean;
 }
 
 /** Absolute path to a pinned adapter bin (never go through npx). */
@@ -45,6 +47,7 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     get args() {
       return [packageBin("@agentclientprotocol/claude-agent-acp")];
     },
+    forksAtMessage: true,
   },
   codex: {
     kind: "codex",
@@ -53,6 +56,7 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     get args() {
       return [packageBin("@agentclientprotocol/codex-acp")];
     },
+    forksAtMessage: true,
   },
   cursor: {
     kind: "cursor",

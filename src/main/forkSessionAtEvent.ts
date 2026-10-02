@@ -1,16 +1,19 @@
-import type { Session, TranscriptTurn } from "../shared/types";
+import type { AgentKind, Session, TranscriptTurn } from "../shared/types";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { GlobalEventBus } from "./events";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
 import { TurnBuilder } from "./acp/TurnBuilder";
+import { airForkPoint, type AirForkPoint } from "./acp/airForkPoint";
+import { agentLabel } from "./acp/presets";
 
 interface ForkSessionHost {
   getSession(sessionId: string): Session | undefined;
   getTranscript(sessionId: string): TranscriptTurn[];
   listTitles(): string[];
   ensureSession(session: Session): Promise<AcpSession>;
+  forkSupport(agent: AgentKind): Pick<Session, "supportsFork" | "supportsForkAtMessage">;
   callbacksFor(session: Session): SessionCallbacks;
   bus(): GlobalEventBus;
   setSession(sessionId: string, session: AcpSession): void;
@@ -19,17 +22,6 @@ interface ForkSessionHost {
   emitSessions(): void;
   send(channel: string, payload: unknown): void;
   persist(): Promise<void>;
-}
-
-function rewindId(turns: TranscriptTurn[], eventId: string): string {
-  for (let i = turns.length - 1; i >= 0; i -= 1) {
-    const turn = turns[i]!;
-    if (turn.assistant) return turn.assistant.id;
-    for (let j = turn.events.length - 1; j >= 0; j -= 1) {
-      if (turn.events[j]!.role === "assistant") return turn.events[j]!.id;
-    }
-  }
-  return eventId;
 }
 
 function clipTurns(turns: TranscriptTurn[], eventId: string): TranscriptTurn[] {
@@ -51,10 +43,10 @@ export async function forkSessionAtEvent(
 
   const turns = host.getTranscript(sessionId);
   let clipped: TranscriptTurn[];
-  let rewindTo: string | undefined;
+  let forkPoint: AirForkPoint | undefined;
   if (eventId) {
     clipped = clipTurns(turns, eventId);
-    rewindTo = rewindId(clipped, eventId);
+    forkPoint = airForkPoint(clipped);
   } else {
     clipped = turns.map((turn) => ({
       ...turn,
@@ -84,12 +76,16 @@ export async function forkSessionAtEvent(
   host.send("transcript:reset", { sessionId: id, turns: clipped });
 
   try {
-    const acp = await sourceSession.forkSibling(
-      id,
-      host.bus(),
-      host.callbacksFor(session),
-      rewindTo,
-    );
+    // The UI hides fork when unsupported; this catches agents whose support was unknown until now.
+    const support = host.forkSupport(source.agent);
+    if (!support.supportsFork) throw new Error(`${agentLabel(source.agent)} does not support forking`);
+    if (eventId && !support.supportsForkAtMessage) {
+      throw new Error(`${agentLabel(source.agent)} cannot fork from a message`);
+    }
+    // No assistant message before the fork point leaves no agent history to keep.
+    const acp = eventId && !forkPoint
+      ? await host.ensureSession(session)
+      : await sourceSession.forkSibling(id, host.bus(), host.callbacksFor(session), forkPoint);
     acp.restoreTurns(clipped);
     host.setSession(id, acp);
     session.agentSessionId = acp.sessionId;

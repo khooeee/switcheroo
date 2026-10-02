@@ -40,6 +40,7 @@ const createWindow = async () => {
   refreshSessionMenuItems(
     sessions.activePinMenuState(),
     sessions.activeRenameMenuEnabled(),
+    sessions.activeForkMenuEnabled(),
     sessions.activeStopMenuEnabled(),
   );
 
@@ -160,6 +161,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       refreshSessionMenuItems(
         sessions.activePinMenuState(),
         sessions.activeRenameMenuEnabled(),
+        sessions.activeForkMenuEnabled(),
         sessions.activeStopMenuEnabled(),
       );
     });
@@ -167,6 +169,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       getMainWindow: () => mainWindow,
       getPinMenuState: () => sessions.activePinMenuState(),
       getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
+      getForkEnabled: () => sessions.activeForkMenuEnabled(),
       getStopEnabled: () => sessions.activeStopMenuEnabled(),
     });
     void createWindow();

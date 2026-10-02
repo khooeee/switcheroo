@@ -83,7 +83,9 @@ export const TranscriptMessage = memo(function TranscriptMessage({
         <div className="body">{text}</div>
       )}
       <div className="event-actions">
-        <ForkEventButton sessionId={session.id} eventId={item.id} />
+        {session.supportsForkAtMessage ? (
+          <ForkEventButton sessionId={session.id} eventId={item.id} />
+        ) : null}
         {text ? <CopyEventButton text={text} /> : null}
       </div>
     </div>

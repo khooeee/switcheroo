@@ -1,4 +1,5 @@
 import * as acp from "@agentclientprotocol/sdk";
+import type { AirForkPoint } from "./airForkPoint";
 
 type AgentConnection = {
   agent: {
@@ -9,19 +10,19 @@ type AgentConnection = {
   };
 };
 
-/** Fork the live ACP session; optional message id truncates history when the agent supports it. */
+/** Fork the live ACP session; a fork point drops agent history after that message. */
 export async function forkAcpSession(
   connection: AgentConnection,
   sessionId: string,
   cwd: string,
-  atMessageId?: string,
+  forkPoint?: AirForkPoint,
 ): Promise<string> {
   const response = await connection.agent.request(acp.methods.agent.session.fork, {
     sessionId,
     cwd,
     mcpServers: [],
-    ...(atMessageId
-      ? { _meta: { claudeCode: { rewindTo: atMessageId } } }
+    ...(forkPoint
+      ? { _meta: { jetbrains: { air: { fork: { version: 1, ...forkPoint } } } } }
       : {}),
   });
   if (!response.sessionId) throw new Error("Agent did not return a forked session id");

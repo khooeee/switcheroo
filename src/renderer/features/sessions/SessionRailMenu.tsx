@@ -32,6 +32,7 @@ export function SessionRailMenu({
   onDismiss: () => void;
 }) {
   const pinDisabled = !pinned && !canPin;
+  const forkDisabled = !session.supportsFork;
   const stopDisabled = session.status !== "running";
   return (
     <div ref={menuRef} className="context-menu" role="menu" style={{ left: x, top: y }}>
@@ -68,8 +69,10 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        disabled={forkDisabled}
         aria-keyshortcuts="Meta+Y Control+Y"
         onClick={() => {
+          if (forkDisabled) return;
           onFork(session.id);
           onDismiss();
         }}
