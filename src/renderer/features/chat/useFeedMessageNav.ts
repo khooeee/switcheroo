@@ -5,10 +5,17 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return !!el?.closest("input, textarea, select, [contenteditable='true']");
 }
 
+function isModI(event: KeyboardEvent): boolean {
+  if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return false;
+  if (event.altKey || event.shiftKey) return false;
+  return event.key.toLowerCase() === "i";
+}
+
 /**
  * Selection + ArrowUp/Down navigation for main-feed user/assistant messages.
  * Space → onActivateSelected (right rail toggle).
  * Enter → onEnterSelected when provided (e.g. Switchboard jump to transcript).
+ * Cmd/Ctrl+I → focus last selected message; with canFocusComposer, toggles back to prompt.
  */
 export function useFeedMessageNav(
   eventIds: string[],
@@ -16,8 +23,10 @@ export function useFeedMessageNav(
   resetKey: string,
   onActivateSelected?: (eventId: string) => void,
   onEnterSelected?: (eventId: string) => void,
+  canFocusComposer = false,
 ) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [focusNonce, setFocusNonce] = useState(0);
   const eventIdsRef = useRef(eventIds);
   eventIdsRef.current = eventIds;
   const selectedRef = useRef(selectedEventId);
@@ -44,10 +53,42 @@ export function useFeedMessageNav(
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (event.defaultPrevented || event.isComposing) return;
       if (document.querySelector("dialog[open]")) return;
       if (document.querySelector('[role="menu"]')) return;
+
+      if (isModI(event)) {
+        if (event.repeat) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        const ids = eventIdsRef.current;
+        const selected = selectedRef.current;
+        const active = document.activeElement as HTMLElement | null;
+        const onSelected = !!(
+          selected &&
+          active?.closest(`[data-event-id="${CSS.escape(selected)}"]`)
+        );
+
+        if (onSelected && canFocusComposer) {
+          window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
+          return;
+        }
+
+        const next =
+          selected && ids.includes(selected) ? selected : (ids[ids.length - 1] ?? null);
+        if (!next) {
+          if (canFocusComposer) {
+            window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
+          }
+          return;
+        }
+        setSelectedEventId(next);
+        setFocusNonce((n) => n + 1);
+        return;
+      }
+
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (isTypingTarget(event.target)) return;
 
       if (event.key === "ArrowUp" || event.key === "ArrowDown") {
@@ -78,14 +119,13 @@ export function useFeedMessageNav(
 
       if (event.key !== " " && event.key !== "Spacebar") return;
       if (!activateRef.current) return;
-      // Capture phase: act on selection before a previously focused message sees Space.
       event.preventDefault();
       event.stopPropagation();
       activateRef.current(selected);
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [idsKey]);
+  }, [idsKey, canFocusComposer]);
 
   useEffect(() => {
     if (!selectedEventId) return;
@@ -96,10 +136,11 @@ export function useFeedMessageNav(
     ) as HTMLElement | null;
     if (!el) return;
     el.scrollIntoView({ block: "nearest" });
-    if (!isTypingTarget(document.activeElement)) {
+    // Cmd+I bumps focusNonce so we can steal focus back from the composer.
+    if (focusNonce > 0 || !isTypingTarget(document.activeElement)) {
       el.focus({ preventScroll: true });
     }
-  }, [selectedEventId, scrollRef]);
+  }, [selectedEventId, focusNonce, scrollRef]);
 
   return { selectedEventId, selectMessage };
 }

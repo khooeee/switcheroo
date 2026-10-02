@@ -88,7 +88,7 @@ I put this here to remind myself of all the little features this app has that is
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+I**: Focus on prompt
+**Cmd/Ctrl+I**: Toggle focus between prompt and session transcript
 
 **Cmd/Ctrl+N**: New agent session
 

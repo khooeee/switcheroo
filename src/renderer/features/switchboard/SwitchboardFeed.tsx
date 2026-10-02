@@ -50,6 +50,7 @@ export function SwitchboardFeed({
     "switchboard",
     activateSelected,
     enterSelected,
+    false,
   );
 
   const titleFor = (turn: SwitchboardTurn) =>

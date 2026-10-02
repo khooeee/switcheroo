@@ -42,6 +42,8 @@ export const SessionTranscript = memo(function SessionTranscript({
     chatRef,
     session.id,
     activateSelected,
+    undefined,
+    true,
   );
 
   useEffect(() => {
