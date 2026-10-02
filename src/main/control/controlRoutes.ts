@@ -35,7 +35,8 @@ export async function handleControlRequest(
     if (method === "POST" && pathname === "/sessions") {
       const body = await readJson(req);
       const input = parseCreateSession(body);
-      const session = await sessions.createSession(input);
+      // Agents create children in the background; keep the user's current view.
+      const session = await sessions.createSession(input, { focus: false });
       return json(res, 200, session);
     }
 

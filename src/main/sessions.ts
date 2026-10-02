@@ -277,7 +277,11 @@ export class SessionManager {
     void this.persist();
   }
 
-  async createSession(input: CreateSessionInput): Promise<Session> {
+  /** `focus: false` adds the session to the rail without switching to it (control API). */
+  async createSession(
+    input: CreateSessionInput,
+    { focus = true }: { focus?: boolean } = {},
+  ): Promise<Session> {
     const id = newSessionId();
     const title =
       input.title ??
@@ -295,7 +299,7 @@ export class SessionManager {
     this.prependSession(session, input.pin === true);
     this.transcripts.set(id, []);
     this.hydrated.add(id);
-    this.activeSessionId = id;
+    if (focus) this.activeSessionId = id;
     this.emitSessions();
 
     try {
