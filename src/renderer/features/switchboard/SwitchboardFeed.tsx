@@ -11,6 +11,7 @@ interface Props {
   sessions: Session[];
   scrollRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
+  onForceOpenRightRail: (turnId: string, focusEventId?: string, takeFocus?: boolean) => void;
   onClick: (sessionId: string, turnId: string, eventId: string) => void;
 }
 
@@ -19,6 +20,7 @@ export function SwitchboardFeed({
   sessions,
   scrollRef,
   onOpenRightRail,
+  onForceOpenRightRail,
   onClick,
 }: Props) {
   const ordered = useMemo(
@@ -33,6 +35,14 @@ export function SwitchboardFeed({
       onOpenRightRail(args.turnId, args.focusEventId);
     },
     [ordered, onOpenRightRail],
+  );
+  const openDetailsSelected = useCallback(
+    (eventId: string) => {
+      const args = railArgsForFeedEvent(ordered, eventId);
+      if (!args) return;
+      onForceOpenRightRail(args.turnId, args.focusEventId, true);
+    },
+    [ordered, onForceOpenRightRail],
   );
   const enterSelected = useCallback(
     (eventId: string) => {
@@ -50,7 +60,7 @@ export function SwitchboardFeed({
     "switchboard",
     activateSelected,
     enterSelected,
-    false,
+    openDetailsSelected,
   );
 
   const titleFor = (turn: SwitchboardTurn) =>

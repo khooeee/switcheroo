@@ -25,7 +25,7 @@ export const SessionTranscript = memo(function SessionTranscript({
   focusEventKey: number;
   chatRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
+  onForceOpenRightRail: (turnId: string, focusEventId?: string, takeFocus?: boolean) => void;
   rightRailOpen: boolean;
 }) {
   const eventIds = useMemo(() => selectableFeedEventIds(turns), [turns]);
@@ -37,13 +37,21 @@ export const SessionTranscript = memo(function SessionTranscript({
     },
     [turns, onOpenRightRail],
   );
+  const openDetailsSelected = useCallback(
+    (eventId: string) => {
+      const args = railArgsForFeedEvent(turns, eventId);
+      if (!args) return;
+      onForceOpenRightRail(args.turnId, args.focusEventId, true);
+    },
+    [turns, onForceOpenRightRail],
+  );
   const { selectedEventId, selectMessage } = useFeedMessageNav(
     eventIds,
     chatRef,
     session.id,
     activateSelected,
     undefined,
-    true,
+    openDetailsSelected,
   );
 
   useEffect(() => {

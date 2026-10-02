@@ -512,8 +512,8 @@ button {
   cursor: pointer;
 }
 
-.message.turn-toggle:hover,
-.message.turn-toggle.selected {
+.message.selected,
+.message.turn-toggle:hover {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
@@ -521,7 +521,8 @@ button {
   outline: none;
 }
 
-.message.turn-toggle:focus-visible {
+.message.turn-toggle:focus-visible,
+.message.selected:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 1px var(--accent);
 }

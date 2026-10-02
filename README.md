@@ -88,7 +88,7 @@ I put this here to remind myself of all the little features this app has that is
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+I**: Toggle focus between prompt and session transcript
+**Cmd/Ctrl+I**: Toggle focus between prompt & session transcript
 
 **Cmd/Ctrl+N**: New agent session
 
@@ -104,4 +104,6 @@ I put this here to remind myself of all the little features this app has that is
 
 **Enter**: Enter key on selected item in switchboard will jump to that transcript
 
-**Space**: Space key on selected item in switchboard or session will toggle the turn details
+**Space**: Space key on selected item in switchboard or session transcript will toggle the turn details
+
+**Left/right key**: Left/right key in transcript or turn details will allow you to shift focus between the two

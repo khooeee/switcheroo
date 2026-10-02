@@ -12,6 +12,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
   onActivate,
+  onSelect,
   selected,
   extraFileChanges,
   forkable,
@@ -19,6 +20,8 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   session: Session;
   item: TranscriptItem;
   onActivate?: () => void;
+  /** Click-to-select without activating (e.g. turn-details keyboard nav). */
+  onSelect?: () => void;
   selected?: boolean;
   /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
   forkable?: boolean;
@@ -40,27 +43,17 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       data-selected={selected || undefined}
       aria-selected={selected || undefined}
       onClick={
-        clickable
+        clickable || onSelect
           ? (event) => {
               const target = event.target as HTMLElement;
               if (target.closest("button, a, summary, details, input, textarea")) return;
-              onActivate();
-            }
-          : undefined
-      }
-      onKeyDown={
-        clickable
-          ? (event) => {
-              // Space toggles details; Enter is reserved for Switchboard → transcript jump.
-              if (event.key === " " || event.key === "Spacebar") {
-                event.preventDefault();
-                onActivate();
-              }
+              onSelect?.();
+              if (clickable) onActivate?.();
             }
           : undefined
       }
       role={clickable ? "button" : undefined}
-      tabIndex={clickable ? 0 : undefined}
+      tabIndex={clickable ? 0 : -1}
     >
       {item.role !== "stopped" && (
         <div className="row">

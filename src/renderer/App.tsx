@@ -148,6 +148,7 @@ export function App() {
     toggleSessionRightRail,
     forceSessionRightRail,
     toggleSwitchboardRightRail,
+    forceSwitchboardRightRail,
   } = useRightRail({
     activeSessionId,
     activeSession,
@@ -255,6 +256,7 @@ export function App() {
             onNoticeDismiss={() => setSwitchboardNotice(null)}
             onTurnClick={onSwitchboardClick}
             onOpenRightRail={toggleSwitchboardRightRail}
+            onForceOpenRightRail={forceSwitchboardRightRail}
           />
         ) : activeSession ? (
           <ChatPanel
@@ -300,6 +302,7 @@ export function App() {
           scrollRef={rightRailScrollRef}
           focusEventId={rightRailView.focusEventId}
           focusKey={rightRailView.focusKey}
+          takeFocus={rightRailView.takeFocus}
           onClose={closeRightRail}
           onEventActivate={
             activeSessionId === SWITCHBOARD_ID && rightRailView.navigable

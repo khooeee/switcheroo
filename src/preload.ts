@@ -133,5 +133,6 @@ ipcRenderer.on("session:prev", () => {
 });
 
 ipcRenderer.on("prompt:focus", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:focus-pane", { detail: "prompt" }));
   window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
 });
