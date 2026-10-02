@@ -260,7 +260,10 @@ export interface SwitcherooApi {
   onTranscript: (
     cb: (payload: { sessionId: string; turn: TranscriptTurn }) => void,
   ) => () => void;
-  onTranscriptReset: (cb: (payload: { sessionId: string; turns: TranscriptTurn[] }) => void) => () => void;
+  /** `draft` seeds the composer (fork on a user message). */
+  onTranscriptReset: (
+    cb: (payload: { sessionId: string; turns: TranscriptTurn[]; draft?: string }) => void,
+  ) => () => void;
   onPermission: (cb: (req: PermissionRequest) => void) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;

@@ -13,10 +13,13 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   item,
   onActivate,
   extraFileChanges,
+  forkable,
 }: {
   session: Session;
   item: TranscriptItem;
   onActivate?: () => void;
+  /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
+  forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
   extraFileChanges?: FileChange[];
 }) {
@@ -83,7 +86,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
         <div className="body">{text}</div>
       )}
       <div className="event-actions">
-        {session.supportsForkAtMessage ? (
+        {forkable && session.supportsForkAtMessage ? (
           <ForkEventButton sessionId={session.id} eventId={item.id} />
         ) : null}
         {text ? <CopyEventButton text={text} /> : null}

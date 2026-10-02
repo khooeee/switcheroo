@@ -25,7 +25,7 @@ export const SessionTurn = memo(function SessionTurn({
 
   return (
     <div className={`session-turn${expanded ? " expanded" : " collapsed"}`} data-turn-id={turn.id}>
-      <TranscriptMessage session={session} item={turn.user} onActivate={handleToggle} />
+      <TranscriptMessage session={session} item={turn.user} onActivate={handleToggle} forkable />
       {expanded ? (
         <TurnEvents session={session} events={turn.events} />
       ) : (
@@ -41,6 +41,7 @@ export const SessionTurn = memo(function SessionTurn({
           item={turn.assistant}
           onActivate={handleToggle}
           extraFileChanges={turn.fileChanges}
+          forkable
         />
       ) : null}
       {!running && !turn.assistant && turn.status === "stopped" ? (
