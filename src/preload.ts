@@ -64,7 +64,7 @@ const api: SwitcherooApi = {
   onTranscript: (cb) =>
     subscribe<{ sessionId: string; turn: TranscriptTurn }>("transcript", cb),
   onTranscriptReset: (cb) =>
-    subscribe<{ sessionId: string; turns: TranscriptTurn[] }>("transcript:reset", cb),
+    subscribe<{ sessionId: string; turns: TranscriptTurn[]; draft?: string }>("transcript:reset", cb),
   onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),

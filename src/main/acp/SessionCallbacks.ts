@@ -4,6 +4,8 @@ export interface SessionCallbacks {
   onQuestionSettled?: (requestId: string) => void;
   onPromptComplete: () => void;
   onSteeringSupport: (supported: boolean) => void;
+  /** Agent advertised `sessionCapabilities.fork` in ACP initialize. */
+  onForkSupport: (supported: boolean) => void;
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
   onTurn: (turn: TranscriptTurn) => void;

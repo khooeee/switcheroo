@@ -21,6 +21,7 @@ import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { flatRailSessions } from "./features/sessions/flatRailSessions";
+import { seedComposerDraft } from "./features/chat/useComposerDraft";
 
 export function App() {
   useCompletionSound();
@@ -93,7 +94,8 @@ export function App() {
           return { ...prev, [sessionId]: list };
         });
       }),
-      window.switcheroo.onTranscriptReset(({ sessionId, turns }) => {
+      window.switcheroo.onTranscriptReset(({ sessionId, turns, draft }) => {
+        if (draft) seedComposerDraft(sessionId, draft);
         setTranscripts((prev) => ({ ...prev, [sessionId]: turns }));
       }),
       window.switcheroo.onPermission((req) => setPermission(req)),

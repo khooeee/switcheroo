@@ -53,6 +53,10 @@ export interface Session {
   agentSessionId: string | null;
   status: SessionStatus;
   supportsSteering?: boolean;
+  /** Agent supports ACP `session/fork` (assumed until an agent of this kind connects). */
+  supportsFork?: boolean;
+  /** Fork can drop agent history after a transcript message, not just copy all of it. */
+  supportsForkAtMessage?: boolean;
   error: string | null;
   createdAt: number;
   /** ACP slash commands advertised by the agent for this session. */
@@ -256,7 +260,10 @@ export interface SwitcherooApi {
   onTranscript: (
     cb: (payload: { sessionId: string; turn: TranscriptTurn }) => void,
   ) => () => void;
-  onTranscriptReset: (cb: (payload: { sessionId: string; turns: TranscriptTurn[] }) => void) => () => void;
+  /** `draft` seeds the composer (fork on a user message). */
+  onTranscriptReset: (
+    cb: (payload: { sessionId: string; turns: TranscriptTurn[]; draft?: string }) => void,
+  ) => () => void;
   onPermission: (cb: (req: PermissionRequest) => void) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;

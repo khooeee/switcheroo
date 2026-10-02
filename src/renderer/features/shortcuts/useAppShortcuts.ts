@@ -49,6 +49,8 @@ export function useAppShortcuts({
   blockedRef.current = blocked;
   const runningId = useRef<string | null>(null);
   runningId.current = activeSession?.status === "running" ? activeSession.id : null;
+  const forkableId = useRef<string | null>(null);
+  forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
 
   const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
   useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);
@@ -59,8 +61,9 @@ export function useAppShortcuts({
       void window.switcheroo.closeSession(activeId.current);
     };
     const forkActive = () => {
-      if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
-      void window.switcheroo.forkSession(activeId.current).catch(console.error);
+      const id = forkableId.current;
+      if (!id || blockedRef.current) return;
+      void window.switcheroo.forkSession(id).catch(console.error);
     };
     const stopActive = () => {
       const id = runningId.current;

@@ -16,6 +16,7 @@ async function fixture(supported = true, options = {}) {
   const statuses = [];
   const transcripts = [];
   const capabilities = [];
+  const forkSupport = [];
   const events = [];
   const completions = [];
   const cancellations = [];
@@ -26,7 +27,9 @@ async function fixture(supported = true, options = {}) {
     close() { disconnected.abort(); },
     agent: { notify: async (method, params) => { cancellations.push({ method, params }); }, request: async (method, params) => {
       requests.push({ method, params });
-      if (method === "initialize") return { _meta: { steering: { supported } } };
+      if (method === "initialize") {
+        return { _meta: { steering: { supported } }, agentCapabilities: options.agentCapabilities };
+      }
       if (method === "fork") return { sessionId: "session-2" };
       if (method === "resume") {
         if (options.resumeError) throw new Error(options.resumeError);
@@ -100,6 +103,7 @@ async function fixture(supported = true, options = {}) {
       if (idx >= 0) transcripts.splice(idx, 1);
     },
     onSteeringSupport: (value) => capabilities.push(value),
+    onForkSupport: (value) => forkSupport.push(value),
     onPermission() {}, onAskQuestion: (req) => questions.push(req),
     onQuestionSettled: (id) => settled.push(id),
     getSessionTitle: () => "Demo session",
@@ -107,7 +111,7 @@ async function fixture(supported = true, options = {}) {
   await session.start();
   return {
     handlers, questions, settled, disconnected,
-    session, requests, turns, failures, statuses, transcripts, capabilities, cancellations, events, completions,
+    session, requests, turns, failures, statuses, transcripts, capabilities, forkSupport, cancellations, events, completions,
     setOutcome: (outcome) => { steeringResult = { outcome }; },
     update: (update, sessionId = "session-1") => notifications.get("update")({ params: { sessionId, update } }),
   };

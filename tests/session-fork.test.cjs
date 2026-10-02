@@ -12,6 +12,7 @@ function childCallbacks() {
       onTurn: (turn) => transcripts.push(turn),
       onTurnRemoved() {},
       onSteeringSupport: (value) => capabilities.push(value),
+      onForkSupport() {},
       onPromptComplete: () => completions.push(true),
       onAskQuestion() {}, onPermission() {},
       getSessionTitle: () => "Fork session",
@@ -80,5 +81,27 @@ test("failed fork resume rejects without marking ready or closing the source", a
   await tick();
   f.turns[0]({ stopReason: "end_turn" });
   await turn;
+  await f.session.dispose();
+});
+
+test("initialize reports whether the agent advertises session/fork", async () => {
+  const forking = await fixture(true, { agentCapabilities: { sessionCapabilities: { fork: {} } } });
+  assert.deepEqual(forking.forkSupport, [true]);
+  await forking.session.dispose();
+  const plain = await fixture(true, { agentCapabilities: { sessionCapabilities: { resume: {} } } });
+  assert.deepEqual(plain.forkSupport, [false]);
+  await plain.session.dispose();
+});
+
+test("fork points are sent as the AIR fork _meta the adapters read", async () => {
+  const f = await fixture(false, { agent: "claude" });
+  const point = { messageId: "msg_1", messageFingerprint: `sha256:${"a".repeat(64)}`, messageOccurrence: 2 };
+  const child = await f.session.forkSibling("fork-session", { append() {} }, childCallbacks().cb, point);
+  const fork = f.requests.find((request) => request.method === "fork");
+  assert.deepEqual(JSON.parse(JSON.stringify(fork.params._meta)), { jetbrains: { air: { fork: { version: 1, ...point } } } });
+  await child.dispose();
+  const whole = await f.session.forkSibling("fork-whole", { append() {} }, childCallbacks().cb);
+  assert.equal(f.requests.filter((request) => request.method === "fork").at(-1).params._meta, undefined);
+  await whole.dispose();
   await f.session.dispose();
 });

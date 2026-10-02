@@ -1,16 +1,19 @@
-import type { Session, TranscriptTurn } from "../shared/types";
+import type { AgentKind, Session, TranscriptTurn } from "../shared/types";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { GlobalEventBus } from "./events";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
 import { TurnBuilder } from "./acp/TurnBuilder";
+import { airForkPoint, type AirForkPoint } from "./acp/airForkPoint";
+import { agentLabel } from "./acp/presets";
 
 interface ForkSessionHost {
   getSession(sessionId: string): Session | undefined;
   getTranscript(sessionId: string): TranscriptTurn[];
   listTitles(): string[];
   ensureSession(session: Session): Promise<AcpSession>;
+  forkSupport(agent: AgentKind): Pick<Session, "supportsFork" | "supportsForkAtMessage">;
   callbacksFor(session: Session): SessionCallbacks;
   bus(): GlobalEventBus;
   setSession(sessionId: string, session: AcpSession): void;
@@ -21,17 +24,6 @@ interface ForkSessionHost {
   persist(): Promise<void>;
 }
 
-function rewindId(turns: TranscriptTurn[], eventId: string): string {
-  for (let i = turns.length - 1; i >= 0; i -= 1) {
-    const turn = turns[i]!;
-    if (turn.assistant) return turn.assistant.id;
-    for (let j = turn.events.length - 1; j >= 0; j -= 1) {
-      if (turn.events[j]!.role === "assistant") return turn.events[j]!.id;
-    }
-  }
-  return eventId;
-}
-
 function clipTurns(turns: TranscriptTurn[], eventId: string): TranscriptTurn[] {
   const builder = new TurnBuilder(() => undefined);
   builder.restore(turns);
@@ -40,7 +32,11 @@ function clipTurns(turns: TranscriptTurn[], eventId: string): TranscriptTurn[] {
   return clipped;
 }
 
-/** Create a forked session. With `eventId`, history ends there; otherwise the full transcript is kept. */
+/**
+ * Create a forked session. With `eventId`, history ends there; otherwise the full transcript is kept.
+ * Forking on a user message ends history before its turn and returns that text as a composer draft,
+ * so the agent and transcript agree and the message can be edited and resent.
+ */
 export async function forkSessionAtEvent(
   host: ForkSessionHost,
   sessionId: string,
@@ -51,10 +47,16 @@ export async function forkSessionAtEvent(
 
   const turns = host.getTranscript(sessionId);
   let clipped: TranscriptTurn[];
-  let rewindTo: string | undefined;
+  let forkPoint: AirForkPoint | undefined;
+  let draft: string | undefined;
   if (eventId) {
     clipped = clipTurns(turns, eventId);
-    rewindTo = rewindId(clipped, eventId);
+    const last = clipped.at(-1);
+    if (last?.user.id === eventId) {
+      draft = last.user.text;
+      clipped = clipped.slice(0, -1);
+    }
+    forkPoint = airForkPoint(clipped);
   } else {
     clipped = turns.map((turn) => ({
       ...turn,
@@ -81,15 +83,19 @@ export async function forkSessionAtEvent(
   host.addSession(session, clipped);
   host.setActiveSession(id);
   host.emitSessions();
-  host.send("transcript:reset", { sessionId: id, turns: clipped });
+  host.send("transcript:reset", { sessionId: id, turns: clipped, draft });
 
   try {
-    const acp = await sourceSession.forkSibling(
-      id,
-      host.bus(),
-      host.callbacksFor(session),
-      rewindTo,
-    );
+    // The UI hides fork when unsupported; this catches agents whose support was unknown until now.
+    const support = host.forkSupport(source.agent);
+    if (!support.supportsFork) throw new Error(`${agentLabel(source.agent)} does not support forking`);
+    if (eventId && !support.supportsForkAtMessage) {
+      throw new Error(`${agentLabel(source.agent)} cannot fork from a message`);
+    }
+    // No assistant message before the fork point leaves no agent history to keep.
+    const acp = eventId && !forkPoint
+      ? await host.ensureSession(session)
+      : await sourceSession.forkSibling(id, host.bus(), host.callbacksFor(session), forkPoint);
     acp.restoreTurns(clipped);
     host.setSession(id, acp);
     session.agentSessionId = acp.sessionId;

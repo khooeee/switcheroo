@@ -15,6 +15,7 @@ import { autoApprovePermission } from "./autoApprovePermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
+import type { AirForkPoint } from "./airForkPoint";
 import { drainAgentStream } from "./drainAgentStream";
 import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
@@ -222,11 +223,11 @@ export class AcpSession {
     );
   }
 
-  async fork(atMessageId?: string): Promise<string> {
+  async fork(forkPoint?: AirForkPoint): Promise<string> {
     if (!this.connection || !this.sessionId || this.disposed) {
       throw new Error("Session not ready to fork");
     }
-    return forkAcpSession(this.connection, this.sessionId, this.cwd, atMessageId);
+    return forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint);
   }
 
   /** Fork on this connection and return a sibling session sharing the agent process. */
@@ -234,9 +235,9 @@ export class AcpSession {
     id: string,
     bus: GlobalEventBus,
     cb: SessionCallbacks,
-    atMessageId?: string,
+    forkPoint?: AirForkPoint,
   ): Promise<AcpSession> {
-    const forkedId = await this.fork(atMessageId);
+    const forkedId = await this.fork(forkPoint);
     const owner = this.connectionOwner ?? this;
     const child = new AcpSession(id, this.agent, this.cwd, bus, cb);
     child.connection = this.connection;
@@ -349,6 +350,7 @@ export class AcpSession {
     const caps = initialized.agentCapabilities;
     this.canLoad = caps?.loadSession === true;
     this.canResume = caps?.sessionCapabilities?.resume != null;
+    this.cb.onForkSupport(caps?.sessionCapabilities?.fork != null);
     this.initializationMeta = initialized._meta;
     this.delivery.configure(this.initializationMeta);
 
