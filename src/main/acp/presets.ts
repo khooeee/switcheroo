@@ -9,6 +9,8 @@ interface AgentPreset {
   command: string;
   args: string[];
   authMethodId?: string;
+  /** External CLI the adapter shells out to; the agent is unavailable without it. */
+  requiredCommand?: string;
 }
 
 /** Absolute path to a pinned adapter bin (never go through npx). */
@@ -69,6 +71,9 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     command: "node",
     get args() {
       return [packageBin("pi-acp")];
+    },
+    get requiredCommand() {
+      return process.env.PI_ACP_PI_COMMAND || "pi";
     },
   },
 };

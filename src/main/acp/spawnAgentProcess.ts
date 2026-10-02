@@ -1,16 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
-
-const PATH_FALLBACKS = [
-  "/usr/bin",
-  "/bin",
-  "/usr/sbin",
-  "/sbin",
-  "/usr/local/bin",
-  "/opt/homebrew/bin",
-];
+import { agentSearchPath } from "./agentSearchPath";
 
 function assertSpawnCwd(cwd: string): void {
   if (!cwd.trim()) throw new Error("Working directory is empty.");
@@ -24,12 +15,6 @@ function assertSpawnCwd(cwd: string): void {
     }
     throw err;
   }
-}
-
-function enrichPath(home: string): string {
-  return [process.env.PATH, ...PATH_FALLBACKS, join(home, ".local", "bin")]
-    .filter(Boolean)
-    .join(":");
 }
 
 /** Spawn an ACP agent CLI; rejects on failure instead of crashing the main process. */
@@ -48,7 +33,7 @@ export function spawnAgentProcess(
   const proc = spawn(command, args, {
     cwd,
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, HOME: home, PATH: enrichPath(home) },
+    env: { ...process.env, HOME: home, PATH: agentSearchPath(home) },
     shell: false,
   }) as ChildProcessWithoutNullStreams;
 

@@ -6,19 +6,17 @@ const vm = require("node:vm");
 const { test } = require("node:test");
 const ts = require("typescript");
 
-function load() {
+function load(file = path.join(__dirname, "../src/main/acp/spawnAgentProcess.ts")) {
   const exports = {};
-  const source = fs.readFileSync(
-    path.join(__dirname, "../src/main/acp/spawnAgentProcess.ts"),
-    "utf8",
-  );
+  const source = fs.readFileSync(file, "utf8");
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   });
   vm.runInNewContext(outputText, {
     exports,
     process,
-    require: (name) => require(name),
+    require: (name) =>
+      name.startsWith(".") ? load(path.resolve(path.dirname(file), `${name}.ts`)) : require(name),
   });
   return exports;
 }
