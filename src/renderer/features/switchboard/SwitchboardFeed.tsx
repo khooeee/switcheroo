@@ -34,11 +34,22 @@ export function SwitchboardFeed({
     },
     [ordered, onOpenRightRail],
   );
+  const enterSelected = useCallback(
+    (eventId: string) => {
+      const turn = ordered.find(
+        (entry) => entry.user.id === eventId || entry.assistant?.id === eventId,
+      );
+      if (!turn?.navigable) return;
+      onClick(turn.sessionId, turn.id, eventId);
+    },
+    [ordered, onClick],
+  );
   const { selectedEventId, selectMessage } = useFeedMessageNav(
     eventIds,
     scrollRef,
     "switchboard",
     activateSelected,
+    enterSelected,
   );
 
   const titleFor = (turn: SwitchboardTurn) =>

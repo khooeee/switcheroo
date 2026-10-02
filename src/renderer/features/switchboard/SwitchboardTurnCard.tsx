@@ -75,9 +75,14 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         tabIndex={0}
         onClick={(e) => activate(e, turn.user.id)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if (e.key === " ") {
             e.preventDefault();
             activate(e, turn.user.id);
+            return;
+          }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (turn.navigable) handleOpenSession(turn.user.id);
           }
         }}
       >
@@ -133,9 +138,14 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           tabIndex={0}
           onClick={(e) => activate(e, turn.assistant!.id)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+            if (e.key === " ") {
               e.preventDefault();
               activate(e, turn.assistant!.id);
+              return;
+            }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (turn.navigable) handleOpenSession(turn.assistant!.id);
             }
           }}
         >

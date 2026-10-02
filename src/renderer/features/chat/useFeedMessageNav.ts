@@ -7,14 +7,15 @@ function isTypingTarget(target: EventTarget | null): boolean {
 
 /**
  * Selection + ArrowUp/Down navigation for main-feed user/assistant messages.
- * Space activates the selected message (toggle / switch right rail), not whatever
- * still has DOM focus from an earlier click.
+ * Space → onActivateSelected (right rail toggle).
+ * Enter → onEnterSelected when provided (e.g. Switchboard jump to transcript).
  */
 export function useFeedMessageNav(
   eventIds: string[],
   scrollRef: RefObject<HTMLElement | null>,
   resetKey: string,
   onActivateSelected?: (eventId: string) => void,
+  onEnterSelected?: (eventId: string) => void,
 ) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const eventIdsRef = useRef(eventIds);
@@ -23,6 +24,8 @@ export function useFeedMessageNav(
   selectedRef.current = selectedEventId;
   const activateRef = useRef(onActivateSelected);
   activateRef.current = onActivateSelected;
+  const enterRef = useRef(onEnterSelected);
+  enterRef.current = onEnterSelected;
   const idsKey = eventIds.join("\0");
 
   useEffect(() => {
@@ -63,9 +66,18 @@ export function useFeedMessageNav(
         return;
       }
 
-      if (event.key !== " " && event.key !== "Spacebar") return;
       const selected = selectedRef.current;
-      if (!selected || !activateRef.current) return;
+      if (!selected) return;
+
+      if (event.key === "Enter" && enterRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        enterRef.current(selected);
+        return;
+      }
+
+      if (event.key !== " " && event.key !== "Spacebar") return;
+      if (!activateRef.current) return;
       // Capture phase: act on selection before a previously focused message sees Space.
       event.preventDefault();
       event.stopPropagation();
