@@ -296,6 +296,8 @@ export function App() {
           agent={rightRailView.agent}
           cwd={rightRailView.cwd}
           scrollRef={rightRailScrollRef}
+          focusEventId={rightRailView.focusEventId}
+          focusKey={rightRailView.focusKey}
           onClose={closeRightRail}
           onEventActivate={
             activeSessionId === SWITCHBOARD_ID && rightRailView.navigable

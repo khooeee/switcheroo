@@ -21,6 +21,8 @@ export const RightRail = memo(function RightRail({
   agent,
   cwd,
   scrollRef,
+  focusEventId,
+  focusKey = 0,
   onClose,
   onEventActivate,
 }: {
@@ -30,6 +32,8 @@ export const RightRail = memo(function RightRail({
   agent?: string;
   cwd?: string;
   scrollRef?: RefObject<HTMLDivElement | null>;
+  focusEventId?: string;
+  focusKey?: number;
   onClose: () => void;
   onEventActivate?: (eventId: string) => void;
 }) {
@@ -37,6 +41,27 @@ export const RightRail = memo(function RightRail({
     showRightRail();
     return () => hideRightRail();
   }, []);
+
+  useEffect(() => {
+    if (!focusEventId) return;
+    const root = scrollRef?.current;
+    if (!root) return;
+    const el = root.querySelector(
+      `[data-event-id="${CSS.escape(focusEventId)}"]`,
+    ) as HTMLElement | null;
+    if (!el) return;
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [focusEventId, focusKey, turn.id, scrollRef]);
 
   const resize = (event: ReactPointerEvent) => {
     event.preventDefault();

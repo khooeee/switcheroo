@@ -4,7 +4,7 @@ import { SwitchboardTurnCard } from "./SwitchboardTurnCard";
 interface Props {
   turns: SwitchboardTurn[];
   sessions: Session[];
-  onOpenRightRail: (turnId: string) => void;
+  onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onClick: (sessionId: string, turnId: string, eventId: string) => void;
 }
 

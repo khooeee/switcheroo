@@ -12,12 +12,17 @@ export const SessionTurn = memo(function SessionTurn({
 }: {
   session: Session;
   turn: TranscriptTurn;
-  onOpenRightRail: (turnId: string) => void;
+  onOpenRightRail: (turnId: string, focusEventId?: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
-  const handleOpen = useCallback(
-    () => onOpenRightRail(turn.id),
+  const openRail = useCallback(
+    (focusEventId?: string) => onOpenRightRail(turn.id, focusEventId),
     [onOpenRightRail, turn.id],
+  );
+  const handleOpenUser = useCallback(() => openRail(), [openRail]);
+  const handleOpenAssistant = useCallback(
+    () => openRail(turn.assistant?.id),
+    [openRail, turn.assistant?.id],
   );
   // Steers land as user events; keep them visible in the main feed.
   const steerEvents = useMemo(
@@ -27,14 +32,14 @@ export const SessionTurn = memo(function SessionTurn({
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
-      <TranscriptMessage session={session} item={turn.user} onActivate={handleOpen} forkable />
+      <TranscriptMessage session={session} item={turn.user} onActivate={handleOpenUser} forkable />
       <TurnEvents session={session} events={steerEvents} />
       {running ? <ThinkingIndicator /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          onActivate={handleOpen}
+          onActivate={handleOpenAssistant}
           extraFileChanges={turn.fileChanges}
           forkable
         />

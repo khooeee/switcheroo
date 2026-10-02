@@ -21,7 +21,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   title: string;
   cwd?: string;
   session: Session | undefined;
-  onOpenRightRail: (turnId: string) => void;
+  onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
@@ -36,21 +36,21 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     () => turn.events.filter((event) => event.role === "user"),
     [turn.events],
   );
-  const handleOpenRail = useCallback(
-    () => onOpenRightRail(turn.id),
+  const openRail = useCallback(
+    (focusEventId?: string) => onOpenRightRail(turn.id, focusEventId),
     [onOpenRightRail, turn.id],
   );
-  const handleOpen = useCallback(
+  const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
   );
 
-  /** Message click opens the right rail; title still navigates when navigable. */
-  const activate = (event: MouseEvent | KeyboardEvent) => {
+  /** Message click toggles the right rail; title still navigates when navigable. */
+  const activate = (event: MouseEvent | KeyboardEvent, focusEventId?: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
-    handleOpenRail();
+    openRail(focusEventId);
   };
 
   return (
@@ -79,7 +79,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
             onClick={(e) => {
               if (!turn.navigable) return;
               e.stopPropagation();
-              handleOpen(turn.user.id);
+              handleOpenSession(turn.user.id);
             }}
           >
             {title}
@@ -99,7 +99,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <TurnEvents
           session={session}
           events={steerEvents}
-          onActivate={turn.navigable ? handleOpen : undefined}
+          onActivate={turn.navigable ? handleOpenSession : undefined}
         />
       ) : null}
       {!session && steerEvents.length > 0 ? (
@@ -120,11 +120,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           data-event-id={turn.assistant.id}
           role="button"
           tabIndex={0}
-          onClick={(e) => activate(e)}
+          onClick={(e) => activate(e, turn.assistant?.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              activate(e);
+              activate(e, turn.assistant?.id);
             }
           }}
         >

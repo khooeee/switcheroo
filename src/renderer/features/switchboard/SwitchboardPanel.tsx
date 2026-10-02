@@ -10,7 +10,7 @@ interface Props {
   scrollRef: RefObject<HTMLDivElement | null>;
   onNoticeDismiss: () => void;
   onTurnClick: (sessionId: string, turnId: string, eventId: string) => void;
-  onOpenRightRail: (turnId: string) => void;
+  onOpenRightRail: (turnId: string, focusEventId?: string) => void;
 }
 
 /** Switchboard panel: header, optional missing-session notice, and feed. */

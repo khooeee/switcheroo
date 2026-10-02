@@ -21,13 +21,13 @@ export const SessionTranscript = memo(function SessionTranscript({
   focusTurnId: string | null;
   focusEventKey: number;
   chatRef: RefObject<HTMLDivElement | null>;
-  onOpenRightRail: (turnId: string) => void;
-  onForceOpenRightRail: (turnId: string) => void;
+  onOpenRightRail: (turnId: string, focusEventId?: string) => void;
+  onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
 }) {
   useEffect(() => {
-    if (focusTurnId) onForceOpenRightRail(focusTurnId);
-  }, [focusTurnId, focusEventKey, onForceOpenRightRail]);
+    if (focusTurnId) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
+  }, [focusTurnId, focusEventId, focusEventKey, onForceOpenRightRail]);
 
   // Wait for the right rail when focusing a turn so mid-turn events can be found.
   const focusReady = !focusTurnId || rightRailOpen;

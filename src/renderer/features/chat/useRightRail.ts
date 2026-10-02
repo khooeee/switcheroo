@@ -7,7 +7,12 @@ import type {
 } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 
-export type RightRailSelection = { sessionId: string; turnId: string };
+export type RightRailSelection = {
+  sessionId: string;
+  turnId: string;
+  focusEventId?: string;
+  focusKey: number;
+};
 
 export type RightRailView = {
   turn: TranscriptTurn;
@@ -16,6 +21,8 @@ export type RightRailView = {
   agent: string;
   cwd?: string;
   navigable?: boolean;
+  focusEventId?: string;
+  focusKey: number;
 };
 
 /** Selection + resolved turn for the events right rail. */
@@ -36,37 +43,51 @@ export function useRightRail({
 
   const closeRightRail = useCallback(() => setRightRail(null), []);
 
+  const nextSelection = useCallback(
+    (
+      prev: RightRailSelection | null,
+      sessionId: string,
+      turnId: string,
+      focusEventId?: string,
+    ): RightRailSelection => ({
+      sessionId,
+      turnId,
+      focusEventId,
+      focusKey: (prev?.focusKey ?? 0) + 1,
+    }),
+    [],
+  );
+
+  /** Toggle closed when re-clicking the same turn; otherwise open (optionally focused). */
   const toggleSessionRightRail = useCallback(
-    (turnId: string) => {
+    (turnId: string, focusEventId?: string) => {
       if (!activeSession) return;
-      setRightRail((prev) =>
-        prev?.sessionId === activeSession.id && prev.turnId === turnId
-          ? null
-          : { sessionId: activeSession.id, turnId },
-      );
+      setRightRail((prev) => {
+        if (prev?.sessionId === activeSession.id && prev.turnId === turnId) return null;
+        return nextSelection(prev, activeSession.id, turnId, focusEventId);
+      });
     },
-    [activeSession],
+    [activeSession, nextSelection],
   );
 
   const forceSessionRightRail = useCallback(
-    (turnId: string) => {
+    (turnId: string, focusEventId?: string) => {
       if (!activeSession) return;
-      setRightRail({ sessionId: activeSession.id, turnId });
+      setRightRail((prev) => nextSelection(prev, activeSession.id, turnId, focusEventId));
     },
-    [activeSession],
+    [activeSession, nextSelection],
   );
 
   const toggleSwitchboardRightRail = useCallback(
-    (turnId: string) => {
+    (turnId: string, focusEventId?: string) => {
       const turn = switchboardTurns.find((entry) => entry.id === turnId);
       if (!turn) return;
-      setRightRail((prev) =>
-        prev?.sessionId === turn.sessionId && prev.turnId === turnId
-          ? null
-          : { sessionId: turn.sessionId, turnId },
-      );
+      setRightRail((prev) => {
+        if (prev?.sessionId === turn.sessionId && prev.turnId === turnId) return null;
+        return nextSelection(prev, turn.sessionId, turnId, focusEventId);
+      });
     },
-    [switchboardTurns],
+    [switchboardTurns, nextSelection],
   );
 
   const rightRailView = useMemo((): RightRailView | null => {
@@ -82,6 +103,8 @@ export function useRightRail({
         agent: turn.agent,
         cwd: session?.cwd,
         navigable: turn.navigable,
+        focusEventId: rightRail.focusEventId,
+        focusKey: rightRail.focusKey,
       };
     }
     if (rightRail.sessionId !== activeSessionId) return null;
@@ -95,6 +118,8 @@ export function useRightRail({
       session: activeSession,
       agent: activeSession.agent,
       cwd: activeSession.cwd,
+      focusEventId: rightRail.focusEventId,
+      focusKey: rightRail.focusKey,
     };
   }, [
     rightRail,
