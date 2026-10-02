@@ -1,14 +1,46 @@
+import type { RefObject } from "react";
+import { useCallback, useMemo } from "react";
 import type { SwitchboardTurn, Session } from "../../../shared/types";
+import { railArgsForFeedEvent } from "../chat/railArgsForFeedEvent";
+import { selectableFeedEventIds } from "../chat/selectableFeedEventIds";
+import { useFeedMessageNav } from "../chat/useFeedMessageNav";
 import { SwitchboardTurnCard } from "./SwitchboardTurnCard";
 
 interface Props {
   turns: SwitchboardTurn[];
   sessions: Session[];
+  scrollRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onClick: (sessionId: string, turnId: string, eventId: string) => void;
 }
 
-export function SwitchboardFeed({ turns, sessions, onOpenRightRail, onClick }: Props) {
+export function SwitchboardFeed({
+  turns,
+  sessions,
+  scrollRef,
+  onOpenRightRail,
+  onClick,
+}: Props) {
+  const ordered = useMemo(
+    () => [...turns].sort((a, b) => a.at - b.at),
+    [turns],
+  );
+  const eventIds = useMemo(() => selectableFeedEventIds(ordered), [ordered]);
+  const activateSelected = useCallback(
+    (eventId: string) => {
+      const args = railArgsForFeedEvent(ordered, eventId);
+      if (!args) return;
+      onOpenRightRail(args.turnId, args.focusEventId);
+    },
+    [ordered, onOpenRightRail],
+  );
+  const { selectedEventId, selectMessage } = useFeedMessageNav(
+    eventIds,
+    scrollRef,
+    "switchboard",
+    activateSelected,
+  );
+
   const titleFor = (turn: SwitchboardTurn) =>
     sessions.find((session) => session.id === turn.sessionId)?.title ?? turn.sessionTitle ?? "Closed session";
 
@@ -19,8 +51,6 @@ export function SwitchboardFeed({ turns, sessions, onOpenRightRail, onClick }: P
       </div>
     );
   }
-
-  const ordered = [...turns].sort((a, b) => a.at - b.at);
 
   return (
     <div className="feed">
@@ -33,6 +63,8 @@ export function SwitchboardFeed({ turns, sessions, onOpenRightRail, onClick }: P
             title={titleFor(turn)}
             cwd={session?.cwd}
             session={session}
+            selectedEventId={selectedEventId}
+            onSelectMessage={selectMessage}
             onOpenRightRail={onOpenRightRail}
             onOpen={onClick}
           />

@@ -1,7 +1,10 @@
-import { memo, type RefObject, useEffect } from "react";
+import { memo, type RefObject, useCallback, useEffect, useMemo } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
+import { railArgsForFeedEvent } from "./railArgsForFeedEvent";
+import { selectableFeedEventIds } from "./selectableFeedEventIds";
+import { useFeedMessageNav } from "./useFeedMessageNav";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
 
 export const SessionTranscript = memo(function SessionTranscript({
@@ -25,6 +28,22 @@ export const SessionTranscript = memo(function SessionTranscript({
   onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
 }) {
+  const eventIds = useMemo(() => selectableFeedEventIds(turns), [turns]);
+  const activateSelected = useCallback(
+    (eventId: string) => {
+      const args = railArgsForFeedEvent(turns, eventId);
+      if (!args) return;
+      onOpenRightRail(args.turnId, args.focusEventId);
+    },
+    [turns, onOpenRightRail],
+  );
+  const { selectedEventId, selectMessage } = useFeedMessageNav(
+    eventIds,
+    chatRef,
+    session.id,
+    activateSelected,
+  );
+
   useEffect(() => {
     if (focusTurnId) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
   }, [focusTurnId, focusEventId, focusEventKey, onForceOpenRightRail]);
@@ -45,6 +64,8 @@ export const SessionTranscript = memo(function SessionTranscript({
               key={turn.id}
               session={session}
               turn={turn}
+              selectedEventId={selectedEventId}
+              onSelectMessage={selectMessage}
               onOpenRightRail={onOpenRightRail}
             />
           ))}

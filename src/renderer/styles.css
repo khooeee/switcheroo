@@ -516,6 +516,15 @@ button {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
+.message.turn-toggle.selected {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.message.turn-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .event-title.openable {
   cursor: pointer;
   text-decoration: underline;

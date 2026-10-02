@@ -12,12 +12,14 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
   onActivate,
+  selected,
   extraFileChanges,
   forkable,
 }: {
   session: Session;
   item: TranscriptItem;
   onActivate?: () => void;
+  selected?: boolean;
   /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
   forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
@@ -32,9 +34,11 @@ export const TranscriptMessage = memo(function TranscriptMessage({
 
   return (
     <div
-      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
+      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}${selected ? " selected" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
+      data-selected={selected || undefined}
+      aria-selected={selected || undefined}
       onClick={
         clickable
           ? (event) => {

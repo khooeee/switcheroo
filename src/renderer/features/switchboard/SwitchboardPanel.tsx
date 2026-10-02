@@ -33,6 +33,7 @@ export function SwitchboardPanel({
         <SwitchboardFeed
           turns={turns}
           sessions={sessions}
+          scrollRef={scrollRef}
           onOpenRightRail={onOpenRightRail}
           onClick={onTurnClick}
         />

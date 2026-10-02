@@ -14,6 +14,8 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   title,
   cwd,
   session,
+  selectedEventId,
+  onSelectMessage,
   onOpenRightRail,
   onOpen,
 }: {
@@ -21,6 +23,8 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   title: string;
   cwd?: string;
   session: Session | undefined;
+  selectedEventId: string | null;
+  onSelectMessage: (eventId: string) => void;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
@@ -37,15 +41,18 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     [turn.events],
   );
   const openRail = useCallback(
-    (focusEventId?: string) => onOpenRightRail(turn.id, focusEventId),
-    [onOpenRightRail, turn.id],
+    (focusEventId?: string) => {
+      onSelectMessage(focusEventId ?? turn.user.id);
+      onOpenRightRail(turn.id, focusEventId);
+    },
+    [onOpenRightRail, onSelectMessage, turn.id, turn.user.id],
   );
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
   );
 
-  /** Message click toggles the right rail; title still navigates when navigable. */
+  /** Message click selects + toggles the right rail; title still navigates when navigable. */
   const activate = (event: MouseEvent | KeyboardEvent, focusEventId?: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
@@ -60,8 +67,10 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       data-find-text={`${title} ${userText} ${assistantText}`}
     >
       <div
-        className={`message user turn-toggle${turn.user.queued ? " queued" : ""}`}
+        className={`message user turn-toggle${turn.user.queued ? " queued" : ""}${selectedEventId === turn.user.id ? " selected" : ""}`}
         data-event-id={turn.user.id}
+        data-selected={selectedEventId === turn.user.id || undefined}
+        aria-selected={selectedEventId === turn.user.id || undefined}
         role="button"
         tabIndex={0}
         onClick={(e) => activate(e)}
@@ -116,8 +125,10 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
 
       {!running && turn.assistant ? (
         <div
-          className={`message assistant turn-toggle${turn.fileChanges.length ? " has-file-changes" : ""}`}
+          className={`message assistant turn-toggle${turn.fileChanges.length ? " has-file-changes" : ""}${selectedEventId === turn.assistant.id ? " selected" : ""}`}
           data-event-id={turn.assistant.id}
+          data-selected={selectedEventId === turn.assistant.id || undefined}
+          aria-selected={selectedEventId === turn.assistant.id || undefined}
           role="button"
           tabIndex={0}
           onClick={(e) => activate(e, turn.assistant?.id)}
