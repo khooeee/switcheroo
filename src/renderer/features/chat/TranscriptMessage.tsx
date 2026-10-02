@@ -51,7 +51,8 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       onKeyDown={
         clickable
           ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
+              // Space toggles details; Enter is reserved for Switchboard → transcript jump.
+              if (event.key === " " || event.key === "Spacebar") {
                 event.preventDefault();
                 onActivate();
               }
