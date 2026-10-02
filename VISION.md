@@ -2,7 +2,7 @@
 
 ## North Star
 
-High productivity agent development environment that works like a coding agent CLI (e.g. shell history, Control+C, Control+D, etc.) & has a simple ChatGPT-like UI that focuses your attention.
+High productivity keyboard friendly ACP coding agent that blends the best of CLI coding agents & chat UIs like ChatGPT, Claude, etc.
 
 # Metrics
 

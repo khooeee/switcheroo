@@ -1,8 +1,8 @@
 # Switcheroo
 
-High productivity agent development environment that blends the best of CLI coding agents & chat UIs
+High productivity keyboard friendly ACP coding agent
 
-Run Claude Code, Codex, Cursor, or Pi side-by-side and track all agent logs through a central event feed (aka the switchboard).
+Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard
 
 ## Prerequisites
 
