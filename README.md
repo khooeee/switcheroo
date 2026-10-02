@@ -101,3 +101,5 @@ I put this here to remind myself of all the little features this app has that is
 **Cmd/Ctrl+Y**: Fork selected session
 
 **Cmd+/**: Toggle zen mode
+
+**Enter**: Enter key on selected item in switchboard will jump to that transcript
