@@ -115,6 +115,10 @@ ipcRenderer.on("session:fork", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:fork-session"));
 });
 
+ipcRenderer.on("session:mark-unread", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:mark-unread"));
+});
+
 ipcRenderer.on("session:close", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:close-session"));
 });

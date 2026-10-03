@@ -4,6 +4,7 @@ import type { SessionPinMenuState } from "./sessionPinMenuState";
 const PIN_MENU_ID = "session-toggle-pin";
 const RENAME_MENU_ID = "session-rename";
 const FORK_MENU_ID = "session-fork";
+const MARK_UNREAD_MENU_ID = "session-mark-unread";
 const STOP_MENU_ID = "session-stop";
 const CLOSE_MENU_ID = "session-close";
 
@@ -72,6 +73,15 @@ export function buildAppMenu(opts: {
           accelerator: "CmdOrCtrl+Y",
           click: () => {
             win()?.webContents.send("session:fork");
+          },
+        },
+        {
+          id: MARK_UNREAD_MENU_ID,
+          label: "Mark as Unread",
+          enabled: opts.getRenameEnabled(),
+          accelerator: "CmdOrCtrl+U",
+          click: () => {
+            win()?.webContents.send("session:mark-unread");
           },
         },
         { type: "separator" },
@@ -189,6 +199,8 @@ export function refreshSessionMenuItems(
   if (renameItem) renameItem.enabled = renameEnabled;
   const forkItem = menu.getMenuItemById(FORK_MENU_ID);
   if (forkItem) forkItem.enabled = forkEnabled;
+  const markUnreadItem = menu.getMenuItemById(MARK_UNREAD_MENU_ID);
+  if (markUnreadItem) markUnreadItem.enabled = renameEnabled;
   const stopItem = menu.getMenuItemById(STOP_MENU_ID);
   if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);

@@ -7,13 +7,14 @@ export function SessionRailMenu({
   session,
   pinned,
   canPin,
+  unread,
   x,
   y,
   onRename,
   onFork,
   onPin,
   onUnpin,
-  onMarkUnread,
+  onToggleUnread,
   onStop,
   onClose,
   onDismiss,
@@ -22,13 +23,14 @@ export function SessionRailMenu({
   session: Session;
   pinned: boolean;
   canPin: boolean;
+  unread: boolean;
   x: number;
   y: number;
   onRename: (session: Session) => void;
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
-  onMarkUnread: (id: string) => void;
+  onToggleUnread: (id: string) => void;
   onStop: (id: string) => void;
   onClose: (id: string) => void;
   onDismiss: () => void;
@@ -55,22 +57,6 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
-        disabled={pinDisabled}
-        aria-keyshortcuts="Meta+P Control+P"
-        onClick={() => {
-          if (pinDisabled) return;
-          if (pinned) onUnpin(session.id);
-          else onPin(session.id);
-          onDismiss();
-        }}
-      >
-        {pinned ? "Unpin" : "Pin"}
-        <kbd className="settings-shortcut">⌘P</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
         disabled={forkDisabled}
         aria-keyshortcuts="Meta+Y Control+Y"
         onClick={() => {
@@ -86,12 +72,30 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        aria-keyshortcuts="Meta+U Control+U"
         onClick={() => {
-          onMarkUnread(session.id);
+          onToggleUnread(session.id);
           onDismiss();
         }}
       >
-        Mark as Unread
+        {unread ? "Mark as Read" : "Mark as Unread"}
+        <kbd className="settings-shortcut">⌘U</kbd>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
+        disabled={pinDisabled}
+        aria-keyshortcuts="Meta+P Control+P"
+        onClick={() => {
+          if (pinDisabled) return;
+          if (pinned) onUnpin(session.id);
+          else onPin(session.id);
+          onDismiss();
+        }}
+      >
+        {pinned ? "Unpin" : "Pin"}
+        <kbd className="settings-shortcut">⌘P</kbd>
       </button>
       <div className="context-separator" role="separator" />
       <button

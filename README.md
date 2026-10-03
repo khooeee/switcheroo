@@ -93,6 +93,8 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+P**: Pin/unpin selected session
 
+**Cmd/Ctrl+U**: Mark as Unread
+
 **Cmd/Ctrl+W**: Close selected session
 
 **Cmd/Ctrl+Y**: Fork selected session

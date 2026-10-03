@@ -30,14 +30,14 @@ export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
     });
   }, [activeSessionId]);
 
-  const markUnread = useCallback((sessionId: string) => {
+  const toggleUnread = useCallback((sessionId: string) => {
     setUnread((prev) => {
-      if (prev.has(sessionId)) return prev;
       const next = new Set(prev);
-      next.add(sessionId);
+      if (next.has(sessionId)) next.delete(sessionId);
+      else next.add(sessionId);
       return next;
     });
   }, []);
 
-  return { unread, markUnread };
+  return { unread, toggleUnread };
 }

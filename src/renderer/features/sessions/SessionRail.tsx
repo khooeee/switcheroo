@@ -63,7 +63,7 @@ export function SessionRail({
   );
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
-  const { unread: unreadDots, markUnread } = useSessionUnreadDots(activeSessionId);
+  const { unread: unreadDots, toggleUnread } = useSessionUnreadDots(activeSessionId);
   const filterActive = filter.trim().length > 0;
   const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
 
@@ -95,6 +95,15 @@ export function SessionRail({
     window.addEventListener("switcheroo:rename-session", startRename);
     return () => window.removeEventListener("switcheroo:rename-session", startRename);
   }, [activeSessionId, allSessions]);
+
+  useEffect(() => {
+    const onToggleUnread = () => {
+      if (activeSessionId === SWITCHBOARD_ID) return;
+      toggleUnread(activeSessionId);
+    };
+    window.addEventListener("switcheroo:mark-unread", onToggleUnread);
+    return () => window.removeEventListener("switcheroo:mark-unread", onToggleUnread);
+  }, [activeSessionId, toggleUnread]);
 
   useScrollActiveRailSession(scrollRef, activeSessionId);
 
@@ -221,13 +230,14 @@ export function SessionRail({
             session={menu.session}
             pinned={menu.pinned}
             canPin={canPin}
+            unread={unreadDots.has(menu.session.id)}
             x={menu.x}
             y={menu.y}
             onRename={setRename}
             onFork={onFork}
             onPin={onPin}
             onUnpin={onUnpin}
-            onMarkUnread={markUnread}
+            onToggleUnread={toggleUnread}
             onStop={onStop}
             onClose={onClose}
             onDismiss={() => setMenu(null)}

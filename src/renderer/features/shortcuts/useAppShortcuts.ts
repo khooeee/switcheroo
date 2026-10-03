@@ -13,7 +13,7 @@ function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
   return event.key.toLowerCase() === key;
 }
 
-/** Window-level shortcuts: find, sessions, pin, focus, rename, fork, stop, close, zen, Escape. */
+/** Window-level shortcuts: find, sessions, pin, focus, rename, fork, unread, stop, close, zen, Escape. */
 export function useAppShortcuts({
   pinned,
   unpinned,
@@ -164,6 +164,12 @@ export function useAppShortcuts({
         if (event.repeat) return;
         event.preventDefault();
         forkActive();
+        return;
+      }
+      if (modKey(event, "u")) {
+        if (event.repeat) return;
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("switcheroo:mark-unread"));
         return;
       }
       if (modKey(event, "r")) {
