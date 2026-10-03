@@ -7,7 +7,7 @@ Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through
 The philosophy is to remove & simplify as much as possible for maximum focus:
 - Steer only where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue.
 - The user message & final assistant summary message are the only messages shown in main content area because most of the time, seeing the tool calls & other events are unnecessary.  However, you can see the turn details when you need to debug an issue.
-- Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and you can use it to keep track of small details like issue/PRs, clickable links, etc.
+- Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and you can use it to keep track of small details like issue/PRs, clickable links, etc. plus it can be multiline.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
