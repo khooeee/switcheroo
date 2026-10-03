@@ -36,15 +36,21 @@ app.setName("Switcheroo");
 const sessions = new SessionManager();
 const control = new ControlServer();
 let mainWindow: BrowserWindow | null = null;
+let activeSessionUnread = false;
 
-const createWindow = async () => {
-  await sessions.init();
+function refreshMenus() {
   refreshSessionMenuItems(
     sessions.activePinMenuState(),
     sessions.activeRenameMenuEnabled(),
     sessions.activeForkMenuEnabled(),
     sessions.activeStopMenuEnabled(),
+    activeSessionUnread,
   );
+}
+
+const createWindow = async () => {
+  await sessions.init();
+  refreshMenus();
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -99,6 +105,10 @@ function registerIpc(): void {
   });
   ipcMain.handle("sessions:unpin", (_e, sessionId: string) => {
     sessions.unpinSession(sessionId);
+  });
+  ipcMain.handle("sessions:setActiveUnread", (_e, unread: boolean) => {
+    activeSessionUnread = !!unread;
+    refreshMenus();
   });
   ipcMain.handle("sessions:setActive", (_e, sessionId: ActiveSessionId) =>
     sessions.setActiveSession(sessionId),
@@ -161,12 +171,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     applyAppIcon();
     registerIpc();
     sessions.setOnSessionsChanged(() => {
-      refreshSessionMenuItems(
-        sessions.activePinMenuState(),
-        sessions.activeRenameMenuEnabled(),
-        sessions.activeForkMenuEnabled(),
-        sessions.activeStopMenuEnabled(),
-      );
+      refreshMenus();
     });
     buildAppMenu({
       getMainWindow: () => mainWindow,
@@ -174,6 +179,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
       getForkEnabled: () => sessions.activeForkMenuEnabled(),
       getStopEnabled: () => sessions.activeStopMenuEnabled(),
+      getActiveUnread: () => activeSessionUnread,
     });
     void createWindow();
     void control.start(sessions);

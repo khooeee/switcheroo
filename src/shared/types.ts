@@ -207,6 +207,8 @@ export interface SwitcherooApi {
   renameSession: (sessionId: string, title: string) => Promise<void>;
   pinSession: (sessionId: string) => Promise<void>;
   unpinSession: (sessionId: string) => Promise<void>;
+  /** Sync Session menu Mark as Read/Unread for the active session. */
+  setActiveSessionUnread: (unread: boolean) => Promise<void>;
   setActiveSession: (sessionId: ActiveSessionId) => Promise<void>;
   listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;

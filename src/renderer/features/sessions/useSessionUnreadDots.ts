@@ -39,5 +39,11 @@ export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
     });
   }, []);
 
+  useEffect(() => {
+    const isUnread =
+      activeSessionId !== SWITCHBOARD_ID && unread.has(activeSessionId);
+    void window.switcheroo.setActiveSessionUnread(isUnread);
+  }, [activeSessionId, unread]);
+
   return { unread, toggleUnread };
 }

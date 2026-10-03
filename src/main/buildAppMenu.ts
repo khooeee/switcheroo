@@ -15,6 +15,7 @@ export function buildAppMenu(opts: {
   getRenameEnabled: () => boolean;
   getForkEnabled: () => boolean;
   getStopEnabled: () => boolean;
+  getActiveUnread: () => boolean;
 }): void {
   const win = () => opts.getMainWindow();
   const pin = opts.getPinMenuState();
@@ -58,15 +59,6 @@ export function buildAppMenu(opts: {
           },
         },
         {
-          id: PIN_MENU_ID,
-          label: pin.label,
-          enabled: pin.enabled,
-          accelerator: "CmdOrCtrl+P",
-          click: () => {
-            win()?.webContents.send("session:toggle-pin");
-          },
-        },
-        {
           id: FORK_MENU_ID,
           label: "Fork",
           enabled: opts.getForkEnabled(),
@@ -77,11 +69,20 @@ export function buildAppMenu(opts: {
         },
         {
           id: MARK_UNREAD_MENU_ID,
-          label: "Mark as Unread",
+          label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
           enabled: opts.getRenameEnabled(),
           accelerator: "CmdOrCtrl+U",
           click: () => {
             win()?.webContents.send("session:mark-unread");
+          },
+        },
+        {
+          id: PIN_MENU_ID,
+          label: pin.label,
+          enabled: pin.enabled,
+          accelerator: "CmdOrCtrl+P",
+          click: () => {
+            win()?.webContents.send("session:toggle-pin");
           },
         },
         { type: "separator" },
@@ -187,6 +188,7 @@ export function refreshSessionMenuItems(
   renameEnabled: boolean,
   forkEnabled: boolean,
   stopEnabled: boolean,
+  activeUnread: boolean,
 ): void {
   const menu = Menu.getApplicationMenu();
   if (!menu) return;
@@ -200,7 +202,10 @@ export function refreshSessionMenuItems(
   const forkItem = menu.getMenuItemById(FORK_MENU_ID);
   if (forkItem) forkItem.enabled = forkEnabled;
   const markUnreadItem = menu.getMenuItemById(MARK_UNREAD_MENU_ID);
-  if (markUnreadItem) markUnreadItem.enabled = renameEnabled;
+  if (markUnreadItem) {
+    markUnreadItem.label = activeUnread ? "Mark as Read" : "Mark as Unread";
+    markUnreadItem.enabled = renameEnabled;
+  }
   const stopItem = menu.getMenuItemById(STOP_MENU_ID);
   if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);
