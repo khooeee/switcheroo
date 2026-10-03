@@ -21,7 +21,6 @@ export const RightRail = memo(function RightRail({
   focusEventId,
   focusKey = 0,
   onClose,
-  onEventActivate,
 }: {
   session: Session | undefined;
   turn: TranscriptTurn;
@@ -32,7 +31,6 @@ export const RightRail = memo(function RightRail({
   focusEventId?: string;
   focusKey?: number;
   onClose: () => void;
-  onEventActivate?: (eventId: string) => void;
 }) {
   const localScrollRef = useRef<HTMLDivElement>(null);
   const resolvedScrollRef = scrollRef ?? localScrollRef;
@@ -99,11 +97,7 @@ export const RightRail = memo(function RightRail({
       </div>
       <div className="right-rail-scroll" ref={resolvedScrollRef} onContextMenu={onEditContextMenu}>
         {session ? (
-          <TurnDetail
-            session={session}
-            turn={turn}
-            onEventActivate={onEventActivate}
-          />
+          <TurnDetail session={session} turn={turn} />
         ) : (
           <ClosedTurnDetail turn={turn} agent={agent} cwd={cwd} />
         )}

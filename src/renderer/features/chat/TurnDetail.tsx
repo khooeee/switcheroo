@@ -8,22 +8,16 @@ import { TurnEvents } from "./TurnEvents";
 export const TurnDetail = memo(function TurnDetail({
   session,
   turn,
-  onEventActivate,
 }: {
   session: Session;
   turn: TranscriptTurn;
-  onEventActivate?: (eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
       <TranscriptMessage session={session} item={turn.user} forkable />
-      <TurnEvents
-        session={session}
-        events={turn.events}
-        onActivate={onEventActivate}
-      />
+      <TurnEvents session={session} events={turn.events} />
       {running && turn.assistant ? (
         <TranscriptMessage session={session} item={turn.assistant} />
       ) : null}

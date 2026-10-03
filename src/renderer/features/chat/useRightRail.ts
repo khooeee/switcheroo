@@ -20,7 +20,6 @@ export type RightRailView = {
   session: Session | undefined;
   agent: string;
   cwd?: string;
-  navigable?: boolean;
   focusEventId?: string;
   focusKey: number;
 };
@@ -116,7 +115,6 @@ export function useRightRail({
         session,
         agent: turn.agent,
         cwd: session?.cwd,
-        navigable: turn.navigable,
         focusEventId: rightRail.focusEventId,
         focusKey: rightRail.focusKey,
       };

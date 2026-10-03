@@ -119,14 +119,6 @@ export function App() {
     void window.switcheroo.navigateToEvent(sessionId, turnId, eventId);
   }, []);
 
-  const onRightRailEventActivate = useCallback(
-    (eventId: string) => {
-      if (!rightRailView?.navigable) return;
-      onSwitchboardClick(rightRailView.sessionId, rightRailView.turn.id, eventId);
-    },
-    [rightRailView, onSwitchboardClick],
-  );
-
   return (
     <div className="app">
       <SessionRail
@@ -215,11 +207,6 @@ export function App() {
           focusEventId={rightRailView.focusEventId}
           focusKey={rightRailView.focusKey}
           onClose={closeRightRail}
-          onEventActivate={
-            activeSessionId === SWITCHBOARD_ID && rightRailView.navigable
-              ? onRightRailEventActivate
-              : undefined
-          }
         />
       ) : null}
 
