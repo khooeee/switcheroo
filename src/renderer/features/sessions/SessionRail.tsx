@@ -63,7 +63,7 @@ export function SessionRail({
   );
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
-  const unreadDots = useSessionUnreadDots(activeSessionId);
+  const { unread: unreadDots, markUnread } = useSessionUnreadDots(activeSessionId);
   const filterActive = filter.trim().length > 0;
   const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
 
@@ -227,6 +227,7 @@ export function SessionRail({
             onFork={onFork}
             onPin={onPin}
             onUnpin={onUnpin}
+            onMarkUnread={markUnread}
             onStop={onStop}
             onClose={onClose}
             onDismiss={() => setMenu(null)}

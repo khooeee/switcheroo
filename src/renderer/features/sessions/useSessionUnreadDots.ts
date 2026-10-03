@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ActiveSessionId } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 
 /** Session ids with an unread completed turn; cleared when that session becomes active. */
-export function useSessionUnreadDots(activeSessionId: ActiveSessionId): ReadonlySet<string> {
+export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
   const [unread, setUnread] = useState(() => new Set<string>());
   const activeRef = useRef(activeSessionId);
   activeRef.current = activeSessionId;
@@ -30,5 +30,14 @@ export function useSessionUnreadDots(activeSessionId: ActiveSessionId): Readonly
     });
   }, [activeSessionId]);
 
-  return unread;
+  const markUnread = useCallback((sessionId: string) => {
+    setUnread((prev) => {
+      if (prev.has(sessionId)) return prev;
+      const next = new Set(prev);
+      next.add(sessionId);
+      return next;
+    });
+  }, []);
+
+  return { unread, markUnread };
 }

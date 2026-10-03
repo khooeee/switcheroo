@@ -13,6 +13,7 @@ export function SessionRailMenu({
   onFork,
   onPin,
   onUnpin,
+  onMarkUnread,
   onStop,
   onClose,
   onDismiss,
@@ -27,6 +28,7 @@ export function SessionRailMenu({
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
+  onMarkUnread: (id: string) => void;
   onStop: (id: string) => void;
   onClose: (id: string) => void;
   onDismiss: () => void;
@@ -79,6 +81,17 @@ export function SessionRailMenu({
       >
         Fork
         <kbd className="settings-shortcut">⌘Y</kbd>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
+        onClick={() => {
+          onMarkUnread(session.id);
+          onDismiss();
+        }}
+      >
+        Mark as Unread
       </button>
       <div className="context-separator" role="separator" />
       <button
