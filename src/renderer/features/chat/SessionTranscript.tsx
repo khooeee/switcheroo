@@ -1,5 +1,6 @@
 import { memo, type RefObject, useEffect } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
+import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
@@ -35,7 +36,7 @@ export const SessionTranscript = memo(function SessionTranscript({
 
   return (
     <>
-      <div className="scroll" ref={chatRef}>
+      <div className="scroll" ref={chatRef} onContextMenu={onEditContextMenu}>
         <div className="transcript">
           {turns.length === 0 && session.status !== "running" && session.status !== "connecting" && (
             <div className="empty">Send a prompt to start this session.</div>

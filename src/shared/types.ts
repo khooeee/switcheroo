@@ -235,6 +235,8 @@ export interface SwitcherooApi {
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
+  /** Popup native Copy/Paste/Select All at the cursor. */
+  showEditContextMenu: () => Promise<void>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;
   stopFindInSessions: () => Promise<void>;

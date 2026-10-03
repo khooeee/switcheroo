@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { SwitchboardTurn, Session } from "../../../shared/types";
+import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { SwitchboardFeed } from "./SwitchboardFeed";
 import { SwitchboardNotice } from "./SwitchboardNotice";
 
@@ -29,7 +30,7 @@ export function SwitchboardPanel({
         <h2>Switchboard</h2>
       </div>
       {notice && <SwitchboardNotice message={notice} onDismiss={onNoticeDismiss} />}
-      <div className="scroll" ref={scrollRef}>
+      <div className="scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>
         <SwitchboardFeed
           turns={turns}
           sessions={sessions}

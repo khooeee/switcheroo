@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
+import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import { TurnDetail } from "./TurnDetail";
 import {
@@ -114,7 +115,7 @@ export const RightRail = memo(function RightRail({
           ✕
         </button>
       </div>
-      <div className="right-rail-scroll" ref={resolvedScrollRef}>
+      <div className="right-rail-scroll" ref={resolvedScrollRef} onContextMenu={onEditContextMenu}>
         {session ? (
           <TurnDetail
             session={session}
