@@ -90,9 +90,6 @@ function registerIpc(): void {
   ipcMain.handle("sessions:rename", (_e, sessionId: string, title: string) => {
     sessions.renameSession(sessionId, title);
   });
-  ipcMain.handle("sessions:reorderPinned", (_e, sessionIds: string[]) => {
-    sessions.reorderPinnedSessions(sessionIds);
-  });
   ipcMain.handle("sessions:pin", (_e, sessionId: string) => {
     sessions.pinSession(sessionId);
   });

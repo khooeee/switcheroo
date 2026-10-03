@@ -28,8 +28,6 @@ const api: SwitcherooApi = {
   closeSession: (sessionId: string) => ipcRenderer.invoke("sessions:close", sessionId),
   renameSession: (sessionId: string, title: string) =>
     ipcRenderer.invoke("sessions:rename", sessionId, title),
-  reorderPinnedSessions: (sessionIds: string[]) =>
-    ipcRenderer.invoke("sessions:reorderPinned", sessionIds),
   pinSession: (sessionId: string) => ipcRenderer.invoke("sessions:pin", sessionId),
   unpinSession: (sessionId: string) => ipcRenderer.invoke("sessions:unpin", sessionId),
   setActiveSession: (sessionId: ActiveSessionId) => ipcRenderer.invoke("sessions:setActive", sessionId),

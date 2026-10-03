@@ -10,11 +10,9 @@ import { requestFocusPane } from "../shortcuts/paneFocus";
 import { SessionRailMenu } from "./SessionRailMenu";
 import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
-import { startPinnedSessionDrag } from "./startPinnedSessionDrag";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionDoneDots } from "./useSessionDoneDots";
 import "./sessionSpinner.css";
-import "./sessionDropIndicator.css";
 import "./sessionRailPin.css";
 
 interface Props {
@@ -29,7 +27,6 @@ interface Props {
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
-  onReorderPinned: (sessionIds: string[]) => void;
 }
 
 export function SessionRail({
@@ -44,15 +41,11 @@ export function SessionRail({
   onFork,
   onPin,
   onUnpin,
-  onReorderPinned,
 }: Props) {
   const [menu, setMenu] = useState<{ session: Session; pinned: boolean; x: number; y: number } | null>(null);
   const [rename, setRename] = useState<Session | null>(null);
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dropBeforeId, setDropBeforeId] = useState<string | null | undefined>();
   const scrollRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const skipClick = useRef<string | null>(null);
   const allSessions = flatRailSessions(pinned, unpinned);
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
@@ -111,20 +104,12 @@ export function SessionRail({
     window.addEventListener("pointerup", stop);
   };
 
-  const applyClick = (sessionId: string) => {
-    if (skipClick.current === sessionId) {
-      skipClick.current = null;
-      return;
-    }
-    onSelect(sessionId);
-  };
-
   const openMenu = (event: ReactMouseEvent, session: Session, isPinned: boolean) => {
     event.preventDefault();
     setMenu({ session, pinned: isPinned, x: event.clientX, y: event.clientY });
   };
 
-  const renderRow = (session: Session, index: number, listLength: number, isPinned: boolean) => {
+  const renderRow = (session: Session, isPinned: boolean) => {
     if (rename?.id === session.id) {
       return (
         <SessionRailRename
@@ -139,31 +124,14 @@ export function SessionRail({
         />
       );
     }
-    const dropAfter = dropBeforeId === null && index === listLength - 1;
     return (
       <button
         key={session.id}
         type="button"
-        data-pinned-session-id={isPinned ? session.id : undefined}
-        className={`rail-session ${activeSessionId === session.id ? "active" : ""} ${session.status === "connecting" ? "creating" : ""} ${isPinned && dragId === session.id ? "dragging" : ""} ${isPinned && dropBeforeId === session.id ? "drop-before" : ""} ${isPinned && dropAfter ? "drop-after" : ""}`}
+        className={`rail-session ${activeSessionId === session.id ? "active" : ""} ${session.status === "connecting" ? "creating" : ""}`}
         data-tooltip={`${session.title}\n${session.cwd}\n(${session.status === "connecting" ? "Creating" : session.status})`}
         data-tooltip-side="right"
-        onPointerDown={
-          isPinned
-            ? (e) =>
-                startPinnedSessionDrag({
-                  event: e,
-                  sessionId: session.id,
-                  pinnedIds: pinned.map((s) => s.id),
-                  scrollRef,
-                  setDragId,
-                  setDropBeforeId,
-                  skipClick,
-                  onReorder: onReorderPinned,
-                })
-            : undefined
-        }
-        onClick={() => applyClick(session.id)}
+        onClick={() => onSelect(session.id)}
         onDoubleClick={(event) => {
           if ((event.target as HTMLElement).closest(".rail-pin-btn")) return;
           event.preventDefault();
@@ -217,11 +185,11 @@ export function SessionRail({
       </div>
       <div className="rail-sessions">
         <div className="rail-scroll" ref={scrollRef}>
-          {pinned.map((session, index) => renderRow(session, index, pinned.length, true))}
+          {pinned.map((session) => renderRow(session, true))}
           {pinned.length > 0 && unpinned.length > 0 && (
             <div className="rail-pin-divider" role="separator" aria-hidden="true" />
           )}
-          {unpinned.map((session, index) => renderRow(session, index, unpinned.length, false))}
+          {unpinned.map((session) => renderRow(session, false))}
         </div>
         <div className="rail-fade" aria-hidden="true" />
       </div>

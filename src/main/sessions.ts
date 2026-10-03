@@ -31,7 +31,6 @@ import {
   prependPinnedInLists,
   prependUnpinnedInLists,
   removeSessionFromLists,
-  reorderPinnedInLists,
   unpinSessionInLists,
   type SessionRailLists,
 } from "./sessionRailLists";
@@ -378,16 +377,6 @@ export class SessionManager {
     for (const turn of this.bus.setSessionTitle(sessionId, title)) {
       this.send("switchboard:turn", turn);
     }
-    this.emitSessions();
-    void this.persist();
-  }
-
-  reorderPinnedSessions(sessionIds: string[]): void {
-    this.railLists = reorderPinnedInLists(
-      this.railLists,
-      sessionIds,
-      new Set(this.sessions.keys()),
-    );
     this.emitSessions();
     void this.persist();
   }

@@ -205,7 +205,6 @@ export interface SwitcherooApi {
   forkSession: (sessionId: string, eventId?: string) => Promise<Session>;
   closeSession: (sessionId: string) => Promise<void>;
   renameSession: (sessionId: string, title: string) => Promise<void>;
-  reorderPinnedSessions: (sessionIds: string[]) => Promise<void>;
   pinSession: (sessionId: string) => Promise<void>;
   unpinSession: (sessionId: string) => Promise<void>;
   setActiveSession: (sessionId: ActiveSessionId) => Promise<void>;

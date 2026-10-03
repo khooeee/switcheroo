@@ -27,16 +27,15 @@ const {
   pinSessionInLists,
   unpinSessionInLists,
   prependUnpinnedInLists,
-  reorderPinnedInLists,
   loadListsFromPersisted,
   nextActiveAfterClose,
 } = load("src/main/sessionRailLists.ts");
 
 const base = { pinnedIds: ["p1", "p2"], unpinnedIds: ["u1", "u2", "u3"] };
 
-test("pin moves id from unpinned to end of pinned", () => {
+test("pin moves id from unpinned to front of pinned", () => {
   const next = pinSessionInLists(base, "u2");
-  assert.equal(next.pinnedIds.join(","), "p1,p2,u2");
+  assert.equal(next.pinnedIds.join(","), "u2,p1,p2");
   assert.equal(next.unpinnedIds.join(","), "u1,u3");
 });
 
@@ -49,13 +48,6 @@ test("unpin prepends to unpinned", () => {
 test("prependUnpinned ignores pinned ids", () => {
   const next = prependUnpinnedInLists(base, "p1");
   assert.deepEqual(next, base);
-});
-
-test("reorderPinned only permutes pinned section", () => {
-  const open = new Set(["p1", "p2", "u1", "u2", "u3"]);
-  const next = reorderPinnedInLists(base, ["p2", "p1"], open);
-  assert.equal(next.pinnedIds.join(","), "p2,p1");
-  assert.equal(next.unpinnedIds.join(","), "u1,u2,u3");
 });
 
 test("loadListsFromPersisted keeps id order and drops duplicates", () => {

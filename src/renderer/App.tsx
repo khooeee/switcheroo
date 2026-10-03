@@ -228,7 +228,6 @@ export function App() {
         onFork={(id) => void window.switcheroo.forkSession(id).catch(console.error)}
         onPin={(id) => void window.switcheroo.pinSession(id)}
         onUnpin={(id) => void window.switcheroo.unpinSession(id)}
-        onReorderPinned={(ids) => void window.switcheroo.reorderPinnedSessions(ids)}
       />
 
       <div className="main relative">

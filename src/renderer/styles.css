@@ -209,11 +209,6 @@ button {
   opacity: 0.45;
 }
 
-.rail-session.dragging {
-  opacity: 0.55;
-  cursor: grabbing;
-}
-
 .rail-switchboard-row {
   flex-shrink: 0;
   width: 100%;

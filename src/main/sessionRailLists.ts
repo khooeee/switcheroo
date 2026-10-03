@@ -63,25 +63,6 @@ export function prependPinnedInLists(lists: SessionRailLists, sessionId: string)
   };
 }
 
-/** Rewrite pinned order; unknown ids are dropped, missing pinned ids are appended. */
-export function reorderPinnedInLists(
-  lists: SessionRailLists,
-  orderedPinnedIds: string[],
-  openIds: Set<string>,
-): SessionRailLists {
-  const pinnedSet = new Set(lists.pinnedIds.filter((id) => openIds.has(id)));
-  const nextPinned: string[] = [];
-  for (const id of orderedPinnedIds) {
-    if (!pinnedSet.has(id)) continue;
-    nextPinned.push(id);
-    pinnedSet.delete(id);
-  }
-  for (const id of lists.pinnedIds) {
-    if (pinnedSet.has(id)) nextPinned.push(id);
-  }
-  return { pinnedIds: nextPinned, unpinnedIds: lists.unpinnedIds };
-}
-
 export function loadListsFromPersisted(
   pinned: string[],
   unpinned: string[],
