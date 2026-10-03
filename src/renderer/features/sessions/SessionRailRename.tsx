@@ -10,25 +10,35 @@ export function SessionRailRename({
   onCancel: () => void;
 }) {
   const [value, setValue] = useState(title);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    el.select();
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
   }, []);
 
   return (
-    <input
+    <textarea
       ref={inputRef}
       className="rail-rename"
       value={value}
+      rows={1}
       aria-label="Session title"
       spellCheck={false}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={(e) => {
+        setValue(e.target.value);
+        const el = e.target;
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight}px`;
+      }}
       onBlur={onCancel}
       onKeyDown={(e) => {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           const next = value.trim();
           if (next) onSave(next);
