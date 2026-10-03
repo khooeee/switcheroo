@@ -6,7 +6,7 @@ Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through
 
 The philosophy is to remove & simplify as much as possible for maximum focus:
 - Steer only where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue.
-- The user message & final assistant summary message are the only messages shown in main content area because most of the time, seeing the tool calls & other events are unnecessary.  However, you can drill down to see them quickly if need be.
+- The user message & final assistant summary message are the only messages shown in main content area because most of the time, seeing the tool calls & other events are unnecessary.  However, you can see the turn details when you need to debug an issue.
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do so you can keep track of small details like issue/PR numbers, etc.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
@@ -37,7 +37,7 @@ npm start
 1. Click **+** to create a session.
 2. Ticking **Switcheroo aware** will inject a prompt at the beginning of the session which will allow that session to create & control other sessions in Switcheroo.
 
-On the top left, you'll see **Switchboard** which will show you a live feed of all events from all sessions - click an event to jump to its session.
+On the top left, you'll see **Switchboard** which will show you a live feed of all events from all sessions.  Click a session title to jump to that session, or use the arrow next to Copy to open turn details.
 
 ## Defaults
 
