@@ -7,6 +7,7 @@ import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
+import { QueuedStatus } from "../chat/QueuedStatus";
 import { TurnEvents } from "../chat/TurnEvents";
 
 /** One Switchboard turn: user + steers + assistant. Mid-turn events live in the right rail. */
@@ -66,7 +67,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       >
         <div className="row">
           <span className="kind-pill">user</span>
-          {turn.user.queued ? <span className="queued-status" role="status">queued</span> : null}
+          {turn.user.queued ? <QueuedStatus /> : null}
           <span
             className={`event-title${turn.navigable ? " openable" : ""}`}
             onClick={(e) => {
@@ -77,7 +78,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           >
             {title}
           </span>
-          <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+          <span className="event-timestamp">
             {formatDetailTimestamp(turn.at)}
           </span>
         </div>
@@ -114,7 +115,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         >
           <div className="row">
             <span className="kind-pill">assistant</span>
-            <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+            <span className="event-timestamp">
               {formatDetailTimestamp(turn.assistant.at)}
             </span>
           </div>

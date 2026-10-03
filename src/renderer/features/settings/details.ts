@@ -21,10 +21,3 @@ export function toggleDetailsVisible(): boolean {
   void patchAppSettings({ zenMode: !nextVisible });
   return nextVisible;
 }
-
-/** Turn details on (exit zen mode) if currently hidden. */
-export function ensureDetailsVisible(): void {
-  if (readDetailsVisible()) return;
-  applyDetailsVisible(true);
-  void patchAppSettings({ zenMode: false });
-}

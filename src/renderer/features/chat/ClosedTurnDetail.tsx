@@ -6,6 +6,7 @@ import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ThinkingIndicator } from "./ThinkingIndicator";
+import { QueuedStatus } from "./QueuedStatus";
 
 /** Plain turn body when the Switchboard session is no longer open. */
 export const ClosedTurnDetail = memo(function ClosedTurnDetail({
@@ -30,8 +31,8 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
       <div className={`message user${turn.user.queued ? " queued" : ""}`} data-event-id={turn.user.id}>
         <div className="row">
           <span className="kind-pill">user</span>
-          {turn.user.queued ? <span className="queued-status" role="status">queued</span> : null}
-          <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+          {turn.user.queued ? <QueuedStatus /> : null}
+          <span className="event-timestamp">
             {formatDetailTimestamp(turn.user.at)}
           </span>
         </div>
@@ -47,7 +48,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
             <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
               <div className="row">
                 <span className="kind-pill">{item.role}</span>
-                <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+                <span className="event-timestamp">
                   {formatDetailTimestamp(item.at)}
                 </span>
               </div>
@@ -66,7 +67,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
         >
           <div className="row">
             <span className="kind-pill">assistant</span>
-            <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+            <span className="event-timestamp">
               {formatDetailTimestamp(turn.assistant.at)}
             </span>
           </div>

@@ -1,7 +1,6 @@
 import type { AgentKind, Session, TranscriptTurn } from "../shared/types";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
-import type { GlobalEventBus } from "./events";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
 import { TurnBuilder } from "./acp/TurnBuilder";
@@ -15,7 +14,6 @@ interface ForkSessionHost {
   ensureSession(session: Session): Promise<AcpSession>;
   forkSupport(agent: AgentKind): Pick<Session, "supportsFork" | "supportsForkAtMessage">;
   callbacksFor(session: Session): SessionCallbacks;
-  bus(): GlobalEventBus;
   setSession(sessionId: string, session: AcpSession): void;
   addSession(session: Session, transcript: TranscriptTurn[]): void;
   setActiveSession(sessionId: string): void;
@@ -95,7 +93,7 @@ export async function forkSessionAtEvent(
     // No assistant message before the fork point leaves no agent history to keep.
     const acp = eventId && !forkPoint
       ? await host.ensureSession(session)
-      : await sourceSession.forkSibling(id, host.bus(), host.callbacksFor(session), forkPoint);
+      : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint);
     acp.restoreTurns(clipped);
     host.setSession(id, acp);
     session.agentSessionId = acp.sessionId;

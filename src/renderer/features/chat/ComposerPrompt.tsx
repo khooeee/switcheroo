@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent, type RefObject } from "react";
 import type { SlashCommand } from "../../../shared/types";
-import { requestFocusPane } from "../shortcuts/paneFocus";
 import { filterSlashCommands } from "./filterSlashCommands";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { slashQuery } from "./slashQuery";
@@ -66,7 +65,6 @@ export function ComposerPrompt({
         spellCheck={false}
         onChange={(e) => onDraftChange(e.target.value)}
         onPaste={onPaste}
-        onFocus={() => requestFocusPane("prompt")}
         onKeyDown={(e) => {
           if (open) {
             if (e.key === "ArrowDown") {

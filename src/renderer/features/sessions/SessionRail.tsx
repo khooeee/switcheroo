@@ -6,7 +6,7 @@ import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { flatRailSessions } from "./flatRailSessions";
-import { requestFocusPane } from "../shortcuts/paneFocus";
+import { requestPromptFocus } from "../shortcuts/paneFocus";
 import { SessionRailFilter } from "./SessionRailFilter";
 import { SessionRailMenu } from "./SessionRailMenu";
 import { SessionRailPinButton } from "./SessionRailPinButton";
@@ -134,7 +134,7 @@ export function SessionRail({
           onSave={(title) => {
             onRename(session.id, title);
             setRename(null);
-            requestFocusPane("prompt");
+            requestPromptFocus();
           }}
           onCancel={() => setRename(null)}
         />

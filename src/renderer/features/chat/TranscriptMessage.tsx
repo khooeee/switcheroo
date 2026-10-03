@@ -7,6 +7,7 @@ import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
+import { QueuedStatus } from "./QueuedStatus";
 
 /** Renders one transcript leaf (user / assistant / thought / tool / …). */
 export const TranscriptMessage = memo(function TranscriptMessage({
@@ -56,9 +57,9 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       {item.role !== "stopped" && (
         <div className="row">
           <span className="kind-pill">{item.role}</span>
-          {item.queued ? <span className="queued-status" role="status">queued</span> : null}
+          {item.queued ? <QueuedStatus /> : null}
           {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
-          <span className="event-timestamp" style={{ marginLeft: "auto" }}>
+          <span className="event-timestamp">
             {formatDetailTimestamp(item.at)}
           </span>
         </div>

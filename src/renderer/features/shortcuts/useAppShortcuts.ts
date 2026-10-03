@@ -4,7 +4,7 @@ import { SWITCHBOARD_ID } from "../../../shared/types";
 import { isComposerDraftEmpty } from "../chat/useComposerDraft";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
-import { usePaneFocusCycle } from "./usePaneFocusCycle";
+import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
 
 function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
@@ -60,7 +60,7 @@ export function useAppShortcuts({
   forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
 
   const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
-  usePaneFocusCycle({
+  usePromptFocusShortcut({
     hasPrompt: activeSessionId !== SWITCHBOARD_ID,
     blocked,
   });

@@ -10,7 +10,6 @@ import type {
   Session,
   SessionStatus,
   TranscriptTurn,
-  FindInSessionsHit,
 } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
 import { GlobalEventBus } from "./events";
@@ -34,10 +33,9 @@ import {
   unpinSessionInLists,
   type SessionRailLists,
 } from "./sessionRailLists";
-import { findInSessionSources } from "./findInSessionSources";
-import { listSessionIdsOnDisk } from "./listSessionIdsOnDisk";
 import { formatAgentError } from "../shared/formatAgentError";
 import { forkSessionAtEvent } from "./forkSessionAtEvent";
+import { runFindInSessions } from "./runFindInSessions";
 import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { newSessionId } from "./newSessionId";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
@@ -349,7 +347,6 @@ export class SessionManager {
       ensureSession: async (session) => this.ensureSession(session),
       forkSupport: (agent) => this.forkSupport.flags(agent),
       callbacksFor: (session) => this.callbacksFor(session),
-      bus: () => this.bus,
       setSession: (id, session) => { this.agents.set(id, session); },
       addSession: (session, transcript) => {
         const pin = this.railLists.pinnedIds.includes(sessionId);
@@ -425,110 +422,32 @@ export class SessionManager {
   startFindInSessions(query: string, searchId: number): { searchId: number } {
     const token = ++this.findGeneration;
     const needle = query.trim();
-    void this.runFindInSessions(searchId, token, needle);
-    return { searchId };
-  }
-
-  stopFindInSessions(): void {
-    this.findGeneration += 1;
-  }
-
-  private async runFindInSessions(
-    searchId: number,
-    token: number,
-    needle: string,
-  ): Promise<void> {
-    if (token !== this.findGeneration) {
-      this.send("find:done", { searchId, stopped: true });
-      return;
-    }
-    if (!needle) {
-      this.send("find:done", { searchId, stopped: false });
-      return;
-    }
-    const ids = new Set(await listSessionIdsOnDisk());
-    if (token !== this.findGeneration) {
-      this.send("find:done", { searchId, stopped: true });
-      return;
-    }
-    for (const id of this.sessions.keys()) ids.add(id);
-    const ordered = [...ids].sort().reverse();
-    const total = ordered.length;
-    let scanned = 0;
-    let matchCount = 0;
-    const hits: FindInSessionsHit[] = [];
-    let lastSentAt = 0;
-    const flushProgress = (force: boolean) => {
-      const now = Date.now();
-      if (!force && now - lastSentAt < 300) return;
-      this.send("find:progress", {
-        searchId,
-        scanned,
-        total,
-        matchCount,
-      });
-      lastSentAt = now;
-    };
-    flushProgress(true);
-    await new Promise<void>((resolve) => setImmediate(resolve));
-    for (const sessionId of ordered) {
-      if (token !== this.findGeneration) {
-        flushProgress(true);
-        await this.deliverFindHits(searchId, hits);
-        this.send("find:done", { searchId, stopped: true });
-        return;
-      }
-      let source = null;
-      if (this.hydrated.has(sessionId)) {
-        const session = this.sessions.get(sessionId);
-        if (session) {
-          source = {
+    void runFindInSessions(
+      {
+        isCurrent: (t) => t === this.findGeneration,
+        sessionIds: () => this.sessions.keys(),
+        hydratedSource: (sessionId) => {
+          if (!this.hydrated.has(sessionId)) return null;
+          const session = this.sessions.get(sessionId);
+          if (!session) return null;
+          return {
             sessionId,
             title: session.title,
             agent: session.agent,
             turns: this.transcripts.get(sessionId) ?? [],
           };
-        }
-      } else {
-        const meta = await loadSessionMeta(sessionId);
-        if (meta) {
-          source = {
-            sessionId,
-            title: meta.title,
-            agent: meta.agent,
-            turns: await loadTranscript(sessionId),
-          };
-        }
-      }
-      if (source) {
-        const found = findInSessionSources([source], needle);
-        if (found.length) {
-          hits.push(...found);
-          matchCount += found.length;
-        }
-      }
-      scanned += 1;
-      const before = lastSentAt;
-      flushProgress(false);
-      if (lastSentAt !== before) {
-        await new Promise<void>((resolve) => setImmediate(resolve));
-      }
-    }
-    const stopped = token !== this.findGeneration;
-    flushProgress(true);
-    await new Promise<void>((resolve) => setImmediate(resolve));
-    await this.deliverFindHits(searchId, hits);
-    this.send("find:done", { searchId, stopped });
+        },
+        send: (channel, payload) => this.send(channel, payload),
+      },
+      searchId,
+      token,
+      needle,
+    );
+    return { searchId };
   }
 
-  /** Send hits in small IPC chunks so a large result set cannot stall the UI. */
-  private async deliverFindHits(searchId: number, hits: FindInSessionsHit[]): Promise<void> {
-    hits.sort((a, b) => b.at - a.at);
-    const chunkSize = 100;
-    for (let i = 0; i < hits.length; i += chunkSize) {
-      this.send("find:chunk", { searchId, added: hits.slice(i, i + chunkSize) });
-      await new Promise<void>((resolve) => setImmediate(resolve));
-    }
+  stopFindInSessions(): void {
+    this.findGeneration += 1;
   }
 
   async sendPrompt(sessionId: string, text: string): Promise<void> {
@@ -674,7 +593,7 @@ export class SessionManager {
   }
 
   private openSession(session: Session): AcpSession {
-    const acp = new AcpSession(session.id, session.agent, session.cwd, this.bus, this.callbacksFor(session));
+    const acp = new AcpSession(session.id, session.agent, session.cwd, this.callbacksFor(session));
     const turns = this.transcripts.get(session.id);
     if (turns?.length) acp.restoreTurns(turns);
     return acp;
@@ -688,7 +607,7 @@ export class SessionManager {
     this.warm.ensure(
       agent,
       cwd,
-      () => new AcpSession(newSessionId(), agent, cwd, this.bus, callbacks),
+      () => new AcpSession(newSessionId(), agent, cwd, callbacks),
     );
   }
 

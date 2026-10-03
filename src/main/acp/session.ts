@@ -5,7 +5,6 @@ import * as acp from "@agentclientprotocol/sdk";
 import type { AgentKind, TranscriptItem, TranscriptTurn } from "../../shared/types";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
-import type { GlobalEventBus } from "../events";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
 import { PromptCompletion } from "./PromptCompletion";
@@ -79,7 +78,6 @@ export class AcpSession {
     id: string,
     agent: AgentKind,
     cwd: string,
-    _bus: GlobalEventBus,
     cb: SessionCallbacks,
   ) {
     this.id = id;
@@ -233,13 +231,12 @@ export class AcpSession {
   /** Fork on this connection and return a sibling session sharing the agent process. */
   async forkSibling(
     id: string,
-    bus: GlobalEventBus,
     cb: SessionCallbacks,
     forkPoint?: AirForkPoint,
   ): Promise<AcpSession> {
     const forkedId = await this.fork(forkPoint);
     const owner = this.connectionOwner ?? this;
-    const child = new AcpSession(id, this.agent, this.cwd, bus, cb);
+    const child = new AcpSession(id, this.agent, this.cwd, cb);
     child.connection = this.connection;
     child.proc = null;
     child.connectionOwner = owner;

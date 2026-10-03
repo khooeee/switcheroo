@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { flashEventElement } from "./flashEventElement";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import { TurnDetail } from "./TurnDetail";
 import {
@@ -49,26 +50,7 @@ export const RightRail = memo(function RightRail({
       `[data-event-id="${CSS.escape(focusEventId)}"]`,
     ) as HTMLElement | null;
     if (!el) return;
-
-    let raf1 = 0;
-    let raf2 = 0;
-    let t = 0;
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Same flash as find-in-history / navigate-to-event.
-        el.classList.remove("highlight");
-        void el.offsetWidth;
-        el.classList.add("highlight");
-        t = window.setTimeout(() => el.classList.remove("highlight"), 1200);
-      });
-    });
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      clearTimeout(t);
-      el.classList.remove("highlight");
-    };
+    return flashEventElement(el);
   }, [focusEventId, focusKey, turn.id, resolvedScrollRef]);
 
   const resize = (event: ReactPointerEvent) => {

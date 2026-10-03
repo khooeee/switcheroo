@@ -454,7 +454,6 @@ button {
   gap: 10px;
 }
 
-.feed-item,
 .message {
   border: none;
   background: var(--card-bg);
@@ -462,27 +461,6 @@ button {
   padding: 10px 12px;
   text-align: left;
   transition: background 0.15s ease;
-}
-
-.feed-item {
-  width: 100%;
-  cursor: default;
-  min-width: 0;
-  box-shadow: inset 0 0 0 1px transparent;
-  transition: box-shadow 0.15s ease;
-}
-
-.feed-item.navigable,
-.feed-item[role="button"] {
-  cursor: pointer;
-}
-
-.feed-item:hover {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.feed-item.user {
-  background: var(--user-bg);
 }
 
 .session-turn {
@@ -531,6 +509,14 @@ button {
   font: inherit;
 }
 
+.switchboard-turn:not(.navigable) .event-title {
+  opacity: 0.55;
+}
+
+.event-timestamp {
+  margin-left: auto;
+}
+
 html[data-details="hidden"] .event-timestamp {
   display: none;
 }
@@ -546,11 +532,6 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   display: none;
 }
 
-.feed-item:not(.navigable) .event-title {
-  opacity: 0.55;
-}
-
-.feed-item .row,
 .message .row {
   display: flex;
   gap: 8px;
@@ -601,8 +582,7 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   font-style: italic;
 }
 
-.message.stopped,
-.feed-item.stopped {
+.message.stopped {
   background: transparent;
   color: color-mix(in srgb, var(--text-dim) 50%, var(--bg-0));
 }
@@ -618,7 +598,6 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   100% { box-shadow: inset 0 0 0 2px transparent; }
 }
 
-.feed-item .body,
 .message .body {
   white-space: pre-wrap;
   word-break: break-word;

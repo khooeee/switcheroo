@@ -81,10 +81,6 @@
   padding: 8px;
 }
 
-.feed-item.has-file-changes.navigable {
-  cursor: pointer;
-}
-
 .file-open {
   display: flex;
   align-items: baseline;

@@ -151,7 +151,6 @@ export function useRightRail({
   return {
     rightRailView,
     closeRightRail,
-    clearRightRail: closeRightRail,
     toggleSessionRightRail,
     forceSessionRightRail,
     toggleSwitchboardRightRail,

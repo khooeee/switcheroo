@@ -1,6 +1,6 @@
 import "./eventActionButton.css";
 
-/** Opens / toggles turn details (right rail) for a feed message. */
+/** Opens / toggles turn details (right rail) for a transcript message. */
 export function TurnDetailsButton({ onToggle }: { onToggle: () => void }) {
   return (
     <button

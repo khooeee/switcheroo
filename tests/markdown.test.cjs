@@ -81,8 +81,7 @@ test("Switchboard renders turn cards with session titles", () => {
   const tree = SwitchboardFeed({
     turns,
     sessions: [{ id: "session-1", title: "Session", agent: "codex", cwd: "/tmp", agentSessionId: null, status: "ready", error: null, createdAt: 1 }],
-    isExpanded: () => true,
-    onToggle() {},
+    onOpenRightRail() {},
     onClick() {},
   });
   const html = renderToStaticMarkup(tree);
@@ -108,8 +107,7 @@ test("Switchboard keeps the session title after the session is closed", () => {
   const html = renderToStaticMarkup(SwitchboardFeed({
     turns,
     sessions: [],
-    isExpanded: () => false,
-    onToggle() {},
+    onOpenRightRail() {},
     onClick() {},
   }));
   assert.match(html, /Lucky falcon/);

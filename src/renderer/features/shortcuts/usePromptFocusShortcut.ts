@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { requestFocusPane } from "./paneFocus";
+import { requestPromptFocus } from "./paneFocus";
 
 function isModI(event: KeyboardEvent): boolean {
   if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return false;
@@ -8,7 +8,7 @@ function isModI(event: KeyboardEvent): boolean {
 }
 
 /** Cmd/Ctrl+I focuses the prompt when a session chat is open. */
-export function usePaneFocusCycle({
+export function usePromptFocusShortcut({
   hasPrompt,
   blocked,
 }: {
@@ -31,7 +31,7 @@ export function usePaneFocusCycle({
 
       event.preventDefault();
       event.stopPropagation();
-      requestFocusPane("prompt");
+      requestPromptFocus();
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);

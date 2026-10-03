@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { TranscriptTurn } from "../../../shared/types";
+import { flashEventElement } from "./flashEventElement";
 
 /** Scroll to and flash a transcript event (prefers the right rail when open). */
 export function useFocusTranscriptEvent(
@@ -28,28 +29,8 @@ export function useFocusTranscriptEvent(
 
     const sameFocus = appliedFocusKey.current === focusEventKey;
     appliedFocusKey.current = focusEventKey;
+    if (sameFocus && el.classList.contains("highlight")) return;
 
-    let raf1 = 0;
-    let raf2 = 0;
-    let t = 0;
-    const flash = () => {
-      if (!sameFocus) el.scrollIntoView({ behavior: "smooth", block: "center" });
-      if (!sameFocus || !el.classList.contains("highlight")) {
-        el.classList.remove("highlight");
-        void el.offsetWidth;
-        el.classList.add("highlight");
-      }
-      t = window.setTimeout(() => el.classList.remove("highlight"), 1200);
-    };
-
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(flash);
-    });
-
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      clearTimeout(t);
-    };
+    return flashEventElement(el, !sameFocus);
   }, [focusEventId, focusEventKey, sessionId, turns, ready]);
 }
