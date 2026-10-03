@@ -40,7 +40,8 @@ export async function handleControlRequest(
       return json(res, 200, session);
     }
 
-    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript|rename))?$/.exec(pathname);
+    const sessionMatch =
+      /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript|rename|pin|unpin))?$/.exec(pathname);
     if (!sessionMatch) return json(res, 404, { error: "Not found" });
     const sessionId = decodeURIComponent(sessionMatch[1]!);
     const action = sessionMatch[2];
@@ -63,6 +64,18 @@ export async function handleControlRequest(
       if (!sessions.getSession(sessionId)) return json(res, 404, { error: "Session not found" });
       sessions.renameSession(sessionId, title);
       return json(res, 200, { sessionId, title, ok: true });
+    }
+    if (method === "POST" && action === "pin") {
+      if (!sessions.getSession(sessionId)) return json(res, 404, { error: "Session not found" });
+      if (!sessions.pinSession(sessionId)) {
+        return json(res, 400, { error: "pinned session limit reached" });
+      }
+      return json(res, 200, { sessionId, pinned: true, ok: true });
+    }
+    if (method === "POST" && action === "unpin") {
+      if (!sessions.getSession(sessionId)) return json(res, 404, { error: "Session not found" });
+      sessions.unpinSession(sessionId);
+      return json(res, 200, { sessionId, pinned: false, ok: true });
     }
     if (method === "POST" && action === "cancel") {
       await sessions.cancelPrompt(sessionId);

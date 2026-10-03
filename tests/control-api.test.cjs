@@ -26,6 +26,8 @@ test("catalog includes core session routes without blocking wait", () => {
   assert.ok(catalog.routes.some((r) => r.method === "POST" && r.path === "/sessions"));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/prompt"));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/rename" && r.body?.title));
+  assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/pin"));
+  assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/unpin"));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/transcript" && r.query?.last));
   assert.ok(!catalog.routes.some((r) => r.path === "/sessions/:id/wait"));
   assert.ok(!catalog.routes.some((r) => r.method === "DELETE"));
@@ -184,4 +186,97 @@ test("POST /sessions/:id/rename requires a non-empty title", async () => {
   await done;
   assert.equal(status, 400);
   assert.equal(JSON.parse(body).error, "title is required");
+});
+
+test("POST /sessions/:id/pin pins an open session", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const pinned = [];
+  const sessions = {
+    getSession: (id) => (id === "child-1" ? { id: "child-1" } : undefined),
+    pinSession: (id) => {
+      pinned.push(id);
+      return true;
+    },
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions/child-1/pin",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end();
+  await done;
+  assert.equal(status, 200);
+  assert.deepEqual(JSON.parse(body), { sessionId: "child-1", pinned: true, ok: true });
+  assert.deepEqual(pinned, ["child-1"]);
+});
+
+test("POST /sessions/:id/pin returns 400 when pin cap reached", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const sessions = {
+    getSession: () => ({ id: "child-1" }),
+    pinSession: () => false,
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions/child-1/pin",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end();
+  await done;
+  assert.equal(status, 400);
+  assert.equal(JSON.parse(body).error, "pinned session limit reached");
+});
+
+test("POST /sessions/:id/unpin unpins an open session", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const unpinned = [];
+  const sessions = {
+    getSession: (id) => (id === "child-1" ? { id: "child-1" } : undefined),
+    unpinSession: (id) => {
+      unpinned.push(id);
+    },
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions/child-1/unpin",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end();
+  await done;
+  assert.equal(status, 200);
+  assert.deepEqual(JSON.parse(body), { sessionId: "child-1", pinned: false, ok: true });
+  assert.deepEqual(unpinned, ["child-1"]);
 });

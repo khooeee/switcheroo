@@ -270,11 +270,12 @@ export class SessionManager {
     };
   }
 
-  pinSession(sessionId: string): void {
-    if (!this.sessions.has(sessionId)) return;
+  pinSession(sessionId: string): boolean {
+    if (!this.sessions.has(sessionId)) return false;
     this.railLists = pinSessionInLists(this.railLists, sessionId);
     this.emitSessions();
     void this.persist();
+    return this.railLists.pinnedIds.includes(sessionId);
   }
 
   unpinSession(sessionId: string): void {

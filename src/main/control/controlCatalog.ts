@@ -71,6 +71,20 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
     },
     {
       method: "POST",
+      path: "/sessions/:id/pin",
+      auth: true,
+      summary: "Pin a session to the top of the rail",
+      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/pin`,
+    },
+    {
+      method: "POST",
+      path: "/sessions/:id/unpin",
+      auth: true,
+      summary: "Unpin a session",
+      example: `curl -s -X POST -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>/unpin`,
+    },
+    {
+      method: "POST",
       path: "/sessions/:id/cancel",
       auth: true,
       summary: "Cancel the running prompt",
