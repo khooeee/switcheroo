@@ -12,8 +12,6 @@ export type RightRailSelection = {
   turnId: string;
   focusEventId?: string;
   focusKey: number;
-  /** When true, RightRail takes keyboard focus after open/update. */
-  takeFocus?: boolean;
 };
 
 export type RightRailView = {
@@ -25,7 +23,6 @@ export type RightRailView = {
   navigable?: boolean;
   focusEventId?: string;
   focusKey: number;
-  takeFocus?: boolean;
 };
 
 /** Selection + resolved turn for the events right rail. */
@@ -52,13 +49,11 @@ export function useRightRail({
       sessionId: string,
       turnId: string,
       focusEventId?: string,
-      takeFocus?: boolean,
     ): RightRailSelection => ({
       sessionId,
       turnId,
       focusEventId,
       focusKey: (prev?.focusKey ?? 0) + 1,
-      takeFocus,
     }),
     [],
   );
@@ -82,10 +77,10 @@ export function useRightRail({
   );
 
   const forceSessionRightRail = useCallback(
-    (turnId: string, focusEventId?: string, takeFocus = false) => {
+    (turnId: string, focusEventId?: string) => {
       if (!activeSession) return;
       setRightRail((prev) =>
-        nextSelection(prev, activeSession.id, turnId, focusEventId, takeFocus),
+        nextSelection(prev, activeSession.id, turnId, focusEventId),
       );
     },
     [activeSession, nextSelection],
@@ -109,17 +104,6 @@ export function useRightRail({
     [switchboardTurns, nextSelection],
   );
 
-  const forceSwitchboardRightRail = useCallback(
-    (turnId: string, focusEventId?: string, takeFocus = false) => {
-      const turn = switchboardTurns.find((entry) => entry.id === turnId);
-      if (!turn) return;
-      setRightRail((prev) =>
-        nextSelection(prev, turn.sessionId, turnId, focusEventId, takeFocus),
-      );
-    },
-    [switchboardTurns, nextSelection],
-  );
-
   const rightRailView = useMemo((): RightRailView | null => {
     if (!rightRail) return null;
     if (activeSessionId === SWITCHBOARD_ID) {
@@ -135,7 +119,6 @@ export function useRightRail({
         navigable: turn.navigable,
         focusEventId: rightRail.focusEventId,
         focusKey: rightRail.focusKey,
-        takeFocus: rightRail.takeFocus,
       };
     }
     if (rightRail.sessionId !== activeSessionId) return null;
@@ -151,7 +134,6 @@ export function useRightRail({
       cwd: activeSession.cwd,
       focusEventId: rightRail.focusEventId,
       focusKey: rightRail.focusKey,
-      takeFocus: rightRail.takeFocus,
     };
   }, [
     rightRail,
@@ -173,6 +155,5 @@ export function useRightRail({
     toggleSessionRightRail,
     forceSessionRightRail,
     toggleSwitchboardRightRail,
-    forceSwitchboardRightRail,
   };
 }

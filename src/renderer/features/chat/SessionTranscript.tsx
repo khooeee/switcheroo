@@ -1,10 +1,7 @@
-import { memo, type RefObject, useCallback, useEffect, useMemo } from "react";
+import { memo, type RefObject, useEffect } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
-import { railArgsForFeedEvent } from "./railArgsForFeedEvent";
-import { selectableFeedEventIds } from "./selectableFeedEventIds";
-import { useFeedMessageNav } from "./useFeedMessageNav";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
 
 export const SessionTranscript = memo(function SessionTranscript({
@@ -25,35 +22,9 @@ export const SessionTranscript = memo(function SessionTranscript({
   focusEventKey: number;
   chatRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  onForceOpenRightRail: (turnId: string, focusEventId?: string, takeFocus?: boolean) => void;
+  onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
 }) {
-  const eventIds = useMemo(() => selectableFeedEventIds(turns), [turns]);
-  const activateSelected = useCallback(
-    (eventId: string) => {
-      const args = railArgsForFeedEvent(turns, eventId);
-      if (!args) return;
-      onOpenRightRail(args.turnId, args.focusEventId);
-    },
-    [turns, onOpenRightRail],
-  );
-  const openDetailsSelected = useCallback(
-    (eventId: string) => {
-      const args = railArgsForFeedEvent(turns, eventId);
-      if (!args) return;
-      onForceOpenRightRail(args.turnId, args.focusEventId, true);
-    },
-    [turns, onForceOpenRightRail],
-  );
-  const { selectedEventId, selectMessage } = useFeedMessageNav(
-    eventIds,
-    chatRef,
-    session.id,
-    activateSelected,
-    undefined,
-    openDetailsSelected,
-  );
-
   useEffect(() => {
     if (focusTurnId) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
   }, [focusTurnId, focusEventId, focusEventKey, onForceOpenRightRail]);
@@ -74,8 +45,6 @@ export const SessionTranscript = memo(function SessionTranscript({
               key={turn.id}
               session={session}
               turn={turn}
-              selectedEventId={selectedEventId}
-              onSelectMessage={selectMessage}
               onOpenRightRail={onOpenRightRail}
             />
           ))}

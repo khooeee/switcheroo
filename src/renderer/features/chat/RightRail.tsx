@@ -1,9 +1,7 @@
 import { memo, useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import type { Session, TranscriptTurn } from "../../../shared/types";
-import { requestFocusPane } from "../shortcuts/paneFocus";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import { TurnDetail } from "./TurnDetail";
-import { useTurnDetailNav } from "./useTurnDetailNav";
 import {
   applyRightRailWidth,
   hideRightRail,
@@ -20,7 +18,6 @@ export const RightRail = memo(function RightRail({
   scrollRef,
   focusEventId,
   focusKey = 0,
-  takeFocus = false,
   onClose,
   onEventActivate,
 }: {
@@ -32,29 +29,16 @@ export const RightRail = memo(function RightRail({
   scrollRef?: RefObject<HTMLDivElement | null>;
   focusEventId?: string;
   focusKey?: number;
-  /** Opened via ArrowRight — take keyboard focus into details. */
-  takeFocus?: boolean;
   onClose: () => void;
   onEventActivate?: (eventId: string) => void;
 }) {
   const localScrollRef = useRef<HTMLDivElement>(null);
   const resolvedScrollRef = scrollRef ?? localScrollRef;
-  const { selectedEventId, selectEvent } = useTurnDetailNav(
-    turn,
-    resolvedScrollRef,
-    focusEventId,
-    onEventActivate,
-  );
 
   useEffect(() => {
     showRightRail();
     return () => hideRightRail();
   }, []);
-
-  useEffect(() => {
-    if (!takeFocus) return;
-    requestFocusPane("details");
-  }, [takeFocus, focusKey, turn.id]);
 
   useEffect(() => {
     if (!focusEventId) return;
@@ -135,17 +119,10 @@ export const RightRail = memo(function RightRail({
           <TurnDetail
             session={session}
             turn={turn}
-            selectedEventId={selectedEventId}
-            onSelectEvent={selectEvent}
             onEventActivate={onEventActivate}
           />
         ) : (
-          <ClosedTurnDetail
-            turn={turn}
-            agent={agent}
-            cwd={cwd}
-            selectedEventId={selectedEventId}
-          />
+          <ClosedTurnDetail turn={turn} agent={agent} cwd={cwd} />
         )}
       </div>
     </aside>

@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, type KeyboardEvent, type MouseEvent } from "react";
+import { memo, useCallback, useMemo, type MouseEvent } from "react";
 import type { Session, SwitchboardTurn } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
@@ -14,8 +14,6 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   title,
   cwd,
   session,
-  selectedEventId,
-  onSelectMessage,
   onOpenRightRail,
   onOpen,
 }: {
@@ -23,8 +21,6 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   title: string;
   cwd?: string;
   session: Session | undefined;
-  selectedEventId: string | null;
-  onSelectMessage: (eventId: string) => void;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
@@ -41,19 +37,16 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     [turn.events],
   );
   const openRail = useCallback(
-    (eventId: string) => {
-      onSelectMessage(eventId);
-      onOpenRightRail(turn.id, eventId);
-    },
-    [onOpenRightRail, onSelectMessage, turn.id],
+    (eventId: string) => onOpenRightRail(turn.id, eventId),
+    [onOpenRightRail, turn.id],
   );
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
   );
 
-  /** Message click selects + toggles the right rail; title still navigates when navigable. */
-  const activate = (event: MouseEvent | KeyboardEvent, eventId: string) => {
+  /** Message click toggles the right rail; title still navigates when navigable. */
+  const activate = (event: MouseEvent, eventId: string) => {
     const target = event.target as HTMLElement;
     if (target.closest("button, a, summary, details")) return;
     event.stopPropagation();
@@ -67,24 +60,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       data-find-text={`${title} ${userText} ${assistantText}`}
     >
       <div
-        className={`message user turn-toggle${turn.user.queued ? " queued" : ""}${selectedEventId === turn.user.id ? " selected" : ""}`}
+        className={`message user turn-toggle${turn.user.queued ? " queued" : ""}`}
         data-event-id={turn.user.id}
-        data-selected={selectedEventId === turn.user.id || undefined}
-        aria-selected={selectedEventId === turn.user.id || undefined}
         role="button"
         tabIndex={0}
         onClick={(e) => activate(e, turn.user.id)}
-        onKeyDown={(e) => {
-          if (e.key === " ") {
-            e.preventDefault();
-            activate(e, turn.user.id);
-            return;
-          }
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (turn.navigable) handleOpenSession(turn.user.id);
-          }
-        }}
       >
         <div className="row">
           <span className="kind-pill">user</span>
@@ -130,24 +110,11 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
 
       {!running && turn.assistant ? (
         <div
-          className={`message assistant turn-toggle${turn.fileChanges.length ? " has-file-changes" : ""}${selectedEventId === turn.assistant.id ? " selected" : ""}`}
+          className={`message assistant turn-toggle${turn.fileChanges.length ? " has-file-changes" : ""}`}
           data-event-id={turn.assistant.id}
-          data-selected={selectedEventId === turn.assistant.id || undefined}
-          aria-selected={selectedEventId === turn.assistant.id || undefined}
           role="button"
           tabIndex={0}
           onClick={(e) => activate(e, turn.assistant!.id)}
-          onKeyDown={(e) => {
-            if (e.key === " ") {
-              e.preventDefault();
-              activate(e, turn.assistant!.id);
-              return;
-            }
-            if (e.key === "Enter") {
-              e.preventDefault();
-              if (turn.navigable) handleOpenSession(turn.assistant!.id);
-            }
-          }}
         >
           <div className="row">
             <span className="kind-pill">assistant</span>

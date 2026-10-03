@@ -8,23 +8,16 @@ import { TurnEvents } from "./TurnEvents";
 export const SessionTurn = memo(function SessionTurn({
   session,
   turn,
-  selectedEventId,
-  onSelectMessage,
   onOpenRightRail,
 }: {
   session: Session;
   turn: TranscriptTurn;
-  selectedEventId: string | null;
-  onSelectMessage: (eventId: string) => void;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const openRail = useCallback(
-    (eventId: string) => {
-      onSelectMessage(eventId);
-      onOpenRightRail(turn.id, eventId);
-    },
-    [onOpenRightRail, onSelectMessage, turn.id],
+    (eventId: string) => onOpenRightRail(turn.id, eventId),
+    [onOpenRightRail, turn.id],
   );
   const handleOpenUser = useCallback(() => openRail(turn.user.id), [openRail, turn.user.id]);
   const handleOpenAssistant = useCallback(() => {
@@ -42,7 +35,6 @@ export const SessionTurn = memo(function SessionTurn({
       <TranscriptMessage
         session={session}
         item={turn.user}
-        selected={selectedEventId === turn.user.id}
         onActivate={handleOpenUser}
         forkable
       />
@@ -52,7 +44,6 @@ export const SessionTurn = memo(function SessionTurn({
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          selected={selectedEventId === turn.assistant.id}
           onActivate={handleOpenAssistant}
           extraFileChanges={turn.fileChanges}
           forkable

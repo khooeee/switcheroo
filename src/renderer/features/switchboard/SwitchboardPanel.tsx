@@ -11,7 +11,6 @@ interface Props {
   onNoticeDismiss: () => void;
   onTurnClick: (sessionId: string, turnId: string, eventId: string) => void;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  onForceOpenRightRail: (turnId: string, focusEventId?: string, takeFocus?: boolean) => void;
 }
 
 /** Switchboard panel: header, optional missing-session notice, and feed. */
@@ -23,7 +22,6 @@ export function SwitchboardPanel({
   onNoticeDismiss,
   onTurnClick,
   onOpenRightRail,
-  onForceOpenRightRail,
 }: Props) {
   return (
     <section className="panel">
@@ -35,9 +33,7 @@ export function SwitchboardPanel({
         <SwitchboardFeed
           turns={turns}
           sessions={sessions}
-          scrollRef={scrollRef}
           onOpenRightRail={onOpenRightRail}
-          onForceOpenRightRail={onForceOpenRightRail}
           onClick={onTurnClick}
         />
       </div>

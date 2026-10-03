@@ -12,17 +12,12 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
   onActivate,
-  onSelect,
-  selected,
   extraFileChanges,
   forkable,
 }: {
   session: Session;
   item: TranscriptItem;
   onActivate?: () => void;
-  /** Click-to-select without activating (e.g. turn-details keyboard nav). */
-  onSelect?: () => void;
-  selected?: boolean;
   /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
   forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
@@ -37,23 +32,20 @@ export const TranscriptMessage = memo(function TranscriptMessage({
 
   return (
     <div
-      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}${selected ? " selected" : ""}`}
+      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
-      data-selected={selected || undefined}
-      aria-selected={selected || undefined}
       onClick={
-        clickable || onSelect
+        clickable
           ? (event) => {
               const target = event.target as HTMLElement;
               if (target.closest("button, a, summary, details, input, textarea")) return;
-              onSelect?.();
-              if (clickable) onActivate?.();
+              onActivate?.();
             }
           : undefined
       }
       role={clickable ? "button" : undefined}
-      tabIndex={clickable ? 0 : -1}
+      tabIndex={clickable ? 0 : undefined}
     >
       {item.role !== "stopped" && (
         <div className="row">

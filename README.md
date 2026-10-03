@@ -1,6 +1,6 @@
 # Switcheroo
 
-High productivity keyboard friendly ACP coding agent
+High productivity ACP coding agent
 
 Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard
 
@@ -85,7 +85,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+I**: Toggle focus between prompt & session transcript
+**Cmd/Ctrl+I**: Focus prompt
 
 **Cmd/Ctrl+N**: New agent session
 
@@ -98,13 +98,5 @@ It's likely you don't have to read this section ever, but it's here in case the 
 **Cmd/Ctrl+Y**: Fork selected session
 
 **Cmd+/**: Toggle zen mode
-
-**Enter**: Enter key on selected item in switchboard will jump to that transcript
-
-**Space**: Space key on selected item in switchboard or session transcript will toggle the turn details
-
-**Left/right key**: Left/right key in transcript or turn details will allow you to shift focus between the two
-
-**Left/right key**: Left/right key in transcript or turn details will allow you to shift focus between the two
 
 **/**: shows autocomplete of slash commands in the composer

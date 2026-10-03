@@ -60,7 +60,6 @@ export function useAppShortcuts({
   const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
   usePaneFocusCycle({
     hasPrompt: activeSessionId !== SWITCHBOARD_ID,
-    detailsOpen: rightRailOpen,
     blocked,
   });
   useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);

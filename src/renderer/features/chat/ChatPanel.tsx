@@ -18,7 +18,7 @@ interface Props {
   promptFocus: number;
   chatRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  onForceOpenRightRail: (turnId: string, focusEventId?: string, takeFocus?: boolean) => void;
+  onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
