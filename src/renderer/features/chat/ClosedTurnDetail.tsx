@@ -30,11 +30,11 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
       <div className={`message user${turn.user.queued ? " queued" : ""}`} data-event-id={turn.user.id}>
         <div className="row">
           <span className="kind-pill">user</span>
+          {turn.user.queued ? <span className="queued-status" role="status">queued</span> : null}
           <span className="event-timestamp" style={{ marginLeft: "auto" }}>
             {formatDetailTimestamp(turn.user.at)}
           </span>
         </div>
-        {turn.user.queued ? <div className="message-queued" role="status">Queued</div> : null}
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />

@@ -66,6 +66,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       >
         <div className="row">
           <span className="kind-pill">user</span>
+          {turn.user.queued ? <span className="queued-status" role="status">queued</span> : null}
           <span
             className={`event-title${turn.navigable ? " openable" : ""}`}
             onClick={(e) => {
@@ -80,7 +81,6 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
             {formatDetailTimestamp(turn.at)}
           </span>
         </div>
-        {turn.user.queued ? <div className="message-queued" role="status">Queued</div> : null}
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />

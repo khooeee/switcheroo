@@ -56,15 +56,13 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       {item.role !== "stopped" && (
         <div className="row">
           <span className="kind-pill">{item.role}</span>
+          {item.queued ? <span className="queued-status" role="status">queued</span> : null}
           {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
           <span className="event-timestamp" style={{ marginLeft: "auto" }}>
             {formatDetailTimestamp(item.at)}
           </span>
         </div>
       )}
-      {item.queued ? (
-        <div className="message-queued" role="status">Queued</div>
-      ) : null}
       {changes?.length ? (
         <>
           {markdown && text ? <MarkdownBody text={text} /> : null}

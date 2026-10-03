@@ -541,8 +541,8 @@ html[data-details="hidden"] .message.assistant .kind-pill {
 }
 
 /* Drop the header row when zen hid everything in it (user/assistant only had pill + timestamp). */
-html[data-details="hidden"] .message.user .row:not(:has(.event-title)):not(:has(.tool-status)),
-html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(:has(.tool-status)) {
+html[data-details="hidden"] .message.user .row:not(:has(.event-title)):not(:has(.tool-status)):not(:has(.queued-status)),
+html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(:has(.tool-status)):not(:has(.queued-status)) {
   display: none;
 }
 
@@ -589,11 +589,9 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   opacity: 0.72;
 }
 
-.message-queued {
-  margin-bottom: 6px;
+.queued-status {
   color: var(--text-dim);
   font-size: 10px;
-  font-family: var(--font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
