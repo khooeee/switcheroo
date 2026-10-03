@@ -8,6 +8,7 @@ import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { flatRailSessions } from "./flatRailSessions";
 import { requestPromptFocus } from "../shortcuts/paneFocus";
 import { SessionRailFilter } from "./SessionRailFilter";
+import { SessionRailLabel } from "./SessionRailLabel";
 import { SessionRailMenu } from "./SessionRailMenu";
 import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
@@ -164,7 +165,7 @@ export function SessionRail({
         }}
         onContextMenu={(e) => openMenu(e, session, isPinned)}
       >
-        <span className="rail-label">{session.title}</span>
+        <SessionRailLabel title={session.title} />
         {(session.status === "running" || unreadDots.has(session.id) || isPinned || canPin) && (
           <span className="rail-session-end">
             {session.status === "running" ? (

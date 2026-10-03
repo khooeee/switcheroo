@@ -1,0 +1,9 @@
+.rail-label-link {
+  color: var(--codex);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rail-label-link:hover {
+  color: var(--text);
+}
