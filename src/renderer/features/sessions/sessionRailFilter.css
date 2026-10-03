@@ -1,0 +1,56 @@
+.rail-filter {
+  flex-shrink: 0;
+  width: calc(100% - 16px);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rail-filter input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+  border-radius: 8px;
+  background: var(--bg-1);
+  color: var(--text);
+  padding: 0 8px;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.rail-filter input:focus {
+  border-color: var(--accent);
+}
+
+.rail-filter input::placeholder {
+  color: color-mix(in srgb, var(--text-dim) 45%, transparent);
+}
+
+.rail-filter-clear {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rail-filter-clear:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.rail-filter-empty {
+  width: calc(100% - 24px);
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}

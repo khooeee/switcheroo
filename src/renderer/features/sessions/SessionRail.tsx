@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import type { ActiveSessionId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
@@ -7,9 +7,11 @@ import { applyRailWidth, readRailWidth } from "./railWidth";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { flatRailSessions } from "./flatRailSessions";
 import { requestFocusPane } from "../shortcuts/paneFocus";
+import { SessionRailFilter } from "./SessionRailFilter";
 import { SessionRailMenu } from "./SessionRailMenu";
 import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
+import { sessionMatchesFilter } from "./sessionMatchesFilter";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionDoneDots } from "./useSessionDoneDots";
 import "./sessionSpinner.css";
@@ -19,6 +21,8 @@ interface Props {
   pinned: Session[];
   unpinned: Session[];
   activeSessionId: ActiveSessionId;
+  filter: string;
+  onFilter: (value: string) => void;
   onSelect: (id: ActiveSessionId) => void;
   onAdd: () => void;
   onClose: (id: string) => void;
@@ -33,6 +37,8 @@ export function SessionRail({
   pinned,
   unpinned,
   activeSessionId,
+  filter,
+  onFilter,
   onSelect,
   onAdd,
   onClose,
@@ -47,9 +53,19 @@ export function SessionRail({
   const scrollRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const allSessions = flatRailSessions(pinned, unpinned);
+  const filteredPinned = useMemo(
+    () => pinned.filter((session) => sessionMatchesFilter(session, filter)),
+    [pinned, filter],
+  );
+  const filteredUnpinned = useMemo(
+    () => unpinned.filter((session) => sessionMatchesFilter(session, filter)),
+    [unpinned, filter],
+  );
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
   const doneDots = useSessionDoneDots(activeSessionId);
+  const filterActive = filter.trim().length > 0;
+  const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
 
   useEffect(() => {
     if (!menu) return;
@@ -183,13 +199,15 @@ export function SessionRail({
           +
         </button>
       </div>
+      <SessionRailFilter value={filter} onChange={onFilter} />
       <div className="rail-sessions">
         <div className="rail-scroll" ref={scrollRef}>
-          {pinned.map((session) => renderRow(session, true))}
-          {pinned.length > 0 && unpinned.length > 0 && (
+          {filteredPinned.map((session) => renderRow(session, true))}
+          {filteredPinned.length > 0 && filteredUnpinned.length > 0 && (
             <div className="rail-pin-divider" role="separator" aria-hidden="true" />
           )}
-          {unpinned.map((session) => renderRow(session, false))}
+          {filteredUnpinned.map((session) => renderRow(session, false))}
+          {noMatches ? <div className="rail-filter-empty">No matching sessions</div> : null}
         </div>
         <div className="rail-fade" aria-hidden="true" />
       </div>

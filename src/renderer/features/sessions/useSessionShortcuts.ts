@@ -2,6 +2,7 @@ import type { ActiveSessionId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { flatRailSessions } from "./flatRailSessions";
+import { sessionMatchesFilter } from "./sessionMatchesFilter";
 import { useEffect } from "react";
 
 function toggleActivePin(pinned: Session[], unpinned: Session[], activeSessionId: ActiveSessionId) {
@@ -21,13 +22,22 @@ export function useSessionShortcuts(
   activeSessionId: ActiveSessionId,
   selectSession: (id: ActiveSessionId) => void,
   disabled: boolean,
+  filterQuery = "",
 ) {
   useEffect(() => {
-    const ids = flatRailSessions(pinned, unpinned).map((session) => session.id);
+    const visiblePinned = pinned.filter((session) => sessionMatchesFilter(session, filterQuery));
+    const visibleUnpinned = unpinned.filter((session) => sessionMatchesFilter(session, filterQuery));
+    const ids = flatRailSessions(visiblePinned, visibleUnpinned).map((session) => session.id);
+    // Switchboard stays visible above the filter; Tab cycles it with matching sessions only.
     const order: ActiveSessionId[] = [SWITCHBOARD_ID, ...ids];
     const step = (delta: number) => {
       if (disabled || order.length === 0) return;
-      const index = Math.max(0, order.indexOf(activeSessionId));
+      const index = order.indexOf(activeSessionId);
+      if (index < 0) {
+        const fallback = delta > 0 ? order[0] : order[order.length - 1];
+        if (fallback !== undefined) selectSession(fallback);
+        return;
+      }
       const next = order[(index + delta + order.length) % order.length];
       if (next !== undefined) selectSession(next);
     };
@@ -70,5 +80,5 @@ export function useSessionShortcuts(
       window.removeEventListener("switcheroo:session-prev", onPrev);
       window.removeEventListener("switcheroo:toggle-pin", onTogglePin);
     };
-  }, [pinned, unpinned, activeSessionId, selectSession, disabled]);
+  }, [pinned, unpinned, activeSessionId, selectSession, disabled, filterQuery]);
 }

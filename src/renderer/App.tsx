@@ -38,6 +38,7 @@ export function App() {
   const [showFindInSessions, setShowFindInSessions] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
+  const [sessionFilter, setSessionFilter] = useState("");
   const [focusEvent, setFocusEvent] = useState<{
     id: string;
     turnId: string;
@@ -172,6 +173,7 @@ export function App() {
     showFindInSessions,
     findOpen,
     rightRailOpen: !!rightRailView,
+    sessionFilter,
     setFindOpen,
     setFindQuery,
     setShowNewSession,
@@ -220,6 +222,8 @@ export function App() {
         pinned={pinnedSessions}
         unpinned={unpinnedSessions}
         activeSessionId={activeSessionId}
+        filter={sessionFilter}
+        onFilter={setSessionFilter}
         onSelect={selectSession}
         onAdd={() => setShowNewSession(true)}
         onClose={(id) => void window.switcheroo.closeSession(id)}

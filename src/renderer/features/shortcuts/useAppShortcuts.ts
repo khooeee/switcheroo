@@ -24,6 +24,7 @@ export function useAppShortcuts({
   showFindInSessions,
   findOpen,
   rightRailOpen,
+  sessionFilter,
   setFindOpen,
   setFindQuery,
   setShowNewSession,
@@ -39,6 +40,7 @@ export function useAppShortcuts({
   showFindInSessions: boolean;
   findOpen: boolean;
   rightRailOpen: boolean;
+  sessionFilter: string;
   setFindOpen: (open: boolean) => void;
   setFindQuery: (query: string) => void;
   setShowNewSession: (open: boolean) => void;
@@ -62,7 +64,7 @@ export function useAppShortcuts({
     hasPrompt: activeSessionId !== SWITCHBOARD_ID,
     blocked,
   });
-  useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked);
+  useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked, sessionFilter);
 
   useEffect(() => {
     const closeActive = () => {
