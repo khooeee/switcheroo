@@ -13,7 +13,7 @@ import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
 import { sessionMatchesFilter } from "./sessionMatchesFilter";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
-import { useSessionDoneDots } from "./useSessionDoneDots";
+import { useSessionUnreadDots } from "./useSessionUnreadDots";
 import "./sessionSpinner.css";
 import "./sessionRailPin.css";
 
@@ -63,7 +63,7 @@ export function SessionRail({
   );
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
-  const doneDots = useSessionDoneDots(activeSessionId);
+  const unreadDots = useSessionUnreadDots(activeSessionId);
   const filterActive = filter.trim().length > 0;
   const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
 
@@ -156,12 +156,12 @@ export function SessionRail({
         onContextMenu={(e) => openMenu(e, session, isPinned)}
       >
         <span className="rail-label">{session.title}</span>
-        {(session.status === "running" || doneDots.has(session.id) || isPinned || canPin) && (
+        {(session.status === "running" || unreadDots.has(session.id) || isPinned || canPin) && (
           <span className="rail-session-end">
             {session.status === "running" ? (
               <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-            ) : doneDots.has(session.id) ? (
-              <span className="rail-done" role="status" aria-label="Turn complete" />
+            ) : unreadDots.has(session.id) ? (
+              <span className="rail-unread" role="status" aria-label="Unread" />
             ) : null}
             {(isPinned || canPin) && (
               <SessionRailPinButton

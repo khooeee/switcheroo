@@ -9,7 +9,7 @@
 }
 
 .rail-session-end .rail-spinner,
-.rail-session-end .rail-done,
+.rail-session-end .rail-unread,
 .rail-session-end .rail-pin-btn {
   grid-area: 1 / 1;
   margin: 0;
@@ -36,8 +36,8 @@
   opacity: 1;
 }
 
-.rail-session:hover .rail-session-end:has(.rail-pin-btn) .rail-done,
-.rail-session-end:has(.rail-pin-btn:focus-visible) .rail-done {
+.rail-session:hover .rail-session-end:has(.rail-pin-btn) .rail-unread,
+.rail-session-end:has(.rail-pin-btn:focus-visible) .rail-unread {
   opacity: 0;
 }
 

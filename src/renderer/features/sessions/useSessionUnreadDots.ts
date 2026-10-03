@@ -3,15 +3,15 @@ import type { ActiveSessionId } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 
 /** Session ids with an unread completed turn; cleared when that session becomes active. */
-export function useSessionDoneDots(activeSessionId: ActiveSessionId): ReadonlySet<string> {
-  const [done, setDone] = useState(() => new Set<string>());
+export function useSessionUnreadDots(activeSessionId: ActiveSessionId): ReadonlySet<string> {
+  const [unread, setUnread] = useState(() => new Set<string>());
   const activeRef = useRef(activeSessionId);
   activeRef.current = activeSessionId;
 
   useEffect(() => {
     return window.switcheroo.onPromptComplete(({ sessionId }) => {
       if (sessionId === activeRef.current) return;
-      setDone((prev) => {
+      setUnread((prev) => {
         if (prev.has(sessionId)) return prev;
         const next = new Set(prev);
         next.add(sessionId);
@@ -22,7 +22,7 @@ export function useSessionDoneDots(activeSessionId: ActiveSessionId): ReadonlySe
 
   useEffect(() => {
     if (activeSessionId === SWITCHBOARD_ID) return;
-    setDone((prev) => {
+    setUnread((prev) => {
       if (!prev.has(activeSessionId)) return prev;
       const next = new Set(prev);
       next.delete(activeSessionId);
@@ -30,5 +30,5 @@ export function useSessionDoneDots(activeSessionId: ActiveSessionId): ReadonlySe
     });
   }, [activeSessionId]);
 
-  return done;
+  return unread;
 }

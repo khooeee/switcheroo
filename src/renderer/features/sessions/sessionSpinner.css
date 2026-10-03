@@ -11,7 +11,7 @@
   animation: rail-spinner-turn 0.8s linear infinite;
 }
 
-.rail-done {
+.rail-unread {
   width: 10px;
   height: 10px;
   flex-shrink: 0;
