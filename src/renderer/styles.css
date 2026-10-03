@@ -507,10 +507,6 @@ button {
   cursor: pointer;
 }
 
-.message.turn-toggle:hover {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
 .message.turn-toggle:focus {
   outline: none;
 }

@@ -35,7 +35,7 @@ export const SessionTurn = memo(function SessionTurn({
       <TranscriptMessage
         session={session}
         item={turn.user}
-        onActivate={handleOpenUser}
+        onToggleDetails={handleOpenUser}
         forkable
       />
       <TurnEvents session={session} events={steerEvents} />
@@ -44,7 +44,7 @@ export const SessionTurn = memo(function SessionTurn({
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          onActivate={handleOpenAssistant}
+          onToggleDetails={handleOpenAssistant}
           extraFileChanges={turn.fileChanges}
           forkable
         />

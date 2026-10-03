@@ -1,10 +1,11 @@
-import { memo, useCallback, useMemo, type MouseEvent } from "react";
+import { memo, useCallback, useMemo } from "react";
 import type { Session, SwitchboardTurn } from "../../../shared/types";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
+import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { TurnEvents } from "../chat/TurnEvents";
 
@@ -40,18 +41,18 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     (eventId: string) => onOpenRightRail(turn.id, eventId),
     [onOpenRightRail, turn.id],
   );
+  const handleOpenUserDetails = useCallback(
+    () => openRail(turn.user.id),
+    [openRail, turn.user.id],
+  );
+  const handleOpenAssistantDetails = useCallback(() => {
+    if (!turn.assistant) return;
+    openRail(turn.assistant.id);
+  }, [openRail, turn.assistant]);
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
   );
-
-  /** Message click toggles the right rail; title still navigates when navigable. */
-  const activate = (event: MouseEvent, eventId: string) => {
-    const target = event.target as HTMLElement;
-    if (target.closest("button, a, summary, details")) return;
-    event.stopPropagation();
-    openRail(eventId);
-  };
 
   return (
     <div
@@ -60,11 +61,8 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       data-find-text={`${title} ${userText} ${assistantText}`}
     >
       <div
-        className={`message user turn-toggle${turn.user.queued ? " queued" : ""}`}
+        className={`message user${turn.user.queued ? " queued" : ""}`}
         data-event-id={turn.user.id}
-        role="button"
-        tabIndex={0}
-        onClick={(e) => activate(e, turn.user.id)}
       >
         <div className="row">
           <span className="kind-pill">user</span>
@@ -86,6 +84,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />
+          <TurnDetailsButton onToggle={handleOpenUserDetails} />
         </div>
       </div>
 
@@ -110,11 +109,8 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
 
       {!running && turn.assistant ? (
         <div
-          className={`message assistant turn-toggle${turn.fileChanges.length ? " has-file-changes" : ""}`}
+          className={`message assistant${turn.fileChanges.length ? " has-file-changes" : ""}`}
           data-event-id={turn.assistant.id}
-          role="button"
-          tabIndex={0}
-          onClick={(e) => activate(e, turn.assistant!.id)}
         >
           <div className="row">
             <span className="kind-pill">assistant</span>
@@ -132,6 +128,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           ) : null}
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
+            <TurnDetailsButton onToggle={handleOpenAssistantDetails} />
           </div>
         </div>
       ) : null}

@@ -6,18 +6,23 @@ import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
+import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 
 /** Renders one transcript leaf (user / assistant / thought / tool / …). */
 export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
   onActivate,
+  onToggleDetails,
   extraFileChanges,
   forkable,
 }: {
   session: Session;
   item: TranscriptItem;
+  /** Whole-message click (e.g. Switchboard navigate). */
   onActivate?: () => void;
+  /** Arrow control to the right of copy — toggles the turn-details rail. */
+  onToggleDetails?: () => void;
   /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
   forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
@@ -29,6 +34,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   const clickable = !!onActivate;
   const markdown =
     item.role === "assistant" || item.role === "user" || item.role === "thought";
+  const showActions = forkable || !!text || !!onToggleDetails;
 
   return (
     <div
@@ -75,12 +81,15 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       ) : (
         <div className="body">{text}</div>
       )}
-      <div className="event-actions">
-        {forkable && session.supportsForkAtMessage ? (
-          <ForkEventButton sessionId={session.id} eventId={item.id} />
-        ) : null}
-        {text ? <CopyEventButton text={text} /> : null}
-      </div>
+      {showActions ? (
+        <div className="event-actions">
+          {forkable && session.supportsForkAtMessage ? (
+            <ForkEventButton sessionId={session.id} eventId={item.id} />
+          ) : null}
+          {text ? <CopyEventButton text={text} /> : null}
+          {onToggleDetails ? <TurnDetailsButton onToggle={onToggleDetails} /> : null}
+        </div>
+      ) : null}
     </div>
   );
 });
