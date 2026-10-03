@@ -12,6 +12,10 @@
   margin: 0 16px 16px;
 }
 
+.chat-thinking.activatable {
+  cursor: pointer;
+}
+
 .chat-thinking-label {
   display: inline-block;
   background: linear-gradient(

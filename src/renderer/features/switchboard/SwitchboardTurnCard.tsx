@@ -106,7 +106,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       ) : null}
 
-      {running ? <ThinkingIndicator /> : null}
+      {running ? <ThinkingIndicator onActivate={handleOpenUserDetails} /> : null}
 
       {!running && turn.assistant ? (
         <div

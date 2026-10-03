@@ -39,7 +39,7 @@ export const SessionTurn = memo(function SessionTurn({
         forkable
       />
       <TurnEvents session={session} events={steerEvents} />
-      {running ? <ThinkingIndicator /> : null}
+      {running ? <ThinkingIndicator onActivate={handleOpenUser} /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}
