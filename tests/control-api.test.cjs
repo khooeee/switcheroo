@@ -25,6 +25,7 @@ test("catalog includes core session routes without blocking wait", () => {
   assert.equal(catalog.baseUrl, "http://127.0.0.1:9/");
   assert.ok(catalog.routes.some((r) => r.method === "POST" && r.path === "/sessions"));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/prompt"));
+  assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/rename" && r.body?.title));
   assert.ok(catalog.routes.some((r) => r.path === "/sessions/:id/transcript" && r.query?.last));
   assert.ok(!catalog.routes.some((r) => r.path === "/sessions/:id/wait"));
   assert.ok(!catalog.routes.some((r) => r.method === "DELETE"));
@@ -121,4 +122,66 @@ test("POST /sessions creates the session without switching focus to it", async (
   assert.equal(calls.length, 1);
   assert.equal(calls[0].options.focus, false);
   assert.equal(calls[0].input.switcherooAware, true);
+});
+
+test("POST /sessions/:id/rename renames an open session", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const renamed = [];
+  const sessions = {
+    getSession: (id) => (id === "child-1" ? { id: "child-1" } : undefined),
+    renameSession: (id, title) => {
+      renamed.push({ id, title });
+    },
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions/child-1/rename",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end(JSON.stringify({ title: "  Renamed  " }));
+  await done;
+  assert.equal(status, 200);
+  assert.deepEqual(JSON.parse(body), { sessionId: "child-1", title: "Renamed", ok: true });
+  assert.deepEqual(renamed, [{ id: "child-1", title: "Renamed" }]);
+});
+
+test("POST /sessions/:id/rename requires a non-empty title", async () => {
+  const { handleControlRequest } = loadWithRelative(
+    path.resolve(__dirname, "../src/main/control/controlRoutes.ts"),
+  );
+  const sessions = {
+    getSession: () => ({ id: "child-1" }),
+    renameSession: () => {
+      throw new Error("should not rename");
+    },
+  };
+  const { PassThrough } = require("node:stream");
+  const req = new PassThrough();
+  Object.assign(req, {
+    method: "POST",
+    url: "/sessions/child-1/rename",
+    headers: { authorization: "Bearer secret" },
+  });
+  let status = 0;
+  let body = "";
+  const res = {
+    writeHead: (code) => { status = code; },
+    end: (payload) => { body = payload; },
+  };
+  const done = handleControlRequest(req, res, "secret", "http://127.0.0.1:1/", sessions);
+  req.end(JSON.stringify({ title: "   " }));
+  await done;
+  assert.equal(status, 400);
+  assert.equal(JSON.parse(body).error, "title is required");
 });

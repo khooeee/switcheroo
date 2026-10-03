@@ -40,7 +40,7 @@ export async function handleControlRequest(
       return json(res, 200, session);
     }
 
-    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript))?$/.exec(pathname);
+    const sessionMatch = /^\/sessions\/([^/]+)(?:\/(prompt|cancel|close|transcript|rename))?$/.exec(pathname);
     if (!sessionMatch) return json(res, 404, { error: "Not found" });
     const sessionId = decodeURIComponent(sessionMatch[1]!);
     const action = sessionMatch[2];
@@ -55,6 +55,14 @@ export async function handleControlRequest(
       if (!text.trim()) return json(res, 400, { error: "text is required" });
       const turnId = await sessions.enqueuePrompt(sessionId, text);
       return json(res, 200, { sessionId, turnId, ok: true });
+    }
+    if (method === "POST" && action === "rename") {
+      const body = await readJson(req);
+      const title = typeof body.title === "string" ? body.title.trim() : "";
+      if (!title) return json(res, 400, { error: "title is required" });
+      if (!sessions.getSession(sessionId)) return json(res, 404, { error: "Session not found" });
+      sessions.renameSession(sessionId, title);
+      return json(res, 200, { sessionId, title, ok: true });
     }
     if (method === "POST" && action === "cancel") {
       await sessions.cancelPrompt(sessionId);

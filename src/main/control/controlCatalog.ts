@@ -61,6 +61,16 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
     },
     {
       method: "POST",
+      path: "/sessions/:id/rename",
+      auth: true,
+      summary: "Rename a session",
+      body: { title: "new title string" },
+      example:
+        `curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" ` +
+        `-d '{"title":"My session"}' ${b}/sessions/<id>/rename`,
+    },
+    {
+      method: "POST",
       path: "/sessions/:id/cancel",
       auth: true,
       summary: "Cancel the running prompt",
