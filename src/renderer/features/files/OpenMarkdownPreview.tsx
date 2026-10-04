@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MarkdownPreviewModal } from "./MarkdownPreviewModal";
 
-/** Opens a GitHub-style Markdown Preview modal for an edited `.md` file. */
+/** Inline "Preview" control that opens a GitHub-style Markdown modal. */
 export function OpenMarkdownPreview({ path, text }: { path: string; text: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -12,7 +12,7 @@ export function OpenMarkdownPreview({ path, text }: { path: string; text: string
         data-tooltip={`Preview ${path} as on GitHub`}
         onClick={() => setOpen(true)}
       >
-        Markdown Preview
+        Preview
       </button>
       {open ? (
         <MarkdownPreviewModal path={path} text={text} onClose={() => setOpen(false)} />

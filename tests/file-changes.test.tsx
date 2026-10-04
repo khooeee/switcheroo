@@ -101,27 +101,27 @@ test("line diffs reconstruct exact before and after text, including the large-in
   expect(lines.find((line) => line.kind === "added")!.newLine).toBe(2);
 });
 
-test("file entries render relative paths, collapsible diffs, and missing-content notices safely", () => {
+test("file entries render relative paths in a wrapping name row", () => {
   const changes = [
     { path: "/project/new.ts", kind: "created" as const, oldText: null, newText: "<script>" },
     { path: "/project/old.ts", kind: "deleted" as const },
   ];
   const html = renderToStaticMarkup(
-    <FileChanges changes={changes} status="completed" cwd="/project" />,
+    <FileChanges changes={changes} cwd="/project" />,
   );
-  expect(html).toMatch(/<details/);
-  expect(html).toMatch(/Created new.ts/);
-  expect(html).toMatch(/Deleted old.ts/);
-  expect(html).toMatch(/Diff not provided/);
+  expect(html).toMatch(/file-change-names/);
+  expect(html).toMatch(/>new\.ts</);
+  expect(html).toMatch(/>old\.ts</);
+  expect(html).not.toMatch(/Created |Deleted |Update |Diff not provided/);
   expect(html).not.toMatch(/<pre/);
-  expect(html).not.toMatch(/Markdown Preview/);
+  expect(html).not.toMatch(/>Preview</);
   const diff = renderToStaticMarkup(<FileDiff change={changes[0]} />);
   expect(diff).toMatch(/diff-line added/);
   expect(diff).toMatch(/&lt;script&gt;/);
   expect(diff).not.toMatch(/<script>/);
 });
 
-test("markdown edits offer Markdown Preview beside Open in Cursor", () => {
+test("markdown edits append a Preview link beside the filename", () => {
   const changes = [
     {
       path: "/project/README.md",
@@ -129,13 +129,15 @@ test("markdown edits offer Markdown Preview beside Open in Cursor", () => {
       oldText: "# Old",
       newText: "# Switcheroo\n\nHello",
     },
-    { path: "/project/a.ts", kind: "updated" as const, oldText: "a", newText: "b" },
+    { path: "/project/train/train.py", kind: "updated" as const, oldText: "a", newText: "b" },
   ];
   const html = renderToStaticMarkup(
-    <FileChanges changes={changes} status="completed" cwd="/project" sessionId="s1" />,
+    <FileChanges changes={changes} cwd="/project" sessionId="s1" />,
   );
-  expect(html).toMatch(/Open in Cursor/);
-  expect(html.match(/Markdown Preview/g)?.length).toBe(1);
+  expect(html).toMatch(/>README\.md</);
+  expect(html).toMatch(/>train\/train\.py</);
+  expect(html.match(/>Preview</g)?.length).toBe(1);
+  expect(html).not.toMatch(/Open in Cursor/);
 });
 
 test("finishing a turn settles only unfinished tools and accepts late final updates", () => {

@@ -74,7 +74,6 @@ export const TranscriptMessage = memo(function TranscriptMessage({
           {!markdown && text && !item.fileChanges?.length ? <div className="body">{text}</div> : null}
           <FileChanges
             changes={changes}
-            status={item.toolStatus}
             cwd={session.cwd}
             sessionId={session.id}
           />
