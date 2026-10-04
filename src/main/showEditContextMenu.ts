@@ -1,6 +1,6 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 
-/** Native Copy (+ optional Copy as Markdown / Find / Turn Details / Fork). */
+/** Native Copy (+ optional Copy as Markdown / Find / Turn Details). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
   opts: {
@@ -8,7 +8,6 @@ export function showEditContextMenu(
     canCopy?: boolean;
     canFind?: boolean;
     turnDetails?: { turnId: string; eventId: string };
-    fork?: { sessionId: string; eventId: string };
   } = {},
 ): void {
   if (!win || win.isDestroyed()) return;
@@ -21,6 +20,9 @@ export function showEditContextMenu(
       click: () => void clipboard.writeText(opts.markdown!),
     });
   }
+  if (opts.canFind || opts.turnDetails) {
+    items.push({ type: "separator" });
+  }
   if (opts.canFind) {
     items.push({
       label: "Find in Message",
@@ -31,13 +33,6 @@ export function showEditContextMenu(
     items.push({
       label: "Turn Details",
       click: () => win.webContents.send("turn:details", opts.turnDetails),
-    });
-  }
-  if (opts.fork) {
-    if (opts.canFind || opts.turnDetails) items.push({ type: "separator" });
-    items.push({
-      label: "Fork",
-      click: () => win.webContents.send("session:fork-at", opts.fork),
     });
   }
   Menu.buildFromTemplate(items).popup({ window: win });

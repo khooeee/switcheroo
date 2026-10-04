@@ -12,9 +12,6 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
     target?.closest("[data-copy-markdown]")?.getAttribute("data-copy-markdown") || undefined;
   const message = target?.closest(".message") as HTMLElement | null;
   setPendingFindScope(message);
-  const forkRoot = target?.closest("[data-fork-session][data-fork-event]") as HTMLElement | null;
-  const sessionId = forkRoot?.getAttribute("data-fork-session") || undefined;
-  const eventId = forkRoot?.getAttribute("data-fork-event") || undefined;
   const detailsMsg = target?.closest(".message[data-turn-details]") as HTMLElement | null;
   const turnId = detailsMsg?.closest("[data-turn-id]")?.getAttribute("data-turn-id") || undefined;
   const detailsEventId = detailsMsg?.getAttribute("data-event-id") || undefined;
@@ -23,6 +20,5 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
     canCopy,
     canFind: !!message,
     turnDetails: turnId && detailsEventId ? { turnId, eventId: detailsEventId } : undefined,
-    fork: sessionId && eventId ? { sessionId, eventId } : undefined,
   });
 }

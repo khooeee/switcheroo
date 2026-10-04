@@ -10,17 +10,18 @@ The overarching philosophy is to remove & simplify as much as possible for maxim
 - There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
+I always wanted scoped finds within a single session and beyond sessions:
+- Find in specific message, not the entire session
+- Find in turn details will only search in the turn details
+- Find in switchboard will search your recent history (up to 30 days)
+- Find in history will search your entire history
+- And find in the current session works as usual
+
 There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
-There are also niceties I always wanted when searching past text:
-- Find in specific message, not the entire session
-- Find in turn details will only search in the turn details
-- Find in switchboard
-
 Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard.
-
 
 ## Prerequisites
 

@@ -100,7 +100,6 @@ function registerIpc(): void {
         canCopy?: boolean;
         canFind?: boolean;
         turnDetails?: { turnId: string; eventId: string };
-        fork?: { sessionId: string; eventId: string };
       },
     ) => {
       showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);

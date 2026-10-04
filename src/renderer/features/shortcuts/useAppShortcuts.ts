@@ -76,11 +76,6 @@ export function useAppShortcuts({
       if (!id || blockedRef.current) return;
       void window.switcheroo.forkSession(id).catch(console.error);
     };
-    const forkAtMessage = (event: Event) => {
-      const detail = (event as CustomEvent<{ sessionId: string; eventId: string }>).detail;
-      if (!detail?.sessionId || !detail.eventId || blockedRef.current) return;
-      void window.switcheroo.forkSession(detail.sessionId, detail.eventId).catch(console.error);
-    };
     const stopActive = () => {
       const id = runningId.current;
       if (!id || blockedRef.current) return;
@@ -188,7 +183,6 @@ export function useAppShortcuts({
     window.addEventListener("switcheroo:find-sessions", openFindSessions);
     window.addEventListener("switcheroo:new-session", openNewSession);
     window.addEventListener("switcheroo:fork-session", forkActive);
-    window.addEventListener("switcheroo:fork-at-message", forkAtMessage);
     window.addEventListener("switcheroo:close-session", closeActive);
     window.addEventListener("switcheroo:stop-session", stopActive);
     window.addEventListener("keydown", onKey);
@@ -197,7 +191,6 @@ export function useAppShortcuts({
       window.removeEventListener("switcheroo:find-sessions", openFindSessions);
       window.removeEventListener("switcheroo:new-session", openNewSession);
       window.removeEventListener("switcheroo:fork-session", forkActive);
-      window.removeEventListener("switcheroo:fork-at-message", forkAtMessage);
       window.removeEventListener("switcheroo:close-session", closeActive);
       window.removeEventListener("switcheroo:stop-session", stopActive);
       window.removeEventListener("keydown", onKey);

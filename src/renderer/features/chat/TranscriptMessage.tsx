@@ -45,8 +45,6 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       data-event-id={item.id}
       data-find-text={text}
       data-copy-markdown={markdown && text ? text : undefined}
-      data-fork-session={canFork ? session.id : undefined}
-      data-fork-event={canFork ? item.id : undefined}
       data-turn-details={onToggleDetails ? "" : undefined}
       onClick={
         clickable
