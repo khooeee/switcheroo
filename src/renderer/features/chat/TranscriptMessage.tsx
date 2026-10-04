@@ -76,6 +76,8 @@ export const TranscriptMessage = memo(function TranscriptMessage({
             changes={changes}
             cwd={session.cwd}
             sessionId={session.id}
+            status={item.toolStatus}
+            compact={!!extraFileChanges?.length}
           />
         </>
       ) : markdown ? (

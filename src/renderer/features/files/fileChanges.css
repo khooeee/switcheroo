@@ -1,11 +1,27 @@
 .file-changes {
   font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.45;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.file-changes.compact {
   margin-top: 10px;
+}
+
+.file-changes.compact .file-change-names {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.file-changes.compact .file-change-panel {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.file-changes.detailed {
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .file-change-names {
@@ -48,6 +64,23 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.file-change summary,
+.file-change-label {
+  overflow-wrap: anywhere;
+}
+
+.file-change summary {
+  cursor: pointer;
+}
+
+.file-change summary:hover {
+  color: var(--codex);
+}
+
+.file-change .file-diff {
+  margin-top: 8px;
 }
 
 .file-diff {
@@ -128,7 +161,12 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px 20px;
+  margin-top: 4px;
   font-size: 11px;
+}
+
+.file-changes.compact .file-open {
+  margin-top: 0;
 }
 
 .file-open-button {

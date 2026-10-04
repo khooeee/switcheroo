@@ -78,7 +78,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
           </div>
           <MarkdownBody text={assistantText} />
           {turn.fileChanges.length ? (
-            <FileChanges changes={turn.fileChanges} cwd={cwd} />
+            <FileChanges changes={turn.fileChanges} cwd={cwd} compact />
           ) : null}
           <div className="event-actions">
             <CopyEventButton text={assistantText} />

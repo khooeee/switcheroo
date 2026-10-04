@@ -101,13 +101,13 @@ test("line diffs reconstruct exact before and after text, including the large-in
   expect(lines.find((line) => line.kind === "added")!.newLine).toBe(2);
 });
 
-test("file entries render relative paths in a wrapping name row", () => {
+test("compact file entries render relative paths in a wrapping name row", () => {
   const changes = [
     { path: "/project/new.ts", kind: "created" as const, oldText: null, newText: "<script>" },
     { path: "/project/old.ts", kind: "deleted" as const },
   ];
   const html = renderToStaticMarkup(
-    <FileChanges changes={changes} cwd="/project" />,
+    <FileChanges changes={changes} cwd="/project" compact />,
   );
   expect(html).toMatch(/file-change-names/);
   expect(html).toMatch(/>new\.ts</);
@@ -123,7 +123,7 @@ test("file entries render relative paths in a wrapping name row", () => {
   expect(diff).not.toMatch(/<script>/);
 });
 
-test("markdown edits append a Preview link beside the filename", () => {
+test("compact markdown edits append a Preview link beside the filename", () => {
   const changes = [
     {
       path: "/project/README.md",
@@ -134,12 +134,28 @@ test("markdown edits append a Preview link beside the filename", () => {
     { path: "/project/train/train.py", kind: "updated" as const, oldText: "a", newText: "b" },
   ];
   const html = renderToStaticMarkup(
-    <FileChanges changes={changes} cwd="/project" sessionId="s1" />,
+    <FileChanges changes={changes} cwd="/project" sessionId="s1" compact />,
   );
   expect(html).toMatch(/>README\.md</);
   expect(html).toMatch(/>train\/train\.py</);
   expect(html.match(/>Preview</g)?.length).toBe(1);
   expect(html).not.toMatch(/Open in Cursor/);
+});
+
+test("detailed tool entries keep verbose labels and original summary chevron", () => {
+  const changes = [
+    { path: "/project/train/train.py", kind: "updated" as const, oldText: "a", newText: "b" },
+    { path: "/project/old.ts", kind: "deleted" as const },
+  ];
+  const html = renderToStaticMarkup(
+    <FileChanges changes={changes} cwd="/project" status="completed" />,
+  );
+  expect(html).toMatch(/file-changes detailed/);
+  expect(html).toMatch(/<details/);
+  expect(html).toMatch(/Updated train\/train\.py/);
+  expect(html).toMatch(/Deleted old\.ts/);
+  expect(html).toMatch(/Diff not provided/);
+  expect(html).not.toMatch(/file-change-names/);
 });
 
 test("finishing a turn settles only unfinished tools and accepts late final updates", () => {

@@ -129,6 +129,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
               changes={turn.fileChanges}
               cwd={cwd}
               sessionId={turn.sessionId}
+              compact
             />
           ) : null}
           <div className="event-actions">
