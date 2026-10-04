@@ -1,0 +1,9 @@
+.permission-bar {
+  border-top: 1px solid var(--danger-soft);
+  background: var(--danger-soft);
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}

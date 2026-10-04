@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { Session } from "../../../shared/types";
+import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
 
 export function SessionRailMenu({

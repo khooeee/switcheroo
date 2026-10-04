@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { useFindMatches } from "./useFindMatches";
+import "./findBar.css";
 import "./findHighlights.css";
 
 interface Props {

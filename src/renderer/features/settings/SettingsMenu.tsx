@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { toggleStoredTheme } from "../theme/theme";
 import { toggleDetailsVisible } from "./details";
 import { soundPreference } from "../sound/soundPreference";
+import "./menus.css";
 import "./settingsShortcuts.css";
 
 export function SettingsMenu() {

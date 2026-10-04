@@ -4,6 +4,7 @@ import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
 import { useAvailableAgents } from "./useAvailableAgents";
+import "../modals/modal.css";
 
 const AGENT_OPTIONS: Array<{ kind: AgentKind; label: string }> = [
   { kind: "claude", label: "Claude Code" },

@@ -1,0 +1,210 @@
+.rail {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-right: 1px solid var(--border);
+  background: var(--rail-bg);
+  backdrop-filter: blur(8px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rail-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 7;
+}
+
+.rail-resize::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  transition: background 0.15s ease;
+}
+
+.rail-resize:hover::after {
+  background: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+}
+
+.rail-session {
+  width: calc(100% - 16px);
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.rail-session:focus {
+  outline: none;
+}
+
+.rail-session:focus-visible {
+  border-color: var(--accent);
+}
+
+.rail-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: pre-line;
+  word-break: break-word;
+  font-size: 12px;
+  text-align: left;
+}
+
+.rail-rename {
+  width: calc(100% - 16px);
+  min-height: 40px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--bg-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 8px;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+}
+
+.rail-session:hover {
+  border-color: var(--accent);
+}
+
+.rail-session.active {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.rail-session.creating {
+  opacity: 0.45;
+}
+
+.rail-switchboard-row {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.rail-switchboard-row .rail-session {
+  flex: 1 0 auto;
+  width: auto;
+  min-width: max-content;
+}
+
+.rail-switchboard-row .rail-label {
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.rail-sessions {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.rail-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.rail-scroll > * {
+  flex-shrink: 0;
+}
+
+.rail-pin-divider {
+  width: calc(100% - 24px);
+  height: 1px;
+  margin: 2px 0;
+  background: var(--border);
+}
+
+.rail-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--bg-1) 50%, transparent)
+  );
+}
+
+.rail-footer {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.rail-add {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.rail-add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.rail-settings {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.rail-settings .rail-session {
+  width: 40px;
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}

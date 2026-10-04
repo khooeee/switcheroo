@@ -3,6 +3,8 @@ import type { FindInSessionsHit } from "../../../shared/types";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { FindInHistoryResults } from "./FindInHistoryResults";
 import { useFindInHistorySearch } from "./useFindInHistorySearch";
+import "../modals/modal.css";
+import "./findInHistory.css";
 
 interface Props {
   open: boolean;

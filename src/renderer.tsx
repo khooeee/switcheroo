@@ -9,6 +9,7 @@ import { reclampRightRailWidth } from "./renderer/features/chat/rightRailWidth";
 import { composerHeight } from "./renderer/features/chat/composerHeight";
 import { installInstantTooltips } from "./renderer/features/tooltip/installInstantTooltips";
 import "./renderer/features/theme/theme.css";
+import "./renderer/features/tooltip/tooltip.css";
 import "./renderer/styles.css";
 
 async function boot(): Promise<void> {

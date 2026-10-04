@@ -1,4 +1,5 @@
 import type { PermissionRequest } from "../../../shared/types";
+import "./permissionBar.css";
 
 interface Props {
   request: PermissionRequest;

@@ -10,6 +10,7 @@ import {
   readRightRailWidth,
   showRightRail,
 } from "./rightRailWidth";
+import "./rightRail.css";
 
 /** Scrollable right rail showing one turn in full (user + events + assistant). */
 export const RightRail = memo(function RightRail({

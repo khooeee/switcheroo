@@ -3,6 +3,7 @@ import type { SwitchboardTurn, Session } from "../../../shared/types";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { SwitchboardFeed } from "./SwitchboardFeed";
 import { SwitchboardNotice } from "./SwitchboardNotice";
+import "../chat/transcript.css";
 
 interface Props {
   turns: SwitchboardTurn[];

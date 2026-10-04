@@ -13,6 +13,7 @@ import {
 import { formatSessionUsage } from "./formatSessionUsage";
 import { useComposerDraft } from "./useComposerDraft";
 import { userPromptHistory } from "./userPromptHistory";
+import "./composer.css";
 
 export function ChatComposer({
   session,

@@ -8,6 +8,7 @@ import type {
 import { PermissionBar } from "../permissions/PermissionBar";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
+import "./transcript.css";
 
 interface Props {
   session: Session;

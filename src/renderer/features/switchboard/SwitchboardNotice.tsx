@@ -1,3 +1,5 @@
+import "./switchboardNotice.css";
+
 interface Props {
   message: string;
   onDismiss: () => void;

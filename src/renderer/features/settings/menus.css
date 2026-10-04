@@ -1,0 +1,43 @@
+.settings-menu,
+.context-menu {
+  position: fixed;
+  z-index: 40;
+  min-width: 168px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 12px 32px var(--shadow);
+}
+
+.settings-item,
+.context-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+}
+
+.settings-item:hover,
+.context-item:hover {
+  background: var(--bg-2);
+}
+
+.context-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.context-item:disabled:hover {
+  background: transparent;
+}
+
+.context-separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}

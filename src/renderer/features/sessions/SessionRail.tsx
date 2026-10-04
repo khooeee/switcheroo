@@ -15,6 +15,7 @@ import { SessionRailRename } from "./SessionRailRename";
 import { sessionMatchesFilter } from "./sessionMatchesFilter";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionUnreadDots } from "./useSessionUnreadDots";
+import "./sessionRail.css";
 import "./sessionSpinner.css";
 import "./sessionRailPin.css";
 
