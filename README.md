@@ -1,8 +1,8 @@
 # Switcheroo
 
-High productivity ACP coding agent
+Why another coding agent?
 
-The overarching philosophy is to remove & simplify as much as possible for maximum focus:
+To remove & simplify as much as possible for maximum focus:
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
