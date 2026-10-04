@@ -4,6 +4,7 @@ import { ToolOutput } from "../src/main/acp/ToolOutput";
 import { toolFileChanges } from "../src/main/acp/toolFileChanges";
 import { diffLines } from "../src/renderer/features/files/diffLines";
 import { FileChanges } from "../src/renderer/features/files/FileChanges";
+import { coalesceFileChanges } from "../src/renderer/features/files/coalesceFileChanges";
 import { FileDiff } from "../src/renderer/features/files/FileDiff";
 import type { TranscriptItem } from "../src/shared/types";
 
@@ -156,6 +157,31 @@ test("detailed tool entries keep verbose labels and original summary chevron", (
   expect(html).toMatch(/Deleted old\.ts/);
   expect(html).toMatch(/Diff not provided/);
   expect(html).not.toMatch(/file-change-names/);
+});
+
+test("compact chips coalesce multiple edits of the same path", () => {
+  const changes = [
+    { path: "/project/a.ts", kind: "updated" as const, oldText: "1", newText: "2" },
+    { path: "/project/b.ts", kind: "created" as const, oldText: null, newText: "x" },
+    { path: "/project/a.ts", kind: "updated" as const, oldText: "2", newText: "3" },
+  ];
+  const html = renderToStaticMarkup(
+    <FileChanges changes={changes} cwd="/project" compact />,
+  );
+  expect(html.match(/>a\.ts</g)?.length).toBe(1);
+  expect(html.match(/>b\.ts</g)?.length).toBe(1);
+});
+
+test("coalesceFileChanges keeps first oldText and last newText per path", () => {
+  const merged = coalesceFileChanges([
+    { path: "a.ts", kind: "updated", oldText: "1", newText: "2" },
+    { path: "a.ts", kind: "updated", oldText: "2", newText: "3" },
+    { path: "b.ts", kind: "created", oldText: null, newText: "x" },
+  ]);
+  expect(merged).toEqual([
+    { path: "a.ts", kind: "updated", oldText: "1", newText: "3" },
+    { path: "b.ts", kind: "created", oldText: null, newText: "x" },
+  ]);
 });
 
 test("finishing a turn settles only unfinished tools and accepts late final updates", () => {

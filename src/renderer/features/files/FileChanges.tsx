@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { FileChange } from "../../../shared/types";
 import { fileChangeLabel } from "../../../shared/fileChangeLabel";
+import { coalesceFileChanges } from "./coalesceFileChanges";
 import { FileDiff, FileDiffFrame } from "./FileDiff";
 import { markdownPreviewText } from "./isMarkdownFile";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
@@ -51,6 +52,7 @@ function CompactFileChanges({
   cwd?: string;
   sessionId?: string;
 }) {
+  const unique = useMemo(() => coalesceFileChanges(changes), [changes]);
   const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set());
   const toggle = useCallback((index: number) => {
     setOpen((prev) => {
@@ -64,9 +66,9 @@ function CompactFileChanges({
     <div className="file-changes compact">
       <div className="file-change-names">
         <span className="file-change-label-prefix">Changes:</span>
-        {changes.map((change, index) => (
+        {unique.map((change, index) => (
           <FileName
-            key={`${change.path}:${index}`}
+            key={change.path}
             change={change}
             cwd={cwd}
             index={index}
@@ -75,10 +77,10 @@ function CompactFileChanges({
           />
         ))}
       </div>
-      {changes.map((change, index) =>
+      {unique.map((change, index) =>
         open.has(index) ? (
           <FilePanel
-            key={`panel:${change.path}:${index}`}
+            key={`panel:${change.path}`}
             change={change}
             title={relativePath(change.path, cwd)}
             sessionId={sessionId}
