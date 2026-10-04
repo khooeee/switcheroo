@@ -1,7 +1,9 @@
 import { test, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkdownBody } from "../src/renderer/features/markdown/MarkdownBody";
+import { GithubMarkdown } from "../src/renderer/features/files/GithubMarkdown";
 import { SwitchboardFeed } from "../src/renderer/features/switchboard/SwitchboardFeed";
+import { isMarkdownFile, markdownPreviewText } from "../src/renderer/features/files/isMarkdownFile";
 
 const opened: string[] = [];
 
@@ -14,6 +16,27 @@ vi.mock("electron", () => ({
 }));
 
 const render = (text: string) => renderToStaticMarkup(<MarkdownBody text={text} />);
+
+test("detects markdown paths and prefers newText for preview content", () => {
+  expect(isMarkdownFile("README.md")).toBe(true);
+  expect(isMarkdownFile("docs/Note.MARKDOWN")).toBe(true);
+  expect(isMarkdownFile("a.ts")).toBe(false);
+  expect(
+    markdownPreviewText({ path: "README.md", kind: "updated", oldText: "old", newText: "new" }),
+  ).toBe("new");
+  expect(markdownPreviewText({ path: "gone.md", kind: "deleted", oldText: "was" })).toBe("was");
+  expect(markdownPreviewText({ path: "a.ts", kind: "updated", newText: "x" })).toBeNull();
+});
+
+test("GitHub markdown preview uses Primer class and GFM without remark-breaks", () => {
+  const html = renderToStaticMarkup(
+    <GithubMarkdown text={"# Heading\n\n**bold**\n\n| A | B |\n| - | - |\n| 1 | 2 |"} theme="light" />,
+  );
+  expect(html).toMatch(/class="github-markdown-preview"/);
+  expect(html).toContain("<h1>Heading</h1>");
+  expect(html).toContain("<strong>bold</strong>");
+  expect(html).toContain("<table>");
+});
 
 test("renders rich Markdown and scroll containers for code and GFM tables", () => {
   const html = render(

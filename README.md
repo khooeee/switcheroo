@@ -2,7 +2,7 @@
 
 Why another coding agent?
 
-To remove & simplify as much as possible for maximum focus:
+To remove & simplify as much as possible for maximum focus on GitHub repos:
 - The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.

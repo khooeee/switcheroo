@@ -85,7 +85,7 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 20px;
   margin-top: 4px;
   font-size: 11px;
 }

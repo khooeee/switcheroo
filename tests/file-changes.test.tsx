@@ -114,10 +114,28 @@ test("file entries render relative paths, collapsible diffs, and missing-content
   expect(html).toMatch(/Deleted old.ts/);
   expect(html).toMatch(/Diff not provided/);
   expect(html).not.toMatch(/<pre/);
+  expect(html).not.toMatch(/Markdown Preview/);
   const diff = renderToStaticMarkup(<FileDiff change={changes[0]} />);
   expect(diff).toMatch(/diff-line added/);
   expect(diff).toMatch(/&lt;script&gt;/);
   expect(diff).not.toMatch(/<script>/);
+});
+
+test("markdown edits offer Markdown Preview beside Open in Cursor", () => {
+  const changes = [
+    {
+      path: "/project/README.md",
+      kind: "updated" as const,
+      oldText: "# Old",
+      newText: "# Switcheroo\n\nHello",
+    },
+    { path: "/project/a.ts", kind: "updated" as const, oldText: "a", newText: "b" },
+  ];
+  const html = renderToStaticMarkup(
+    <FileChanges changes={changes} status="completed" cwd="/project" sessionId="s1" />,
+  );
+  expect(html).toMatch(/Open in Cursor/);
+  expect(html.match(/Markdown Preview/g)?.length).toBe(1);
 });
 
 test("finishing a turn settles only unfinished tools and accepts late final updates", () => {

@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { FileChange } from "../../../shared/types";
 import { fileChangeLabel } from "../../../shared/fileChangeLabel";
 import { FileDiff } from "./FileDiff";
+import { markdownPreviewText } from "./isMarkdownFile";
 import { OpenInCursor } from "./OpenInCursor";
+import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 import "./fileChanges.css";
 
 interface Props {
@@ -25,6 +27,7 @@ function FileEntry({ change, status, cwd, sessionId }: { change: FileChange; sta
     ? change.path.slice(prefix.length + 1) : change.path;
   const label = fileChangeLabel({ ...change, path }, status);
   const hasContent = typeof change.oldText === "string" || typeof change.newText === "string";
+  const preview = markdownPreviewText(change);
   return (
     <div className="file-entry">
       {hasContent ? (
@@ -35,7 +38,12 @@ function FileEntry({ change, status, cwd, sessionId }: { change: FileChange; sta
       ) : <div className="file-change-label" data-tooltip={change.path}>
         {label}<span className="file-diff-note"> · Diff not provided</span>
       </div>}
-      {sessionId && <OpenInCursor sessionId={sessionId} filePath={change.path} />}
+      {(sessionId || preview != null) && (
+        <div className="file-open">
+          {sessionId && <OpenInCursor sessionId={sessionId} filePath={change.path} />}
+          {preview != null && <OpenMarkdownPreview path={change.path} text={preview} />}
+        </div>
+      )}
     </div>
   );
 }

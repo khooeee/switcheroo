@@ -1,10 +1,11 @@
 import { useState } from "react";
 
+/** Launches the file in Cursor; parent owns the surrounding `.file-open` row. */
 export function OpenInCursor({ sessionId, filePath }: { sessionId: string; filePath: string }) {
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <div className="file-open">
+    <>
       <button
         type="button"
         className="file-open-button"
@@ -21,6 +22,6 @@ export function OpenInCursor({ sessionId, filePath }: { sessionId: string; fileP
         {opening ? "Opening…" : "Open in Cursor"}
       </button>
       {error && <span className="file-open-error" role="alert">{error}</span>}
-    </div>
+    </>
   );
 }

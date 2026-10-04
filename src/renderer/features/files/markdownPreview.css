@@ -1,0 +1,66 @@
+.modal.markdown-preview-modal {
+  width: min(980px, 92vw);
+  height: min(85vh, 900px);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.markdown-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.markdown-preview-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.markdown-preview-close {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--codex);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.markdown-preview-close:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #ffffff;
+}
+
+html[data-theme="dark"] .markdown-preview-scroll {
+  background: #0d1117;
+}
+
+.github-markdown-preview {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .github-markdown-preview {
+    padding: 15px;
+  }
+}
