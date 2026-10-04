@@ -14,7 +14,8 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish"
+    "publish": "electron-forge publish",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": {
@@ -38,7 +39,8 @@
     "@vitejs/plugin-react": "^6.1.1",
     "electron": "44.5.1",
     "typescript": "~7.0.2",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
   },
   "dependencies": {
     "@agentclientprotocol/claude-agent-acp": "0.84.0",
