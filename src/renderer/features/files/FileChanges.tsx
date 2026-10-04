@@ -142,6 +142,7 @@ function FilePanel({
 }) {
   const hasContent = typeof change.oldText === "string" || typeof change.newText === "string";
   const collapse = () => onCollapse(index);
+  const previewText = markdownPreviewText(change) ?? undefined;
   return (
     <div className="file-change-panel">
       {hasContent ? (
@@ -156,6 +157,7 @@ function FilePanel({
           title={title}
           path={change.path}
           sessionId={sessionId}
+          previewText={previewText}
           onTitleClick={collapse}
         >
           <div className="file-diff-note">Diff not provided</div>
@@ -180,7 +182,6 @@ function DetailedFileEntry({
   const path = relativePath(change.path, cwd);
   const label = fileChangeLabel({ ...change, path }, status);
   const hasContent = typeof change.oldText === "string" || typeof change.newText === "string";
-  const preview = markdownPreviewText(change);
   return (
     <div className="file-entry">
       {hasContent ? (
@@ -193,11 +194,6 @@ function DetailedFileEntry({
           {label}<span className="file-diff-note"> · Diff not provided</span>
         </div>
       )}
-      {preview != null ? (
-        <div className="file-open">
-          <OpenMarkdownPreview path={change.path} text={preview} />
-        </div>
-      ) : null}
     </div>
   );
 }
