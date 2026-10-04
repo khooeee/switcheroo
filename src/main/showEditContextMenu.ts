@@ -17,7 +17,7 @@ export function showEditContextMenu(
   }
   if (opts.canFind) {
     items.push({ type: "separator" }, {
-      label: "Find in message",
+      label: "Find in Message",
       click: () => win.webContents.send("find:open-scoped"),
     });
   }
