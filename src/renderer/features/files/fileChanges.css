@@ -27,8 +27,8 @@
 .file-change-names {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 1.75em;
-  row-gap: 0.35em;
+  column-gap: 0.5em;
+  row-gap: 0.4em;
   align-items: baseline;
 }
 
@@ -36,6 +36,9 @@
   display: inline-flex;
   align-items: baseline;
   max-width: 100%;
+  padding: 0.35em 0.75em;
+  border-radius: 8px;
+  background: var(--bg-2);
 }
 
 .file-change-name {
