@@ -90,8 +90,8 @@ function registerIpc(): void {
     await openInCursor(requireSession(sessionId).cwd, filePath);
   });
   ipcMain.handle("agents:available", () => availableAgents());
-  ipcMain.handle("edit:contextMenu", (event) => {
-    showEditContextMenu(BrowserWindow.fromWebContents(event.sender));
+  ipcMain.handle("edit:contextMenu", (event, markdown?: string) => {
+    showEditContextMenu(BrowserWindow.fromWebContents(event.sender), markdown);
   });
   ipcMain.handle("sessions:list", () => sessions.list());
   ipcMain.handle("sessions:create", (_e, input: CreateSessionInput) => sessions.createSession(input));

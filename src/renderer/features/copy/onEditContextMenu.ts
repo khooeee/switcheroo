@@ -5,5 +5,7 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
   const target = event.target as HTMLElement | null;
   if (target?.closest("button, a, input, textarea, .context-menu, [role='menu']")) return;
   event.preventDefault();
-  void window.switcheroo.showEditContextMenu();
+  const markdown =
+    target?.closest("[data-copy-markdown]")?.getAttribute("data-copy-markdown") ?? undefined;
+  void window.switcheroo.showEditContextMenu(markdown || undefined);
 }

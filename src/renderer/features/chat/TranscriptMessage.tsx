@@ -42,6 +42,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
+      data-copy-markdown={markdown && text ? text : undefined}
       onClick={
         clickable
           ? (event) => {

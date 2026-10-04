@@ -48,7 +48,7 @@ const api: SwitcherooApi = {
   savePastedImage: (sessionId, image) =>
     ipcRenderer.invoke("images:savePaste", sessionId, image.mimeType, image.bytes),
   saveClipboardImage: (sessionId) => ipcRenderer.invoke("images:saveClipboard", sessionId),
-  showEditContextMenu: () => ipcRenderer.invoke("edit:contextMenu"),
+  showEditContextMenu: (markdown) => ipcRenderer.invoke("edit:contextMenu", markdown),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   findInSessions: (query: string, searchId: number) =>
     ipcRenderer.invoke("sessions:findInSessions", query, searchId) as Promise<{ searchId: number }>,

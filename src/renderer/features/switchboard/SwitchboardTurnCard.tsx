@@ -64,6 +64,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
       <div
         className={`message user${turn.user.queued ? " queued" : ""}`}
         data-event-id={turn.user.id}
+        data-copy-markdown={userText || undefined}
       >
         <div className="row">
           <span className="kind-pill">user</span>
@@ -112,6 +113,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <div
           className={`message assistant${turn.fileChanges.length ? " has-file-changes" : ""}`}
           data-event-id={turn.assistant.id}
+          data-copy-markdown={assistantText || undefined}
         >
           <div className="row">
             <span className="kind-pill">assistant</span>
