@@ -93,7 +93,7 @@ test("Switchboard renders turn cards with session titles", () => {
   );
   expect(html).toMatch(/Session/);
   expect(html).toMatch(/class="[^"]*\bnavigable\b/);
-  expect(html).toMatch(/aria-label="Copy"/);
+  expect(html).toMatch(/aria-label="Copy as Markdown"/);
 });
 
 test("Switchboard keeps the session title after the session is closed", () => {

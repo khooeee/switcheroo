@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import "./eventActionButton.css";
 
-/** Right-aligned icon that copies message text; shows an instant Copy tooltip on hover. */
+/** Right-aligned icon that copies message text; shows an instant Copy as Markdown tooltip on hover. */
 export function CopyEventButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const resetTimer = useRef<number | null>(null);
-  const label = copied ? "Copied" : "Copy";
+  const label = copied ? "Copied" : "Copy as Markdown";
 
   useEffect(() => () => {
     if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
