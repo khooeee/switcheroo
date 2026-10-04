@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FileChange, TranscriptItem, TranscriptTurn } from "../../shared/types";
+import { finalizeStalledTurns } from "../finalizeStalledTurns";
 
 function aggregateFileChanges(events: TranscriptItem[]): FileChange[] {
   const out: FileChange[] = [];
@@ -29,7 +30,7 @@ export class TurnBuilder {
 
   /** Seed from a hydrated transcript (fork / reopen). */
   restore(turns: TranscriptTurn[]): void {
-    this.turns = turns.map(cloneTurn);
+    this.turns = finalizeStalledTurns(turns).map(cloneTurn);
     this.activeId = null;
   }
 

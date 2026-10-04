@@ -8,13 +8,17 @@ interface Props {
   onQuery: (q: string) => void;
   rootRefs: Array<RefObject<HTMLElement | null>>;
   /** Changes when an optional root (e.g. right rail) mounts or unmounts. */
-  rootsKey?: number;
+  rootsKey?: string | number;
+  /** When true, search is limited to one message. */
+  scoped?: boolean;
   onClose: () => void;
 }
 
-export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, onClose }: Props) {
+export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, scoped = false, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { count, index, go } = useFindMatches(rootRefs, query, rootsKey);
+  const label = scoped ? "Find in message" : "Find in current session";
+  const placeholder = scoped ? "Find in message…" : "Find in session…";
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -40,7 +44,7 @@ export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, onClose }: Pro
   }, []);
 
   return (
-    <div className="find-bar" role="search" aria-label="Find in current session"
+    <div className="find-bar" role="search" aria-label={label}
       onKeyDown={(event) => {
         if (event.nativeEvent.isComposing) return;
         if (event.key === "Escape") {
@@ -52,8 +56,8 @@ export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, onClose }: Pro
       <input
         ref={inputRef}
         value={query}
-        aria-label="Find in current session"
-        placeholder="Find in session…"
+        aria-label={label}
+        placeholder={placeholder}
         spellCheck={false}
         onChange={(event) => onQuery(event.target.value)}
         onKeyDown={(event) => {

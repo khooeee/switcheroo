@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AgentKind } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
 import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
@@ -12,6 +12,10 @@ import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPo
 import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
 import { FindInHistoryModal } from "./features/find/FindInHistoryModal";
+import {
+  clearPendingFindScope,
+  takePendingFindScope,
+} from "./features/find/pendingFindScope";
 import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
@@ -40,19 +44,60 @@ export function App() {
   const [showFindInSessions, setShowFindInSessions] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
+  const [findScope, setFindScope] = useState<HTMLElement | null>(null);
   const [sessionFilter, setSessionFilter] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
+  const findScopeRef = useRef<HTMLElement | null>(null);
+  findScopeRef.current = findScope;
   const askQuestion = useAgentQuestions(activeSessionId);
   const findRootRefs = useMemo(
-    () => [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef, rightRailScrollRef],
-    [activeSessionId],
+    () =>
+      findScope
+        ? [findScopeRef]
+        : [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef, rightRailScrollRef],
+    [activeSessionId, findScope],
   );
   const pinTranscriptToBottom = useSessionScrollPosition(
     activeSessionId,
     activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
   );
+
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setFindQuery("");
+    setFindScope(null);
+    clearPendingFindScope();
+  }, []);
+
+  const openFind = useCallback(() => {
+    clearPendingFindScope();
+    setFindScope(null);
+    setFindOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const onScoped = () => {
+      const el = takePendingFindScope();
+      if (!el) return;
+      setFindScope(el);
+      setFindOpen(true);
+    };
+    window.addEventListener("switcheroo:find-scoped", onScoped);
+    return () => window.removeEventListener("switcheroo:find-scoped", onScoped);
+  }, []);
+
+  useEffect(() => {
+    setFindScope(null);
+    clearPendingFindScope();
+  }, [activeSessionId]);
+
+  useEffect(() => {
+    if (!findScope) return;
+    findScope.classList.add("find-scope");
+    return () => findScope.classList.remove("find-scope");
+  }, [findScope]);
 
   const {
     rightRailView,
@@ -85,7 +130,10 @@ export function App() {
     findOpen,
     rightRailOpen: !!rightRailView,
     sessionFilter,
-    setFindOpen,
+    setFindOpen: (open) => {
+      if (open) openFind();
+      else closeFind();
+    },
     setFindQuery,
     setShowNewSession,
     setShowFindInSessions,
@@ -140,15 +188,13 @@ export function App() {
       <div className="main relative">
         {findOpen && (
           <FindBar
-            key={activeSessionId}
+            key={`${activeSessionId}:${findScope?.getAttribute("data-event-id") ?? "session"}`}
             query={findQuery}
             onQuery={setFindQuery}
             rootRefs={findRootRefs}
-            rootsKey={rightRailView ? 1 : 0}
-            onClose={() => {
-              setFindOpen(false);
-              setFindQuery("");
-            }}
+            rootsKey={`${rightRailView ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
+            scoped={!!findScope}
+            onClose={closeFind}
           />
         )}
 

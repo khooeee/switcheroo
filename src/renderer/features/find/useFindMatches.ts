@@ -6,7 +6,7 @@ export function useFindMatches(
   rootRefs: Array<RefObject<HTMLElement | null>>,
   query: string,
   /** Bump when a root mounts/unmounts (e.g. right rail open). */
-  rootsKey = 0,
+  rootsKey: string | number = 0,
 ) {
   const [matches, setMatches] = useState<Range[]>([]);
   const [index, setIndex] = useState(0);

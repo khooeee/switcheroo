@@ -91,9 +91,12 @@ function registerIpc(): void {
     await openInCursor(requireSession(sessionId).cwd, filePath);
   });
   ipcMain.handle("agents:available", () => availableAgents());
-  ipcMain.handle("edit:contextMenu", (event, opts?: { markdown?: string; canCopy?: boolean }) => {
-    showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
-  });
+  ipcMain.handle(
+    "edit:contextMenu",
+    (event, opts?: { markdown?: string; canCopy?: boolean; canFind?: boolean }) => {
+      showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
+    },
+  );
   ipcMain.handle(
     "composer:contextMenu",
     (

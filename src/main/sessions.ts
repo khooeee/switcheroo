@@ -21,6 +21,7 @@ import { getAppSettings, hydrateAppSettings, patchAppSettings } from "./appSetti
 import { loadSessionMeta, saveSessionMeta, type SessionMeta } from "./sessionMeta";
 import { loadTranscript, saveTranscript } from "./sessionTranscripts";
 import { loadSwitchboardTurns, saveSwitchboardTurns } from "./switchboardEvents";
+import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { switchboardCleanupCutoff } from "./switchboardCleanup";
 import { overflowSessionIds } from "./overflowSessionIds";
 import {
@@ -133,7 +134,8 @@ export class SessionManager {
           ? saved.activeSessionId
           : SWITCHBOARD_ID;
       const openSessionIds = new Set(openIds);
-      const switchboardTurns = await loadSwitchboardTurns();
+      const loadedSwitchboard = await loadSwitchboardTurns();
+      const switchboardTurns = finalizeStalledTurns(loadedSwitchboard);
       const navigableIds = new Set(openSessionIds);
       const titles = new Map<string, string>(
         [...this.sessions.entries()].map(([id, session]) => [id, session.title]),
@@ -157,6 +159,7 @@ export class SessionManager {
         })),
       );
       if (this.activeSessionId !== SWITCHBOARD_ID) await this.ensureHydrated(this.activeSessionId);
+      if (switchboardTurns !== loadedSwitchboard) await saveSwitchboardTurns(this.bus.list());
     }
 
     this.bus.on("turn", (turn: SwitchboardTurn) => {
@@ -677,11 +680,13 @@ export class SessionManager {
     session.cwd = meta.cwd;
     session.agentSessionId = meta.agentSessionId;
     session.usage = meta.usage;
-    const items = await loadTranscript(sessionId);
+    const loaded = await loadTranscript(sessionId);
+    const items = finalizeStalledTurns(loaded);
     this.transcripts.set(sessionId, items);
     this.hydrated.add(sessionId);
     this.pushTranscript(sessionId);
     this.emitSessions();
+    if (items !== loaded) this.queuePersist();
     return session;
   }
 
@@ -748,7 +753,8 @@ export class SessionManager {
   private async reopenSession(sessionId: string): Promise<Session | null> {
     const meta = await loadSessionMeta(sessionId);
     if (!meta) return null;
-    const items = await loadTranscript(sessionId);
+    const loaded = await loadTranscript(sessionId);
+    const items = finalizeStalledTurns(loaded);
     const session: Session = {
       id: sessionId,
       title: meta.title,
@@ -764,6 +770,7 @@ export class SessionManager {
     this.transcripts.set(sessionId, items);
     this.hydrated.add(sessionId);
     this.pushTranscript(sessionId);
+    if (items !== loaded) this.queuePersist();
     return session;
   }
 

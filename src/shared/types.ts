@@ -237,8 +237,12 @@ export interface SwitcherooApi {
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
-  /** Popup native Copy (+ Copy as Markdown when markdown is set) at the cursor. */
-  showEditContextMenu: (opts?: { markdown?: string; canCopy?: boolean }) => Promise<void>;
+  /** Popup native Copy (+ Copy as Markdown / Find) at the cursor. */
+  showEditContextMenu: (opts?: {
+    markdown?: string;
+    canCopy?: boolean;
+    canFind?: boolean;
+  }) => Promise<void>;
   /** Popup Cut / Copy / Paste for the composer. */
   showComposerContextMenu: (opts?: {
     canCut?: boolean;

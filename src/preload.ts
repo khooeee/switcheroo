@@ -97,6 +97,10 @@ ipcRenderer.on("find:open", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:find"));
 });
 
+ipcRenderer.on("find:open-scoped", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:find-scoped"));
+});
+
 ipcRenderer.on("find-sessions:open", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:find-sessions"));
 });
