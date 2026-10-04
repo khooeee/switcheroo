@@ -55,6 +55,14 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
+  background: var(--bg-0);
+}
+
+.file-diff-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+  background: var(--bg-1);
 }
 
 .file-diff pre {
@@ -63,9 +71,13 @@
   max-height: 400px;
   overflow: auto;
   font: inherit;
-  background: var(--bg-0);
+  background: transparent;
   white-space: pre;
   tab-size: 2;
+}
+
+.file-diff > .file-diff-note {
+  padding: 8px 10px;
 }
 
 .diff-line {

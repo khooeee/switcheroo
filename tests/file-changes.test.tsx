@@ -115,7 +115,9 @@ test("file entries render relative paths in a wrapping name row", () => {
   expect(html).not.toMatch(/Created |Deleted |Update |Diff not provided/);
   expect(html).not.toMatch(/<pre/);
   expect(html).not.toMatch(/>Preview</);
-  const diff = renderToStaticMarkup(<FileDiff change={changes[0]} />);
+  const diff = renderToStaticMarkup(<FileDiff change={changes[0]} title="new.ts" />);
+  expect(diff).toMatch(/file-diff-header/);
+  expect(diff).toMatch(/>new\.ts</);
   expect(diff).toMatch(/diff-line added/);
   expect(diff).toMatch(/&lt;script&gt;/);
   expect(diff).not.toMatch(/<script>/);

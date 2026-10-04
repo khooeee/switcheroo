@@ -38,7 +38,12 @@ export function FileChanges({ changes, cwd, sessionId }: Props) {
       </div>
       {changes.map((change, index) =>
         open.has(index) ? (
-          <FilePanel key={`panel:${change.path}:${index}`} change={change} sessionId={sessionId} />
+          <FilePanel
+            key={`panel:${change.path}:${index}`}
+            change={change}
+            title={relativePath(change.path, cwd)}
+            sessionId={sessionId}
+          />
         ) : null,
       )}
     </div>
@@ -90,12 +95,23 @@ function FileName({
   );
 }
 
-function FilePanel({ change, sessionId }: { change: FileChange; sessionId?: string }) {
+function FilePanel({
+  change,
+  title,
+  sessionId,
+}: {
+  change: FileChange;
+  title: string;
+  sessionId?: string;
+}) {
   const hasContent = typeof change.oldText === "string" || typeof change.newText === "string";
   return (
     <div className="file-change-panel">
-      {hasContent ? <FileDiff change={change} /> : (
-        <div className="file-diff-note">Diff not provided</div>
+      {hasContent ? <FileDiff change={change} title={title} /> : (
+        <div className="file-diff">
+          <div className="file-diff-header" title={title}>{title}</div>
+          <div className="file-diff-note">Diff not provided</div>
+        </div>
       )}
       {sessionId ? (
         <div className="file-open">
