@@ -238,7 +238,7 @@ export interface SwitcherooApi {
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
   /** Popup native Copy (+ Copy as Markdown when markdown is set) at the cursor. */
-  showEditContextMenu: (markdown?: string) => Promise<void>;
+  showEditContextMenu: (opts?: { markdown?: string; canCopy?: boolean }) => Promise<void>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;
   stopFindInSessions: () => Promise<void>;
