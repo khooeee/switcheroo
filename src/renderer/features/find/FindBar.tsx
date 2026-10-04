@@ -9,16 +9,28 @@ interface Props {
   rootRefs: Array<RefObject<HTMLElement | null>>;
   /** Changes when an optional root (e.g. right rail) mounts or unmounts. */
   rootsKey?: string | number;
-  /** When true, search is limited to one message. */
-  scoped?: boolean;
+  /** Where find is searching. */
+  scope?: "session" | "message" | "turn-details";
   onClose: () => void;
 }
 
-export function FindBar({ query, onQuery, rootRefs, rootsKey = 0, scoped = false, onClose }: Props) {
+const SCOPE_COPY = {
+  session: { label: "Find in current session", placeholder: "Find in session…" },
+  message: { label: "Find in message", placeholder: "Find in message…" },
+  "turn-details": { label: "Find in turn details", placeholder: "Find in turn details…" },
+} as const;
+
+export function FindBar({
+  query,
+  onQuery,
+  rootRefs,
+  rootsKey = 0,
+  scope = "session",
+  onClose,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { count, index, go } = useFindMatches(rootRefs, query, rootsKey);
-  const label = scoped ? "Find in message" : "Find in current session";
-  const placeholder = scoped ? "Find in message…" : "Find in session…";
+  const { label, placeholder } = SCOPE_COPY[scope];
 
   useEffect(() => {
     const previousFocus = document.activeElement;

@@ -52,13 +52,6 @@ export function App() {
   const findScopeRef = useRef<HTMLElement | null>(null);
   findScopeRef.current = findScope;
   const askQuestion = useAgentQuestions(activeSessionId);
-  const findRootRefs = useMemo(
-    () =>
-      findScope
-        ? [findScopeRef]
-        : [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef, rightRailScrollRef],
-    [activeSessionId, findScope],
-  );
   const pinTranscriptToBottom = useSessionScrollPosition(
     activeSessionId,
     activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
@@ -112,6 +105,12 @@ export function App() {
     switchboardTurns,
     openSessions,
   });
+
+  const findRootRefs = useMemo(() => {
+    if (findScope) return [findScopeRef];
+    if (rightRailView) return [rightRailScrollRef];
+    return [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef];
+  }, [activeSessionId, findScope, rightRailView]);
 
   const selectSession = useCallback((id: typeof activeSessionId) => {
     void window.switcheroo.setActiveSession(id);
@@ -188,12 +187,12 @@ export function App() {
       <div className="main relative">
         {findOpen && (
           <FindBar
-            key={`${activeSessionId}:${findScope?.getAttribute("data-event-id") ?? "session"}`}
+            key={`${activeSessionId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
             query={findQuery}
             onQuery={setFindQuery}
             rootRefs={findRootRefs}
             rootsKey={`${rightRailView ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
-            scoped={!!findScope}
+            scope={findScope ? "message" : rightRailView ? "turn-details" : "session"}
             onClose={closeFind}
           />
         )}

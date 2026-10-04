@@ -2,11 +2,9 @@
 
 High productivity ACP coding agent
 
-Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard
-
-The philosophy is to remove & simplify as much as possible for maximum focus:
-- Steer only where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue.
-- The user message & final assistant summary message are the only messages shown in main content area because most of the time, seeing the tool calls & other events are unnecessary.  However, you can see the turn details when you need to debug an issue.
+The overarching philosophy is to remove & simplify as much as possible for maximum focus:
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, mainly due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
+- The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and showing the turn details.
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and you can use it to keep track of small details like issue/PRs, clickable links, etc. plus it can be multiline.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
@@ -16,9 +14,13 @@ There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
-There are also niceties
+There are also niceties I always wanted when searching past text:
 - Find in specific message, not the entire session
 - Find in turn details will only search in the turn details
+- Find in switchboard
+
+Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard.
+
 
 ## Prerequisites
 
