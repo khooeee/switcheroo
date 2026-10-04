@@ -112,6 +112,20 @@ export function App() {
     return [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef];
   }, [activeSessionId, findScope, rightRailView]);
 
+  useEffect(() => {
+    const onTurnDetails = (event: Event) => {
+      const detail = (event as CustomEvent<{ turnId: string; eventId: string }>).detail;
+      if (!detail?.turnId || !detail.eventId) return;
+      if (activeSessionId === SWITCHBOARD_ID) {
+        toggleSwitchboardRightRail(detail.turnId, detail.eventId);
+      } else {
+        toggleSessionRightRail(detail.turnId, detail.eventId);
+      }
+    };
+    window.addEventListener("switcheroo:turn-details", onTurnDetails);
+    return () => window.removeEventListener("switcheroo:turn-details", onTurnDetails);
+  }, [activeSessionId, toggleSessionRightRail, toggleSwitchboardRightRail]);
+
   const selectSession = useCallback((id: typeof activeSessionId) => {
     void window.switcheroo.setActiveSession(id);
     setFocusEvent(null);

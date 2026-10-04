@@ -99,6 +99,7 @@ function registerIpc(): void {
         markdown?: string;
         canCopy?: boolean;
         canFind?: boolean;
+        turnDetails?: { turnId: string; eventId: string };
         fork?: { sessionId: string; eventId: string };
       },
     ) => {

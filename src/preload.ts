@@ -101,6 +101,10 @@ ipcRenderer.on("find:open-scoped", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:find-scoped"));
 });
 
+ipcRenderer.on("turn:details", (_event, payload: { turnId: string; eventId: string }) => {
+  window.dispatchEvent(new CustomEvent("switcheroo:turn-details", { detail: payload }));
+});
+
 ipcRenderer.on("find-sessions:open", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:find-sessions"));
 });
