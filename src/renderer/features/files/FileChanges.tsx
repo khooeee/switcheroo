@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react";
 import type { FileChange } from "../../../shared/types";
 import { fileChangeLabel } from "../../../shared/fileChangeLabel";
-import { FileDiff } from "./FileDiff";
+import { FileDiff, FileDiffFrame } from "./FileDiff";
 import { markdownPreviewText } from "./isMarkdownFile";
-import { OpenInCursor } from "./OpenInCursor";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 import "./fileChanges.css";
 
@@ -82,6 +81,8 @@ function CompactFileChanges({
             change={change}
             title={relativePath(change.path, cwd)}
             sessionId={sessionId}
+            index={index}
+            onCollapse={toggle}
           />
         ) : null,
       )}
@@ -130,25 +131,36 @@ function FilePanel({
   change,
   title,
   sessionId,
+  index,
+  onCollapse,
 }: {
   change: FileChange;
   title: string;
   sessionId?: string;
+  index: number;
+  onCollapse: (index: number) => void;
 }) {
   const hasContent = typeof change.oldText === "string" || typeof change.newText === "string";
+  const collapse = () => onCollapse(index);
   return (
     <div className="file-change-panel">
-      {hasContent ? <FileDiff change={change} title={title} /> : (
-        <div className="file-diff">
-          <div className="file-diff-header" title={title}>{title}</div>
+      {hasContent ? (
+        <FileDiff
+          change={change}
+          title={title}
+          sessionId={sessionId}
+          onTitleClick={collapse}
+        />
+      ) : (
+        <FileDiffFrame
+          title={title}
+          path={change.path}
+          sessionId={sessionId}
+          onTitleClick={collapse}
+        >
           <div className="file-diff-note">Diff not provided</div>
-        </div>
+        </FileDiffFrame>
       )}
-      {sessionId ? (
-        <div className="file-open">
-          <OpenInCursor sessionId={sessionId} filePath={change.path} />
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -174,19 +186,18 @@ function DetailedFileEntry({
       {hasContent ? (
         <details className="file-change" onToggle={(event) => setOpen(event.currentTarget.open)}>
           <summary data-tooltip={change.path}>{label}</summary>
-          {open && <FileDiff change={change} title={path} />}
+          {open && <FileDiff change={change} title={path} sessionId={sessionId} />}
         </details>
       ) : (
         <div className="file-change-label" data-tooltip={change.path}>
           {label}<span className="file-diff-note"> · Diff not provided</span>
         </div>
       )}
-      {(sessionId || preview != null) && (
+      {preview != null ? (
         <div className="file-open">
-          {sessionId && <OpenInCursor sessionId={sessionId} filePath={change.path} />}
-          {preview != null && <OpenMarkdownPreview path={change.path} text={preview} />}
+          <OpenMarkdownPreview path={change.path} text={preview} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
