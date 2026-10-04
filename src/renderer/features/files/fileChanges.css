@@ -69,12 +69,6 @@
   margin-left: 0.35em;
 }
 
-.file-change-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .file-change summary,
 .file-change-label {
   overflow-wrap: anywhere;
