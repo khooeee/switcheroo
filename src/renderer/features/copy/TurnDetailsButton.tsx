@@ -6,8 +6,8 @@ export function TurnDetailsButton({ onToggle }: { onToggle: () => void }) {
     <button
       type="button"
       className="event-action"
-      aria-label="Turn details"
-      data-tooltip="Turn details"
+      aria-label="Turn Details"
+      data-tooltip="Turn Details"
       data-tooltip-align="center"
       onClick={(event) => {
         event.preventDefault();
