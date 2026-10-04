@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent, type RefObject } from "react";
 import type { SlashCommand } from "../../../shared/types";
 import { filterSlashCommands } from "./filterSlashCommands";
+import { onComposerContextMenu } from "./onComposerContextMenu";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { slashQuery } from "./slashQuery";
 
@@ -65,6 +66,7 @@ export function ComposerPrompt({
         spellCheck={false}
         onChange={(e) => onDraftChange(e.target.value)}
         onPaste={onPaste}
+        onContextMenu={onComposerContextMenu}
         onKeyDown={(e) => {
           if (open) {
             if (e.key === "ArrowDown") {

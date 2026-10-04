@@ -16,6 +16,7 @@ import { ControlServer } from "./main/control/ControlServer";
 import { availableAgents } from "./main/acp/availableAgents";
 import { buildAppMenu, refreshSessionMenuItems } from "./main/buildAppMenu";
 import { showEditContextMenu } from "./main/showEditContextMenu";
+import { showComposerContextMenu } from "./main/showComposerContextMenu";
 import type { ActiveSessionId, AppSettings, CreateSessionInput } from "./shared/types";
 
 installStdioGuards((error) => {
@@ -93,6 +94,15 @@ function registerIpc(): void {
   ipcMain.handle("edit:contextMenu", (event, opts?: { markdown?: string; canCopy?: boolean }) => {
     showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
   });
+  ipcMain.handle(
+    "composer:contextMenu",
+    (
+      event,
+      opts?: { canCut?: boolean; canCopy?: boolean; canSelectAll?: boolean },
+    ) => {
+      showComposerContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
+    },
+  );
   ipcMain.handle("sessions:list", () => sessions.list());
   ipcMain.handle("sessions:create", (_e, input: CreateSessionInput) => sessions.createSession(input));
   ipcMain.handle("sessions:fork", (_e, sessionId: string, eventId?: string) => sessions.forkSession(sessionId, eventId));
