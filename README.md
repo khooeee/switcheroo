@@ -22,6 +22,9 @@ There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
+There's also GitHub niceties:
+- Open Markdown files like how they would appear in GitHub
+
 There's also orchestration features:
 - "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization (e.g. reading GitHub issues & implementing them in parallel).
 
