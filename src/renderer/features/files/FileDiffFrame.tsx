@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { OpenInCursor } from "./OpenInCursor";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 
@@ -18,6 +18,22 @@ export function FileDiffFrame({
   onTitleClick?: () => void;
   children?: ReactNode;
 }) {
+  const collapseUnlessAction = onTitleClick
+    ? (target: EventTarget | null) => {
+        if ((target as HTMLElement | null)?.closest?.("button, a")) return;
+        onTitleClick();
+      }
+    : undefined;
+
+  const onKeyDown = onTitleClick
+    ? (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        if ((event.target as HTMLElement).closest("button, a")) return;
+        event.preventDefault();
+        onTitleClick();
+      }
+    : undefined;
+
   return (
     <div className="file-diff">
       <div
@@ -25,24 +41,8 @@ export function FileDiffFrame({
         title={onTitleClick ? `Collapse ${title}` : title}
         role={onTitleClick ? "button" : undefined}
         tabIndex={onTitleClick ? 0 : undefined}
-        onClick={
-          onTitleClick
-            ? (event) => {
-                if ((event.target as HTMLElement).closest("button, a")) return;
-                onTitleClick();
-              }
-            : undefined
-        }
-        onKeyDown={
-          onTitleClick
-            ? (event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
-                if ((event.target as HTMLElement).closest("button, a")) return;
-                event.preventDefault();
-                onTitleClick();
-              }
-            : undefined
-        }
+        onClick={collapseUnlessAction ? (event) => collapseUnlessAction(event.target) : undefined}
+        onKeyDown={onKeyDown}
       >
         <span className="file-diff-title">{title}</span>
         {sessionId ? (
