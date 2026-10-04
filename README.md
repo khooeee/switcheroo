@@ -11,7 +11,7 @@ To remove & simplify as much as possible for maximum focus:
 - There's no in-built file explorer, editor, diff viewer, artifact mode, terminal, etc.  Other apps already do that extremely well.  If you want them, tile your windows.  The focus here is to build the optimal coding chat experience.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
-More find features beyond just the current session are supported:
+More find features beyond searching the current session are supported:
 - Find within specific message, not the entire session
 - Find in turn details
 - Find in switchboard will search your recent history (up to 30 days so it's faster than searching your entire history)
