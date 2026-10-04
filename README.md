@@ -3,11 +3,11 @@
 Why another coding agent?
 
 To remove & simplify as much as possible for maximum focus:
-- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - Project management is basically having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - There's no in-built file explorer, editor, diff viewer, artifact mode, terminal, etc.  Other apps already do that extremely well.  If you want them, tile your windows.  The focus here is to build the optimal coding chat experience.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
