@@ -16,6 +16,10 @@ There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
+There are also niceties
+- Find in specific message, not the entire session
+- Find in turn details will only search in the turn details
+
 ## Prerequisites
 
 - Node.js 22 LTS (`>=22.12.0 <23`)

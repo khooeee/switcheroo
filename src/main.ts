@@ -93,7 +93,15 @@ function registerIpc(): void {
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle(
     "edit:contextMenu",
-    (event, opts?: { markdown?: string; canCopy?: boolean; canFind?: boolean }) => {
+    (
+      event,
+      opts?: {
+        markdown?: string;
+        canCopy?: boolean;
+        canFind?: boolean;
+        fork?: { sessionId: string; eventId: string };
+      },
+    ) => {
       showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
     },
   );

@@ -12,9 +12,13 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
     target?.closest("[data-copy-markdown]")?.getAttribute("data-copy-markdown") || undefined;
   const message = target?.closest(".message") as HTMLElement | null;
   setPendingFindScope(message);
+  const forkRoot = target?.closest("[data-fork-session][data-fork-event]") as HTMLElement | null;
+  const sessionId = forkRoot?.getAttribute("data-fork-session") || undefined;
+  const eventId = forkRoot?.getAttribute("data-fork-event") || undefined;
   void window.switcheroo.showEditContextMenu({
     markdown,
     canCopy,
     canFind: !!message,
+    fork: sessionId && eventId ? { sessionId, eventId } : undefined,
   });
 }

@@ -117,6 +117,10 @@ ipcRenderer.on("session:rename", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:rename-session"));
 });
 
+ipcRenderer.on("session:fork-at", (_event, payload: { sessionId: string; eventId: string }) => {
+  window.dispatchEvent(new CustomEvent("switcheroo:fork-at-message", { detail: payload }));
+});
+
 ipcRenderer.on("session:fork", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:fork-session"));
 });

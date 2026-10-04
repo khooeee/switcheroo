@@ -37,12 +37,16 @@ export const TranscriptMessage = memo(function TranscriptMessage({
     item.role === "assistant" || item.role === "user" || item.role === "thought";
   const showActions = forkable || !!text || !!onToggleDetails;
 
+  const canFork = !!(forkable && session.supportsForkAtMessage);
+
   return (
     <div
       className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
       data-copy-markdown={markdown && text ? text : undefined}
+      data-fork-session={canFork ? session.id : undefined}
+      data-fork-event={canFork ? item.id : undefined}
       onClick={
         clickable
           ? (event) => {
@@ -83,7 +87,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       )}
       {showActions ? (
         <div className="event-actions">
-          {forkable && session.supportsForkAtMessage ? (
+          {canFork ? (
             <ForkEventButton sessionId={session.id} eventId={item.id} />
           ) : null}
           {text ? <CopyEventButton text={text} /> : null}
