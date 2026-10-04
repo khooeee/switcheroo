@@ -30,6 +30,7 @@ export function showEditContextMenu(
     });
   }
   if (opts.fork) {
+    if (opts.canFind) items.push({ type: "separator" });
     items.push({
       label: "Fork",
       click: () => win.webContents.send("session:fork-at", opts.fork),
