@@ -103,22 +103,20 @@
   background: var(--bg-1);
 }
 
+.file-diff-header.collapsible {
+  cursor: pointer;
+}
+
+.file-diff-header.collapsible:hover .file-diff-title {
+  color: var(--codex);
+}
+
 .file-diff-title {
-  border: 0;
-  background: transparent;
   padding: 0;
   font: inherit;
   color: inherit;
   text-align: left;
   overflow-wrap: anywhere;
-}
-
-button.file-diff-title {
-  cursor: pointer;
-}
-
-button.file-diff-title:hover {
-  color: var(--codex);
 }
 
 .file-diff-header-action {

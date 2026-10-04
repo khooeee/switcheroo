@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { OpenInCursor } from "./OpenInCursor";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 
-/** Bordered diff shell: clickable filename and optional (Open in Cursor) / (Preview). */
+/** Bordered diff shell: clickable header and optional (Open in Cursor) / (Preview). */
 export function FileDiffFrame({
   title,
   path,
@@ -20,14 +20,31 @@ export function FileDiffFrame({
 }) {
   return (
     <div className="file-diff">
-      <div className="file-diff-header">
-        {onTitleClick ? (
-          <button type="button" className="file-diff-title" title={title} onClick={onTitleClick}>
-            {title}
-          </button>
-        ) : (
-          <span className="file-diff-title" title={title}>{title}</span>
-        )}
+      <div
+        className={`file-diff-header${onTitleClick ? " collapsible" : ""}`}
+        title={onTitleClick ? `Collapse ${title}` : title}
+        role={onTitleClick ? "button" : undefined}
+        tabIndex={onTitleClick ? 0 : undefined}
+        onClick={
+          onTitleClick
+            ? (event) => {
+                if ((event.target as HTMLElement).closest("button, a")) return;
+                onTitleClick();
+              }
+            : undefined
+        }
+        onKeyDown={
+          onTitleClick
+            ? (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                if ((event.target as HTMLElement).closest("button, a")) return;
+                event.preventDefault();
+                onTitleClick();
+              }
+            : undefined
+        }
+      >
+        <span className="file-diff-title">{title}</span>
         {sessionId ? (
           <span className="file-diff-header-action">
             (<OpenInCursor sessionId={sessionId} filePath={path} />)
