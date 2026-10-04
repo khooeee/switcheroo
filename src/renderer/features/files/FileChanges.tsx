@@ -63,6 +63,7 @@ function CompactFileChanges({
   return (
     <div className="file-changes compact">
       <div className="file-change-names">
+        <span className="file-change-label-prefix">Changes:</span>
         {changes.map((change, index) => (
           <FileName
             key={`${change.path}:${index}`}
