@@ -3,17 +3,18 @@
 High productivity ACP coding agent
 
 The overarching philosophy is to remove & simplify as much as possible for maximum focus:
-- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, mainly due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
-- The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and showing the turn details.
-- Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and you can use it to keep track of small details like issue/PRs, clickable links, etc. plus it can be multiline.
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
+- The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
+- Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
-- There's no in-built file explorer, editor, artifact mode, terminal, etc.  Other apps already do that really well.  If you want those, tile your file explorer, browser, mobile emulator, terminal windows, etc. as needed.
+- Project management is basically having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.
+- There's no in-built file explorer, editor, diff viewer, artifact mode, terminal, etc.  Other apps already do that extremely well.  If you want them, tile your windows.  The focus here is to build the optimal coding chat experience.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
-I always wanted scoped finds within a single session and beyond sessions:
-- Find in specific message, not the entire session
-- Find in turn details will only search in the turn details
-- Find in switchboard will search your recent history (up to 30 days)
+I always wanted more extensive scoped find features than what coding agents allowed:
+- Find within specific message, not the entire session
+- Find in turn details
+- Find in switchboard will search your recent history (up to 30 days so it's faster than searching your entire history)
 - Find in history will search your entire history
 - And find in the current session works as usual
 
@@ -21,7 +22,8 @@ There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
-Run Claude Code, Codex, Cursor, or Pi side-by-side and tracks all agents through a central event feed known as the switchboard.
+There's also orchestration features:
+- "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization (e.g. reading GitHub issues & implementing them in parallel).
 
 ## Prerequisites
 
