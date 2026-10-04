@@ -81,9 +81,9 @@ function FileName({
       </button>
       {preview != null ? (
         <span className="file-change-preview-wrap">
-          {" ("}
+          (
           <OpenMarkdownPreview path={change.path} text={preview} />
-          {")"}
+          )
         </span>
       ) : null}
     </span>
