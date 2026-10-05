@@ -2,8 +2,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: var(--rail-session-end, 24px);
+  height: var(--rail-session-end, 24px);
   margin-left: auto;
   flex-shrink: 0;
 }

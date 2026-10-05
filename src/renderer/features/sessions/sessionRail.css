@@ -46,7 +46,9 @@
 
 .rail-session {
   width: calc(100% - 16px);
-  min-height: 40px;
+  /* Include pin/end slot so rename (no end controls) matches row height. */
+  --rail-session-end: 24px;
+  min-height: calc(var(--rail-session-pad) * 2 + var(--rail-session-end) + 2px);
   border: 1px solid transparent;
   border-radius: 10px;
   background: transparent;

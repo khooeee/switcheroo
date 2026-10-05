@@ -74,6 +74,26 @@ export function SessionRailGroup({
       {renamingParent ? (
         <SessionRailRename
           title={session.title}
+          leading={
+            hasChildren ? (
+              <span
+                className={`rail-chevron ${session.tabsExpanded ? "expanded" : ""}`}
+                role="button"
+                tabIndex={-1}
+                aria-label={session.tabsExpanded ? "Collapse" : "Expand"}
+                onMouseDown={(event) => {
+                  // Keep focus from leaving the rename field via mousedown blur.
+                  event.preventDefault();
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleExpanded(session.id, !session.tabsExpanded);
+                }}
+              />
+            ) : (
+              <span className="rail-chevron-spacer" aria-hidden="true" />
+            )
+          }
           onSave={(title) => {
             onRenameSession(session.id, title);
             setRename(null);
