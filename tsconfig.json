@@ -9,7 +9,6 @@
     "noImplicitAny": true,
     "strict": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "outDir": "dist",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
