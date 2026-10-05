@@ -61,10 +61,6 @@ export function ChatPanel({
         <div>
           <h2>{session.title}</h2>
           <div className="meta">{session.cwd}</div>
-          <div className="meta">
-            {session.agent} · {session.status === "connecting" ? "Creating" : session.status}
-            {session.error ? <span className="session-error"> · {session.error}</span> : ""}
-          </div>
         </div>
       </div>
 

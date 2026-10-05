@@ -138,17 +138,25 @@ export function ChatComposer({
           return false;
         }}
       />
-      {sendError?.sessionId === session.id && (
-        <div className="composer-error" role="alert">{sendError.message}</div>
+      {(session.error || sendError?.sessionId === session.id) && (
+        <div className="composer-error" role="alert">
+          {session.error}
+          {session.error && sendError?.sessionId === session.id ? " · " : ""}
+          {sendError?.sessionId === session.id ? sendError.message : ""}
+        </div>
       )}
       <div className="composer-actions">
-        {usageLabel ? (
-          <div className="composer-usage" data-tooltip={usageLabel.detail}>
-            {usageLabel.percent}
-          </div>
-        ) : (
-          <div style={{ flex: 1 }} />
-        )}
+        <div className="composer-meta">
+          {session.agent} · {session.status === "connecting" ? "Creating" : session.status}
+          {usageLabel ? (
+            <>
+              {" · "}
+              <span className="composer-usage" data-tooltip={usageLabel.detail}>
+                {usageLabel.percent}
+              </span>
+            </>
+          ) : null}
+        </div>
         <button
           type="button"
           className="btn primary composer-send"

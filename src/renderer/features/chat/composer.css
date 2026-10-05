@@ -44,7 +44,7 @@
   align-items: center;
 }
 
-.composer-usage {
+.composer-meta {
   flex: 1;
   min-width: 0;
   padding-left: 13px; /* match textarea border (1px) + padding (12px) */
@@ -52,6 +52,8 @@
   color: var(--placeholder);
   text-align: left;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  cursor: default;
 }
 
 .btn.composer-send {

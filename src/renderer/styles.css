@@ -94,10 +94,6 @@ button {
   font-size: 11px;
 }
 
-.panel-header .session-error {
-  color: var(--danger-text);
-}
-
 .btn {
   border: 1px solid var(--border);
   background: var(--bg-2);
