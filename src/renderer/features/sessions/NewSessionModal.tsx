@@ -54,9 +54,10 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   }, []);
 
   const create = async () => {
+    const trimmedPrefix = prefix.trim();
     const trimmedTitle = title.trim();
-    if (!selectedAgent || !cwd || !trimmedTitle || busy) return;
-    const sessionTitle = prefix !== "" ? `${prefix} ${trimmedTitle}` : trimmedTitle;
+    if (!selectedAgent || !cwd || (!trimmedPrefix && !trimmedTitle) || busy) return;
+    const sessionTitle = [trimmedPrefix, trimmedTitle].filter(Boolean).join(" ");
     setBusy(true);
     setError(null);
     void patchAppSettings({
@@ -196,7 +197,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
           <button
             type="button"
             className="btn primary"
-            disabled={!selectedAgent || !cwd || !title.trim() || busy}
+            disabled={!selectedAgent || !cwd || (!prefix.trim() && !title.trim()) || busy}
             onClick={() => void create()}
           >
             {busy ? "Starting…" : "Create"}
