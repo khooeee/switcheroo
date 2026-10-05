@@ -77,6 +77,7 @@ export function buildAppMenu(opts: {
           id: OPEN_IN_CURSOR_MENU_ID,
           label: "Open in Cursor",
           enabled: opts.getOpenInCursorEnabled(),
+          accelerator: "CmdOrCtrl+E",
           click: () => {
             opts.openActiveInCursor();
           },

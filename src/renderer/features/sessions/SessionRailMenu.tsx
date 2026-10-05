@@ -61,6 +61,7 @@ export function SessionRailMenu({
         role="menuitem"
         className="context-item"
         disabled={!session.cwd.trim()}
+        aria-keyshortcuts="Meta+E Control+E"
         onClick={() => {
           if (!session.cwd.trim()) return;
           void window.switcheroo.openSessionInCursor(session.id).catch(console.error);
@@ -68,6 +69,7 @@ export function SessionRailMenu({
         }}
       >
         Open in Cursor
+        <kbd className="settings-shortcut">⌘E</kbd>
       </button>
       <button
         type="button"
