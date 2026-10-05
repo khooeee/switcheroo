@@ -8,13 +8,56 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
+/**
+ * Runtime packages Vite leaves external (native addons + ACP adapters spawned via
+ * `node <bin>`). Forge's Vite plugin ignores all of `node_modules` by default, so
+ * these must be allowlisted or `require()` / adapter spawns fail in the packaged app.
+ */
+const runtimeNodeModules = [
+  '@agentclientprotocol',
+  '@anthropic-ai',
+  '@openai',
+  'pi-acp',
+  'diff',
+  'zod',
+  'open',
+  'vscode-jsonrpc',
+  'cross-spawn',
+  'isexe',
+  'path-key',
+  'shebang-command',
+  'shebang-regex',
+  'which',
+  'default-browser',
+  'default-browser-id',
+  'bundle-name',
+  'run-applescript',
+  'is-docker',
+  'is-wsl',
+  'is-inside-container',
+  'define-lazy-prop',
+  'wsl-utils',
+  'node-pty',
+];
+
+function keepPackagedPath(file: string): boolean {
+  if (!file || file === '/package.json') return true;
+  if (file.startsWith('/.vite')) return true;
+  if (file === '/node_modules') return true;
+  return runtimeNodeModules.some((name) => {
+    const base = `/node_modules/${name}`;
+    return file === base || file.startsWith(`${base}/`);
+  });
+}
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: {
       // System `node` cannot read asar; adapters are spawned as child processes.
-      unpack:
-        "**/node_modules/{@agentclientprotocol,@anthropic-ai,@openai,pi-acp,diff,zod,open,vscode-jsonrpc,cross-spawn,isexe,path-key,shebang-command,shebang-regex,which,default-browser,default-browser-id,bundle-name,run-applescript,is-docker,is-wsl,is-inside-container,define-lazy-prop,wsl-utils,node-pty}/**",
+      unpack: `**/node_modules/{${runtimeNodeModules.join(',')}}/**`,
     },
+    // Override Vite plugin's ".vite only" ignore so externalized deps ship too.
+    ignore: (file) => !keepPackagedPath(file),
     name: "Switcheroo",
     icon: "./assets/icon",
     extraResource: ["./assets/icon.png"],
