@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
-  ActiveSessionId,
+  ActiveTabId,
   AppSettings,
   CreateSessionInput,
   CursorAskQuestionRequest,
@@ -8,6 +8,7 @@ import type {
   SwitchboardTurn,
   PermissionRequest,
   SessionListPayload,
+  SessionTab,
   SwitcherooApi,
   SessionStatus,
   TranscriptTurn,
@@ -31,7 +32,25 @@ const api: SwitcherooApi = {
   pinSession: (sessionId: string) => ipcRenderer.invoke("sessions:pin", sessionId),
   unpinSession: (sessionId: string) => ipcRenderer.invoke("sessions:unpin", sessionId),
   setActiveSessionUnread: (unread) => ipcRenderer.invoke("sessions:setActiveUnread", unread),
-  setActiveSession: (sessionId: ActiveSessionId) => ipcRenderer.invoke("sessions:setActive", sessionId),
+  setActiveTab: (tabId: ActiveTabId) => ipcRenderer.invoke("sessions:setActive", tabId),
+  createTerminalTab: (sessionId: string) =>
+    ipcRenderer.invoke("sessions:createTerminal", sessionId) as Promise<SessionTab>,
+  renameTab: (tabId: string, title: string) =>
+    ipcRenderer.invoke("sessions:renameTab", tabId, title),
+  closeTab: (tabId: string) => ipcRenderer.invoke("sessions:closeTab", tabId),
+  setTabsExpanded: (sessionId: string, expanded: boolean) =>
+    ipcRenderer.invoke("sessions:setTabsExpanded", sessionId, expanded),
+  reorderTab: (sessionId: string, tabId: string, toIndex: number) =>
+    ipcRenderer.invoke("sessions:reorderTab", sessionId, tabId, toIndex),
+  moveTab: (tabId: string, toSessionId: string, toIndex: number) =>
+    ipcRenderer.invoke("sessions:moveTab", tabId, toSessionId, toIndex),
+  attachTerminal: (tabId: string) => ipcRenderer.invoke("terminal:attach", tabId),
+  writeTerminal: (tabId: string, data: string) =>
+    ipcRenderer.invoke("terminal:write", tabId, data),
+  resizeTerminal: (tabId: string, cols: number, rows: number) =>
+    ipcRenderer.invoke("terminal:resize", tabId, cols, rows),
+  onTerminalData: (cb) => subscribe<{ tabId: string; data: string }>("terminal:data", cb),
+  onTerminalExit: (cb) => subscribe<{ tabId: string }>("terminal:exit", cb),
   listSessions: () => ipcRenderer.invoke("sessions:list"),
   sendPrompt: (sessionId: string, text: string) =>
     ipcRenderer.invoke("session:prompt", sessionId, text),
@@ -92,7 +111,6 @@ const api: SwitcherooApi = {
 
 contextBridge.exposeInMainWorld("switcheroo", api);
 
-// Find shortcut from menu
 ipcRenderer.on("find:open", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:find"));
 });
@@ -111,6 +129,10 @@ ipcRenderer.on("find-sessions:open", () => {
 
 ipcRenderer.on("session:new", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:new-session"));
+});
+
+ipcRenderer.on("session:new-terminal", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:new-terminal"));
 });
 
 ipcRenderer.on("session:toggle-pin", () => {

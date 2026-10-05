@@ -46,8 +46,11 @@
     "@agentclientprotocol/claude-agent-acp": "0.84.0",
     "@agentclientprotocol/codex-acp": "2.1.0",
     "@agentclientprotocol/sdk": "^1.5.1",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "electron-squirrel-startup": "^1.0.1",
     "github-markdown-css": "^5.9.0",
+    "node-pty": "^1.1.0",
     "pi-acp": "0.0.34",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -60,6 +63,7 @@
     "esbuild@0.21.5": true,
     "fsevents@2.3.3": true,
     "electron@44.5.1": true,
-    "electron-winstaller@5.4.4": true
+    "electron-winstaller@5.4.4": true,
+    "node-pty@1.1.0": true
   }
 }

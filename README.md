@@ -8,7 +8,6 @@ To remove & simplify as much as possible for maximum focus on GitHub repos:
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - Project management is basically having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
-- There's no in-built file explorer, editor, diff viewer, artifact mode, terminal, etc.  Other apps already do that extremely well.  If you want them, tile your windows.  The focus here is to build the optimal coding chat experience.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 More find features beyond searching the current session are supported:
@@ -87,11 +86,9 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+0**: Switchboard
 
-**Ctrl+1–9**: Select session list 1–9
+**Ctrl+Tab**: Go to next visible tab
 
-**Ctrl+Tab**: Go to next session
-
-**Ctrl+Shift+Tab**: Go to previous session
+**Ctrl+Shift+Tab**: Go to previous visible tab
 
 **Cmd/Ctrl+F**: Find in current session
 
@@ -99,15 +96,17 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+I**: Focus prompt
 
-**Cmd/Ctrl+N**: New agent session
+**Cmd/Ctrl+N**: New session
 
-**Cmd/Ctrl+R**: Rename selected session
+**Cmd/Ctrl+T**: New terminal (under the active chat group)
+
+**Cmd/Ctrl+R**: Rename selected tab
 
 **Cmd/Ctrl+P**: Pin/unpin selected session
 
 **Cmd/Ctrl+U**: Mark as Unread
 
-**Cmd/Ctrl+W**: Close selected session
+**Cmd/Ctrl+W**: Close selected tab (chat group or terminal)
 
 **Cmd/Ctrl+Y**: Fork selected session
 

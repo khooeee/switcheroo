@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
-import type { AgentKind, SessionUsage } from "../shared/types";
+import type { AgentKind, SessionTab, SessionUsage } from "../shared/types";
 import { sessionDir, sessionMetaPath } from "./userDataPaths";
+import { normalizeSessionTabs, readTabsExpanded } from "./sessionTabs";
 
 export interface SessionMeta {
   title: string;
@@ -8,6 +9,8 @@ export interface SessionMeta {
   cwd: string;
   agentSessionId: string | null;
   usage?: SessionUsage;
+  tabs: SessionTab[];
+  tabsExpanded: boolean;
 }
 
 let pendingSave: Promise<void> = Promise.resolve();
@@ -39,6 +42,8 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       cwd: parsed.cwd,
       agentSessionId: parsed.agentSessionId ?? parsed.sessionId ?? null,
       usage: readUsage(parsed.usage),
+      tabs: normalizeSessionTabs(parsed.tabs),
+      tabsExpanded: readTabsExpanded(parsed.tabsExpanded),
     };
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;

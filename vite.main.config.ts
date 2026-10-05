@@ -10,7 +10,7 @@ const agentAdapters = [
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ["electron", ...agentAdapters],
+      external: ["electron", "node-pty", ...agentAdapters],
     },
   },
 });

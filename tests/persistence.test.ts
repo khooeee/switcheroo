@@ -80,7 +80,7 @@ async function fixture() {
 function state(): PersistedState {
   return {
     version: 1,
-    activeSessionId: "agent-1",
+    activeTabId: "agent-1",
     pinned: ["agent-0"],
     unpinned: ["agent-1"],
   };
@@ -92,6 +92,26 @@ test("pinned and unpinned round-trip", async () => {
   await store.saveState(snapshot);
   const restarted = await restart();
   expect(JSON.stringify(await restarted.loadState())).toBe(JSON.stringify(snapshot));
+});
+
+test("loads legacy activeSessionId as activeTabId", async () => {
+  const { target, restart } = await fixture();
+  await fs.writeFile(
+    target,
+    JSON.stringify({
+      version: 1,
+      activeSessionId: "legacy-1",
+      pinned: [],
+      unpinned: ["legacy-1"],
+    }),
+  );
+  const store = await restart();
+  expect(await store.loadState()).toEqual({
+    version: 1,
+    activeTabId: "legacy-1",
+    pinned: [],
+    unpinned: ["legacy-1"],
+  });
 });
 
 for (const initial of [null, "", "  \n"] as const) {
@@ -112,14 +132,14 @@ test("overlapping saves finish in order and capture the state at call time", asy
     saves.push(
       store.saveState({
         version: 1,
-        activeSessionId: `agent-${i}`,
+        activeTabId: `agent-${i}`,
         pinned: [],
         unpinned: ["agent-1"],
       }),
     );
   }
   await Promise.all(saves);
-  expect(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId).toBe("agent-49");
+  expect(JSON.parse(await fs.readFile(target, "utf8")).activeTabId).toBe("agent-49");
 });
 
 test("a failed write preserves the previous file and allows a retry", async () => {
@@ -127,12 +147,12 @@ test("a failed write preserves the previous file and allows a retry", async () =
   await store.saveState(state());
   fsState.failWrite = true;
   await expect(
-    store.saveState({ ...state(), activeSessionId: "switchboard" }),
+    store.saveState({ ...state(), activeTabId: "switchboard" }),
   ).rejects.toThrow(/Disk full/);
-  expect(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId).toBe("agent-1");
+  expect(JSON.parse(await fs.readFile(target, "utf8")).activeTabId).toBe("agent-1");
   fsState.failWrite = false;
-  await store.saveState({ ...state(), activeSessionId: "switchboard" });
-  expect(JSON.parse(await fs.readFile(target, "utf8")).activeSessionId).toBe("switchboard");
+  await store.saveState({ ...state(), activeTabId: "switchboard" });
+  expect(JSON.parse(await fs.readFile(target, "utf8")).activeTabId).toBe("switchboard");
 });
 
 for (const contents of ["{broken", '{"version":2}']) {

@@ -1,62 +1,55 @@
-import type { ActiveSessionId, Session } from "../../../shared/types";
+import type { ActiveTabId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
-import { flatRailSessions } from "./flatRailSessions";
-import { sessionMatchesFilter } from "./sessionMatchesFilter";
+import { sessionIdForTab, visibleTabOrder } from "../../../shared/tabNav";
 import { useEffect } from "react";
 
-function toggleActivePin(pinned: Session[], unpinned: Session[], activeSessionId: ActiveSessionId) {
-  if (activeSessionId === SWITCHBOARD_ID) return;
-  if (pinned.some((session) => session.id === activeSessionId)) {
-    void window.switcheroo.unpinSession(activeSessionId);
+function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {
+  const parentId = sessionIdForTab(activeTabId, [...pinned, ...unpinned]);
+  if (!parentId || activeTabId !== parentId) return;
+  if (pinned.some((session) => session.id === parentId)) {
+    void window.switcheroo.unpinSession(parentId);
     return;
   }
   if (pinned.length >= MAX_PINNED_SESSIONS) return;
-  if (!unpinned.some((session) => session.id === activeSessionId)) return;
-  void window.switcheroo.pinSession(activeSessionId);
+  if (!unpinned.some((session) => session.id === parentId)) return;
+  void window.switcheroo.pinSession(parentId);
 }
 
 export function useSessionShortcuts(
   pinned: Session[],
   unpinned: Session[],
-  activeSessionId: ActiveSessionId,
-  selectSession: (id: ActiveSessionId) => void,
+  activeTabId: ActiveTabId,
+  selectTab: (id: ActiveTabId) => void,
   disabled: boolean,
   filterQuery = "",
 ) {
   useEffect(() => {
-    const visiblePinned = pinned.filter((session) => sessionMatchesFilter(session, filterQuery));
-    const visibleUnpinned = unpinned.filter((session) => sessionMatchesFilter(session, filterQuery));
-    const ids = flatRailSessions(visiblePinned, visibleUnpinned).map((session) => session.id);
-    // Switchboard stays visible above the filter; Tab cycles it with matching sessions only.
-    const order: ActiveSessionId[] = [SWITCHBOARD_ID, ...ids];
+    const order = visibleTabOrder(pinned, unpinned, filterQuery);
     const step = (delta: number) => {
       if (disabled || order.length === 0) return;
-      const index = order.indexOf(activeSessionId);
+      const index = order.indexOf(activeTabId);
       if (index < 0) {
         const fallback = delta > 0 ? order[0] : order[order.length - 1];
-        if (fallback !== undefined) selectSession(fallback);
+        if (fallback !== undefined) selectTab(fallback);
         return;
       }
       const next = order[(index + delta + order.length) % order.length];
-      if (next !== undefined) selectSession(next);
+      if (next !== undefined) selectTab(next);
     };
 
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey
-        && /^[0-9]$/.test(event.key)) {
-        const target = event.key === "0" ? SWITCHBOARD_ID : ids[Number(event.key) - 1];
-        if (target === undefined) return;
+      if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey && event.key === "0") {
         event.preventDefault();
-        selectSession(target);
+        selectTab(SWITCHBOARD_ID);
         return;
       }
 
       if ((event.metaKey || event.ctrlKey) && !(event.metaKey && event.ctrlKey)
         && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "p") {
         event.preventDefault();
-        toggleActivePin(pinned, unpinned, activeSessionId);
+        toggleActivePin(pinned, unpinned, activeTabId);
         return;
       }
 
@@ -68,7 +61,7 @@ export function useSessionShortcuts(
     const onPrev = () => step(-1);
     const onTogglePin = () => {
       if (disabled) return;
-      toggleActivePin(pinned, unpinned, activeSessionId);
+      toggleActivePin(pinned, unpinned, activeTabId);
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("switcheroo:session-next", onNext);
@@ -80,5 +73,5 @@ export function useSessionShortcuts(
       window.removeEventListener("switcheroo:session-prev", onPrev);
       window.removeEventListener("switcheroo:toggle-pin", onTogglePin);
     };
-  }, [pinned, unpinned, activeSessionId, selectSession, disabled, filterQuery]);
+  }, [pinned, unpinned, activeTabId, selectTab, disabled, filterQuery]);
 }

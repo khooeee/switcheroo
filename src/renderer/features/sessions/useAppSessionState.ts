@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import type {
-  ActiveSessionId,
+  ActiveTabId,
   PermissionRequest,
   Session,
+  SessionTab,
   SwitchboardTurn,
   TranscriptTurn,
 } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
+import { findChildTab, sessionIdForTab } from "../../../shared/tabNav";
 import { seedComposerDraft } from "../chat/useComposerDraft";
 import { flatRailSessions } from "./flatRailSessions";
 
@@ -14,7 +16,7 @@ import { flatRailSessions } from "./flatRailSessions";
 export function useAppSessionState() {
   const [pinnedSessions, setPinnedSessions] = useState<Session[]>([]);
   const [unpinnedSessions, setUnpinnedSessions] = useState<Session[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<ActiveSessionId>(SWITCHBOARD_ID);
+  const [activeTabId, setActiveTabId] = useState<ActiveTabId>(SWITCHBOARD_ID);
   const [switchboardTurns, setSwitchboardTurns] = useState<SwitchboardTurn[]>([]);
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptTurn[]>>({});
   const [permission, setPermission] = useState<PermissionRequest | null>(null);
@@ -29,20 +31,21 @@ export function useAppSessionState() {
     void window.switcheroo.listSessions().then(async (data) => {
       setPinnedSessions(data.pinned);
       setUnpinnedSessions(data.unpinned);
-      setActiveSessionId(data.activeSessionId);
+      setActiveTabId(data.activeTabId);
       setSwitchboardTurns(data.switchboardTurns);
       setTranscripts({});
-      if (data.activeSessionId !== SWITCHBOARD_ID) {
-        const turns = await window.switcheroo.getTranscript(data.activeSessionId);
-        setTranscripts({ [data.activeSessionId]: turns });
+      const parentId = sessionIdForTab(data.activeTabId, [...data.pinned, ...data.unpinned]);
+      if (parentId) {
+        const turns = await window.switcheroo.getTranscript(parentId);
+        setTranscripts({ [parentId]: turns });
       }
     });
 
     const unsubs = [
-      window.switcheroo.onSessionsChanged(({ pinned: p, unpinned: u, activeSessionId: a }) => {
+      window.switcheroo.onSessionsChanged(({ pinned: p, unpinned: u, activeTabId: a }) => {
         setPinnedSessions(p);
         setUnpinnedSessions(u);
-        setActiveSessionId(a);
+        setActiveTabId(a);
       }),
       window.switcheroo.onSwitchboardTurn((turn) => {
         setSwitchboardTurns((prev) => {
@@ -59,7 +62,7 @@ export function useAppSessionState() {
       window.switcheroo.onSwitchboardSessionRemoved(({ sessionId, message }) => {
         setSwitchboardTurns((prev) => prev.filter((turn) => turn.sessionId !== sessionId));
         setSwitchboardNotice(message);
-        setActiveSessionId(SWITCHBOARD_ID);
+        setActiveTabId(SWITCHBOARD_ID);
       }),
       window.switcheroo.onTranscript(({ sessionId, turn }) => {
         setTranscripts((prev) => {
@@ -89,32 +92,44 @@ export function useAppSessionState() {
     };
   }, []);
 
-  useEffect(() => {
-    if (activeSessionId === SWITCHBOARD_ID) return;
-    let cancelled = false;
-    void window.switcheroo.getTranscript(activeSessionId).then((turns) => {
-      if (cancelled) return;
-      setTranscripts((prev) => ({ ...prev, [activeSessionId]: turns }));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [activeSessionId]);
-
   const openSessions = useMemo(
     () => flatRailSessions(pinnedSessions, unpinnedSessions),
     [pinnedSessions, unpinnedSessions],
   );
-  const activeSession = useMemo(
-    () => openSessions.find((t) => t.id === activeSessionId) ?? null,
-    [openSessions, activeSessionId],
+
+  const activeChild = useMemo(
+    () => findChildTab(openSessions, activeTabId),
+    [openSessions, activeTabId],
   );
+
+  const activeSession = useMemo(() => {
+    if (activeChild) return activeChild.session;
+    return openSessions.find((t) => t.id === activeTabId) ?? null;
+  }, [openSessions, activeTabId, activeChild]);
+
+  const activeTerminalTab: SessionTab | null = activeChild?.tab.kind === "terminal"
+    ? activeChild.tab
+    : null;
+
+  useEffect(() => {
+    const parentId = activeSession?.id;
+    if (!parentId || activeTerminalTab) return;
+    let cancelled = false;
+    void window.switcheroo.getTranscript(parentId).then((turns) => {
+      if (cancelled) return;
+      setTranscripts((prev) => ({ ...prev, [parentId]: turns }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSession?.id, activeTerminalTab]);
 
   return {
     pinnedSessions,
     unpinnedSessions,
-    activeSessionId,
+    activeTabId,
     activeSession,
+    activeTerminalTab,
     openSessions,
     switchboardTurns,
     transcripts,

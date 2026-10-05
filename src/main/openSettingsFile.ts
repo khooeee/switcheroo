@@ -7,7 +7,7 @@ import { statePath } from "./userDataPaths";
 const EMPTY_STATE = JSON.stringify(
   {
     version: 1,
-    activeSessionId: SWITCHBOARD_ID,
+    activeTabId: SWITCHBOARD_ID,
     settings: defaultAppSettings(),
     pinned: [],
     unpinned: [],

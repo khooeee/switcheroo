@@ -77,6 +77,8 @@ export async function forkSessionAtEvent(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
+    tabs: [],
+    tabsExpanded: true,
   };
   host.addSession(session, clipped);
   host.setActiveSession(id);

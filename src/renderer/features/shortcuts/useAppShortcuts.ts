@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import type { ActiveSessionId, Session } from "../../../shared/types";
+import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
+import { findChildTab, sessionIdForTab } from "../../../shared/tabNav";
 import { isComposerDraftEmpty } from "../chat/useComposerDraft";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
@@ -17,9 +18,10 @@ function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
 export function useAppShortcuts({
   pinned,
   unpinned,
-  activeSessionId,
+  activeTabId,
   activeSession,
-  selectSession,
+  activeTerminalTab,
+  selectTab,
   showNewSession,
   showFindInSessions,
   findOpen,
@@ -33,9 +35,10 @@ export function useAppShortcuts({
 }: {
   pinned: Session[];
   unpinned: Session[];
-  activeSessionId: ActiveSessionId;
+  activeTabId: ActiveTabId;
   activeSession: Session | null;
-  selectSession: (id: ActiveSessionId) => void;
+  activeTerminalTab: SessionTab | null;
+  selectTab: (id: ActiveTabId) => void;
   showNewSession: boolean;
   showFindInSessions: boolean;
   findOpen: boolean;
@@ -50,26 +53,45 @@ export function useAppShortcuts({
   const blocked = showNewSession || showFindInSessions;
   const findInSessionsOpen = useRef(false);
   findInSessionsOpen.current = showFindInSessions;
-  const activeId = useRef(activeSessionId);
-  activeId.current = activeSessionId;
+  const activeId = useRef(activeTabId);
+  activeId.current = activeTabId;
+  const sessionsRef = useRef([...pinned, ...unpinned]);
+  sessionsRef.current = [...pinned, ...unpinned];
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
   const runningId = useRef<string | null>(null);
-  runningId.current = activeSession?.status === "running" ? activeSession.id : null;
+  runningId.current =
+    activeTerminalTab ? null : activeSession?.status === "running" ? activeSession.id : null;
   const forkableId = useRef<string | null>(null);
-  forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
+  forkableId.current =
+    activeTerminalTab ? null : activeSession?.supportsFork ? activeSession.id : null;
 
-  const promptFocus = useSessionFocusShortcuts(activeSessionId, blocked);
+  const promptFocus = useSessionFocusShortcuts(
+    activeTerminalTab ? SWITCHBOARD_ID : activeTabId,
+    blocked,
+  );
   usePromptFocusShortcut({
-    hasPrompt: activeSessionId !== SWITCHBOARD_ID,
+    hasPrompt: !!activeSession && !activeTerminalTab,
     blocked,
   });
-  useSessionShortcuts(pinned, unpinned, activeSessionId, selectSession, blocked, sessionFilter);
+  useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
 
   useEffect(() => {
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
-      void window.switcheroo.closeSession(activeId.current);
+      const child = findChildTab(sessionsRef.current, activeId.current);
+      if (child) {
+        void window.switcheroo.closeTab(child.tab.tabId);
+        return;
+      }
+      const session = sessionsRef.current.find((item) => item.id === activeId.current);
+      if (!session) return;
+      if (session.tabs.length > 0) {
+        const n = session.tabs.length;
+        const ok = window.confirm(`Close this chat and ${n} terminal${n === 1 ? "" : "s"}?`);
+        if (!ok) return;
+      }
+      void window.switcheroo.closeSession(session.id);
     };
     const forkActive = () => {
       const id = forkableId.current;
@@ -80,6 +102,12 @@ export function useAppShortcuts({
       const id = runningId.current;
       if (!id || blockedRef.current) return;
       void window.switcheroo.cancelPrompt(id).catch(console.error);
+    };
+    const newTerminal = () => {
+      if (blockedRef.current || document.querySelector("dialog[open]")) return;
+      const parentId = sessionIdForTab(activeId.current, sessionsRef.current);
+      if (!parentId) return;
+      void window.switcheroo.createTerminalTab(parentId);
     };
     const openFind = () => {
       if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
@@ -128,6 +156,7 @@ export function useAppShortcuts({
       ) {
         if (document.querySelector("dialog[open]") || blockedRef.current) return;
         if (activeId.current === SWITCHBOARD_ID) return;
+        if (findChildTab(sessionsRef.current, activeId.current)) return;
         if (!isComposerDraftEmpty(activeId.current)) return;
         event.preventDefault();
         closeActive();
@@ -141,6 +170,13 @@ export function useAppShortcuts({
         if (activeId.current === SWITCHBOARD_ID) return;
         event.preventDefault();
         closeActive();
+        return;
+      }
+
+      if (modKey(event, "t")) {
+        if (event.repeat) return;
+        event.preventDefault();
+        newTerminal();
         return;
       }
 
@@ -182,6 +218,7 @@ export function useAppShortcuts({
     window.addEventListener("switcheroo:find", openFind);
     window.addEventListener("switcheroo:find-sessions", openFindSessions);
     window.addEventListener("switcheroo:new-session", openNewSession);
+    window.addEventListener("switcheroo:new-terminal", newTerminal);
     window.addEventListener("switcheroo:fork-session", forkActive);
     window.addEventListener("switcheroo:close-session", closeActive);
     window.addEventListener("switcheroo:stop-session", stopActive);
@@ -190,6 +227,7 @@ export function useAppShortcuts({
       window.removeEventListener("switcheroo:find", openFind);
       window.removeEventListener("switcheroo:find-sessions", openFindSessions);
       window.removeEventListener("switcheroo:new-session", openNewSession);
+      window.removeEventListener("switcheroo:new-terminal", newTerminal);
       window.removeEventListener("switcheroo:fork-session", forkActive);
       window.removeEventListener("switcheroo:close-session", closeActive);
       window.removeEventListener("switcheroo:stop-session", stopActive);
@@ -208,7 +246,7 @@ export function useAppShortcuts({
         setFindQuery("");
         return;
       }
-      if (activeSession?.status === "running") {
+      if (!activeTerminalTab && activeSession?.status === "running") {
         event.preventDefault();
         void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
         return;
@@ -222,6 +260,7 @@ export function useAppShortcuts({
     return () => window.removeEventListener("keydown", onKey);
   }, [
     activeSession,
+    activeTerminalTab,
     blocked,
     findOpen,
     rightRailOpen,

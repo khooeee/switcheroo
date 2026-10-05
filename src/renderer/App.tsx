@@ -6,6 +6,7 @@ import { SessionRail } from "./features/sessions/SessionRail";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
 import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { TerminalPanel } from "./features/terminal/TerminalPanel";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
@@ -26,8 +27,9 @@ export function App() {
   const {
     pinnedSessions,
     unpinnedSessions,
-    activeSessionId,
+    activeTabId,
     activeSession,
+    activeTerminalTab,
     openSessions,
     switchboardTurns,
     transcripts,
@@ -51,10 +53,11 @@ export function App() {
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
   const findScopeRef = useRef<HTMLElement | null>(null);
   findScopeRef.current = findScope;
-  const askQuestion = useAgentQuestions(activeSessionId);
+  const chatSessionId = activeTerminalTab ? null : activeSession?.id ?? null;
+  const askQuestion = useAgentQuestions(chatSessionId ?? SWITCHBOARD_ID);
   const pinTranscriptToBottom = useSessionScrollPosition(
-    activeSessionId,
-    activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef,
+    chatSessionId ?? SWITCHBOARD_ID,
+    activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef,
   );
 
   const closeFind = useCallback(() => {
@@ -84,7 +87,7 @@ export function App() {
   useEffect(() => {
     setFindScope(null);
     clearPendingFindScope();
-  }, [activeSessionId]);
+  }, [activeTabId]);
 
   useEffect(() => {
     if (!findScope) return;
@@ -99,8 +102,8 @@ export function App() {
     forceSessionRightRail,
     toggleSwitchboardRightRail,
   } = useRightRail({
-    activeSessionId,
-    activeSession,
+    activeSessionId: activeTerminalTab ? SWITCHBOARD_ID : activeTabId,
+    activeSession: activeTerminalTab ? null : activeSession,
     transcripts,
     switchboardTurns,
     openSessions,
@@ -109,25 +112,25 @@ export function App() {
   const findRootRefs = useMemo(() => {
     if (findScope) return [findScopeRef];
     if (rightRailView) return [rightRailScrollRef];
-    return [activeSessionId === SWITCHBOARD_ID ? switchboardRef : chatRef];
-  }, [activeSessionId, findScope, rightRailView]);
+    return [activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef];
+  }, [activeTabId, findScope, rightRailView]);
 
   useEffect(() => {
     const onTurnDetails = (event: Event) => {
       const detail = (event as CustomEvent<{ turnId: string; eventId: string }>).detail;
       if (!detail?.turnId || !detail.eventId) return;
-      if (activeSessionId === SWITCHBOARD_ID) {
+      if (activeTabId === SWITCHBOARD_ID) {
         toggleSwitchboardRightRail(detail.turnId, detail.eventId);
-      } else {
+      } else if (!activeTerminalTab) {
         toggleSessionRightRail(detail.turnId, detail.eventId);
       }
     };
     window.addEventListener("switcheroo:turn-details", onTurnDetails);
     return () => window.removeEventListener("switcheroo:turn-details", onTurnDetails);
-  }, [activeSessionId, toggleSessionRightRail, toggleSwitchboardRightRail]);
+  }, [activeTabId, activeTerminalTab, toggleSessionRightRail, toggleSwitchboardRightRail]);
 
-  const selectSession = useCallback((id: typeof activeSessionId) => {
-    void window.switcheroo.setActiveSession(id);
+  const selectTab = useCallback((id: typeof activeTabId) => {
+    void window.switcheroo.setActiveTab(id);
     setFocusEvent(null);
     closeRightRail();
   }, [closeRightRail, setFocusEvent]);
@@ -135,9 +138,10 @@ export function App() {
   const promptFocus = useAppShortcuts({
     pinned: pinnedSessions,
     unpinned: unpinnedSessions,
-    activeSessionId,
+    activeTabId,
     activeSession,
-    selectSession,
+    activeTerminalTab,
+    selectTab,
     showNewSession,
     showFindInSessions,
     findOpen,
@@ -169,11 +173,11 @@ export function App() {
 
   const sendPrompt = useCallback(
     async (text: string) => {
-      if (!activeSession) return;
+      if (!activeSession || activeTerminalTab) return;
       pinTranscriptToBottom();
       await window.switcheroo.sendPrompt(activeSession.id, text);
     },
-    [activeSession, pinTranscriptToBottom],
+    [activeSession, activeTerminalTab, pinTranscriptToBottom],
   );
 
   const onSwitchboardClick = useCallback((sessionId: string, turnId: string, eventId: string) => {
@@ -185,23 +189,35 @@ export function App() {
       <SessionRail
         pinned={pinnedSessions}
         unpinned={unpinnedSessions}
-        activeSessionId={activeSessionId}
+        activeTabId={activeTabId}
         filter={sessionFilter}
         onFilter={setSessionFilter}
-        onSelect={selectSession}
+        onSelect={selectTab}
         onAdd={() => setShowNewSession(true)}
-        onClose={(id) => void window.switcheroo.closeSession(id)}
+        onCloseSession={(id) => void window.switcheroo.closeSession(id)}
+        onCloseTab={(tabId) => void window.switcheroo.closeTab(tabId)}
         onStop={(id) => void window.switcheroo.cancelPrompt(id).catch(console.error)}
-        onRename={(id, title) => void window.switcheroo.renameSession(id, title)}
+        onRenameSession={(id, title) => void window.switcheroo.renameSession(id, title)}
+        onRenameTab={(tabId, title) => void window.switcheroo.renameTab(tabId, title)}
+        onNewTerminal={(sessionId) => void window.switcheroo.createTerminalTab(sessionId)}
+        onToggleExpanded={(sessionId, expanded) =>
+          void window.switcheroo.setTabsExpanded(sessionId, expanded)
+        }
+        onReorderTab={(sessionId, tabId, toIndex) =>
+          void window.switcheroo.reorderTab(sessionId, tabId, toIndex)
+        }
+        onMoveTab={(tabId, toSessionId, toIndex) =>
+          void window.switcheroo.moveTab(tabId, toSessionId, toIndex)
+        }
         onFork={(id) => void window.switcheroo.forkSession(id).catch(console.error)}
         onPin={(id) => void window.switcheroo.pinSession(id)}
         onUnpin={(id) => void window.switcheroo.unpinSession(id)}
       />
 
       <div className="main relative">
-        {findOpen && (
+        {findOpen && !activeTerminalTab && (
           <FindBar
-            key={`${activeSessionId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
+            key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
             query={findQuery}
             onQuery={setFindQuery}
             rootRefs={findRootRefs}
@@ -211,7 +227,7 @@ export function App() {
           />
         )}
 
-        {activeSessionId === SWITCHBOARD_ID ? (
+        {activeTabId === SWITCHBOARD_ID ? (
           <SwitchboardPanel
             turns={switchboardTurns}
             sessions={openSessions}
@@ -221,6 +237,8 @@ export function App() {
             onTurnClick={onSwitchboardClick}
             onOpenRightRail={toggleSwitchboardRightRail}
           />
+        ) : activeTerminalTab ? (
+          <TerminalPanel tabId={activeTerminalTab.tabId} />
         ) : activeSession ? (
           <ChatPanel
             session={activeSession}
@@ -256,7 +274,7 @@ export function App() {
         )}
       </div>
 
-      {rightRailView ? (
+      {rightRailView && !activeTerminalTab ? (
         <RightRail
           session={rightRailView.session}
           turn={rightRailView.turn}
@@ -269,7 +287,7 @@ export function App() {
         />
       ) : null}
 
-      {permission && activeSessionId === SWITCHBOARD_ID && (
+      {permission && activeTabId === SWITCHBOARD_ID && (
         <PermissionBar
           request={permission}
           onRespond={(optionId) => {

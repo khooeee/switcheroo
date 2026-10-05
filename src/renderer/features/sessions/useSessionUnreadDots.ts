@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ActiveSessionId } from "../../../shared/types";
+import type { ActiveTabId, Session } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
+import { sessionIdForTab } from "../../../shared/tabNav";
 
-/** Session ids with an unread completed turn; cleared when that session becomes active. */
-export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
+/** Session ids with an unread completed turn; cleared when that chat group is active. */
+export function useSessionUnreadDots(activeTabId: ActiveTabId, sessions: Session[]) {
   const [unread, setUnread] = useState(() => new Set<string>());
-  const activeRef = useRef(activeSessionId);
-  activeRef.current = activeSessionId;
+  const parentId = sessionIdForTab(activeTabId, sessions);
+  const parentRef = useRef(parentId);
+  parentRef.current = parentId;
 
   useEffect(() => {
     return window.switcheroo.onPromptComplete(({ sessionId }) => {
-      if (sessionId === activeRef.current) return;
+      if (sessionId === parentRef.current) return;
       setUnread((prev) => {
         if (prev.has(sessionId)) return prev;
         const next = new Set(prev);
@@ -21,14 +23,14 @@ export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
   }, []);
 
   useEffect(() => {
-    if (activeSessionId === SWITCHBOARD_ID) return;
+    if (!parentId) return;
     setUnread((prev) => {
-      if (!prev.has(activeSessionId)) return prev;
+      if (!prev.has(parentId)) return prev;
       const next = new Set(prev);
-      next.delete(activeSessionId);
+      next.delete(parentId);
       return next;
     });
-  }, [activeSessionId]);
+  }, [parentId]);
 
   const toggleUnread = useCallback((sessionId: string) => {
     setUnread((prev) => {
@@ -41,9 +43,12 @@ export function useSessionUnreadDots(activeSessionId: ActiveSessionId) {
 
   useEffect(() => {
     const isUnread =
-      activeSessionId !== SWITCHBOARD_ID && unread.has(activeSessionId);
+      activeTabId !== SWITCHBOARD_ID &&
+      !!parentId &&
+      parentId === activeTabId &&
+      unread.has(parentId);
     void window.switcheroo.setActiveSessionUnread(isUnread);
-  }, [activeSessionId, unread]);
+  }, [activeTabId, parentId, unread]);
 
   return { unread, toggleUnread };
 }

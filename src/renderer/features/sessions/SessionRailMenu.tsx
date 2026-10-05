@@ -12,6 +12,7 @@ export function SessionRailMenu({
   x,
   y,
   onRename,
+  onNewTerminal,
   onFork,
   onPin,
   onUnpin,
@@ -28,6 +29,7 @@ export function SessionRailMenu({
   x: number;
   y: number;
   onRename: (session: Session) => void;
+  onNewTerminal: (sessionId: string) => void;
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
@@ -66,6 +68,19 @@ export function SessionRailMenu({
       >
         {unread ? "Mark as Read" : "Mark as Unread"}
         <kbd className="settings-shortcut">⌘U</kbd>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
+        aria-keyshortcuts="Meta+T Control+T"
+        onClick={() => {
+          onNewTerminal(session.id);
+          onDismiss();
+        }}
+      >
+        New Terminal
+        <kbd className="settings-shortcut">⌘T</kbd>
       </button>
       <button
         type="button"

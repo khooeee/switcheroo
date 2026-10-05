@@ -1,17 +1,23 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent as ReactDragEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { createPortal } from "react-dom";
-import type { ActiveSessionId, Session } from "../../../shared/types";
+import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { applyRailWidth, readRailWidth } from "./railWidth";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { flatRailSessions } from "./flatRailSessions";
-import { requestPromptFocus } from "../shortcuts/paneFocus";
+import { SessionRailChildMenu } from "./SessionRailChildMenu";
 import { SessionRailFilter } from "./SessionRailFilter";
-import { SessionRailLabel } from "./SessionRailLabel";
+import { SessionRailGroup } from "./SessionRailGroup";
 import { SessionRailMenu } from "./SessionRailMenu";
-import { SessionRailPinButton } from "./SessionRailPinButton";
-import { SessionRailRename } from "./SessionRailRename";
 import { sessionMatchesFilter } from "./sessionMatchesFilter";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionUnreadDots } from "./useSessionUnreadDots";
@@ -19,17 +25,31 @@ import "./sessionRail.css";
 import "./sessionSpinner.css";
 import "./sessionRailPin.css";
 
+type RenameTarget =
+  | { kind: "session"; session: Session }
+  | { kind: "tab"; tab: SessionTab };
+
+type MenuState =
+  | { kind: "session"; session: Session; pinned: boolean; x: number; y: number }
+  | { kind: "tab"; tab: SessionTab; sessionId: string; x: number; y: number };
+
 interface Props {
   pinned: Session[];
   unpinned: Session[];
-  activeSessionId: ActiveSessionId;
+  activeTabId: ActiveTabId;
   filter: string;
   onFilter: (value: string) => void;
-  onSelect: (id: ActiveSessionId) => void;
+  onSelect: (id: ActiveTabId) => void;
   onAdd: () => void;
-  onClose: (id: string) => void;
+  onCloseSession: (id: string) => void;
+  onCloseTab: (tabId: string) => void;
   onStop: (id: string) => void;
-  onRename: (id: string, title: string) => void;
+  onRenameSession: (id: string, title: string) => void;
+  onRenameTab: (tabId: string, title: string) => void;
+  onNewTerminal: (sessionId: string) => void;
+  onToggleExpanded: (sessionId: string, expanded: boolean) => void;
+  onReorderTab: (sessionId: string, tabId: string, toIndex: number) => void;
+  onMoveTab: (tabId: string, toSessionId: string, toIndex: number) => void;
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
@@ -38,20 +58,27 @@ interface Props {
 export function SessionRail({
   pinned,
   unpinned,
-  activeSessionId,
+  activeTabId,
   filter,
   onFilter,
   onSelect,
   onAdd,
-  onClose,
+  onCloseSession,
+  onCloseTab,
   onStop,
-  onRename,
+  onRenameSession,
+  onRenameTab,
+  onNewTerminal,
+  onToggleExpanded,
+  onReorderTab,
+  onMoveTab,
   onFork,
   onPin,
   onUnpin,
 }: Props) {
-  const [menu, setMenu] = useState<{ session: Session; pinned: boolean; x: number; y: number } | null>(null);
-  const [rename, setRename] = useState<Session | null>(null);
+  const [menu, setMenu] = useState<MenuState | null>(null);
+  const [rename, setRename] = useState<RenameTarget | null>(null);
+  const [dragTabId, setDragTabId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const allSessions = flatRailSessions(pinned, unpinned);
@@ -65,7 +92,7 @@ export function SessionRail({
   );
   const anyThinking = allSessions.some((session) => session.status === "running");
   const canPin = pinned.length < MAX_PINNED_SESSIONS;
-  const { unread: unreadDots, toggleUnread } = useSessionUnreadDots(activeSessionId);
+  const { unread: unreadDots, toggleUnread } = useSessionUnreadDots(activeTabId, allSessions);
   const filterActive = filter.trim().length > 0;
   const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
 
@@ -88,26 +115,37 @@ export function SessionRail({
 
   useEffect(() => {
     const startRename = () => {
-      if (activeSessionId === SWITCHBOARD_ID) return;
-      const session = allSessions.find((item) => item.id === activeSessionId);
-      if (!session) return;
-      setMenu(null);
-      setRename(session);
+      if (activeTabId === SWITCHBOARD_ID) return;
+      const session = allSessions.find((item) => item.id === activeTabId);
+      if (session) {
+        setMenu(null);
+        setRename({ kind: "session", session });
+        return;
+      }
+      for (const parent of allSessions) {
+        const tab = parent.tabs.find((item) => item.tabId === activeTabId);
+        if (tab) {
+          setMenu(null);
+          setRename({ kind: "tab", tab });
+          return;
+        }
+      }
     };
     window.addEventListener("switcheroo:rename-session", startRename);
     return () => window.removeEventListener("switcheroo:rename-session", startRename);
-  }, [activeSessionId, allSessions]);
+  }, [activeTabId, allSessions]);
 
   useEffect(() => {
     const onToggleUnread = () => {
-      if (activeSessionId === SWITCHBOARD_ID) return;
-      toggleUnread(activeSessionId);
+      if (activeTabId === SWITCHBOARD_ID) return;
+      if (!allSessions.some((session) => session.id === activeTabId)) return;
+      toggleUnread(activeTabId);
     };
     window.addEventListener("switcheroo:mark-unread", onToggleUnread);
     return () => window.removeEventListener("switcheroo:mark-unread", onToggleUnread);
-  }, [activeSessionId, toggleUnread]);
+  }, [activeTabId, allSessions, toggleUnread]);
 
-  useScrollActiveRailSession(scrollRef, activeSessionId);
+  useScrollActiveRailSession(scrollRef, activeTabId);
 
   const resize = (event: ReactPointerEvent) => {
     event.preventDefault();
@@ -131,74 +169,79 @@ export function SessionRail({
     window.addEventListener("pointerup", stop);
   };
 
-  const openMenu = (event: ReactMouseEvent, session: Session, isPinned: boolean) => {
-    event.preventDefault();
-    setMenu({ session, pinned: isPinned, x: event.clientX, y: event.clientY });
+  const confirmCloseSession = (session: Session) => {
+    if (session.tabs.length > 0) {
+      const n = session.tabs.length;
+      const ok = window.confirm(`Close this chat and ${n} terminal${n === 1 ? "" : "s"}?`);
+      if (!ok) return;
+    }
+    onCloseSession(session.id);
   };
 
-  const renderRow = (session: Session, isPinned: boolean) => {
-    if (rename?.id === session.id) {
-      return (
-        <SessionRailRename
-          key={session.id}
-          title={session.title}
-          onSave={(title) => {
-            onRename(session.id, title);
-            setRename(null);
-            requestPromptFocus();
-          }}
-          onCancel={() => setRename(null)}
-        />
-      );
-    }
-    return (
-      <button
-        key={session.id}
-        type="button"
-        className={`rail-session ${activeSessionId === session.id ? "active" : ""} ${session.status === "connecting" ? "creating" : ""}`}
-        data-tooltip={`${session.title}\n${session.cwd}\n(${session.status === "connecting" ? "Creating" : session.status})`}
-        data-tooltip-side="right"
-        onClick={() => onSelect(session.id)}
-        onDoubleClick={(event) => {
-          if ((event.target as HTMLElement).closest(".rail-pin-btn")) return;
-          event.preventDefault();
-          setRename(session);
-        }}
-        onContextMenu={(e) => openMenu(e, session, isPinned)}
-      >
-        <SessionRailLabel title={session.title} />
-        {(session.status === "running" || unreadDots.has(session.id) || isPinned || canPin) && (
-          <span className="rail-session-end">
-            {session.status === "running" ? (
-              <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-            ) : unreadDots.has(session.id) ? (
-              <span className="rail-unread" role="status" aria-label="Unread" />
-            ) : null}
-            {(isPinned || canPin) && (
-              <SessionRailPinButton
-                pinned={isPinned}
-                onToggle={() => (isPinned ? onUnpin(session.id) : onPin(session.id))}
-              />
-            )}
-          </span>
-        )}
-      </button>
-    );
+  const onChildDragStart = (event: ReactDragEvent, tabId: string) => {
+    event.dataTransfer.setData("text/tab-id", tabId);
+    event.dataTransfer.effectAllowed = "move";
+    setDragTabId(tabId);
   };
+
+  const onChildDrop = (event: ReactDragEvent, toSessionId: string, toIndex: number) => {
+    event.preventDefault();
+    const tabId = event.dataTransfer.getData("text/tab-id") || dragTabId;
+    setDragTabId(null);
+    if (!tabId) return;
+    const source = allSessions.find((session) =>
+      session.tabs.some((tab) => tab.tabId === tabId),
+    );
+    if (!source) return;
+    if (source.id === toSessionId) onReorderTab(toSessionId, tabId, toIndex);
+    else onMoveTab(tabId, toSessionId, toIndex);
+  };
+
+  const groupProps = (session: Session, isPinned: boolean) => ({
+    session,
+    isPinned,
+    activeTabId,
+    filter,
+    canPin,
+    unread: unreadDots.has(session.id),
+    dragTabId,
+    rename,
+    setRename,
+    onSelect,
+    onToggleExpanded,
+    onRenameSession,
+    onRenameTab,
+    onPin,
+    onUnpin,
+    onOpenSessionMenu: (e: ReactMouseEvent, s: Session, p: boolean) => {
+      e.preventDefault();
+      setMenu({ kind: "session", session: s, pinned: p, x: e.clientX, y: e.clientY });
+    },
+    onOpenTabMenu: (e: ReactMouseEvent, tab: SessionTab, sessionId: string) => {
+      e.preventDefault();
+      setMenu({ kind: "tab", tab, sessionId, x: e.clientX, y: e.clientY });
+    },
+    onChildDragStart,
+    onChildDrop,
+    onGroupDrop: (e: ReactDragEvent, toSessionId: string) => {
+      const session = allSessions.find((item) => item.id === toSessionId);
+      onChildDrop(e, toSessionId, session?.tabs.length ?? 0);
+    },
+  });
 
   return (
-    <aside className="rail" aria-label="Sessions">
+    <aside className="rail" aria-label="Tabs">
       <div
         className="rail-resize"
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sessions"
+        aria-label="Resize tabs"
         onPointerDown={resize}
       />
       <div className="rail-switchboard-row">
         <button
           type="button"
-          className={`rail-session ${activeSessionId === SWITCHBOARD_ID ? "active" : ""}`}
+          className={`rail-session ${activeTabId === SWITCHBOARD_ID ? "active" : ""}`}
           onClick={() => onSelect(SWITCHBOARD_ID)}
         >
           <span className="rail-label">Switchboard</span>
@@ -212,20 +255,28 @@ export function SessionRail({
       </div>
       <SessionRailFilter value={filter} onChange={onFilter} />
       <div className="rail-sessions">
-        <div className="rail-scroll" ref={scrollRef}>
-          {filteredPinned.map((session) => renderRow(session, true))}
+        <div
+          className="rail-scroll"
+          ref={scrollRef}
+          onDragEnd={() => setDragTabId(null)}
+        >
+          {filteredPinned.map((session) => (
+            <SessionRailGroup key={session.id} {...groupProps(session, true)} />
+          ))}
           {filteredPinned.length > 0 && filteredUnpinned.length > 0 && (
             <div className="rail-pin-divider" role="separator" aria-hidden="true" />
           )}
-          {filteredUnpinned.map((session) => renderRow(session, false))}
-          {noMatches ? <div className="rail-filter-empty">No matching sessions</div> : null}
+          {filteredUnpinned.map((session) => (
+            <SessionRailGroup key={session.id} {...groupProps(session, false)} />
+          ))}
+          {noMatches ? <div className="rail-filter-empty">No matching tabs</div> : null}
         </div>
         <div className="rail-fade" aria-hidden="true" />
       </div>
       <div className="rail-footer">
         <SettingsMenu />
       </div>
-      {menu &&
+      {menu?.kind === "session" &&
         createPortal(
           <SessionRailMenu
             menuRef={menuRef}
@@ -235,13 +286,29 @@ export function SessionRail({
             unread={unreadDots.has(menu.session.id)}
             x={menu.x}
             y={menu.y}
-            onRename={setRename}
+            onRename={(session) => setRename({ kind: "session", session })}
+            onNewTerminal={onNewTerminal}
             onFork={onFork}
             onPin={onPin}
             onUnpin={onUnpin}
             onToggleUnread={toggleUnread}
             onStop={onStop}
-            onClose={onClose}
+            onClose={() => confirmCloseSession(menu.session)}
+            onDismiss={() => setMenu(null)}
+          />,
+          document.body,
+        )}
+      {menu?.kind === "tab" &&
+        createPortal(
+          <SessionRailChildMenu
+            menuRef={menuRef}
+            tab={menu.tab}
+            sessionId={menu.sessionId}
+            x={menu.x}
+            y={menu.y}
+            onRename={(tab) => setRename({ kind: "tab", tab })}
+            onNewTerminal={onNewTerminal}
+            onClose={onCloseTab}
             onDismiss={() => setMenu(null)}
           />,
           document.body,

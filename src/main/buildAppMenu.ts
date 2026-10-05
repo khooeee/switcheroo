@@ -7,14 +7,17 @@ const FORK_MENU_ID = "session-fork";
 const MARK_UNREAD_MENU_ID = "session-mark-unread";
 const STOP_MENU_ID = "session-stop";
 const CLOSE_MENU_ID = "session-close";
+const NEW_TERMINAL_MENU_ID = "session-new-terminal";
 
 /** Build the application menu; session item state comes from getters. */
 export function buildAppMenu(opts: {
   getMainWindow: () => BrowserWindow | null;
   getPinMenuState: () => SessionPinMenuState;
   getRenameEnabled: () => boolean;
+  getUnreadEnabled: () => boolean;
   getForkEnabled: () => boolean;
   getStopEnabled: () => boolean;
+  getNewTerminalEnabled: () => boolean;
   getActiveUnread: () => boolean;
 }): void {
   const win = () => opts.getMainWindow();
@@ -43,10 +46,19 @@ export function buildAppMenu(opts: {
       label: "Session",
       submenu: [
         {
-          label: "New",
+          label: "New Session",
           accelerator: "CmdOrCtrl+N",
           click: () => {
             win()?.webContents.send("session:new");
+          },
+        },
+        {
+          id: NEW_TERMINAL_MENU_ID,
+          label: "New Terminal",
+          enabled: opts.getNewTerminalEnabled(),
+          accelerator: "CmdOrCtrl+T",
+          click: () => {
+            win()?.webContents.send("session:new-terminal");
           },
         },
         {
@@ -61,7 +73,7 @@ export function buildAppMenu(opts: {
         {
           id: MARK_UNREAD_MENU_ID,
           label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
-          enabled: opts.getRenameEnabled(),
+          enabled: opts.getUnreadEnabled(),
           accelerator: "CmdOrCtrl+U",
           click: () => {
             win()?.webContents.send("session:mark-unread");
@@ -152,14 +164,14 @@ export function buildAppMenu(opts: {
       label: "Go",
       submenu: [
         {
-          label: "Go to Next Session",
+          label: "Go to Next Tab",
           accelerator: "Ctrl+Tab",
           click: () => {
             win()?.webContents.send("session:next");
           },
         },
         {
-          label: "Go to Previous Session",
+          label: "Go to Previous Tab",
           accelerator: "Ctrl+Shift+Tab",
           click: () => {
             win()?.webContents.send("session:prev");
@@ -186,8 +198,10 @@ export function buildAppMenu(opts: {
 export function refreshSessionMenuItems(
   pin: SessionPinMenuState,
   renameEnabled: boolean,
+  unreadEnabled: boolean,
   forkEnabled: boolean,
   stopEnabled: boolean,
+  newTerminalEnabled: boolean,
   activeUnread: boolean,
 ): void {
   const menu = Menu.getApplicationMenu();
@@ -204,10 +218,12 @@ export function refreshSessionMenuItems(
   const markUnreadItem = menu.getMenuItemById(MARK_UNREAD_MENU_ID);
   if (markUnreadItem) {
     markUnreadItem.label = activeUnread ? "Mark as Read" : "Mark as Unread";
-    markUnreadItem.enabled = renameEnabled;
+    markUnreadItem.enabled = unreadEnabled;
   }
   const stopItem = menu.getMenuItemById(STOP_MENU_ID);
   if (stopItem) stopItem.enabled = stopEnabled;
   const closeItem = menu.getMenuItemById(CLOSE_MENU_ID);
   if (closeItem) closeItem.enabled = renameEnabled;
+  const newTerminalItem = menu.getMenuItemById(NEW_TERMINAL_MENU_ID);
+  if (newTerminalItem) newTerminalItem.enabled = newTerminalEnabled;
 }

@@ -8,7 +8,15 @@ export function isAgentKind(value: unknown): value is AgentKind {
 
 export const SWITCHBOARD_ID = "switchboard" as const;
 
-export type ActiveSessionId = typeof SWITCHBOARD_ID | string;
+/** Active rail selection: Switchboard, a chat parent, or a child tab id. */
+export type ActiveTabId = typeof SWITCHBOARD_ID | string;
+
+/** @deprecated Use ActiveTabId. */
+export type ActiveSessionId = ActiveTabId;
+
+/** Child tab under a chat group (terminals now; browser/emulator later). */
+export type SessionTab =
+  | { tabId: string; kind: "terminal"; title: string; cwd: string };
 
 export type SessionStatus = "idle" | "connecting" | "ready" | "running" | "error";
 
@@ -63,6 +71,10 @@ export interface Session {
   slashCommands?: SlashCommand[];
   /** Context window usage from ACP usage_update (persisted in session meta). */
   usage?: SessionUsage;
+  /** Child tabs (terminals, etc.) under this chat group. */
+  tabs: SessionTab[];
+  /** Whether child tabs are expanded in the rail. */
+  tabsExpanded: boolean;
 }
 
 export interface SlashCommand {
@@ -183,7 +195,7 @@ export function mergeAppSettings(partial?: Partial<AppSettings> | null): AppSett
 
 export interface PersistedState {
   version: 1;
-  activeSessionId: ActiveSessionId;
+  activeTabId: ActiveTabId;
   settings?: AppSettings;
   /** Pinned session ids in rail order (top section). */
   pinned: string[];
@@ -194,7 +206,7 @@ export interface PersistedState {
 export interface SessionListPayload {
   pinned: Session[];
   unpinned: Session[];
-  activeSessionId: ActiveSessionId;
+  activeTabId: ActiveTabId;
 }
 
 export interface SwitcherooApi {
@@ -209,7 +221,19 @@ export interface SwitcherooApi {
   unpinSession: (sessionId: string) => Promise<void>;
   /** Sync Session menu Mark as Read/Unread for the active session. */
   setActiveSessionUnread: (unread: boolean) => Promise<void>;
-  setActiveSession: (sessionId: ActiveSessionId) => Promise<void>;
+  setActiveTab: (tabId: ActiveTabId) => Promise<void>;
+  createTerminalTab: (sessionId: string) => Promise<SessionTab>;
+  renameTab: (tabId: string, title: string) => Promise<void>;
+  closeTab: (tabId: string) => Promise<void>;
+  setTabsExpanded: (sessionId: string, expanded: boolean) => Promise<void>;
+  reorderTab: (sessionId: string, tabId: string, toIndex: number) => Promise<void>;
+  moveTab: (tabId: string, toSessionId: string, toIndex: number) => Promise<void>;
+  /** Ensure a PTY exists for this terminal tab (lazy spawn). */
+  attachTerminal: (tabId: string) => Promise<void>;
+  writeTerminal: (tabId: string, data: string) => Promise<void>;
+  resizeTerminal: (tabId: string, cols: number, rows: number) => Promise<void>;
+  onTerminalData: (cb: (payload: { tabId: string; data: string }) => void) => () => void;
+  onTerminalExit: (cb: (payload: { tabId: string }) => void) => () => void;
   listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;

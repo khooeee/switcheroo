@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import type { BrowserWindow } from "electron";
 import type {
-  ActiveSessionId,
+  ActiveTabId,
   AgentKind,
   AppSettings,
   CreateSessionInput,
@@ -9,9 +9,11 @@ import type {
   PersistedState,
   Session,
   SessionStatus,
+  SessionTab,
   TranscriptTurn,
 } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
+import { findChildTab, sessionIdForTab } from "../shared/tabNav";
 import { GlobalEventBus } from "./events";
 import { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
@@ -42,6 +44,15 @@ import { newSessionId } from "./newSessionId";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
 import { AgentForkSupport } from "./acp/AgentForkSupport";
 import { sessionPinMenuState, type SessionPinMenuState } from "./sessionPinMenuState";
+import {
+  createTerminalTab,
+  moveTabBetweenLists,
+  removeTabFromList,
+  renameTabInList,
+  reorderTabInList,
+  updateTabCwd,
+} from "./sessionTabs";
+import { TerminalHost } from "./terminalHost";
 
 const warmCallbacks: SessionCallbacks = {
   onPromptComplete: () => undefined,
@@ -62,7 +73,7 @@ export class SessionManager {
   private agents = new Map<string, AcpSession>();
   private transcripts = new Map<string, TranscriptTurn[]>();
   private hydrated = new Set<string>();
-  private activeSessionId: ActiveSessionId = SWITCHBOARD_ID;
+  private activeTabId: ActiveTabId = SWITCHBOARD_ID;
   private bus = new GlobalEventBus();
   private window: BrowserWindow | null = null;
   private permissionOwners = new Map<string, string>(); // requestId -> sessionId
@@ -71,40 +82,74 @@ export class SessionManager {
   private findGeneration = 0;
   private warm = new WarmSessionPool<AcpSession>();
   private forkSupport = new AgentForkSupport();
+  private terminals = new TerminalHost();
   private onSessionsChanged: (() => void) | null = null;
 
   setWindow(win: BrowserWindow): void {
     this.window = win;
-    if (this.activeSessionId !== SWITCHBOARD_ID) this.refreshCommandsIfNeeded(this.activeSessionId);
+    this.terminals.setListeners(
+      (tabId, data) => this.send("terminal:data", { tabId, data }),
+      (tabId) => this.send("terminal:exit", { tabId }),
+    );
+    const parentId = this.activeParentSessionId();
+    if (parentId) this.refreshCommandsIfNeeded(parentId);
   }
 
   setOnSessionsChanged(cb: (() => void) | null): void {
     this.onSessionsChanged = cb;
   }
 
-  /** Label/enabled for Session → Pin/Unpin based on the active session. */
+  /** Label/enabled for Session → Pin/Unpin based on the active chat parent. */
   activePinMenuState(): SessionPinMenuState {
+    const parentId = this.activeParentSessionId();
+    if (this.activeIsChildTab()) {
+      const pinned = !!parentId && this.railLists.pinnedIds.includes(parentId);
+      return { label: pinned ? "Unpin" : "Pin", enabled: false };
+    }
     return sessionPinMenuState(
-      this.activeSessionId,
+      parentId ?? SWITCHBOARD_ID,
       this.railLists.pinnedIds,
-      this.sessions.has(this.activeSessionId),
+      parentId ? this.sessions.has(parentId) : false,
     );
   }
 
+  /** Rename enabled for parent or child tab. */
   activeRenameMenuEnabled(): boolean {
-    return (
-      this.activeSessionId !== SWITCHBOARD_ID && this.sessions.has(this.activeSessionId)
-    );
+    if (this.activeTabId === SWITCHBOARD_ID) return false;
+    if (this.sessions.has(this.activeTabId)) return true;
+    return findChildTab(this.sessions.values(), this.activeTabId) !== null;
+  }
+
+  /** Unread is parent-only. */
+  activeUnreadMenuEnabled(): boolean {
+    if (this.activeIsChildTab()) return false;
+    return this.activeTabId !== SWITCHBOARD_ID && this.sessions.has(this.activeTabId);
+  }
+
+  /** True when active selection is a child terminal tab. */
+  activeIsChildTab(): boolean {
+    if (this.activeTabId === SWITCHBOARD_ID) return false;
+    return findChildTab(this.sessions.values(), this.activeTabId) !== null;
   }
 
   activeForkMenuEnabled(): boolean {
-    const session = this.sessions.get(this.activeSessionId);
+    if (this.activeIsChildTab()) return false;
+    const session = this.sessions.get(this.activeTabId);
     return !!session && this.forkSupport.flags(session.agent).supportsFork;
   }
 
   activeStopMenuEnabled(): boolean {
-    if (this.activeSessionId === SWITCHBOARD_ID) return false;
-    return this.sessions.get(this.activeSessionId)?.status === "running";
+    if (this.activeIsChildTab()) return false;
+    if (this.activeTabId === SWITCHBOARD_ID) return false;
+    return this.sessions.get(this.activeTabId)?.status === "running";
+  }
+
+  activeNewTerminalMenuEnabled(): boolean {
+    return this.activeParentSessionId() !== null;
+  }
+
+  private activeParentSessionId(): string | null {
+    return sessionIdForTab(this.activeTabId, this.sessions.values());
   }
 
   async init(): Promise<void> {
@@ -116,23 +161,10 @@ export class SessionManager {
       await Promise.all(
         openIds.map(async (id) => {
           const meta = await loadSessionMeta(id);
-          this.sessions.set(id, {
-            id,
-            title: meta?.title || id,
-            agent: meta?.agent ?? "claude",
-            cwd: meta?.cwd ?? "",
-            agentSessionId: meta?.agentSessionId ?? null,
-            status: "idle",
-            error: null,
-            createdAt: Date.now(),
-            usage: meta?.usage,
-          });
+          this.sessions.set(id, sessionFromMeta(id, meta));
         }),
       );
-      this.activeSessionId =
-        saved.activeSessionId === SWITCHBOARD_ID || openIds.includes(saved.activeSessionId)
-          ? saved.activeSessionId
-          : SWITCHBOARD_ID;
+      this.activeTabId = this.resolveActiveTabId(saved.activeTabId, openIds);
       const openSessionIds = new Set(openIds);
       const loadedSwitchboard = await loadSwitchboardTurns();
       const switchboardTurns = finalizeStalledTurns(loadedSwitchboard);
@@ -158,7 +190,8 @@ export class SessionManager {
           navigable: navigableIds.has(e.sessionId),
         })),
       );
-      if (this.activeSessionId !== SWITCHBOARD_ID) await this.ensureHydrated(this.activeSessionId);
+      const parentId = this.activeParentSessionId();
+      if (parentId) await this.ensureHydrated(parentId);
       if (switchboardTurns !== loadedSwitchboard) await saveSwitchboardTurns(this.bus.list());
     }
 
@@ -170,11 +203,22 @@ export class SessionManager {
     this.ensureWarm(getAppSettings().lastAgent, getAppSettings().lastCwd);
   }
 
+  private resolveActiveTabId(saved: ActiveTabId, openIds: string[]): ActiveTabId {
+    if (saved === SWITCHBOARD_ID) return SWITCHBOARD_ID;
+    if (openIds.includes(saved)) return saved;
+    for (const id of openIds) {
+      const session = this.sessions.get(id);
+      if (session?.tabs.some((tab) => tab.tabId === saved)) return saved;
+    }
+    return SWITCHBOARD_ID;
+  }
+
   async persist(): Promise<void> {
     if (this.persistTimer) {
       clearTimeout(this.persistTimer);
       this.persistTimer = null;
     }
+    await this.persistTerminalCwds();
     await this.persistStateFile();
     await saveSwitchboardTurns(this.bus.list());
     await Promise.all(
@@ -184,6 +228,21 @@ export class SessionManager {
         await saveTranscript(session.id, this.transcripts.get(session.id) ?? []);
       }),
     );
+  }
+
+  private async persistTerminalCwds(): Promise<void> {
+    for (const session of this.sessions.values()) {
+      let changed = false;
+      let tabs = session.tabs;
+      for (const tab of session.tabs) {
+        if (tab.kind !== "terminal" || !this.terminals.has(tab.tabId)) continue;
+        const cwd = await this.terminals.refreshCwd(tab.tabId);
+        if (!cwd || cwd === tab.cwd) continue;
+        tabs = updateTabCwd(tabs, tab.tabId, cwd);
+        changed = true;
+      }
+      if (changed) session.tabs = tabs;
+    }
   }
 
   getSettings(): AppSettings {
@@ -199,7 +258,7 @@ export class SessionManager {
   private async persistStateFile(): Promise<void> {
     const state: PersistedState = {
       version: 1,
-      activeSessionId: this.activeSessionId,
+      activeTabId: this.activeTabId,
       settings: getAppSettings(),
       pinned: [...this.railLists.pinnedIds],
       unpinned: [...this.railLists.unpinnedIds],
@@ -219,8 +278,8 @@ export class SessionManager {
 
   /** Soft-close oldest rail sessions on startup when over sessionListMax. */
   private async enforceSessionListMax(): Promise<boolean> {
-    const protect =
-      this.activeSessionId !== SWITCHBOARD_ID ? this.activeSessionId : undefined;
+    const parentId = this.activeParentSessionId();
+    const protect = parentId ?? undefined;
     const max = getAppSettings().sessionListMax;
     const unpinnedCap = Math.max(0, max - this.railLists.pinnedIds.length);
     const toClose = overflowSessionIds(
@@ -241,9 +300,18 @@ export class SessionManager {
     for (const turn of this.bus.setSessionTitle(sessionId, session.title)) {
       this.send("switchboard:turn", turn);
     }
+    const tabIds = session.tabs.map((tab) => tab.tabId);
+    const cwds = await this.terminals.disposeMany(tabIds);
+    if (cwds.size > 0) {
+      let tabs = session.tabs;
+      for (const [tabId, cwd] of cwds) tabs = updateTabCwd(tabs, tabId, cwd);
+      session.tabs = tabs;
+    }
     if (this.hydrated.has(sessionId)) {
       await saveSessionMeta(sessionId, metaFromSession(session));
       await saveTranscript(sessionId, this.transcripts.get(sessionId) ?? []);
+    } else {
+      await saveSessionMeta(sessionId, metaFromSession(session));
     }
     const acp = this.agents.get(sessionId);
     if (acp) {
@@ -253,13 +321,14 @@ export class SessionManager {
     this.sessions.delete(sessionId);
     this.transcripts.delete(sessionId);
     this.hydrated.delete(sessionId);
-    const wasActive = this.activeSessionId === sessionId;
+    const activeParent = this.activeParentSessionId();
+    const wasActive = activeParent === sessionId || this.activeTabId === sessionId;
     const nextActive = wasActive ? nextActiveAfterClose(this.railLists, sessionId) : null;
     this.railLists = removeSessionFromLists(this.railLists, sessionId);
     if (wasActive) {
-      this.activeSessionId = nextActive ?? SWITCHBOARD_ID;
-      if (this.activeSessionId !== SWITCHBOARD_ID) {
-        this.refreshCommandsIfNeeded(this.activeSessionId);
+      this.activeTabId = nextActive ?? SWITCHBOARD_ID;
+      if (this.activeTabId !== SWITCHBOARD_ID && this.sessions.has(this.activeTabId)) {
+        this.refreshCommandsIfNeeded(this.activeTabId);
       }
     }
   }
@@ -304,11 +373,13 @@ export class SessionManager {
       status: "connecting",
       error: null,
       createdAt: Date.now(),
+      tabs: [],
+      tabsExpanded: true,
     };
     this.prependSession(session, input.pin === true);
     this.transcripts.set(id, []);
     this.hydrated.add(id);
-    if (focus) this.activeSessionId = id;
+    if (focus) this.activeTabId = id;
     this.emitSessions();
 
     try {
@@ -357,7 +428,7 @@ export class SessionManager {
         this.transcripts.set(session.id, transcript);
         this.hydrated.add(session.id);
       },
-      setActiveSession: (id) => { this.activeSessionId = id; },
+      setActiveSession: (id) => { this.activeTabId = id; },
       emitSessions: () => this.emitSessions(),
       send: (channel, payload) => this.send(channel, payload),
       persist: () => this.persist(),
@@ -386,20 +457,126 @@ export class SessionManager {
     return this.sessions.get(sessionId);
   }
 
-  async setActiveSession(sessionId: ActiveSessionId): Promise<void> {
-    if (sessionId !== SWITCHBOARD_ID && !this.sessions.has(sessionId)) return;
-    if (sessionId !== SWITCHBOARD_ID) {
-      const session = await this.ensureHydrated(sessionId);
-      if (!session) {
-        this.forgetMissingSession(sessionId);
-        return;
-      }
-      this.pushTranscript(sessionId);
-    }
-    this.activeSessionId = sessionId;
+  async createTerminalTab(sessionId: string): Promise<SessionTab> {
+    const session = this.sessions.get(sessionId);
+    if (!session) throw new Error("Session not found");
+    const tab = createTerminalTab(session.cwd, session.tabs);
+    session.tabs = [...session.tabs, tab];
+    session.tabsExpanded = true;
+    this.activeTabId = tab.tabId;
     this.emitSessions();
     void this.persist();
-    if (sessionId !== SWITCHBOARD_ID) this.refreshCommandsIfNeeded(sessionId);
+    return tab;
+  }
+
+  renameTab(tabId: string, title: string): void {
+    const found = findChildTab(this.sessions.values(), tabId);
+    if (!found) return;
+    const next = renameTabInList(found.session.tabs, tabId, title);
+    if (!next) return;
+    found.session.tabs = next;
+    this.emitSessions();
+    void this.persist();
+  }
+
+  async closeTab(tabId: string): Promise<void> {
+    const found = findChildTab(this.sessions.values(), tabId);
+    if (!found) return;
+    const cwd = await this.terminals.refreshCwd(tabId);
+    this.terminals.dispose(tabId);
+    let tabs = found.session.tabs;
+    if (cwd) tabs = updateTabCwd(tabs, tabId, cwd);
+    const next = removeTabFromList(tabs, tabId);
+    if (!next) return;
+    found.session.tabs = next;
+    if (this.activeTabId === tabId) {
+      this.activeTabId = found.session.id;
+      this.refreshCommandsIfNeeded(found.session.id);
+    }
+    this.emitSessions();
+    void this.persist();
+  }
+
+  setTabsExpanded(sessionId: string, expanded: boolean): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+    session.tabsExpanded = expanded;
+    this.emitSessions();
+    void this.persist();
+  }
+
+  reorderTab(sessionId: string, tabId: string, toIndex: number): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+    const next = reorderTabInList(session.tabs, tabId, toIndex);
+    if (!next) return;
+    session.tabs = next;
+    this.emitSessions();
+    void this.persist();
+  }
+
+  moveTab(tabId: string, toSessionId: string, toIndex: number): void {
+    const found = findChildTab(this.sessions.values(), tabId);
+    const dest = this.sessions.get(toSessionId);
+    if (!found || !dest) return;
+    if (found.session.id === toSessionId) {
+      this.reorderTab(toSessionId, tabId, toIndex);
+      return;
+    }
+    const moved = moveTabBetweenLists(found.session.tabs, dest.tabs, tabId, toIndex);
+    if (!moved) return;
+    found.session.tabs = moved.from;
+    dest.tabs = moved.to;
+    dest.tabsExpanded = true;
+    this.emitSessions();
+    void this.persist();
+  }
+
+  attachTerminal(tabId: string): void {
+    const found = findChildTab(this.sessions.values(), tabId);
+    if (!found || found.tab.kind !== "terminal") return;
+    this.terminals.ensure(tabId, found.tab.cwd || found.session.cwd);
+  }
+
+  writeTerminal(tabId: string, data: string): void {
+    this.terminals.write(tabId, data);
+  }
+
+  resizeTerminal(tabId: string, cols: number, rows: number): void {
+    this.terminals.resize(tabId, cols, rows);
+  }
+
+  async setActiveTab(tabId: ActiveTabId): Promise<void> {
+    if (tabId === SWITCHBOARD_ID) {
+      this.activeTabId = SWITCHBOARD_ID;
+      this.emitSessions();
+      void this.persist();
+      return;
+    }
+    if (this.sessions.has(tabId)) {
+      const session = await this.ensureHydrated(tabId);
+      if (!session) {
+        this.forgetMissingSession(tabId);
+        return;
+      }
+      this.pushTranscript(tabId);
+      this.activeTabId = tabId;
+      this.emitSessions();
+      void this.persist();
+      this.refreshCommandsIfNeeded(tabId);
+      return;
+    }
+    const child = findChildTab(this.sessions.values(), tabId);
+    if (!child) return;
+    const session = await this.ensureHydrated(child.session.id);
+    if (!session) {
+      this.forgetMissingSession(child.session.id);
+      return;
+    }
+    if (!session.tabsExpanded) session.tabsExpanded = true;
+    this.activeTabId = tabId;
+    this.emitSessions();
+    void this.persist();
   }
 
   async navigateToEvent(sessionId: string, turnId: string, eventId: string): Promise<void> {
@@ -413,7 +590,7 @@ export class SessionManager {
       this.forgetMissingSession(sessionId);
       return;
     }
-    this.activeSessionId = sessionId;
+    this.activeTabId = sessionId;
     this.emitSessions();
     this.pushTranscript(sessionId);
     this.send("navigate-event", { sessionId, turnId, eventId });
@@ -512,6 +689,7 @@ export class SessionManager {
 
   async disposeAll(): Promise<void> {
     await this.persist();
+    await this.terminals.disposeAll();
     await this.warm.dispose();
     for (const s of this.agents.values()) {
       await s.dispose();
@@ -586,7 +764,7 @@ export class SessionManager {
     return {
       pinned: map(this.railLists.pinnedIds),
       unpinned: map(this.railLists.unpinnedIds),
-      activeSessionId: this.activeSessionId,
+      activeTabId: this.activeTabId,
     };
   }
 
@@ -670,7 +848,9 @@ export class SessionManager {
       this.sessions.delete(sessionId);
       this.transcripts.delete(sessionId);
       this.railLists = removeSessionFromLists(this.railLists, sessionId);
-      if (this.activeSessionId === sessionId) this.activeSessionId = SWITCHBOARD_ID;
+      if (this.activeParentSessionId() === sessionId || this.activeTabId === sessionId) {
+        this.activeTabId = SWITCHBOARD_ID;
+      }
       this.emitSessions();
       void this.persist();
       return null;
@@ -680,6 +860,8 @@ export class SessionManager {
     session.cwd = meta.cwd;
     session.agentSessionId = meta.agentSessionId;
     session.usage = meta.usage;
+    session.tabs = meta.tabs;
+    session.tabsExpanded = meta.tabsExpanded;
     const loaded = await loadTranscript(sessionId);
     const items = finalizeStalledTurns(loaded);
     this.transcripts.set(sessionId, items);
@@ -739,7 +921,9 @@ export class SessionManager {
       this.transcripts.delete(sessionId);
       this.hydrated.delete(sessionId);
       this.railLists = removeSessionFromLists(this.railLists, sessionId);
-      if (this.activeSessionId === sessionId) this.activeSessionId = SWITCHBOARD_ID;
+      if (this.activeParentSessionId() === sessionId || this.activeTabId === sessionId) {
+        this.activeTabId = SWITCHBOARD_ID;
+      }
       this.emitSessions();
     }
     this.bus.removeSession(sessionId);
@@ -755,17 +939,7 @@ export class SessionManager {
     if (!meta) return null;
     const loaded = await loadTranscript(sessionId);
     const items = finalizeStalledTurns(loaded);
-    const session: Session = {
-      id: sessionId,
-      title: meta.title,
-      agent: meta.agent,
-      cwd: meta.cwd,
-      agentSessionId: meta.agentSessionId,
-      status: "idle",
-      error: null,
-      createdAt: Date.now(),
-      usage: meta.usage,
-    };
+    const session = sessionFromMeta(sessionId, meta);
     this.prependSession(session);
     this.transcripts.set(sessionId, items);
     this.hydrated.add(sessionId);
@@ -787,6 +961,22 @@ export class SessionManager {
   }
 }
 
+function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
+  return {
+    id,
+    title: meta?.title || id,
+    agent: meta?.agent ?? "claude",
+    cwd: meta?.cwd ?? "",
+    agentSessionId: meta?.agentSessionId ?? null,
+    status: "idle",
+    error: null,
+    createdAt: Date.now(),
+    usage: meta?.usage,
+    tabs: meta?.tabs ?? [],
+    tabsExpanded: meta?.tabsExpanded ?? true,
+  };
+}
+
 function metaFromSession(session: Session): SessionMeta {
   return {
     title: session.title,
@@ -794,5 +984,7 @@ function metaFromSession(session: Session): SessionMeta {
     cwd: session.cwd,
     agentSessionId: session.agentSessionId,
     usage: session.usage,
+    tabs: session.tabs,
+    tabsExpanded: session.tabsExpanded,
   };
 }
