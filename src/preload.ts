@@ -59,7 +59,7 @@ const api: SwitcherooApi = {
     ipcRenderer.invoke("session:permission", requestId, optionId),
   respondAskQuestion: (requestId, outcome) =>
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
-  pickFolder: () => ipcRenderer.invoke("fs:pickFolder"),
+  pickFolder: (startPath?: string) => ipcRenderer.invoke("fs:pickFolder", startPath),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
   openSettingsFile: () => ipcRenderer.invoke("fs:openSettingsFile"),
   getSettings: () => ipcRenderer.invoke("settings:get"),

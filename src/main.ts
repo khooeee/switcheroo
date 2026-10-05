@@ -17,6 +17,7 @@ import { availableAgents } from "./main/acp/availableAgents";
 import { buildAppMenu, refreshSessionMenuItems } from "./main/buildAppMenu";
 import { showEditContextMenu } from "./main/showEditContextMenu";
 import { showComposerContextMenu } from "./main/showComposerContextMenu";
+import { resolveFolderPickerStart } from "./main/resolveFolderPickerStart";
 import type { ActiveTabId, AppSettings, CreateSessionInput } from "./shared/types";
 
 installStdioGuards((error) => {
@@ -183,9 +184,11 @@ function registerIpc(): void {
   ipcMain.handle("session:askQuestion", (_e, requestId: string, outcome: unknown) => {
     sessions.respondAskQuestion(requestId, outcome);
   });
-  ipcMain.handle("fs:pickFolder", async () => {
+  ipcMain.handle("fs:pickFolder", async (_e, startPath?: string) => {
+    const defaultPath = await resolveFolderPickerStart(startPath);
     const result = await dialog.showOpenDialog(mainWindow!, {
       properties: ["openDirectory", "createDirectory"],
+      ...(defaultPath ? { defaultPath } : {}),
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
   });

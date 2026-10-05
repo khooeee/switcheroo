@@ -251,7 +251,7 @@ export interface SwitcherooApi {
       | { outcome: "skipped"; reason?: string }
       | { outcome: "cancelled" },
   ) => Promise<void>;
-  pickFolder: () => Promise<string | null>;
+  pickFolder: (startPath?: string) => Promise<string | null>;
   openTranscriptsFolder: () => Promise<void>;
   openSettingsFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;

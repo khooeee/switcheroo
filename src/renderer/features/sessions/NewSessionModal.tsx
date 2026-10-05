@@ -158,7 +158,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
               className="btn"
               disabled={busy}
               onClick={async () => {
-                const picked = await window.switcheroo.pickFolder();
+                const picked = await window.switcheroo.pickFolder(cwd);
                 if (picked) setCwd(picked);
               }}
             >
