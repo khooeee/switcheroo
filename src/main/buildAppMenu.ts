@@ -3,6 +3,7 @@ import type { SessionPinMenuState } from "./sessionPinMenuState";
 
 const PIN_MENU_ID = "session-toggle-pin";
 const RENAME_MENU_ID = "session-rename";
+const OPEN_IN_CURSOR_MENU_ID = "session-open-in-cursor";
 const FORK_MENU_ID = "session-fork";
 const MARK_UNREAD_MENU_ID = "session-mark-unread";
 const STOP_MENU_ID = "session-stop";
@@ -14,6 +15,8 @@ export function buildAppMenu(opts: {
   getMainWindow: () => BrowserWindow | null;
   getPinMenuState: () => SessionPinMenuState;
   getRenameEnabled: () => boolean;
+  getOpenInCursorEnabled: () => boolean;
+  openActiveInCursor: () => void;
   getUnreadEnabled: () => boolean;
   getForkEnabled: () => boolean;
   getStopEnabled: () => boolean;
@@ -68,6 +71,14 @@ export function buildAppMenu(opts: {
           accelerator: "CmdOrCtrl+R",
           click: () => {
             win()?.webContents.send("session:rename");
+          },
+        },
+        {
+          id: OPEN_IN_CURSOR_MENU_ID,
+          label: "Open in Cursor",
+          enabled: opts.getOpenInCursorEnabled(),
+          click: () => {
+            opts.openActiveInCursor();
           },
         },
         {
@@ -198,6 +209,7 @@ export function buildAppMenu(opts: {
 export function refreshSessionMenuItems(
   pin: SessionPinMenuState,
   renameEnabled: boolean,
+  openInCursorEnabled: boolean,
   unreadEnabled: boolean,
   forkEnabled: boolean,
   stopEnabled: boolean,
@@ -213,6 +225,8 @@ export function refreshSessionMenuItems(
   }
   const renameItem = menu.getMenuItemById(RENAME_MENU_ID);
   if (renameItem) renameItem.enabled = renameEnabled;
+  const openInCursorItem = menu.getMenuItemById(OPEN_IN_CURSOR_MENU_ID);
+  if (openInCursorItem) openInCursorItem.enabled = openInCursorEnabled;
   const forkItem = menu.getMenuItemById(FORK_MENU_ID);
   if (forkItem) forkItem.enabled = forkEnabled;
   const markUnreadItem = menu.getMenuItemById(MARK_UNREAD_MENU_ID);

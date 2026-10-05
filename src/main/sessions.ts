@@ -53,6 +53,7 @@ import {
   updateTabCwd,
 } from "./sessionTabs";
 import { TerminalHost } from "./terminalHost";
+import { openFolderInCursor } from "./openInCursor";
 
 const warmCallbacks: SessionCallbacks = {
   onPromptComplete: () => undefined,
@@ -149,6 +150,21 @@ export class SessionManager {
 
   activeNewTerminalMenuEnabled(): boolean {
     return this.activeParentSessionId() !== null;
+  }
+
+  /** Open in Cursor uses the active chat group's project folder. */
+  activeOpenInCursorEnabled(): boolean {
+    const parentId = this.activeParentSessionId();
+    if (!parentId) return false;
+    return !!this.sessions.get(parentId)?.cwd.trim();
+  }
+
+  async openActiveInCursor(): Promise<void> {
+    const parentId = this.activeParentSessionId();
+    if (!parentId) return;
+    const session = this.sessions.get(parentId);
+    if (!session?.cwd.trim()) return;
+    await openFolderInCursor(session.cwd);
   }
 
   private activeParentSessionId(): string | null {

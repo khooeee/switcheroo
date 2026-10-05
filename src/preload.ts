@@ -22,6 +22,7 @@ function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
 
 const api: SwitcherooApi = {
   openInCursor: (sessionId, filePath) => ipcRenderer.invoke("files:openInCursor", sessionId, filePath),
+  openSessionInCursor: (sessionId) => ipcRenderer.invoke("sessions:openInCursor", sessionId),
   availableAgents: () => ipcRenderer.invoke("agents:available"),
   createSession: (input: CreateSessionInput) => ipcRenderer.invoke("sessions:create", input),
   forkSession: (sessionId, eventId) =>

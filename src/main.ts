@@ -7,7 +7,7 @@ import { SessionManager } from "./main/sessions";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { installStdioGuards } from "./main/installStdioGuards";
-import { openInCursor } from "./main/openInCursor";
+import { openInCursor, openFolderInCursor } from "./main/openInCursor";
 import { openTranscriptsFolder } from "./main/openTranscriptsFolder";
 import { openSettingsFile } from "./main/openSettingsFile";
 import { readClipboardPng } from "./main/readClipboardPng";
@@ -44,6 +44,7 @@ function refreshMenus() {
   refreshSessionMenuItems(
     sessions.activePinMenuState(),
     sessions.activeRenameMenuEnabled(),
+    sessions.activeOpenInCursorEnabled(),
     sessions.activeUnreadMenuEnabled(),
     sessions.activeForkMenuEnabled(),
     sessions.activeStopMenuEnabled(),
@@ -92,6 +93,9 @@ const createWindow = async () => {
 function registerIpc(): void {
   ipcMain.handle("files:openInCursor", async (_event, sessionId: string, filePath: string) => {
     await openInCursor(requireSession(sessionId).cwd, filePath);
+  });
+  ipcMain.handle("sessions:openInCursor", async (_event, sessionId: string) => {
+    await openFolderInCursor(requireSession(sessionId).cwd);
   });
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle(
@@ -228,6 +232,15 @@ if (installSingleInstanceLock(() => mainWindow)) {
       getMainWindow: () => mainWindow,
       getPinMenuState: () => sessions.activePinMenuState(),
       getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
+      getOpenInCursorEnabled: () => sessions.activeOpenInCursorEnabled(),
+      openActiveInCursor: () => {
+        void sessions.openActiveInCursor().catch((error) => {
+          dialog.showErrorBox(
+            "Could not open in Cursor",
+            error instanceof Error ? error.message : String(error),
+          );
+        });
+      },
       getUnreadEnabled: () => sessions.activeUnreadMenuEnabled(),
       getForkEnabled: () => sessions.activeForkMenuEnabled(),
       getStopEnabled: () => sessions.activeStopMenuEnabled(),

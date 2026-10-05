@@ -211,6 +211,8 @@ export interface SessionListPayload {
 
 export interface SwitcherooApi {
   openInCursor: (sessionId: string, filePath: string) => Promise<void>;
+  /** Open the session project folder (cwd) in Cursor. */
+  openSessionInCursor: (sessionId: string) => Promise<void>;
   /** Agents whose CLI and ACP adapter are installed. */
   availableAgents: () => Promise<AgentKind[]>;
   createSession: (input: CreateSessionInput) => Promise<Session>;

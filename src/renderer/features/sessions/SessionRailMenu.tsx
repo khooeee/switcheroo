@@ -60,6 +60,19 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        disabled={!session.cwd.trim()}
+        onClick={() => {
+          if (!session.cwd.trim()) return;
+          void window.switcheroo.openSessionInCursor(session.id).catch(console.error);
+          onDismiss();
+        }}
+      >
+        Open in Cursor
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
         aria-keyshortcuts="Meta+U Control+U"
         onClick={() => {
           onToggleUnread(session.id);
