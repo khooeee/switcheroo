@@ -84,13 +84,21 @@ export function SessionRailParentRow({
     );
   }
 
+  // A div, not a <button>: the row contains the pin button, and buttons cannot nest.
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={`rail-session ${active ? "active" : ""} ${session.status === "connecting" ? "creating" : ""} ${dropParent ? "rail-drop-parent" : ""}`}
       data-tooltip={`${session.title}\n${session.cwd}`}
       data-tooltip-side="right"
       onClick={() => onSelect(session.id)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        onSelect(session.id);
+      }}
       onDoubleClick={(event) => {
         if ((event.target as HTMLElement).closest(".rail-pin-btn, .rail-chevron")) return;
         event.preventDefault();
@@ -117,6 +125,6 @@ export function SessionRailParentRow({
           )}
         </span>
       )}
-    </button>
+    </div>
   );
 }
