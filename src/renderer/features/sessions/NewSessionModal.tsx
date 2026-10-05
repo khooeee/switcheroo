@@ -103,7 +103,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
       }}
     >
       <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>New agent session</h3>
+        <h2>New agent session</h2>
         <label>
           Prefix
           <input

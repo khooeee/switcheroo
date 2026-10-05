@@ -46,7 +46,7 @@ export function MarkdownPreviewModal({ path, text, onClose }: Props) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="markdown-preview-header">
-          <h3 className="markdown-preview-title" title={path}>{name}</h3>
+          <h2 className="markdown-preview-title" title={path}>{name}</h2>
           <button
             ref={closeRef}
             type="button"
