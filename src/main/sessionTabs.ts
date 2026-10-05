@@ -1,31 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { SessionTab } from "../shared/types";
 
-/** Normalize persisted child tabs; drop unknown/invalid entries. */
-export function normalizeSessionTabs(value: unknown): SessionTab[] {
-  if (!Array.isArray(value)) return [];
-  const tabs: SessionTab[] = [];
-  for (const entry of value) {
-    if (!entry || typeof entry !== "object") continue;
-    const tab = entry as Partial<SessionTab>;
-    if (typeof tab.tabId !== "string" || !tab.tabId) continue;
-    if (tab.kind !== "terminal") continue;
-    if (typeof tab.title !== "string" || !tab.title.trim()) continue;
-    if (typeof tab.cwd !== "string") continue;
-    tabs.push({
-      tabId: tab.tabId,
-      kind: "terminal",
-      title: tab.title.trim(),
-      cwd: tab.cwd,
-    });
-  }
-  return tabs;
-}
-
-export function readTabsExpanded(value: unknown): boolean {
-  return value !== false;
-}
-
 /** Next default title: Terminal, Terminal 2, Terminal 3, … */
 export function nextTerminalTitle(existing: SessionTab[]): string {
   const used = new Set(

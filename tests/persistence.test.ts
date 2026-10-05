@@ -94,26 +94,6 @@ test("pinned and unpinned round-trip", async () => {
   expect(JSON.stringify(await restarted.loadState())).toBe(JSON.stringify(snapshot));
 });
 
-test("loads legacy activeSessionId as activeTabId", async () => {
-  const { target, restart } = await fixture();
-  await fs.writeFile(
-    target,
-    JSON.stringify({
-      version: 1,
-      activeSessionId: "legacy-1",
-      pinned: [],
-      unpinned: ["legacy-1"],
-    }),
-  );
-  const store = await restart();
-  expect(await store.loadState()).toEqual({
-    version: 1,
-    activeTabId: "legacy-1",
-    pinned: [],
-    unpinned: ["legacy-1"],
-  });
-});
-
 for (const initial of [null, "", "  \n"] as const) {
   test(`save and restore after restart with initial file ${JSON.stringify(initial)}`, async () => {
     const { target, store, restart } = await fixture();

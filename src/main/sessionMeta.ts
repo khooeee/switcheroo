@@ -1,7 +1,6 @@
 import * as fs from "node:fs/promises";
 import type { AgentKind, Session, SessionTab, SessionUsage } from "../shared/types";
 import { sessionDir, sessionMetaPath } from "./userDataPaths";
-import { normalizeSessionTabs, readTabsExpanded } from "./sessionTabs";
 
 export interface SessionMeta {
   title: string;
@@ -63,15 +62,15 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
   try {
     const raw = await fs.readFile(sessionMetaPath(sessionId), "utf8");
     if (!raw.trim()) return null;
-    const parsed = JSON.parse(raw) as SessionMeta & { sessionId?: string | null };
+    const parsed = JSON.parse(raw) as SessionMeta;
     return {
       title: parsed.title,
       agent: parsed.agent,
       cwd: parsed.cwd,
-      agentSessionId: parsed.agentSessionId ?? parsed.sessionId ?? null,
+      agentSessionId: parsed.agentSessionId ?? null,
       usage: readUsage(parsed.usage),
-      tabs: normalizeSessionTabs(parsed.tabs),
-      tabsExpanded: readTabsExpanded(parsed.tabsExpanded),
+      tabs: Array.isArray(parsed.tabs) ? parsed.tabs : [],
+      tabsExpanded: parsed.tabsExpanded !== false,
     };
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;

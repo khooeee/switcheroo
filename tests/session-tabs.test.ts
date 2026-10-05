@@ -4,7 +4,6 @@ import {
   createTerminalTab,
   moveTabBetweenLists,
   nextTerminalTitle,
-  normalizeSessionTabs,
   reorderTabInList,
 } from "../src/main/sessionTabs";
 import {
@@ -15,17 +14,6 @@ import {
 } from "../src/shared/tabNav";
 import type { Session, SessionTab } from "../src/shared/types";
 import { SWITCHBOARD_ID } from "../src/shared/types";
-
-test("normalizeSessionTabs keeps terminal entries and drops junk", () => {
-  expect(
-    normalizeSessionTabs([
-      { tabId: "a", kind: "terminal", title: "Terminal", cwd: "/tmp" },
-      { tabId: "b", kind: "browser", title: "Browser" },
-      { title: "no-id", kind: "terminal", cwd: "/" },
-      null,
-    ]),
-  ).toEqual([{ tabId: "a", kind: "terminal", title: "Terminal", cwd: "/tmp" }]);
-});
 
 test("nextTerminalTitle increments past Terminal", () => {
   expect(nextTerminalTitle([])).toBe("Terminal");
