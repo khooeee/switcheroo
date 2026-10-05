@@ -6,7 +6,19 @@ import { terminalXtermTheme } from "./terminalTheme";
 import "./terminalPanel.css";
 
 /** Full-pane terminal for a child tab. Stays mounted while visited so scrollback is kept. */
-export function TerminalPanel({ tabId, active }: { tabId: string; active: boolean }) {
+export function TerminalPanel({
+  tabId,
+  active,
+  parentTitle,
+  title,
+  cwd,
+}: {
+  tabId: string;
+  active: boolean;
+  parentTitle: string;
+  title: string;
+  cwd: string;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const fitRef = useRef<FitAddon | null>(null);
   const termRef = useRef<Terminal | null>(null);
@@ -104,6 +116,12 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
       hidden={!active}
       aria-hidden={!active}
     >
+      <div className="panel-header">
+        <div>
+          <h2>{`${parentTitle} > ${title}`}</h2>
+          <div className="meta">{cwd}</div>
+        </div>
+      </div>
       <div className="terminal-host" ref={hostRef} />
     </section>
   );

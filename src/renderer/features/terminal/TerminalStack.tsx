@@ -3,6 +3,19 @@ import type { Session, SessionTab } from "../../../shared/types";
 import { TerminalPanel } from "./TerminalPanel";
 import "./terminalPanel.css";
 
+function terminalHeader(
+  sessions: Session[],
+  tabId: string,
+): { parentTitle: string; title: string; cwd: string } | null {
+  for (const session of sessions) {
+    const tab = session.tabs.find((item) => item.tabId === tabId);
+    if (tab?.kind === "terminal") {
+      return { parentTitle: session.title, title: tab.title, cwd: tab.cwd };
+    }
+  }
+  return null;
+}
+
 /** Keep visited terminal views mounted so scrollback survives tab switches. */
 export function TerminalStack({
   sessions,
@@ -49,13 +62,19 @@ export function TerminalStack({
       hidden={!activeTab || activeTab.kind !== "terminal"}
       aria-hidden={!activeTab || activeTab.kind !== "terminal"}
     >
-      {mounted.map((tabId) => (
-        <TerminalPanel
-          key={tabId}
-          tabId={tabId}
-          active={activeTab?.tabId === tabId}
-        />
-      ))}
+      {mounted.map((tabId) => {
+        const header = terminalHeader(sessions, tabId);
+        return (
+          <TerminalPanel
+            key={tabId}
+            tabId={tabId}
+            active={activeTab?.tabId === tabId}
+            parentTitle={header?.parentTitle ?? ""}
+            title={header?.title ?? ""}
+            cwd={header?.cwd ?? ""}
+          />
+        );
+      })}
     </div>
   );
 }
