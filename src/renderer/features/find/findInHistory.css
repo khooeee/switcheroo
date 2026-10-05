@@ -16,7 +16,7 @@
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 .modal.find-sessions-modal input:focus {
@@ -165,7 +165,7 @@
   flex: 1;
   min-width: 0;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.45;
   color: var(--text);
   overflow: hidden;
