@@ -47,8 +47,15 @@ export function MarkdownPreviewModal({ path, text, onClose }: Props) {
       >
         <div className="markdown-preview-header">
           <h3 className="markdown-preview-title" title={path}>{name}</h3>
-          <button ref={closeRef} type="button" className="markdown-preview-close" onClick={onClose}>
-            Close
+          <button
+            ref={closeRef}
+            type="button"
+            className="btn"
+            aria-label="Close markdown preview"
+            data-tooltip="Close"
+            onClick={onClose}
+          >
+            ✕
           </button>
         </div>
         <div className="markdown-preview-scroll">

@@ -26,20 +26,6 @@
   white-space: nowrap;
 }
 
-.markdown-preview-close {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--codex);
-  cursor: pointer;
-  flex-shrink: 0;
-  font-size: 12px;
-}
-
-.markdown-preview-close:hover {
-  text-decoration: underline;
-}
-
 .markdown-preview-scroll {
   flex: 1;
   min-height: 0;
