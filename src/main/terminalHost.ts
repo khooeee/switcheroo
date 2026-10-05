@@ -7,6 +7,7 @@ const execFileAsync = promisify(execFile);
 
 type DataListener = (tabId: string, data: string) => void;
 type ExitListener = (tabId: string) => void;
+type CwdListener = (tabId: string, cwd: string) => void;
 
 interface HostedPty {
   pty: IPty;
@@ -19,12 +20,15 @@ const OSC7_ST_RE = /\x1b\]7;file:\/\/[^\x1b]*?(\/[^\x1b]*)\x1b\\/g;
 /** Main-process PTY map keyed by terminal tabId. Lazy spawn; never remount on drag. */
 export class TerminalHost {
   private ptys = new Map<string, HostedPty>();
+  private cwdTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private onData: DataListener | null = null;
   private onExit: ExitListener | null = null;
+  private onCwd: CwdListener | null = null;
 
-  setListeners(onData: DataListener, onExit: ExitListener): void {
+  setListeners(onData: DataListener, onExit: ExitListener, onCwd?: CwdListener): void {
     this.onData = onData;
     this.onExit = onExit;
+    this.onCwd = onCwd ?? null;
   }
 
   has(tabId: string): boolean {
@@ -49,10 +53,11 @@ export class TerminalHost {
     this.ptys.set(tabId, hosted);
     pty.onData((data) => {
       const nextCwd = cwdFromOsc7(data);
-      if (nextCwd) hosted.cwd = nextCwd;
+      if (nextCwd) this.noteCwd(tabId, hosted, nextCwd);
       this.onData?.(tabId, data);
     });
     pty.onExit(() => {
+      this.clearCwdTimer(tabId);
       this.ptys.delete(tabId);
       this.onExit?.(tabId);
     });
@@ -60,6 +65,8 @@ export class TerminalHost {
 
   write(tabId: string, data: string): void {
     this.ptys.get(tabId)?.pty.write(data);
+    // Shells without OSC 7 still change cwd on Enter; refresh from the process.
+    if (data.includes("\r") || data.includes("\n")) this.scheduleCwdRefresh(tabId);
   }
 
   resize(tabId: string, cols: number, rows: number): void {
@@ -82,6 +89,7 @@ export class TerminalHost {
   dispose(tabId: string): void {
     const hosted = this.ptys.get(tabId);
     if (!hosted) return;
+    this.clearCwdTimer(tabId);
     this.ptys.delete(tabId);
     try {
       hosted.pty.kill();
@@ -102,6 +110,35 @@ export class TerminalHost {
 
   async disposeAll(): Promise<Map<string, string>> {
     return this.disposeMany([...this.ptys.keys()]);
+  }
+
+  private noteCwd(tabId: string, hosted: HostedPty, cwd: string): void {
+    if (!cwd || hosted.cwd === cwd) return;
+    hosted.cwd = cwd;
+    this.onCwd?.(tabId, cwd);
+  }
+
+  private scheduleCwdRefresh(tabId: string): void {
+    this.clearCwdTimer(tabId);
+    this.cwdTimers.set(
+      tabId,
+      setTimeout(() => {
+        this.cwdTimers.delete(tabId);
+        void this.refreshCwd(tabId).then((cwd) => {
+          const hosted = this.ptys.get(tabId);
+          if (!hosted || !cwd) return;
+          // refreshCwd already wrote hosted.cwd; notify even when OSC 7 missed it.
+          this.onCwd?.(tabId, cwd);
+        });
+      }, 100),
+    );
+  }
+
+  private clearCwdTimer(tabId: string): void {
+    const timer = this.cwdTimers.get(tabId);
+    if (!timer) return;
+    clearTimeout(timer);
+    this.cwdTimers.delete(tabId);
   }
 }
 

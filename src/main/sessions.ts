@@ -94,6 +94,7 @@ export class SessionManager {
         this.send("terminal:exit", { tabId });
         void this.closeTab(tabId);
       },
+      (tabId, cwd) => this.applyTerminalCwd(tabId, cwd),
     );
     const parentId = this.activeParentSessionId();
     if (parentId) this.refreshCommandsIfNeeded(parentId);
@@ -555,6 +556,14 @@ export class SessionManager {
     const found = findChildTab(this.sessions.values(), tabId);
     if (!found || found.tab.kind !== "terminal") return;
     this.terminals.ensure(tabId, found.tab.cwd || found.session.cwd);
+  }
+
+  private applyTerminalCwd(tabId: string, cwd: string): void {
+    const found = findChildTab(this.sessions.values(), tabId);
+    if (!found || found.tab.kind !== "terminal") return;
+    if (found.tab.cwd === cwd) return;
+    found.session.tabs = updateTabCwd(found.session.tabs, tabId, cwd);
+    this.emitSessions();
   }
 
   writeTerminal(tabId: string, data: string): void {
