@@ -15,7 +15,7 @@
   --danger-pastel: #3a2428;
   --danger-text: #ffb4b4;
   --diff-add: color-mix(in srgb, #3dd6a0 14%, transparent);
-  --codex: #7eb8da;
+  --codex: #9aa3ad;
   --rail: 160px;
   --right-rail: 0px;
   --rail-bg: rgba(10, 12, 14, 0.85);
@@ -51,18 +51,18 @@ html[data-theme="light"] {
   --border: #c9d5dc;
   --text: #000000;
   --text-dim: #5c6d7a;
-  --accent: color-mix(in srgb, var(--codex) 35%, var(--user-bg));
+  --accent: color-mix(in srgb, var(--text-dim) 70%, var(--bg-2));
   --accent-2: #b86a22;
   --danger: #c44747;
   --danger-soft: rgba(196, 71, 71, 0.12);
   --danger-pastel: #fce4e4;
   --danger-text: #8f2424;
   --diff-add: #e3f5e8;
-  --codex: #2d6f96;
+  --codex: #5c6d7a;
   --rail-bg: rgba(255, 255, 255, 0.92);
   --header-bg: rgba(255, 255, 255, 0.88);
   --card-bg: var(--bg-1);
-  --user-bg: #e4ebf0;
+  --user-bg: #eaf4fc;
   --composer-bg: var(--bg-1);
   --app-top: #ffffff;
   --glow-accent: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -77,5 +77,5 @@ html[data-theme="light"] {
   --copy-done: #a3d0c9;
   --scrollbar: #8a9aa6;
   --find-history-bg: #ffffff;
-  --find-expand-icon: #2d6f96;
+  --find-expand-icon: #5c6d7a;
 }

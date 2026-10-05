@@ -135,7 +135,7 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
 }
 
 .kind-pill.tool {
-  background: rgba(126, 184, 218, 0.15);
+  background: color-mix(in srgb, var(--codex) 18%, transparent);
   color: var(--codex);
 }
 
