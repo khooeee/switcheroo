@@ -19,6 +19,12 @@ import { SessionRailFilter } from "./SessionRailFilter";
 import { SessionRailGroup } from "./SessionRailGroup";
 import { SessionRailMenu } from "./SessionRailMenu";
 import { sessionMatchesFilter } from "./sessionMatchesFilter";
+import {
+  reorderIndexAfterRemove,
+  sameTabDropTarget,
+  tabDropInsertBefore,
+  type TabDropTarget,
+} from "./tabDropTarget";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionUnreadDots } from "./useSessionUnreadDots";
 import "./sessionRail.css";
@@ -79,6 +85,8 @@ export function SessionRail({
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [rename, setRename] = useState<RenameTarget | null>(null);
   const [dragTabId, setDragTabId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<TabDropTarget | null>(null);
+  const dropTargetRef = useRef<TabDropTarget | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const allSessions = flatRailSessions(pinned, unpinned);
@@ -184,17 +192,43 @@ export function SessionRail({
     setDragTabId(tabId);
   };
 
-  const onChildDrop = (event: ReactDragEvent, toSessionId: string, toIndex: number) => {
+  const clearDrag = () => {
+    setDragTabId(null);
+    dropTargetRef.current = null;
+    setDropTarget(null);
+  };
+
+  const onDropTarget = (target: TabDropTarget | null) => {
+    if (sameTabDropTarget(dropTargetRef.current, target)) return;
+    dropTargetRef.current = target;
+    setDropTarget(target);
+  };
+
+  const onChildDrop = (event: ReactDragEvent, toSessionId: string, visualInsertBefore: number) => {
     event.preventDefault();
     const tabId = event.dataTransfer.getData("text/tab-id") || dragTabId;
-    setDragTabId(null);
+    const target = dropTargetRef.current;
+    clearDrag();
     if (!tabId) return;
     const source = allSessions.find((session) =>
       session.tabs.some((tab) => tab.tabId === tabId),
     );
     if (!source) return;
-    if (source.id === toSessionId) onReorderTab(toSessionId, tabId, toIndex);
-    else onMoveTab(tabId, toSessionId, toIndex);
+
+    const insertBefore = tabDropInsertBefore(
+      allSessions,
+      filter,
+      toSessionId,
+      visualInsertBefore,
+      target,
+    );
+
+    if (source.id === toSessionId) {
+      const from = source.tabs.findIndex((tab) => tab.tabId === tabId);
+      onReorderTab(toSessionId, tabId, reorderIndexAfterRemove(from, insertBefore));
+      return;
+    }
+    onMoveTab(tabId, toSessionId, insertBefore);
   };
 
   const groupProps = (session: Session, isPinned: boolean) => ({
@@ -205,6 +239,7 @@ export function SessionRail({
     canPin,
     unread: unreadDots.has(session.id),
     dragTabId,
+    dropTarget,
     rename,
     setRename,
     onSelect,
@@ -223,8 +258,14 @@ export function SessionRail({
     },
     onChildDragStart,
     onChildDrop,
+    onDropTarget,
     onGroupDrop: (e: ReactDragEvent, toSessionId: string) => {
       const session = allSessions.find((item) => item.id === toSessionId);
+      const target = dropTargetRef.current;
+      if (target?.sessionId === toSessionId && target.mode === "insert") {
+        onChildDrop(e, toSessionId, target.index);
+        return;
+      }
       onChildDrop(e, toSessionId, session?.tabs.length ?? 0);
     },
   });
@@ -258,7 +299,7 @@ export function SessionRail({
         <div
           className="rail-scroll"
           ref={scrollRef}
-          onDragEnd={() => setDragTabId(null)}
+          onDragEnd={clearDrag}
         >
           {filteredPinned.map((session) => (
             <SessionRailGroup key={session.id} {...groupProps(session, true)} />

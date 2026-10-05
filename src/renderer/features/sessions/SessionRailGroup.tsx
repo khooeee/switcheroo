@@ -8,6 +8,7 @@ import { SessionRailLabel } from "./SessionRailLabel";
 import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
 import { requestPromptFocus } from "../shortcuts/paneFocus";
+import type { TabDropTarget } from "./tabDropTarget";
 
 type RenameTarget =
   | { kind: "session"; session: Session }
@@ -22,6 +23,7 @@ export function SessionRailGroup({
   canPin,
   unread,
   dragTabId,
+  dropTarget,
   rename,
   setRename,
   onSelect,
@@ -35,6 +37,7 @@ export function SessionRailGroup({
   onChildDragStart,
   onChildDrop,
   onGroupDrop,
+  onDropTarget,
 }: {
   session: Session;
   isPinned: boolean;
@@ -43,6 +46,7 @@ export function SessionRailGroup({
   canPin: boolean;
   unread: boolean;
   dragTabId: string | null;
+  dropTarget: TabDropTarget | null;
   rename: RenameTarget | null;
   setRename: (target: RenameTarget | null) => void;
   onSelect: (id: ActiveTabId) => void;
@@ -56,10 +60,17 @@ export function SessionRailGroup({
   onChildDragStart: (event: ReactDragEvent, tabId: string) => void;
   onChildDrop: (event: ReactDragEvent, toSessionId: string, toIndex: number) => void;
   onGroupDrop: (event: ReactDragEvent, toSessionId: string) => void;
+  onDropTarget: (target: TabDropTarget | null) => void;
 }) {
   const children = visibleChildren(session, filter);
   const hasChildren = session.tabs.length > 0;
   const renamingParent = rename?.kind === "session" && rename.session.id === session.id;
+  const dropParent =
+    dropTarget?.mode === "parent" && dropTarget.sessionId === session.id;
+  const insertIndex =
+    dropTarget?.mode === "insert" && dropTarget.sessionId === session.id
+      ? dropTarget.index
+      : null;
 
   return (
     <div
@@ -68,6 +79,13 @@ export function SessionRailGroup({
         if (!dragTabId) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
+        if (e.target === e.currentTarget) {
+          onDropTarget({
+            sessionId: session.id,
+            mode: "insert",
+            index: children.length,
+          });
+        }
       }}
       onDrop={(e) => onGroupDrop(e, session.id)}
     >
@@ -104,7 +122,7 @@ export function SessionRailGroup({
       ) : (
         <button
           type="button"
-          className={`rail-session ${activeTabId === session.id ? "active" : ""} ${session.status === "connecting" ? "creating" : ""}`}
+          className={`rail-session ${activeTabId === session.id ? "active" : ""} ${session.status === "connecting" ? "creating" : ""} ${dropParent ? "rail-drop-parent" : ""}`}
           data-tooltip={`${session.title}\n${session.cwd}\n(${session.status === "connecting" ? "Creating" : session.status})`}
           data-tooltip-side="right"
           onClick={() => onSelect(session.id)}
@@ -114,6 +132,17 @@ export function SessionRailGroup({
             setRename({ kind: "session", session });
           }}
           onContextMenu={(e) => onOpenSessionMenu(e, session, isPinned)}
+          onDragOver={(e) => {
+            if (!dragTabId) return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = "move";
+            onDropTarget({ sessionId: session.id, mode: "parent" });
+          }}
+          onDrop={(e) => {
+            e.stopPropagation();
+            onGroupDrop(e, session.id);
+          }}
         >
           {hasChildren ? (
             <span
@@ -164,7 +193,18 @@ export function SessionRailGroup({
             key={tab.tabId}
             type="button"
             draggable
-            className={`rail-session rail-child ${activeTabId === tab.tabId ? "active" : ""} ${dragTabId === tab.tabId ? "dragging" : ""}`}
+            className={[
+              "rail-session",
+              "rail-child",
+              activeTabId === tab.tabId ? "active" : "",
+              dragTabId === tab.tabId ? "dragging" : "",
+              insertIndex === index ? "drop-line-before" : "",
+              insertIndex === children.length && index === children.length - 1
+                ? "drop-line-after"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             data-tooltip={tab.title}
             data-tooltip-side="right"
             onClick={() => onSelect(tab.tabId)}
@@ -175,10 +215,24 @@ export function SessionRailGroup({
             onContextMenu={(e) => onOpenTabMenu(e, tab, session.id)}
             onDragStart={(e) => onChildDragStart(e, tab.tabId)}
             onDragOver={(e) => {
+              if (!dragTabId) return;
               e.preventDefault();
+              e.stopPropagation();
               e.dataTransfer.dropEffect = "move";
+              const rect = e.currentTarget.getBoundingClientRect();
+              const before = e.clientY < rect.top + rect.height / 2;
+              onDropTarget({
+                sessionId: session.id,
+                mode: "insert",
+                index: before ? index : index + 1,
+              });
             }}
-            onDrop={(e) => onChildDrop(e, session.id, index)}
+            onDrop={(e) => {
+              e.stopPropagation();
+              const rect = e.currentTarget.getBoundingClientRect();
+              const before = e.clientY < rect.top + rect.height / 2;
+              onChildDrop(e, session.id, before ? index : index + 1);
+            }}
           >
             <SessionRailLabel title={tab.title} />
           </button>
