@@ -59,7 +59,8 @@
 .modal select,
 .modal input {
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: #ffffff;
+  color: #000000;
   border-radius: 8px;
   padding: 8px 10px;
 }
