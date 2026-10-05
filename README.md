@@ -1,6 +1,6 @@
 # Switcheroo
 
-Why another coding agent?
+Why another agentic development environment?
 
 To remove & simplify as much as possible for maximum focus on GitHub repos:
 - The user message & final assistant summary message are the only messages shown in the main content area because most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.

@@ -2,7 +2,7 @@
   "name": "switcheroo",
   "productName": "Switcheroo",
   "version": "1.0.0",
-  "description": "High productivity ACP coding agent",
+  "description": "High productivity agentic development environment",
   "main": ".vite/build/main.cjs",
   "private": true,
   "type": "module",

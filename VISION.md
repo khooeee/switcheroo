@@ -2,7 +2,7 @@
 
 ## North Star
 
-High productivity ACP coding agent that blends the best of CLI coding agents & chat UIs like ChatGPT, Claude, etc.
+High productivity agentic development environment that blends the best of CLI coding agents & chat UIs like ChatGPT, Claude, etc.
 
 # Metrics
 
