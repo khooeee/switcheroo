@@ -80,6 +80,22 @@ export function removeTabFromList(tabs: SessionTab[], tabId: string): SessionTab
   return tabs.filter((t) => t.tabId !== tabId);
 }
 
+/**
+ * After closing the active child at `closedIndex`, prefer the next sibling,
+ * then the previous one; only fall back to the parent when none remain.
+ */
+export function activeTabAfterChildClose(
+  remaining: SessionTab[],
+  closedIndex: number,
+  parentSessionId: string,
+): string {
+  const next = remaining[closedIndex];
+  if (next) return next.tabId;
+  const prev = remaining[closedIndex - 1];
+  if (prev) return prev.tabId;
+  return parentSessionId;
+}
+
 export function reorderTabInList(
   tabs: SessionTab[],
   tabId: string,

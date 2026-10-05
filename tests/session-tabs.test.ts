@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import {
+  activeTabAfterChildClose,
   createTerminalTab,
   moveTabBetweenLists,
   nextTerminalTitle,
@@ -40,6 +41,16 @@ test("reorder and move tabs preserve tab identity", () => {
   const moved = moveTabBetweenLists([a, b], [c], a.tabId, 1);
   expect(moved?.from.map((tab) => tab.tabId)).toEqual([b.tabId]);
   expect(moved?.to.map((tab) => tab.tabId)).toEqual([c.tabId, a.tabId]);
+});
+
+test("activeTabAfterChildClose prefers next, then previous, then parent", () => {
+  const a = { tabId: "a", kind: "terminal" as const, title: "A", cwd: "/" };
+  const b = { tabId: "b", kind: "terminal" as const, title: "B", cwd: "/" };
+  const c = { tabId: "c", kind: "terminal" as const, title: "C", cwd: "/" };
+  expect(activeTabAfterChildClose([b, c], 0, "parent")).toBe("b");
+  expect(activeTabAfterChildClose([a, c], 1, "parent")).toBe("c");
+  expect(activeTabAfterChildClose([a, b], 2, "parent")).toBe("b");
+  expect(activeTabAfterChildClose([], 0, "parent")).toBe("parent");
 });
 
 function session(partial: Partial<Session> & Pick<Session, "id" | "title">): Session {

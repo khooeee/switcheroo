@@ -7,6 +7,7 @@ import {
   renameTabInList,
   reorderTabInList,
   updateTabCwd,
+  activeTabAfterChildClose,
 } from "./sessionTabs";
 import type { TerminalHost } from "./terminalHost";
 
@@ -48,6 +49,7 @@ export function renameSessionTab(host: TerminalHostApi, tabId: string, title: st
 export async function closeSessionTab(host: TerminalHostApi, tabId: string): Promise<void> {
   const found = findChildTab(host.sessions.values(), tabId);
   if (!found) return;
+  const closedIndex = found.session.tabs.findIndex((tab) => tab.tabId === tabId);
   const cwd = await host.terminals.refreshCwd(tabId);
   host.terminals.dispose(tabId);
   let tabs = found.session.tabs;
@@ -56,8 +58,11 @@ export async function closeSessionTab(host: TerminalHostApi, tabId: string): Pro
   if (!next) return;
   found.session.tabs = next;
   if (host.getActiveTabId() === tabId) {
-    host.setActiveTabId(found.session.id);
-    host.refreshCommandsIfNeeded(found.session.id);
+    const activeId = activeTabAfterChildClose(next, closedIndex, found.session.id);
+    host.setActiveTabId(activeId);
+    if (activeId === found.session.id) {
+      host.refreshCommandsIfNeeded(found.session.id);
+    }
   }
   host.emitSessions();
   host.persist();
