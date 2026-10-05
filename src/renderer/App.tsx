@@ -6,7 +6,7 @@ import { SessionRail } from "./features/sessions/SessionRail";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
 import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
-import { TerminalPanel } from "./features/terminal/TerminalPanel";
+import { TerminalStack } from "./features/terminal/TerminalStack";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
@@ -237,9 +237,7 @@ export function App() {
             onTurnClick={onSwitchboardClick}
             onOpenRightRail={toggleSwitchboardRightRail}
           />
-        ) : activeTerminalTab ? (
-          <TerminalPanel tabId={activeTerminalTab.tabId} />
-        ) : activeSession ? (
+        ) : activeTerminalTab ? null : activeSession ? (
           <ChatPanel
             session={activeSession}
             turns={transcripts[activeSession.id] ?? []}
@@ -272,6 +270,7 @@ export function App() {
             <div className="empty">Select or create a session to begin.</div>
           </section>
         )}
+        <TerminalStack sessions={openSessions} activeTab={activeTerminalTab} />
       </div>
 
       {rightRailView && !activeTerminalTab ? (

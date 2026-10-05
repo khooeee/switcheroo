@@ -4,9 +4,11 @@ import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import "./terminalPanel.css";
 
-/** Full-pane terminal for a child tab. PTY stays alive in main across remounts. */
-export function TerminalPanel({ tabId }: { tabId: string }) {
+/** Full-pane terminal for a child tab. Stays mounted while visited so scrollback is kept. */
+export function TerminalPanel({ tabId, active }: { tabId: string; active: boolean }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const fitRef = useRef<FitAddon | null>(null);
+  const termRef = useRef<Terminal | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -26,6 +28,8 @@ export function TerminalPanel({ tabId }: { tabId: string }) {
     term.loadAddon(fit);
     term.open(host);
     fit.fit();
+    fitRef.current = fit;
+    termRef.current = term;
 
     // Let app tab-switching win over the terminal textarea.
     term.attachCustomKeyEventHandler((event) => {
@@ -56,11 +60,11 @@ export function TerminalPanel({ tabId }: { tabId: string }) {
     });
 
     const observer = new ResizeObserver(() => {
+      if (host.offsetParent === null) return;
       fit.fit();
       void window.switcheroo.resizeTerminal(tabId, term.cols, term.rows);
     });
     observer.observe(host);
-    term.focus();
 
     return () => {
       disposed = true;
@@ -68,12 +72,32 @@ export function TerminalPanel({ tabId }: { tabId: string }) {
       onData.dispose();
       unsubData();
       unsubExit();
+      fitRef.current = null;
+      termRef.current = null;
       term.dispose();
     };
   }, [tabId]);
 
+  useEffect(() => {
+    if (!active) return;
+    const fit = fitRef.current;
+    const term = termRef.current;
+    if (!fit || !term) return;
+    // display:none panels need a fit pass when shown again.
+    requestAnimationFrame(() => {
+      fit.fit();
+      void window.switcheroo.resizeTerminal(tabId, term.cols, term.rows);
+      term.focus();
+    });
+  }, [active, tabId]);
+
   return (
-    <section className="terminal-panel" aria-label="Terminal">
+    <section
+      className="terminal-panel"
+      aria-label="Terminal"
+      hidden={!active}
+      aria-hidden={!active}
+    >
       <div className="terminal-host" ref={hostRef} />
     </section>
   );
