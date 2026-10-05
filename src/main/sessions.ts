@@ -13,26 +13,29 @@ import type {
   TranscriptTurn,
 } from "../shared/types";
 import { SWITCHBOARD_ID } from "../shared/types";
-import { findChildTab, sessionIdForTab } from "../shared/tabNav";
+import { findChildTab } from "../shared/tabNav";
 import { GlobalEventBus } from "./events";
 import { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { agentLabel } from "./acp/presets";
 import { loadState, saveState } from "./persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "./appSettings";
-import { loadSessionMeta, saveSessionMeta, type SessionMeta } from "./sessionMeta";
-import { loadTranscript, saveTranscript } from "./sessionTranscripts";
+import {
+  loadSessionMeta,
+  saveSessionMeta,
+  sessionFromMeta,
+  metaFromSession,
+} from "./sessionMeta";
+import { saveTranscript } from "./sessionTranscripts";
 import { loadSwitchboardTurns, saveSwitchboardTurns } from "./switchboardEvents";
 import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { switchboardCleanupCutoff } from "./switchboardCleanup";
 import { overflowSessionIds } from "./overflowSessionIds";
 import {
   loadListsFromPersisted,
-  nextActiveAfterClose,
   pinSessionInLists,
   prependPinnedInLists,
   prependUnpinnedInLists,
-  removeSessionFromLists,
   unpinSessionInLists,
   type SessionRailLists,
 } from "./sessionRailLists";
@@ -43,15 +46,36 @@ import { controlBootstrapText } from "./acp/controlBootstrapPrompt";
 import { newSessionId } from "./newSessionId";
 import { WarmSessionPool } from "./acp/WarmSessionPool";
 import { AgentForkSupport } from "./acp/AgentForkSupport";
-import { sessionPinMenuState, type SessionPinMenuState } from "./sessionPinMenuState";
+import type { SessionPinMenuState } from "./sessionPinMenuState";
 import {
-  createTerminalTab,
-  moveTabBetweenLists,
-  removeTabFromList,
-  renameTabInList,
-  reorderTabInList,
-  updateTabCwd,
-} from "./sessionTabs";
+  activeForkMenuEnabled,
+  activeIsChildTab,
+  activeNewTerminalMenuEnabled,
+  activeOpenInCursorEnabled,
+  activeParentSessionId,
+  activePinMenuState,
+  activeRenameMenuEnabled,
+  activeStopMenuEnabled,
+  activeUnreadMenuEnabled,
+} from "./activeSessionMenus";
+import { buildSessionCallbacks } from "./buildSessionCallbacks";
+import { softCloseSession } from "./softCloseSession";
+import {
+  ensureSessionHydrated,
+  forgetMissingSession,
+  reopenSession,
+} from "./sessionHydration";
+import { updateTabCwd } from "./sessionTabs";
+import {
+  applySessionTerminalCwd,
+  attachSessionTerminal,
+  closeSessionTab,
+  createSessionTerminalTab,
+  moveSessionTab,
+  renameSessionTab,
+  reorderSessionTab,
+  setSessionTabsExpanded,
+} from "./sessionTerminalTabs";
 import { TerminalHost } from "./terminalHost";
 import { openFolderInCursor } from "./openInCursor";
 
@@ -104,64 +128,54 @@ export class SessionManager {
     this.onSessionsChanged = cb;
   }
 
+  private menuCtx() {
+    return {
+      activeTabId: this.activeTabId,
+      sessions: this.sessions,
+      pinnedIds: this.railLists.pinnedIds,
+      supportsFork: (agent: AgentKind) => this.forkSupport.flags(agent).supportsFork,
+    };
+  }
+
   /** Label/enabled for Session → Pin/Unpin based on the active chat parent. */
   activePinMenuState(): SessionPinMenuState {
-    const parentId = this.activeParentSessionId();
-    if (this.activeIsChildTab()) {
-      const pinned = !!parentId && this.railLists.pinnedIds.includes(parentId);
-      return { label: pinned ? "Unpin" : "Pin", enabled: false };
-    }
-    return sessionPinMenuState(
-      parentId ?? SWITCHBOARD_ID,
-      this.railLists.pinnedIds,
-      parentId ? this.sessions.has(parentId) : false,
-    );
+    return activePinMenuState(this.menuCtx());
   }
 
   /** Rename enabled for parent or child tab. */
   activeRenameMenuEnabled(): boolean {
-    if (this.activeTabId === SWITCHBOARD_ID) return false;
-    if (this.sessions.has(this.activeTabId)) return true;
-    return findChildTab(this.sessions.values(), this.activeTabId) !== null;
+    return activeRenameMenuEnabled(this.menuCtx());
   }
 
   /** Unread is parent-only. */
   activeUnreadMenuEnabled(): boolean {
-    if (this.activeIsChildTab()) return false;
-    return this.activeTabId !== SWITCHBOARD_ID && this.sessions.has(this.activeTabId);
+    return activeUnreadMenuEnabled(this.menuCtx());
   }
 
   /** True when active selection is a child terminal tab. */
   activeIsChildTab(): boolean {
-    if (this.activeTabId === SWITCHBOARD_ID) return false;
-    return findChildTab(this.sessions.values(), this.activeTabId) !== null;
+    return activeIsChildTab(this.menuCtx());
   }
 
   activeForkMenuEnabled(): boolean {
-    if (this.activeIsChildTab()) return false;
-    const session = this.sessions.get(this.activeTabId);
-    return !!session && this.forkSupport.flags(session.agent).supportsFork;
+    return activeForkMenuEnabled(this.menuCtx());
   }
 
   activeStopMenuEnabled(): boolean {
-    if (this.activeIsChildTab()) return false;
-    if (this.activeTabId === SWITCHBOARD_ID) return false;
-    return this.sessions.get(this.activeTabId)?.status === "running";
+    return activeStopMenuEnabled(this.menuCtx());
   }
 
   activeNewTerminalMenuEnabled(): boolean {
-    return this.activeParentSessionId() !== null;
+    return activeNewTerminalMenuEnabled(this.menuCtx());
   }
 
   /** Open in Cursor uses the active chat group's project folder. */
   activeOpenInCursorEnabled(): boolean {
-    const parentId = this.activeParentSessionId();
-    if (!parentId) return false;
-    return !!this.sessions.get(parentId)?.cwd.trim();
+    return activeOpenInCursorEnabled(this.menuCtx());
   }
 
   async openActiveInCursor(): Promise<void> {
-    const parentId = this.activeParentSessionId();
+    const parentId = activeParentSessionId(this.menuCtx());
     if (!parentId) return;
     const session = this.sessions.get(parentId);
     if (!session?.cwd.trim()) return;
@@ -169,7 +183,7 @@ export class SessionManager {
   }
 
   private activeParentSessionId(): string | null {
-    return sessionIdForTab(this.activeTabId, this.sessions.values());
+    return activeParentSessionId(this.menuCtx());
   }
 
   async init(): Promise<void> {
@@ -308,49 +322,28 @@ export class SessionManager {
       protect,
     );
     if (toClose.length === 0) return false;
-    for (const id of toClose) await this.softCloseSession(id);
+    for (const id of toClose) await softCloseSession(this.softCloseHost(), id);
     this.emitSessions();
     return true;
   }
 
-  /** Close a session from the rail without deleting its folder. */
-  private async softCloseSession(sessionId: string): Promise<void> {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-    for (const turn of this.bus.setSessionTitle(sessionId, session.title)) {
-      this.send("switchboard:turn", turn);
-    }
-    const tabIds = session.tabs.map((tab) => tab.tabId);
-    const cwds = await this.terminals.disposeMany(tabIds);
-    if (cwds.size > 0) {
-      let tabs = session.tabs;
-      for (const [tabId, cwd] of cwds) tabs = updateTabCwd(tabs, tabId, cwd);
-      session.tabs = tabs;
-    }
-    if (this.hydrated.has(sessionId)) {
-      await saveSessionMeta(sessionId, metaFromSession(session));
-      await saveTranscript(sessionId, this.transcripts.get(sessionId) ?? []);
-    } else {
-      await saveSessionMeta(sessionId, metaFromSession(session));
-    }
-    const acp = this.agents.get(sessionId);
-    if (acp) {
-      await acp.dispose();
-      this.agents.delete(sessionId);
-    }
-    this.sessions.delete(sessionId);
-    this.transcripts.delete(sessionId);
-    this.hydrated.delete(sessionId);
-    const activeParent = this.activeParentSessionId();
-    const wasActive = activeParent === sessionId || this.activeTabId === sessionId;
-    const nextActive = wasActive ? nextActiveAfterClose(this.railLists, sessionId) : null;
-    this.railLists = removeSessionFromLists(this.railLists, sessionId);
-    if (wasActive) {
-      this.activeTabId = nextActive ?? SWITCHBOARD_ID;
-      if (this.activeTabId !== SWITCHBOARD_ID && this.sessions.has(this.activeTabId)) {
-        this.refreshCommandsIfNeeded(this.activeTabId);
-      }
-    }
+  private softCloseHost() {
+    const mgr = this;
+    return {
+      sessions: mgr.sessions,
+      agents: mgr.agents,
+      transcripts: mgr.transcripts,
+      hydrated: mgr.hydrated,
+      terminals: mgr.terminals,
+      bus: mgr.bus,
+      get railLists() { return mgr.railLists; },
+      get activeTabId() { return mgr.activeTabId; },
+      setActiveTabId: (id: ActiveTabId) => { mgr.activeTabId = id; },
+      setRailLists: (lists: SessionRailLists) => { mgr.railLists = lists; },
+      send: (channel: string, payload: unknown) => mgr.send(channel, payload),
+      refreshCommandsIfNeeded: (sessionId: string) => mgr.refreshCommandsIfNeeded(sessionId),
+      activeParentSessionId: () => mgr.activeParentSessionId(),
+    };
   }
 
   list() {
@@ -457,7 +450,7 @@ export class SessionManager {
 
   async closeSession(sessionId: string): Promise<void> {
     if (!this.sessions.has(sessionId)) return;
-    await this.softCloseSession(sessionId);
+    await softCloseSession(this.softCloseHost(), sessionId);
     this.emitSessions();
     void this.persist();
   }
@@ -477,93 +470,48 @@ export class SessionManager {
     return this.sessions.get(sessionId);
   }
 
+  private terminalHost() {
+    return {
+      sessions: this.sessions,
+      terminals: this.terminals,
+      getActiveTabId: () => this.activeTabId,
+      setActiveTabId: (id: string) => { this.activeTabId = id; },
+      emitSessions: () => this.emitSessions(),
+      persist: () => { void this.persist(); },
+      refreshCommandsIfNeeded: (sessionId: string) => this.refreshCommandsIfNeeded(sessionId),
+    };
+  }
+
   async createTerminalTab(sessionId: string): Promise<SessionTab> {
-    const session = this.sessions.get(sessionId);
-    if (!session) throw new Error("Session not found");
-    const tab = createTerminalTab(session.cwd, session.tabs);
-    session.tabs = [...session.tabs, tab];
-    session.tabsExpanded = true;
-    this.activeTabId = tab.tabId;
-    this.emitSessions();
-    void this.persist();
-    return tab;
+    return createSessionTerminalTab(this.terminalHost(), sessionId);
   }
 
   renameTab(tabId: string, title: string): void {
-    const found = findChildTab(this.sessions.values(), tabId);
-    if (!found) return;
-    const next = renameTabInList(found.session.tabs, tabId, title);
-    if (!next) return;
-    found.session.tabs = next;
-    this.emitSessions();
-    void this.persist();
+    renameSessionTab(this.terminalHost(), tabId, title);
   }
 
   async closeTab(tabId: string): Promise<void> {
-    const found = findChildTab(this.sessions.values(), tabId);
-    if (!found) return;
-    const cwd = await this.terminals.refreshCwd(tabId);
-    this.terminals.dispose(tabId);
-    let tabs = found.session.tabs;
-    if (cwd) tabs = updateTabCwd(tabs, tabId, cwd);
-    const next = removeTabFromList(tabs, tabId);
-    if (!next) return;
-    found.session.tabs = next;
-    if (this.activeTabId === tabId) {
-      this.activeTabId = found.session.id;
-      this.refreshCommandsIfNeeded(found.session.id);
-    }
-    this.emitSessions();
-    void this.persist();
+    await closeSessionTab(this.terminalHost(), tabId);
   }
 
   setTabsExpanded(sessionId: string, expanded: boolean): void {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-    session.tabsExpanded = expanded;
-    this.emitSessions();
-    void this.persist();
+    setSessionTabsExpanded(this.terminalHost(), sessionId, expanded);
   }
 
   reorderTab(sessionId: string, tabId: string, toIndex: number): void {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-    const next = reorderTabInList(session.tabs, tabId, toIndex);
-    if (!next) return;
-    session.tabs = next;
-    this.emitSessions();
-    void this.persist();
+    reorderSessionTab(this.terminalHost(), sessionId, tabId, toIndex);
   }
 
   moveTab(tabId: string, toSessionId: string, toIndex: number): void {
-    const found = findChildTab(this.sessions.values(), tabId);
-    const dest = this.sessions.get(toSessionId);
-    if (!found || !dest) return;
-    if (found.session.id === toSessionId) {
-      this.reorderTab(toSessionId, tabId, toIndex);
-      return;
-    }
-    const moved = moveTabBetweenLists(found.session.tabs, dest.tabs, tabId, toIndex);
-    if (!moved) return;
-    found.session.tabs = moved.from;
-    dest.tabs = moved.to;
-    dest.tabsExpanded = true;
-    this.emitSessions();
-    void this.persist();
+    moveSessionTab(this.terminalHost(), tabId, toSessionId, toIndex);
   }
 
   attachTerminal(tabId: string): void {
-    const found = findChildTab(this.sessions.values(), tabId);
-    if (!found || found.tab.kind !== "terminal") return;
-    this.terminals.ensure(tabId, found.tab.cwd || found.session.cwd);
+    attachSessionTerminal(this.terminalHost(), tabId);
   }
 
   private applyTerminalCwd(tabId: string, cwd: string): void {
-    const found = findChildTab(this.sessions.values(), tabId);
-    if (!found || found.tab.kind !== "terminal") return;
-    if (found.tab.cwd === cwd) return;
-    found.session.tabs = updateTabCwd(found.session.tabs, tabId, cwd);
-    this.emitSessions();
+    applySessionTerminalCwd(this.terminalHost(), tabId, cwd);
   }
 
   writeTerminal(tabId: string, data: string): void {
@@ -867,113 +815,52 @@ export class SessionManager {
     return acp;
   }
 
-  private async ensureHydrated(sessionId: string): Promise<Session | null> {
-    const session = this.sessions.get(sessionId);
-    if (!session) return null;
-    if (this.hydrated.has(sessionId)) return session;
-    const meta = await loadSessionMeta(sessionId);
-    if (!meta) {
-      this.sessions.delete(sessionId);
-      this.transcripts.delete(sessionId);
-      this.railLists = removeSessionFromLists(this.railLists, sessionId);
-      if (this.activeParentSessionId() === sessionId || this.activeTabId === sessionId) {
-        this.activeTabId = SWITCHBOARD_ID;
-      }
-      this.emitSessions();
-      void this.persist();
-      return null;
-    }
-    session.title = meta.title;
-    session.agent = meta.agent;
-    session.cwd = meta.cwd;
-    session.agentSessionId = meta.agentSessionId;
-    session.usage = meta.usage;
-    session.tabs = meta.tabs;
-    session.tabsExpanded = meta.tabsExpanded;
-    const loaded = await loadTranscript(sessionId);
-    const items = finalizeStalledTurns(loaded);
-    this.transcripts.set(sessionId, items);
-    this.hydrated.add(sessionId);
-    this.pushTranscript(sessionId);
-    this.emitSessions();
-    if (items !== loaded) this.queuePersist();
-    return session;
-  }
-
-  private callbacksFor(session: Session): SessionCallbacks {
+  private hydrationHost() {
+    const mgr = this;
     return {
-      onPromptComplete: () => {
-        this.send("prompt:complete", { sessionId: session.id });
-      },
-      onTurn: (turn) => this.handleTurn(session.id, turn),
-      onTurnRemoved: (turnId) => this.removeTurn(session.id, turnId),
-      onStatus: (status, error) => this.setStatus(session.id, status, error ?? null),
-      onSteeringSupport: (supported) => {
-        session.supportsSteering = supported;
-        this.emitSessions();
-      },
-      onForkSupport: (supported) => this.noteForkSupport(session.agent, supported),
-      onUsage: (usage) => {
-        session.usage = usage;
-        this.emitSessions();
-        this.queuePersist();
-      },
-      onAvailableCommands: (commands) => {
-        session.slashCommands = commands;
-        this.emitSessions();
-      },
-      onPermission: (req) => {
-        this.permissionOwners.set(req.requestId, session.id);
-        this.send("permission", req);
-      },
-      onQuestionSettled: (requestId) => {
-        this.askOwners.delete(requestId);
-        this.send("question:settled", { requestId });
-      },
-      onAskQuestion: (req) => {
-        this.askOwners.set(req.requestId, session.id);
-        this.send("ask-question", req);
-      },
-      getSessionTitle: () => session.title,
+      sessions: mgr.sessions,
+      transcripts: mgr.transcripts,
+      hydrated: mgr.hydrated,
+      bus: mgr.bus,
+      get railLists() { return mgr.railLists; },
+      get activeTabId() { return mgr.activeTabId; },
+      setActiveTabId: (id: ActiveTabId) => { mgr.activeTabId = id; },
+      setRailLists: (lists: SessionRailLists) => { mgr.railLists = lists; },
+      emitSessions: () => mgr.emitSessions(),
+      persist: () => { void mgr.persist(); },
+      queuePersist: () => mgr.queuePersist(),
+      pushTranscript: (sessionId: string) => mgr.pushTranscript(sessionId),
+      send: (channel: string, payload: unknown) => mgr.send(channel, payload),
+      activeParentSessionId: () => mgr.activeParentSessionId(),
+      prependSession: (session: Session, pin?: boolean) => mgr.prependSession(session, pin),
     };
   }
 
-  /** Session folder missing: drop open entry + Switchboard events and tell the UI. */
-  private forgetMissingSession(sessionId: string): void {
-    const title =
-      this.sessions.get(sessionId)?.title ??
-      this.bus.list().find((event) => event.sessionId === sessionId)?.sessionTitle ??
-      "Session";
-    if (this.sessions.has(sessionId)) {
-      this.sessions.delete(sessionId);
-      this.transcripts.delete(sessionId);
-      this.hydrated.delete(sessionId);
-      this.railLists = removeSessionFromLists(this.railLists, sessionId);
-      if (this.activeParentSessionId() === sessionId || this.activeTabId === sessionId) {
-        this.activeTabId = SWITCHBOARD_ID;
-      }
-      this.emitSessions();
-    }
-    this.bus.removeSession(sessionId);
-    this.send("switchboard:session-removed", {
-      sessionId,
-      message: `Session “${title}” is no longer on disk and was removed from Switchboard.`,
-    });
-    void this.persist();
+  private ensureHydrated(sessionId: string): Promise<Session | null> {
+    return ensureSessionHydrated(this.hydrationHost(), sessionId);
   }
 
-  private async reopenSession(sessionId: string): Promise<Session | null> {
-    const meta = await loadSessionMeta(sessionId);
-    if (!meta) return null;
-    const loaded = await loadTranscript(sessionId);
-    const items = finalizeStalledTurns(loaded);
-    const session = sessionFromMeta(sessionId, meta);
-    this.prependSession(session);
-    this.transcripts.set(sessionId, items);
-    this.hydrated.add(sessionId);
-    this.pushTranscript(sessionId);
-    if (items !== loaded) this.queuePersist();
-    return session;
+  private forgetMissingSession(sessionId: string): void {
+    forgetMissingSession(this.hydrationHost(), sessionId);
+  }
+
+  private reopenSession(sessionId: string): Promise<Session | null> {
+    return reopenSession(this.hydrationHost(), sessionId);
+  }
+
+  private callbacksFor(session: Session): SessionCallbacks {
+    return buildSessionCallbacks({
+      session,
+      send: (channel, payload) => this.send(channel, payload),
+      handleTurn: (sessionId, turn) => this.handleTurn(sessionId, turn),
+      removeTurn: (sessionId, turnId) => this.removeTurn(sessionId, turnId),
+      setStatus: (sessionId, status, error) => this.setStatus(sessionId, status, error),
+      emitSessions: () => this.emitSessions(),
+      noteForkSupport: (agent, supported) => this.noteForkSupport(agent, supported),
+      queuePersist: () => this.queuePersist(),
+      permissionOwners: this.permissionOwners,
+      askOwners: this.askOwners,
+    });
   }
 
   /** Push the in-memory transcript so the renderer cannot show a stale empty list. */
@@ -987,32 +874,4 @@ export class SessionManager {
   private send(channel: string, payload: unknown): void {
     this.window?.webContents.send(channel, payload);
   }
-}
-
-function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
-  return {
-    id,
-    title: meta?.title || id,
-    agent: meta?.agent ?? "claude",
-    cwd: meta?.cwd ?? "",
-    agentSessionId: meta?.agentSessionId ?? null,
-    status: "idle",
-    error: null,
-    createdAt: Date.now(),
-    usage: meta?.usage,
-    tabs: meta?.tabs ?? [],
-    tabsExpanded: meta?.tabsExpanded ?? true,
-  };
-}
-
-function metaFromSession(session: Session): SessionMeta {
-  return {
-    title: session.title,
-    agent: session.agent,
-    cwd: session.cwd,
-    agentSessionId: session.agentSessionId,
-    usage: session.usage,
-    tabs: session.tabs,
-    tabsExpanded: session.tabsExpanded,
-  };
 }

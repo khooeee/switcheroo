@@ -13,11 +13,9 @@ import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPo
 import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
 import { FindInHistoryModal } from "./features/find/FindInHistoryModal";
-import {
-  clearPendingFindScope,
-  takePendingFindScope,
-} from "./features/find/pendingFindScope";
+import { useFindUiState } from "./features/find/useFindUiState";
 import { NewSessionModal } from "./features/sessions/NewSessionModal";
+import { useSessionRailActions } from "./features/sessions/useSessionRailActions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
@@ -41,59 +39,30 @@ export function App() {
     switchboardNotice,
     setSwitchboardNotice,
   } = useAppSessionState();
+  const railActions = useSessionRailActions();
 
   const [showNewSession, setShowNewSession] = useState(false);
-  const [showFindInSessions, setShowFindInSessions] = useState(false);
-  const [findOpen, setFindOpen] = useState(false);
-  const [findQuery, setFindQuery] = useState("");
-  const [findScope, setFindScope] = useState<HTMLElement | null>(null);
   const [sessionFilter, setSessionFilter] = useState("");
+  const {
+    showFindInSessions,
+    setShowFindInSessions,
+    findOpen,
+    findQuery,
+    setFindQuery,
+    findScope,
+    findScopeRef,
+    closeFind,
+    openFind,
+  } = useFindUiState(activeTabId);
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
-  const findScopeRef = useRef<HTMLElement | null>(null);
-  findScopeRef.current = findScope;
   const chatSessionId = activeTerminalTab ? null : activeSession?.id ?? null;
   const askQuestion = useAgentQuestions(chatSessionId ?? SWITCHBOARD_ID);
   const pinTranscriptToBottom = useSessionScrollPosition(
     chatSessionId ?? SWITCHBOARD_ID,
     activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef,
   );
-
-  const closeFind = useCallback(() => {
-    setFindOpen(false);
-    setFindQuery("");
-    setFindScope(null);
-    clearPendingFindScope();
-  }, []);
-
-  const openFind = useCallback(() => {
-    clearPendingFindScope();
-    setFindScope(null);
-    setFindOpen(true);
-  }, []);
-
-  useEffect(() => {
-    const onScoped = () => {
-      const el = takePendingFindScope();
-      if (!el) return;
-      setFindScope(el);
-      setFindOpen(true);
-    };
-    window.addEventListener("switcheroo:find-scoped", onScoped);
-    return () => window.removeEventListener("switcheroo:find-scoped", onScoped);
-  }, []);
-
-  useEffect(() => {
-    setFindScope(null);
-    clearPendingFindScope();
-  }, [activeTabId]);
-
-  useEffect(() => {
-    if (!findScope) return;
-    findScope.classList.add("find-scope");
-    return () => findScope.classList.remove("find-scope");
-  }, [findScope]);
 
   const {
     rightRailView,
@@ -194,24 +163,7 @@ export function App() {
         onFilter={setSessionFilter}
         onSelect={selectTab}
         onAdd={() => setShowNewSession(true)}
-        onCloseSession={(id) => void window.switcheroo.closeSession(id)}
-        onCloseTab={(tabId) => void window.switcheroo.closeTab(tabId)}
-        onStop={(id) => void window.switcheroo.cancelPrompt(id).catch(console.error)}
-        onRenameSession={(id, title) => void window.switcheroo.renameSession(id, title)}
-        onRenameTab={(tabId, title) => void window.switcheroo.renameTab(tabId, title)}
-        onNewTerminal={(sessionId) => void window.switcheroo.createTerminalTab(sessionId)}
-        onToggleExpanded={(sessionId, expanded) =>
-          void window.switcheroo.setTabsExpanded(sessionId, expanded)
-        }
-        onReorderTab={(sessionId, tabId, toIndex) =>
-          void window.switcheroo.reorderTab(sessionId, tabId, toIndex)
-        }
-        onMoveTab={(tabId, toSessionId, toIndex) =>
-          void window.switcheroo.moveTab(tabId, toSessionId, toIndex)
-        }
-        onFork={(id) => void window.switcheroo.forkSession(id).catch(console.error)}
-        onPin={(id) => void window.switcheroo.pinSession(id)}
-        onUnpin={(id) => void window.switcheroo.unpinSession(id)}
+        {...railActions}
       />
 
       <div className="main relative">

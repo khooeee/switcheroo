@@ -3,6 +3,7 @@ import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
 import { SWITCHBOARD_ID } from "../../../shared/types";
 import { findChildTab, sessionIdForTab } from "../../../shared/tabNav";
 import { isComposerDraftEmpty } from "../chat/useComposerDraft";
+import { confirmCloseSession } from "../sessions/confirmCloseSession";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
@@ -86,12 +87,9 @@ export function useAppShortcuts({
       }
       const session = sessionsRef.current.find((item) => item.id === activeId.current);
       if (!session) return;
-      if (session.tabs.length > 0) {
-        const n = session.tabs.length;
-        const ok = window.confirm(`Close this chat and ${n} terminal${n === 1 ? "" : "s"}?`);
-        if (!ok) return;
-      }
-      void window.switcheroo.closeSession(session.id);
+      confirmCloseSession(session, (id) => {
+        void window.switcheroo.closeSession(id);
+      });
     };
     const forkActive = () => {
       const id = forkableId.current;

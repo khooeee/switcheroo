@@ -98,7 +98,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+N**: New session
 
-**Cmd/Ctrl+T**: New terminal (under the active chat group)
+**Cmd/Ctrl+T**: New terminal
 
 **Cmd/Ctrl+R**: Rename selected tab
 
@@ -106,7 +106,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+U**: Mark as Unread
 
-**Cmd/Ctrl+W**: Close selected tab (chat group or terminal)
+**Cmd/Ctrl+W**: Close selected tab
 
 **Cmd/Ctrl+Y**: Fork selected session
 

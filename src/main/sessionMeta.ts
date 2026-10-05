@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { AgentKind, SessionTab, SessionUsage } from "../shared/types";
+import type { AgentKind, Session, SessionTab, SessionUsage } from "../shared/types";
 import { sessionDir, sessionMetaPath } from "./userDataPaths";
 import { normalizeSessionTabs, readTabsExpanded } from "./sessionTabs";
 
@@ -11,6 +11,34 @@ export interface SessionMeta {
   usage?: SessionUsage;
   tabs: SessionTab[];
   tabsExpanded: boolean;
+}
+
+export function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
+  return {
+    id,
+    title: meta?.title || id,
+    agent: meta?.agent ?? "claude",
+    cwd: meta?.cwd ?? "",
+    agentSessionId: meta?.agentSessionId ?? null,
+    status: "idle",
+    error: null,
+    createdAt: Date.now(),
+    usage: meta?.usage,
+    tabs: meta?.tabs ?? [],
+    tabsExpanded: meta?.tabsExpanded ?? true,
+  };
+}
+
+export function metaFromSession(session: Session): SessionMeta {
+  return {
+    title: session.title,
+    agent: session.agent,
+    cwd: session.cwd,
+    agentSessionId: session.agentSessionId,
+    usage: session.usage,
+    tabs: session.tabs,
+    tabsExpanded: session.tabsExpanded,
+  };
 }
 
 let pendingSave: Promise<void> = Promise.resolve();

@@ -1,10 +1,7 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
-import { Readable, Writable } from "node:stream";
 import { randomUUID } from "node:crypto";
 import * as acp from "@agentclientprotocol/sdk";
 import type { AgentKind, TranscriptItem, TranscriptTurn } from "../../shared/types";
-import { AGENT_PRESETS } from "./presets";
-import { spawnAgentProcess } from "./spawnAgentProcess";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
 import { PromptCompletion } from "./PromptCompletion";
@@ -15,10 +12,11 @@ import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
 import type { AirForkPoint } from "./airForkPoint";
-import { drainAgentStream } from "./drainAgentStream";
 import { formatAgentError } from "../../shared/formatAgentError";
 import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
+import { connectAcpAgent } from "./connectAcpAgent";
+import { attachAcpSession } from "./attachAcpSession";
 
 export class AcpSession {
   id: string;
@@ -161,64 +159,21 @@ export class AcpSession {
 
   private async attachSession(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
     await this.connectAgent(options);
-    if (!this.connection) throw new Error("Session closed");
-    // Never-prompted sessions often have an agent id / session-env but no
-    // transcript. Resuming them yields a hollow session that completes with no
-    // assistant text. Mint a fresh agent session instead.
-    if (this.turns.list().length === 0) {
-      this.mirrorUpdates = false;
-      await this.createAgentSession();
-      return;
-    }
-    const params = { sessionId, cwd: this.cwd, mcpServers: [] as [] };
-    // Prefer load: older agents (incl. Cursor) advertise loadSession, not session/resume.
-    const methods: Array<typeof acp.methods.agent.session.load | typeof acp.methods.agent.session.resume> = [];
-    if (this.canLoad) methods.push(acp.methods.agent.session.load);
-    if (this.canResume) methods.push(acp.methods.agent.session.resume);
-    if (methods.length === 0) {
-      methods.push(acp.methods.agent.session.load, acp.methods.agent.session.resume);
-    }
-    const errors: string[] = [];
-    for (const method of methods) {
-      try {
-        this.setSessionId(sessionId);
-        // load/resume often replays history as session updates — keep those off the
-        // transcript until the next prompt (replay can arrive after the RPC returns).
-        this.mirrorUpdates = false;
-        this.turnRunning = false;
-        this.remoteTurnActive = null;
-        const response = await this.connection.agent.request(method, params) as {
-          sessionId?: string;
-        } | void;
-        const resumedId =
-          response && typeof response === "object" && typeof response.sessionId === "string"
-            ? response.sessionId
-            : sessionId;
-        this.setSessionId(resumedId);
-        // Replay may have flipped turnRunning via status updates; we are idle until the next prompt.
-        this.turnRunning = false;
-        this.remoteTurnActive = null;
-        this.output.reset();
-        this.cb.onStatus("ready");
-        return;
-      } catch (err) {
-        this.clearSessionId();
-        this.turnRunning = false;
-        this.remoteTurnActive = null;
-        errors.push(formatAgentError(err));
-      }
-    }
-    const detail = errors.join("; ");
-    // Empty / never-prompted agent sessions often fail load/resume (Cursor: not found;
-    // Codex: no rollout for the thread id). Reuse this connection and mint a fresh one.
-    if (/invalid params|not found|no conversation|no rollout/i.test(detail)) {
-      this.mirrorUpdates = false;
-      await this.createAgentSession();
-      return;
-    }
-    throw new Error(
-      `Could not reopen session (${detail}). Send a message in this session to reconnect, then fork.`,
-    );
+    await attachAcpSession({
+      connection: this.connection,
+      canLoad: this.canLoad,
+      canResume: this.canResume,
+      cwd: this.cwd,
+      turnCount: () => this.turns.list().length,
+      setMirrorUpdates: (value) => { this.mirrorUpdates = value; },
+      setTurnRunning: (value) => { this.turnRunning = value; },
+      setRemoteTurnActive: (value) => { this.remoteTurnActive = value; },
+      setSessionId: (id) => this.setSessionId(id),
+      clearSessionId: () => this.clearSessionId(),
+      resetOutput: () => this.output.reset(),
+      onReady: () => this.cb.onStatus("ready"),
+      createAgentSession: () => this.createAgentSession(),
+    }, sessionId);
   }
 
   async fork(forkPoint?: AirForkPoint): Promise<string> {
@@ -278,88 +233,46 @@ export class AcpSession {
   }
 
   private async connectAgent(options?: { quiet?: boolean }): Promise<void> {
-    if (!options?.quiet) this.cb.onStatus("connecting");
-    const preset = AGENT_PRESETS[this.agent];
-    const command = preset.command;
-
-    try {
-      this.proc = await spawnAgentProcess(command, preset.args, this.cwd);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (!this.disposed) this.cb.onStatus("error", message);
-      throw new Error(message);
-    }
-
-    drainAgentStream(this.proc.stderr);
-
-    this.proc.on("exit", (code) => {
-      if (!this.disposed) {
+    const result = await connectAcpAgent({
+      agent: this.agent,
+      cwd: this.cwd,
+      quiet: options?.quiet,
+      isDisposed: () => this.disposed,
+      onStatus: (status, message) => {
+        if (status === "connecting") this.cb.onStatus("connecting");
+        else this.cb.onStatus("error", message);
+      },
+      onPermission: (params) => this.handlePermission(params),
+      onReadFile: (params) => this.files.read(params),
+      onWriteFile: (params) => this.files.write(params),
+      onAskQuestion: async (params, signal) => {
+        if (this.disposed || this.stopRequested) return { outcome: "cancelled" };
+        this.noteSystem("Question from agent");
+        return this.questions.request(params, signal);
+      },
+      onTodosUpdated: () => this.noteSystem("Todos updated"),
+      onSessionUpdate: (sessionId, update) => {
+        const target = sessionForUpdate(sessionId, this);
+        if (target.disposed) return;
+        target.handleSessionUpdate(update);
+      },
+      onProcessExit: (code) => {
         this.finishPending("interrupted");
         this.connection?.close();
         this.cb.onStatus("error", `Agent exited (code ${code ?? "?"})`);
-      }
-    });
-
-    const input = Writable.toWeb(this.proc.stdin) as WritableStream<Uint8Array>;
-    const output = Readable.toWeb(this.proc.stdout) as ReadableStream<Uint8Array>;
-    const stream = acp.ndJsonStream(input, output);
-
-    this.connection = acp
-      .client({ name: "switcheroo" })
-      .onRequest(acp.methods.client.session.requestPermission, async (ctx) => {
-        return this.handlePermission(ctx.params);
-      })
-      .onRequest(acp.methods.client.fs.readTextFile, async (ctx) => {
-        return this.files.read(ctx.params);
-      })
-      .onRequest(acp.methods.client.fs.writeTextFile, async (ctx) => {
-        return this.files.write(ctx.params);
-      })
-      .onRequest("cursor/ask_question", (params: unknown) => params as Record<string, unknown>, async (ctx) => {
-        if (this.disposed || this.stopRequested) return { outcome: "cancelled" };
-        this.noteSystem("Question from agent");
-        return this.questions.request(ctx.params, ctx.signal);
-      })
-      .onNotification("cursor/update_todos", (params: unknown) => params, async () => {
-        this.noteSystem("Todos updated");
-      })
-      .onNotification(acp.methods.client.session.update, (ctx) => {
-        const target = sessionForUpdate(ctx.params.sessionId, this);
-        if (target.disposed) return;
-        target.handleSessionUpdate(ctx.params.update);
-      })
-      .connect(stream);
-
-    this.connection.signal?.addEventListener("abort", () => {
-      this.finishPending("interrupted");
-      if (!this.disposed) this.cb.onStatus("error", "Agent connection closed");
-    }, { once: true });
-
-    const agent = this.connection.agent;
-    const initialized = await agent.request(acp.methods.agent.initialize, {
-      protocolVersion: acp.PROTOCOL_VERSION,
-      clientCapabilities: {
-        fs: { readTextFile: true, writeTextFile: true },
-        terminal: false,
       },
-      clientInfo: { name: "switcheroo", version: "1.0.0" },
+      onConnectionAbort: () => {
+        this.finishPending("interrupted");
+        if (!this.disposed) this.cb.onStatus("error", "Agent connection closed");
+      },
+      onForkSupport: (supported) => this.cb.onForkSupport(supported),
+      configureDelivery: (meta) => this.delivery.configure(meta),
     });
-    const caps = initialized.agentCapabilities;
-    this.canLoad = caps?.loadSession === true;
-    this.canResume = caps?.sessionCapabilities?.resume != null;
-    this.cb.onForkSupport(caps?.sessionCapabilities?.fork != null);
-    this.initializationMeta = initialized._meta;
-    this.delivery.configure(this.initializationMeta);
-
-    if (preset.authMethodId) {
-      try {
-        await agent.request(acp.methods.agent.authenticate, {
-          methodId: preset.authMethodId,
-        });
-      } catch {
-        // Auth is optional for some agents; avoid console.error (EPIPE under Electron).
-      }
-    }
+    this.proc = result.proc;
+    this.connection = result.connection;
+    this.canLoad = result.canLoad;
+    this.canResume = result.canResume;
+    this.initializationMeta = result.initializationMeta;
   }
 
   private handleSessionUpdate(update: acp.SessionUpdate): void {
