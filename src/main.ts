@@ -208,7 +208,7 @@ function registerIpc(): void {
   });
   ipcMain.handle("images:saveClipboard", async (_e, sessionId: string) => {
     requireSession(sessionId);
-    const png = readClipboardPng();
+    const png = await readClipboardPng();
     if (!png) return null;
     return savePastedImage(png, "image/png");
   });
