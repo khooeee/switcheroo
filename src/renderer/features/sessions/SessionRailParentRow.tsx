@@ -86,7 +86,7 @@ export function SessionRailParentRow({
     <button
       type="button"
       className={`rail-session ${active ? "active" : ""} ${session.status === "connecting" ? "creating" : ""} ${dropParent ? "rail-drop-parent" : ""}`}
-      data-tooltip={`${session.title}\n${session.cwd}\n(${session.status === "connecting" ? "Creating" : session.status})`}
+      data-tooltip={`${session.title}\n${session.cwd}`}
       data-tooltip-side="right"
       onClick={() => onSelect(session.id)}
       onDoubleClick={(event) => {

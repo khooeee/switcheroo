@@ -69,7 +69,7 @@ export function SessionRailChildTab({
       ]
         .filter(Boolean)
         .join(" ")}
-      data-tooltip={tab.title}
+      data-tooltip={`${tab.title}\n${tab.cwd}`}
       data-tooltip-side="right"
       onClick={() => onSelect(tab.tabId)}
       onDoubleClick={(event) => {
