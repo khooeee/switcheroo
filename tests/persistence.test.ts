@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { PersistedState } from "../src/shared/types";
+import type { PersistedState } from "../src/shared/persistedState";
 
 const electronState = vi.hoisted(() => ({
   userData: "" as string,

@@ -1,11 +1,11 @@
 import { getAppSettingsCache, patchAppSettings } from "./appSettingsCache";
 
 /** Details visible when zen mode is off. */
-export function readDetailsVisible(): boolean {
+function readDetailsVisible(): boolean {
   return !getAppSettingsCache().zenMode;
 }
 
-export function applyDetailsVisible(visible: boolean): void {
+function applyDetailsVisible(visible: boolean): void {
   document.documentElement.dataset.details = visible ? "shown" : "hidden";
 }
 

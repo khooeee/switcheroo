@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { ToolCallUpdate } from "@agentclientprotocol/sdk";
-import type { TranscriptItem } from "../../shared/types";
+import type { TranscriptItem } from "../../shared/transcript";
 import { toolFileChanges } from "./toolFileChanges";
 import { fileChangeLabel } from "../../shared/fileChangeLabel";
 

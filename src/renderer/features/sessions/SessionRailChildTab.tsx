@@ -2,10 +2,11 @@ import type {
   DragEvent as ReactDragEvent,
   MouseEvent as ReactMouseEvent,
 } from "react";
-import type { ActiveTabId, SessionTab } from "../../../shared/types";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { SessionTab } from "../../../shared/session";
 import { SessionRailLabel } from "./SessionRailLabel";
 import { SessionRailRename } from "./SessionRailRename";
-import type { RenameTarget } from "./sessionRailTypes";
+import type { RenameTarget } from "./renameTarget";
 
 type Props = {
   tab: SessionTab;

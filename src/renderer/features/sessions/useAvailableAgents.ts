@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { AgentKind } from "../../../shared/types";
+import type { AgentKind } from "../../../shared/agentKind";
 
 // Last answer from main, so reopening the modal does not flash unavailable agents.
 let cached: AgentKind[] | null = null;

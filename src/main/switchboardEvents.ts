@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { SwitchboardTurn } from "../shared/types";
+import type { SwitchboardTurn } from "../shared/switchboardTurn";
 import { encodeJsonl } from "./encodeJsonl";
 import { parseJsonl } from "./parseJsonl";
 import { switchboardPath } from "./userDataPaths";

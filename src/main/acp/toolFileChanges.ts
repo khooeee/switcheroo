@@ -1,5 +1,5 @@
 import type { ToolCallUpdate } from "@agentclientprotocol/sdk";
-import type { FileChange } from "../../shared/types";
+import type { FileChange } from "../../shared/fileChange";
 
 export function toolFileChanges(tool: ToolCallUpdate): FileChange[] {
   const files = new Map<string, FileChange>();

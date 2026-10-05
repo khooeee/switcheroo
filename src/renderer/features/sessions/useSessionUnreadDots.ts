@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ActiveTabId, Session } from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
-import { sessionIdForTab } from "../../../shared/tabNav";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session } from "../../../shared/session";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
+import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 
 /** Session ids with an unread completed turn; cleared when that chat group is active. */
 export function useSessionUnreadDots(activeTabId: ActiveTabId, sessions: Session[]) {

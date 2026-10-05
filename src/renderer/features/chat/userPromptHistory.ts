@@ -1,4 +1,4 @@
-import type { TranscriptTurn } from "../../../shared/types";
+import type { TranscriptTurn } from "../../../shared/transcript";
 
 /** Newest-first non-empty user prompts from the session transcript. */
 export function userPromptHistory(turns: TranscriptTurn[]): string[] {

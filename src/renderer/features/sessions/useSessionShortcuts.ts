@@ -1,7 +1,9 @@
-import type { ActiveTabId, Session } from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session } from "../../../shared/session";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
-import { sessionIdForTab, visibleTabOrder } from "../../../shared/tabNav";
+import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
+import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { useEffect } from "react";
 
 function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {

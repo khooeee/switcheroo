@@ -1,4 +1,4 @@
-import type { Session } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
 
 /** Confirm closing a chat that still has terminal tabs. */
 export function confirmCloseSession(

@@ -1,5 +1,6 @@
 import { memo } from "react";
-import type { FileChange, Session, TranscriptItem } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
+import type { TranscriptItem } from "../../../shared/transcript";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
@@ -8,6 +9,7 @@ import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { QueuedStatus } from "./QueuedStatus";
+import type { MessageSession } from "./useMessageSession";
 
 /** Renders one transcript leaf (user / assistant / thought / tool / …). */
 export const TranscriptMessage = memo(function TranscriptMessage({
@@ -18,7 +20,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   extraFileChanges,
   forkable,
 }: {
-  session: Session;
+  session: MessageSession;
   item: TranscriptItem;
   /** Whole-message click (e.g. Switchboard navigate). */
   onActivate?: () => void;

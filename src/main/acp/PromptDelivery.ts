@@ -1,7 +1,5 @@
-export type DeliveryMode = "injected" | "startedNewTurn" | "prompt";
-
 /** Steer outcomes include a completion; prompt mode must be started by the caller after opening a turn. */
-export type DeliveryDecision =
+type DeliveryDecision =
   | { mode: "injected" | "startedNewTurn"; completion: Promise<void> }
   | { mode: "prompt" };
 

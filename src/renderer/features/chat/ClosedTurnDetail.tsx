@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { TranscriptTurn } from "../../../shared/types";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";

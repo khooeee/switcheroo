@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { TranscriptItem, TranscriptTurn } from "../../shared/types";
+import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 
 /** `_meta.jetbrains.air.fork` on `session/fork`; claude-agent-acp and codex-acp truncate history there. */
 export interface AirForkPoint {

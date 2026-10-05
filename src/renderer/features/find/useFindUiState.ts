@@ -3,7 +3,7 @@ import {
   clearPendingFindScope,
   takePendingFindScope,
 } from "../find/pendingFindScope";
-import type { ActiveTabId } from "../../../shared/types";
+import type { ActiveTabId } from "../../../shared/activeTabId";
 
 /** Find-bar open/query/scope + Find-in-history modal state. */
 export function useFindUiState(activeTabId: ActiveTabId) {

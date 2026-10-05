@@ -1,4 +1,4 @@
-import type { SessionUsage } from "../../../shared/types";
+import type { SessionUsage } from "../../../shared/session";
 
 /** Composer footer label (`0.0%`) and hover detail (`0k / 1m`). */
 export function formatSessionUsage(usage: SessionUsage): { percent: string; detail: string } {

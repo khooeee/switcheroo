@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { FileChange, TranscriptItem, TranscriptTurn } from "../../shared/types";
+import type { FileChange } from "../../shared/fileChange";
+import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 import { finalizeStalledTurns } from "../finalizeStalledTurns";
 
 function aggregateFileChanges(events: TranscriptItem[]): FileChange[] {

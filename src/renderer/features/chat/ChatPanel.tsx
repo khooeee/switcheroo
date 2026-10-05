@@ -1,10 +1,8 @@
 import type { RefObject } from "react";
-import type {
-  CursorAskQuestionRequest,
-  PermissionRequest,
-  Session,
-  TranscriptTurn,
-} from "../../../shared/types";
+import type { CursorAskQuestionRequest, PermissionRequest } from "../../../shared/agentRequests";
+import type { Session } from "../../../shared/session";
+import type { TranscriptTurn } from "../../../shared/transcript";
+import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
 import { PermissionBar } from "../permissions/PermissionBar";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
@@ -26,15 +24,7 @@ interface Props {
   permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
   onPermission: (optionId: string | "cancelled") => void;
-  onAsk: (
-    outcome:
-      | {
-          outcome: "answered";
-          answers: Array<{ questionId: string; selectedOptionIds: string[] }>;
-        }
-      | { outcome: "skipped" }
-      | { outcome: "cancelled" },
-  ) => void;
+  onAsk: (outcome: AskQuestionOutcome) => void;
 }
 
 export function ChatPanel({
@@ -80,38 +70,7 @@ export function ChatPanel({
         <PermissionBar request={permission} onRespond={onPermission} />
       )}
 
-      {askQuestion && (
-        <div className="permission-bar">
-          <strong>{askQuestion.title ?? "Agent question"}</strong>
-          {askQuestion.questions.map((q) => (
-            <div key={q.id} style={{ width: "100%" }}>
-              <div>{q.prompt}</div>
-              <div className="composer-actions">
-                {q.options.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    className="btn"
-                    onClick={() =>
-                      onAsk({
-                        outcome: "answered",
-                        answers: [
-                          { questionId: q.id, selectedOptionIds: [opt.id] },
-                        ],
-                      })
-                    }
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <button type="button" className="btn" onClick={() => onAsk({ outcome: "skipped" })}>
-            Skip
-          </button>
-        </div>
-      )}
+      {askQuestion && <AskQuestionBar request={askQuestion} onAnswer={onAsk} />}
 
       <ChatComposer
         session={session}

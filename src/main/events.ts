@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { SwitchboardTurn } from "../shared/types";
+import type { SwitchboardTurn } from "../shared/switchboardTurn";
 
 const MAX_TURNS = 2000;
 

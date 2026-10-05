@@ -1,7 +1,7 @@
-import type { AgentKind } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
 
 /** Minimal surface WarmSessionPool needs from an ACP session. */
-export type WarmAcp = {
+type WarmAcp = {
   start(options?: { quiet?: boolean }): Promise<void>;
   dispose(): Promise<void>;
 };

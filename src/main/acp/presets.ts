@@ -1,7 +1,6 @@
-import { existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import type { AgentKind } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
+import { packageBin } from "./packageBin";
+import { resolvePathCommand } from "./resolvePathCommand";
 
 interface AgentPreset {
   kind: AgentKind;
@@ -13,34 +12,6 @@ interface AgentPreset {
   forksAtMessage?: boolean;
   /** External CLI the adapter shells out to; the agent is unavailable without it. */
   requiredCommand?: string;
-}
-
-/** Absolute path to a pinned adapter bin (never go through npx). */
-function packageBin(packageName: string): string {
-  const parts = packageName.split("/");
-  const roots = [process.cwd()];
-  if (typeof process.resourcesPath === "string") {
-    roots.push(join(process.resourcesPath, "app.asar.unpacked"));
-  }
-  for (const root of roots) {
-    const entry = join(root, "node_modules", ...parts, "dist", "index.js");
-    if (existsSync(entry)) return entry;
-  }
-  throw new Error(`ACP adapter not installed: ${packageName}`);
-}
-
-function resolvePathCommand(name: string, extras: string[] = []): string {
-  const candidates = [
-    join(homedir(), ".local", "bin", name),
-    join("/usr/local/bin", name),
-    join("/opt/homebrew/bin", name),
-    ...extras,
-    name,
-  ];
-  for (const c of candidates) {
-    if (c === name || existsSync(c)) return c;
-  }
-  return name;
 }
 
 function resolveCursorAgent(): string {

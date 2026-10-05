@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Session, SessionTab } from "../../../shared/types";
+import type { Session, SessionTab } from "../../../shared/session";
 import { TerminalPanel } from "./TerminalPanel";
 import "./terminalPanel.css";
 

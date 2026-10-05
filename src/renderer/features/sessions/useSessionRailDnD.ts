@@ -1,11 +1,8 @@
 import { useRef, useState, type DragEvent as ReactDragEvent } from "react";
-import type { Session } from "../../../shared/types";
-import {
-  reorderIndexAfterRemove,
-  sameTabDropTarget,
-  tabDropInsertBefore,
-  type TabDropTarget,
-} from "./tabDropTarget";
+import type { Session } from "../../../shared/session";
+import { reorderIndexAfterRemove } from "./reorderIndexAfterRemove";
+import { tabDropInsertBefore } from "./tabDropInsertBefore";
+import { sameTabDropTarget, type TabDropTarget } from "./tabDropTarget";
 
 /** Drag/drop state for reordering and moving child tabs in the session rail. */
 export function useSessionRailDnD(

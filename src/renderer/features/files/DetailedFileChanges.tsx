@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FileChange } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
 import { fileChangeLabel } from "../../../shared/fileChangeLabel";
 import { FileDiff } from "./FileDiff";
 import { relativeChangePath } from "./relativeChangePath";

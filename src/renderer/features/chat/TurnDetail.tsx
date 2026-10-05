@@ -1,15 +1,16 @@
 import { memo } from "react";
-import type { Session, TranscriptTurn } from "../../../shared/types";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
+import type { MessageSession } from "./useMessageSession";
 
 /** Full turn body for the right rail: user → events → assistant (no expand/collapse). */
 export const TurnDetail = memo(function TurnDetail({
   session,
   turn,
 }: {
-  session: Session;
+  session: MessageSession;
   turn: TranscriptTurn;
 }) {
   const running = turn.status === "running" && !turn.user.queued;

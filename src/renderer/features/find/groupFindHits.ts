@@ -1,6 +1,6 @@
-import type { FindInSessionsHit } from "../../../shared/types";
+import type { FindInSessionsHit } from "../../../shared/findInSessionsHit";
 
-export interface FindHistoryGroup {
+interface FindHistoryGroup {
   sessionId: string;
   title: string;
   hits: FindInSessionsHit[];

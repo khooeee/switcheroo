@@ -1,5 +1,6 @@
-import type { FindInSessionsHit, TranscriptTurn } from "../shared/types";
-import type { AgentKind } from "../shared/types";
+import type { FindInSessionsHit } from "../shared/findInSessionsHit";
+import type { TranscriptTurn } from "../shared/transcript";
+import type { AgentKind } from "../shared/agentKind";
 import { findInSessionSources } from "./findInSessionSources";
 import { listSessionIdsOnDisk } from "./listSessionIdsOnDisk";
 import { loadSessionMeta } from "./sessionMeta";

@@ -1,19 +1,15 @@
 import { expect, test } from "vitest";
-import {
-  activeTabAfterChildClose,
-  createTerminalTab,
-  moveTabBetweenLists,
-  nextTerminalTitle,
-  reorderTabInList,
-} from "../src/main/sessionTabs";
-import {
-  childMatchesFilter,
-  groupMatchesFilter,
-  visibleChildren,
-  visibleTabOrder,
-} from "../src/shared/tabNav";
-import type { Session, SessionTab } from "../src/shared/types";
-import { SWITCHBOARD_ID } from "../src/shared/types";
+import { activeTabAfterChildClose } from "../src/main/tabs/activeTabAfterChildClose";
+import { createTerminalTab } from "../src/main/tabs/createTerminalTab";
+import { moveTabBetweenLists } from "../src/main/tabs/moveTabBetweenLists";
+import { nextTerminalTitle } from "../src/main/tabs/nextTerminalTitle";
+import { reorderTabInList } from "../src/main/tabs/reorderTabInList";
+import { childMatchesFilter } from "../src/shared/tabNav/childMatchesFilter";
+import { groupMatchesFilter } from "../src/shared/tabNav/groupMatchesFilter";
+import { visibleChildren } from "../src/shared/tabNav/visibleChildren";
+import { visibleTabOrder } from "../src/shared/tabNav/visibleTabOrder";
+import type { Session, SessionTab } from "../src/shared/session";
+import { SWITCHBOARD_ID } from "../src/shared/switchboardId";
 
 test("nextTerminalTitle increments past Terminal", () => {
   expect(nextTerminalTitle([])).toBe("Terminal");

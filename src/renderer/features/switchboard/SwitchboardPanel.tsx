@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
-import type { SwitchboardTurn, Session } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
+import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { SwitchboardFeed } from "./SwitchboardFeed";
 import { SwitchboardNotice } from "./SwitchboardNotice";

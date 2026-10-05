@@ -1,18 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type {
-  ActiveTabId,
-  AppSettings,
-  CreateSessionInput,
-  CursorAskQuestionRequest,
-  FindInSessionsHit,
-  SwitchboardTurn,
-  PermissionRequest,
-  SessionListPayload,
-  SessionTab,
-  SwitcherooApi,
-  SessionStatus,
-  TranscriptTurn,
-} from "./shared/types";
+import type { ActiveTabId } from "./shared/activeTabId";
+import type { CursorAskQuestionRequest, PermissionRequest } from "./shared/agentRequests";
+import type { AppSettings } from "./shared/appSettings";
+import type { CreateSessionInput } from "./shared/createSessionInput";
+import type { FindInSessionsHit } from "./shared/findInSessionsHit";
+import type { SessionTab, SessionStatus } from "./shared/session";
+import type { SwitchboardTurn } from "./shared/switchboardTurn";
+import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
+import type { TranscriptTurn } from "./shared/transcript";
 
 function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
   const listener = (_event: Electron.IpcRendererEvent, payload: T) => cb(payload);

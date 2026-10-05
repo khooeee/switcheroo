@@ -1,8 +1,9 @@
 import { memo, useCallback, useMemo } from "react";
-import type { Session, TranscriptTurn } from "../../../shared/types";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
+import type { MessageSession } from "./useMessageSession";
 
 /** Compact session turn: user + steers + assistant. Mid-turn events live in the right rail. */
 export const SessionTurn = memo(function SessionTurn({
@@ -10,7 +11,7 @@ export const SessionTurn = memo(function SessionTurn({
   turn,
   onOpenRightRail,
 }: {
-  session: Session;
+  session: MessageSession;
   turn: TranscriptTurn;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
 }) {

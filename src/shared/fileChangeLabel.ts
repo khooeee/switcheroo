@@ -1,4 +1,4 @@
-import type { FileChange } from "./types";
+import type { FileChange } from "./fileChange";
 
 const verbs = {
   created: ["Create", "Created"],

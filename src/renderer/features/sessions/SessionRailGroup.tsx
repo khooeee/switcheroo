@@ -2,12 +2,14 @@ import type {
   DragEvent as ReactDragEvent,
   MouseEvent as ReactMouseEvent,
 } from "react";
-import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
-import { visibleChildren } from "../../../shared/tabNav";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session, SessionTab } from "../../../shared/session";
+import { visibleChildren } from "../../../shared/tabNav/visibleChildren";
 import { SessionRailChildTab } from "./SessionRailChildTab";
 import { SessionRailParentRow } from "./SessionRailParentRow";
-import type { RenameTarget } from "./sessionRailTypes";
+import type { RenameTarget } from "./renameTarget";
 import type { TabDropTarget } from "./tabDropTarget";
+import "./sessionRailGroup.css";
 
 /** One chat parent row plus its visible child terminal tabs. */
 export function SessionRailGroup({

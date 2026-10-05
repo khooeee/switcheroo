@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Session, TranscriptTurn } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
-import {
-  applyComposerHistoryEdit,
-  applyComposerHistoryKey,
-  emptyComposerHistory,
-  type ComposerHistoryState,
-} from "./composerHistory";
+import { applyComposerHistoryEdit } from "./applyComposerHistoryEdit";
+import { applyComposerHistoryKey } from "./applyComposerHistoryKey";
+import { emptyComposerHistory, type ComposerHistoryState } from "./composerHistoryState";
 import { formatSessionUsage } from "./formatSessionUsage";
 import { useComposerDraft } from "./useComposerDraft";
 import { userPromptHistory } from "./userPromptHistory";

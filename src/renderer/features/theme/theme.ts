@@ -1,11 +1,11 @@
-import type { Theme } from "../../../shared/types";
+import type { Theme } from "../../../shared/appSettings";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 
-export function readStoredTheme(): Theme {
+function readStoredTheme(): Theme {
   return getAppSettingsCache().theme;
 }
 
-export function applyTheme(theme: Theme): void {
+function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
 }
 
@@ -15,13 +15,9 @@ export function applyStoredTheme(): Theme {
   return theme;
 }
 
-export function persistTheme(theme: Theme): void {
-  applyTheme(theme);
-  void patchAppSettings({ theme });
-}
-
 export function toggleStoredTheme(): Theme {
   const next = readStoredTheme() === "dark" ? "light" : "dark";
-  persistTheme(next);
+  applyTheme(next);
+  void patchAppSettings({ theme: next });
   return next;
 }

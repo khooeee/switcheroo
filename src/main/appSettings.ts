@@ -1,5 +1,6 @@
-import type { AppSettings } from "../shared/types";
-import { defaultAppSettings, mergeAppSettings } from "../shared/types";
+import type { AppSettings } from "../shared/appSettings";
+import { defaultAppSettings } from "../shared/defaultAppSettings";
+import { mergeAppSettings } from "../shared/mergeAppSettings";
 
 let current: AppSettings = defaultAppSettings();
 

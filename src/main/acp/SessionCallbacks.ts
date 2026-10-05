@@ -1,4 +1,6 @@
-import type { PermissionRequest, SessionUsage, SlashCommand, TranscriptTurn } from "../../shared/types";
+import type { PermissionRequest } from "../../shared/agentRequests";
+import type { SessionUsage, SlashCommand } from "../../shared/session";
+import type { TranscriptTurn } from "../../shared/transcript";
 
 export interface SessionCallbacks {
   onQuestionSettled?: (requestId: string) => void;

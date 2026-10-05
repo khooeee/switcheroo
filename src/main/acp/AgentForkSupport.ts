@@ -1,4 +1,5 @@
-import type { AgentKind, Session } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
+import type { Session } from "../../shared/session";
 import { AGENT_PRESETS } from "./presets";
 
 type ForkFlags = Required<Pick<Session, "supportsFork" | "supportsForkAtMessage">>;

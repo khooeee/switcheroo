@@ -1,7 +1,7 @@
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { fitSidePaneWidth } from "../layout/fitSidePaneWidth";
 import { readCssPx } from "../layout/readCssPx";
-import { reclampRailWidth } from "../sessions/railWidth";
+import { reclampRailWidth } from "../sessions/reclampRailWidth";
 
 const MIN_WIDTH = 240;
 const DEFAULT_WIDTH = 320;
@@ -32,20 +32,4 @@ export function applyRightRailWidth(width: number, persist = false): number {
   if (persist) void patchAppSettings({ rightRailWidth: next });
   reclampRailWidth();
   return next;
-}
-
-/** Show the right rail at the stored width (no persist). */
-export function showRightRail(): number {
-  return applyRightRailWidth(readRightRailWidth(), false);
-}
-
-/** Hide the right rail without clearing the stored width. */
-export function hideRightRail(): void {
-  applyRightRailWidth(0, false);
-}
-
-/** Re-apply the stored right rail width against the current window when visible. */
-export function reclampRightRailWidth(): number {
-  if (readCssPx("--right-rail") <= 0) return 0;
-  return applyRightRailWidth(getAppSettingsCache().rightRailWidth, false);
 }

@@ -1,4 +1,4 @@
-import type { PermissionRequest } from "../../../shared/types";
+import type { PermissionRequest } from "../../../shared/agentRequests";
 import "./permissionBar.css";
 
 interface Props {

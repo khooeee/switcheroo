@@ -1,4 +1,4 @@
-import type { SlashCommand } from "../../../shared/types";
+import type { SlashCommand } from "../../../shared/session";
 
 export function filterSlashCommands(
   commands: SlashCommand[],

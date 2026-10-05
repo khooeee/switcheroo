@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from "react";
-import { pinScrollToBottom, trackScrollPosition } from "./trackScrollPosition";
+import { pinScrollToBottom } from "./pinScrollToBottom";
+import { trackScrollPosition } from "./trackScrollPosition";
 
 export function useSessionScrollPosition(
   sessionId: string,

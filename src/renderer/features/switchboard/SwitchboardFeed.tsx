@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import { useMemo } from "react";
-import type { SwitchboardTurn, Session } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
+import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { SwitchboardTurnCard } from "./SwitchboardTurnCard";
 
 interface Props {

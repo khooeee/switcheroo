@@ -1,4 +1,4 @@
-import type { FileChange } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
 
 /** One chip/diff per path: earliest oldText, latest newText/kind. */
 export function coalesceFileChanges(changes: FileChange[]): FileChange[] {

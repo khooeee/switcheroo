@@ -1,8 +1,6 @@
 import { expect, test } from "vitest";
-import {
-  pinScrollToBottom,
-  trackScrollPosition,
-} from "../src/renderer/features/sessions/trackScrollPosition";
+import { pinScrollToBottom } from "../src/renderer/features/sessions/pinScrollToBottom";
+import { trackScrollPosition } from "../src/renderer/features/sessions/trackScrollPosition";
 
 function fixture() {
   const observers: Array<{ callback: () => void; active: boolean }> = [];

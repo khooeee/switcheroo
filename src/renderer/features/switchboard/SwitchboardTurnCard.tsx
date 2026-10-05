@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from "react";
-import type { Session, SwitchboardTurn } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
+import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
@@ -9,6 +10,7 @@ import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { QueuedStatus } from "../chat/QueuedStatus";
 import { TurnEvents } from "../chat/TurnEvents";
+import { useMessageSession } from "../chat/useMessageSession";
 
 /** One Switchboard turn: user + steers + assistant. Mid-turn events live in the right rail. */
 export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
@@ -27,6 +29,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
+  const messageSession = useMessageSession(session);
   const userText =
     turn.agent === "cursor" ? stripCursorStreamNoise(turn.user.text) : turn.user.text;
   const assistantText = turn.assistant
@@ -91,14 +94,14 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       </div>
 
-      {session && steerEvents.length > 0 ? (
+      {messageSession && steerEvents.length > 0 ? (
         <TurnEvents
-          session={session}
+          session={messageSession}
           events={steerEvents}
           onActivate={turn.navigable ? handleOpenSession : undefined}
         />
       ) : null}
-      {!session && steerEvents.length > 0 ? (
+      {!messageSession && steerEvents.length > 0 ? (
         <div className="turn-events">
           {steerEvents.map((item) => (
             <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>

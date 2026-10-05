@@ -1,12 +1,12 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { Readable, Writable } from "node:stream";
 import * as acp from "@agentclientprotocol/sdk";
-import type { AgentKind } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
 
-export type ConnectAcpResult = {
+type ConnectAcpResult = {
   proc: ChildProcessWithoutNullStreams;
   connection: acp.ClientConnection;
   canLoad: boolean;

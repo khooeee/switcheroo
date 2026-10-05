@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { finalizeStalledTurns } from "../src/main/finalizeStalledTurns";
-import type { TranscriptTurn } from "../src/shared/types";
+import type { TranscriptTurn } from "../src/shared/transcript";
 
 const turn = (status: TranscriptTurn["status"], queued?: boolean): TranscriptTurn => ({
   id: "t1",

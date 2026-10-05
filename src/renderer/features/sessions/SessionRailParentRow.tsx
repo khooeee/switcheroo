@@ -2,12 +2,14 @@ import type {
   DragEvent as ReactDragEvent,
   MouseEvent as ReactMouseEvent,
 } from "react";
-import type { ActiveTabId, Session } from "../../../shared/types";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session } from "../../../shared/session";
 import { SessionRailLabel } from "./SessionRailLabel";
 import { SessionRailPinButton } from "./SessionRailPinButton";
 import { SessionRailRename } from "./SessionRailRename";
 import { requestPromptFocus } from "../shortcuts/paneFocus";
-import type { RenameTarget } from "./sessionRailTypes";
+import type { RenameTarget } from "./renameTarget";
+import "./sessionRailChevron.css";
 
 type Props = {
   session: Session;

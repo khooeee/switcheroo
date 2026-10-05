@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { SlashCommand } from "../../../shared/types";
+import type { SlashCommand } from "../../../shared/session";
 import "./slashCommandMenu.css";
 
 export function SlashCommandMenu({

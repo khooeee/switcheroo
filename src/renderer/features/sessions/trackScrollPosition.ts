@@ -1,12 +1,7 @@
-interface ScrollPosition {
+/** Saved scroll intent for one transcript: offset, or stuck to the bottom. */
+export interface ScrollPosition {
   top: number;
   pinned: boolean;
-}
-
-export function pinScrollToBottom(element: HTMLElement, position: ScrollPosition): void {
-  position.pinned = true;
-  element.scrollTop = element.scrollHeight;
-  position.top = element.scrollTop;
 }
 
 export function trackScrollPosition(element: HTMLElement, position: ScrollPosition): () => void {

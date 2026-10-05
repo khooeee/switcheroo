@@ -1,7 +1,8 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { shell } from "electron";
-import { SWITCHBOARD_ID, defaultAppSettings } from "../shared/types";
+import { defaultAppSettings } from "../shared/defaultAppSettings";
+import { SWITCHBOARD_ID } from "../shared/switchboardId";
 import { statePath } from "./userDataPaths";
 
 const EMPTY_STATE = JSON.stringify(

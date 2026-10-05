@@ -1,4 +1,4 @@
-import type { TranscriptTurn } from "../shared/types";
+import type { TranscriptTurn } from "../shared/transcript";
 
 /** After restart, in-flight turns cannot resume — mark them stopped. */
 export function finalizeStalledTurns<T extends TranscriptTurn>(turns: T[]): T[] {

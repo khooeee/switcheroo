@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { TranscriptItem, TranscriptTurn } from "../shared/types";
+import type { TranscriptItem, TranscriptTurn } from "../shared/transcript";
 import { encodeJsonl } from "./encodeJsonl";
 import { parseJsonl } from "./parseJsonl";
 import { sessionDir, sessionTranscriptPath } from "./userDataPaths";

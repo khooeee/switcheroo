@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { ActiveTabId, Session } from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
-import type { MenuState, RenameTarget } from "./sessionRailTypes";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session } from "../../../shared/session";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
+import type { MenuState } from "./railMenuState";
+import type { RenameTarget } from "./renameTarget";
 
 /** Context menus, rename target, and window-event wiring for the session rail. */
 export function useSessionRailMenus(

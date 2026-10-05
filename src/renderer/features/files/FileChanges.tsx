@@ -1,4 +1,4 @@
-import type { FileChange } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
 import { CompactFileChanges } from "./CompactFileChanges";
 import { DetailedFileChanges } from "./DetailedFileChanges";
 import "./fileChanges.css";

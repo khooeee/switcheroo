@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { CursorAskQuestionRequest } from "../../shared/types";
+import type { CursorAskQuestionRequest } from "../../shared/agentRequests";
 
 type Outcome = Record<string, unknown>;
 

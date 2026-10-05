@@ -1,4 +1,6 @@
-import type { AgentKind, Session, TranscriptTurn } from "../shared/types";
+import type { AgentKind } from "../shared/agentKind";
+import type { Session } from "../shared/session";
+import type { TranscriptTurn } from "../shared/transcript";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";

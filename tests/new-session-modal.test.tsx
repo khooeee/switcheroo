@@ -1,6 +1,6 @@
 import { test, expect, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { AgentKind } from "../src/shared/types";
+import type { AgentKind } from "../src/shared/agentKind";
 
 const mocks = vi.hoisted(() => ({
   available: null as AgentKind[] | null,

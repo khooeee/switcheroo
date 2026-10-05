@@ -6,7 +6,7 @@ import { diffLines } from "../src/renderer/features/files/diffLines";
 import { FileChanges } from "../src/renderer/features/files/FileChanges";
 import { coalesceFileChanges } from "../src/renderer/features/files/coalesceFileChanges";
 import { FileDiff } from "../src/renderer/features/files/FileDiff";
-import type { TranscriptItem } from "../src/shared/types";
+import type { TranscriptItem } from "../src/shared/transcript";
 
 test("partial tool updates retain file content across updates", () => {
   const transcript = new Map<string, TranscriptItem>();

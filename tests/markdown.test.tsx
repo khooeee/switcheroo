@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MarkdownBody } from "../src/renderer/features/markdown/MarkdownBody";
 import { GithubMarkdown } from "../src/renderer/features/files/GithubMarkdown";
 import { SwitchboardFeed } from "../src/renderer/features/switchboard/SwitchboardFeed";
-import { isMarkdownFile, markdownPreviewText } from "../src/renderer/features/files/isMarkdownFile";
+import { isMarkdownFile } from "../src/renderer/features/files/isMarkdownFile";
+import { markdownPreviewText } from "../src/renderer/features/files/markdownPreviewText";
 
 const opened: string[] = [];
 

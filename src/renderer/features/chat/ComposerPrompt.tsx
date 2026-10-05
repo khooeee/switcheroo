@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent, type RefObject } from "react";
-import type { SlashCommand } from "../../../shared/types";
+import type { SlashCommand } from "../../../shared/session";
 import { filterSlashCommands } from "./filterSlashCommands";
 import { onComposerContextMenu } from "./onComposerContextMenu";
 import { SlashCommandMenu } from "./SlashCommandMenu";

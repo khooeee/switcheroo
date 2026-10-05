@@ -1,7 +1,7 @@
 import { accessSync, constants, existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { AgentKind } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
 import { agentSearchPath } from "./agentSearchPath";
 import { AGENT_PRESETS } from "./presets";
 

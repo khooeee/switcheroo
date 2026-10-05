@@ -1,0 +1,45 @@
+.rail-group {
+  width: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.rail-group .rail-session {
+  width: 100%;
+}
+
+.rail-session.rail-child {
+  margin-left: var(--rail-child-indent);
+  width: calc(100% - var(--rail-child-indent));
+}
+
+.rail-session.dragging {
+  opacity: 0.45;
+}
+
+.rail-session.rail-drop-parent {
+  border-color: var(--accent);
+}
+
+.rail-session.rail-child.drop-line-before::before,
+.rail-session.rail-child.drop-line-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 1px;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rail-session.rail-child.drop-line-before::before {
+  top: -3px;
+}
+
+.rail-session.rail-child.drop-line-after::after {
+  bottom: -3px;
+}

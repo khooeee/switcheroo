@@ -1,5 +1,6 @@
 import { test, expect } from "vitest";
-import { findInSessionSources, matchSnippet } from "../src/main/findInSessionSources";
+import { findInSessionSources } from "../src/main/findInSessionSources";
+import { matchSnippet } from "../src/main/matchSnippet";
 import { groupFindHits } from "../src/renderer/features/find/groupFindHits";
 
 function turn(id: string, userText: string, assistantText: string | null, at: number) {

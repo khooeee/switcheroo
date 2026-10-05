@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import type {
-  ActiveTabId,
-  PermissionRequest,
-  Session,
-  SessionTab,
-  SwitchboardTurn,
-  TranscriptTurn,
-} from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
-import { findChildTab, sessionIdForTab } from "../../../shared/tabNav";
-import { seedComposerDraft } from "../chat/useComposerDraft";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { PermissionRequest } from "../../../shared/agentRequests";
+import type { Session, SessionTab } from "../../../shared/session";
+import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
+import type { TranscriptTurn } from "../../../shared/transcript";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
+import { findChildTab } from "../../../shared/tabNav/findChildTab";
+import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
+import { seedComposerDraft } from "../chat/seedComposerDraft";
 import { flatRailSessions } from "./flatRailSessions";
+import { shareById } from "./shareById";
+import { shareTurn } from "./shareTurn";
+import { upsertTurn } from "./upsertTurn";
 
 /** IPC-backed session list, transcripts, switchboard, and permission state. */
 export function useAppSessionState() {
@@ -43,19 +44,14 @@ export function useAppSessionState() {
 
     const unsubs = [
       window.switcheroo.onSessionsChanged(({ pinned: p, unpinned: u, activeTabId: a }) => {
-        setPinnedSessions(p);
-        setUnpinnedSessions(u);
+        setPinnedSessions((prev) => shareById(prev, p));
+        setUnpinnedSessions((prev) => shareById(prev, u));
         setActiveTabId(a);
       }),
       window.switcheroo.onSwitchboardTurn((turn) => {
         setSwitchboardTurns((prev) => {
-          const idx = prev.findIndex((entry) => entry.id === turn.id);
-          if (idx >= 0) {
-            const next = prev.slice();
-            next[idx] = turn;
-            return next;
-          }
-          return [...prev, turn].slice(-2000);
+          const next = upsertTurn(prev, turn);
+          return next.length > prev.length ? next.slice(-2000) : next;
         });
       }),
       window.switcheroo.onSwitchboardTurns((turns) => setSwitchboardTurns(turns)),
@@ -66,11 +62,9 @@ export function useAppSessionState() {
       }),
       window.switcheroo.onTranscript(({ sessionId, turn }) => {
         setTranscripts((prev) => {
-          const list = [...(prev[sessionId] ?? [])];
-          const idx = list.findIndex((entry) => entry.id === turn.id);
-          if (idx >= 0) list[idx] = turn;
-          else list.push(turn);
-          return { ...prev, [sessionId]: list };
+          const list = prev[sessionId] ?? [];
+          const next = upsertTurn(list, turn);
+          return next === list ? prev : { ...prev, [sessionId]: next };
         });
       }),
       window.switcheroo.onTranscriptReset(({ sessionId, turns, draft }) => {
@@ -117,7 +111,11 @@ export function useAppSessionState() {
     let cancelled = false;
     void window.switcheroo.getTranscript(parentId).then((turns) => {
       if (cancelled) return;
-      setTranscripts((prev) => ({ ...prev, [parentId]: turns }));
+      setTranscripts((prev) => {
+        const list = prev[parentId];
+        const next = list ? shareById(list, turns, shareTurn) : turns;
+        return next === list ? prev : { ...prev, [parentId]: next };
+      });
     });
     return () => {
       cancelled = true;

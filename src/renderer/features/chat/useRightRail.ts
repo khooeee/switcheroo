@@ -1,28 +1,23 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type {
-  ActiveSessionId,
-  Session,
-  SwitchboardTurn,
-  TranscriptTurn,
-} from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ActiveSessionId } from "../../../shared/activeTabId";
+import type { Session } from "../../../shared/session";
+import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
+import type { TranscriptTurn } from "../../../shared/transcript";
+import { nextRightRailSelection, type RightRailSelection } from "./nextRightRailSelection";
+import { resolveRightRailView } from "./resolveRightRailView";
 
-export type RightRailSelection = {
-  sessionId: string;
-  turnId: string;
-  focusEventId?: string;
-  focusKey: number;
-};
-
-export type RightRailView = {
-  turn: TranscriptTurn;
-  sessionId: string;
-  session: Session | undefined;
-  agent: string;
-  cwd?: string;
-  focusEventId?: string;
-  focusKey: number;
-};
+function isSameSelection(
+  prev: RightRailSelection | null,
+  sessionId: string,
+  turnId: string,
+  focusEventId?: string,
+): boolean {
+  return (
+    prev?.sessionId === sessionId &&
+    prev.turnId === turnId &&
+    prev.focusEventId === focusEventId
+  );
+}
 
 /** Selection + resolved turn for the events right rail. */
 export function useRightRail({
@@ -39,108 +34,60 @@ export function useRightRail({
   openSessions: Session[];
 }) {
   const [rightRail, setRightRail] = useState<RightRailSelection | null>(null);
+  // Callbacks read these through refs/ids so they stay stable while turns stream
+  // (memoized transcript and Switchboard rows receive them as props).
+  const sessionId = activeSession?.id;
+  const switchboardTurnsRef = useRef(switchboardTurns);
+  switchboardTurnsRef.current = switchboardTurns;
 
   const closeRightRail = useCallback(() => setRightRail(null), []);
-
-  const nextSelection = useCallback(
-    (
-      prev: RightRailSelection | null,
-      sessionId: string,
-      turnId: string,
-      focusEventId?: string,
-    ): RightRailSelection => ({
-      sessionId,
-      turnId,
-      focusEventId,
-      focusKey: (prev?.focusKey ?? 0) + 1,
-    }),
-    [],
-  );
 
   /** Toggle closed when activating the same message again; otherwise open / switch highlight. */
   const toggleSessionRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
-      if (!activeSession) return;
-      setRightRail((prev) => {
-        if (
-          prev?.sessionId === activeSession.id &&
-          prev.turnId === turnId &&
-          prev.focusEventId === focusEventId
-        ) {
-          return null;
-        }
-        return nextSelection(prev, activeSession.id, turnId, focusEventId);
-      });
+      if (!sessionId) return;
+      setRightRail((prev) =>
+        isSameSelection(prev, sessionId, turnId, focusEventId)
+          ? null
+          : nextRightRailSelection(prev, sessionId, turnId, focusEventId),
+      );
     },
-    [activeSession, nextSelection],
+    [sessionId],
   );
 
   const forceSessionRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
-      if (!activeSession) return;
-      setRightRail((prev) =>
-        nextSelection(prev, activeSession.id, turnId, focusEventId),
-      );
+      if (!sessionId) return;
+      setRightRail((prev) => nextRightRailSelection(prev, sessionId, turnId, focusEventId));
     },
-    [activeSession, nextSelection],
+    [sessionId],
   );
 
   const toggleSwitchboardRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
-      const turn = switchboardTurns.find((entry) => entry.id === turnId);
+      const turn = switchboardTurnsRef.current.find((entry) => entry.id === turnId);
       if (!turn) return;
-      setRightRail((prev) => {
-        if (
-          prev?.sessionId === turn.sessionId &&
-          prev.turnId === turnId &&
-          prev.focusEventId === focusEventId
-        ) {
-          return null;
-        }
-        return nextSelection(prev, turn.sessionId, turnId, focusEventId);
-      });
+      setRightRail((prev) =>
+        isSameSelection(prev, turn.sessionId, turnId, focusEventId)
+          ? null
+          : nextRightRailSelection(prev, turn.sessionId, turnId, focusEventId),
+      );
     },
-    [switchboardTurns, nextSelection],
+    [],
   );
 
-  const rightRailView = useMemo((): RightRailView | null => {
-    if (!rightRail) return null;
-    if (activeSessionId === SWITCHBOARD_ID) {
-      const turn = switchboardTurns.find((entry) => entry.id === rightRail.turnId);
-      if (!turn) return null;
-      const session = openSessions.find((entry) => entry.id === turn.sessionId);
-      return {
-        turn,
-        sessionId: turn.sessionId,
-        session,
-        agent: turn.agent,
-        cwd: session?.cwd,
-        focusEventId: rightRail.focusEventId,
-        focusKey: rightRail.focusKey,
-      };
-    }
-    if (rightRail.sessionId !== activeSessionId) return null;
-    const turn = (transcripts[rightRail.sessionId] ?? []).find(
-      (entry) => entry.id === rightRail.turnId,
-    );
-    if (!turn || !activeSession) return null;
-    return {
-      turn,
-      sessionId: activeSession.id,
-      session: activeSession,
-      agent: activeSession.agent,
-      cwd: activeSession.cwd,
-      focusEventId: rightRail.focusEventId,
-      focusKey: rightRail.focusKey,
-    };
-  }, [
-    rightRail,
-    activeSessionId,
-    switchboardTurns,
-    openSessions,
-    transcripts,
-    activeSession,
-  ]);
+  const rightRailView = useMemo(
+    () =>
+      resolveRightRailView({
+        selection: rightRail,
+        activeSessionId,
+        activeSession,
+        transcripts,
+        switchboardTurns,
+        openSessions,
+      }),
+    [rightRail, activeSessionId, switchboardTurns, openSessions, transcripts, activeSession],
+  );
 
   useEffect(() => {
     if (rightRail && !rightRailView) setRightRail(null);

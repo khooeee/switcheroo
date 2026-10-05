@@ -1,36 +1,28 @@
-import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import * as acp from "@agentclientprotocol/sdk";
-import type { AgentKind, TranscriptItem, TranscriptTurn } from "../../shared/types";
+import type { AgentKind } from "../../shared/agentKind";
+import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
-import { PromptCompletion } from "./PromptCompletion";
-import { PromptQueue } from "./PromptQueue";
-import { PromptDelivery } from "./PromptDelivery";
-import { autoApprovePermission } from "./autoApprovePermission";
+import { PromptRunner } from "./PromptRunner";
+import { answerPermission } from "./answerPermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
 import type { AirForkPoint } from "./airForkPoint";
-import { formatAgentError } from "../../shared/formatAgentError";
-import { registerSessionRoute, unregisterSessionRoute, sessionForUpdate } from "./sessionRoutes";
+import { sessionRoutes } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
 import { connectAcpAgent } from "./connectAcpAgent";
 import { attachAcpSession } from "./attachAcpSession";
+import { dispatchSessionUpdate } from "./dispatchSessionUpdate";
+import { SharedAgentConnection } from "./SharedAgentConnection";
 
-export class AcpSession {
+export class AcpSession extends SharedAgentConnection {
   id: string;
   readonly agent: AgentKind;
   readonly cwd: string;
   sessionId: string | null = null;
 
-  private proc: ChildProcessWithoutNullStreams | null = null;
-  private connection: acp.ClientConnection | null = null;
-  private connectionOwner: AcpSession | null = null;
-  private connectionUsers = 1;
-  private turnRunning = false;
-  private stopRequested = false;
-  private remoteTurnActive: boolean | null = null;
   private canLoad = false;
   private canResume = false;
   private initializationMeta: unknown;
@@ -39,38 +31,11 @@ export class AcpSession {
   private files: SessionFiles;
   private output: SessionOutput;
   private turns: TurnBuilder;
+  private runner: PromptRunner;
   private disposed = false;
   /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
   private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
-  private completion = new PromptCompletion(() => {
-    this.turns.complete();
-    this.cb.onPromptComplete();
-  });
-  private prompts = new PromptQueue(
-    (text) => this.runPrompt(text),
-    {
-      onWaiting: (id) => this.turns.setQueued(id, true),
-      onReleased: (id) => this.turns.activate(id),
-      onDiscarded: (id) => {
-        const removed = this.turns.discard(id);
-        if (removed) this.cb.onTurnRemoved?.(removed.id);
-      },
-    },
-  );
-  private delivery = new PromptDelivery({
-    isRunning: () => this.turnRunning,
-    prompt: (text, id) => this.prompts.send(text, id),
-    steer: (text) => {
-      if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session closed");
-      return this.connection.agent.request("_session/steering", {
-        sessionId: this.sessionId,
-        prompt: [{ type: "text", text }],
-        _meta: { steering: { idleBehavior: "promptRequired" } },
-      });
-    },
-    onSupport: (supported) => this.cb.onSteeringSupport(supported),
-  });
 
   constructor(
     id: string,
@@ -78,6 +43,7 @@ export class AcpSession {
     cwd: string,
     cb: SessionCallbacks,
   ) {
+    super();
     this.id = id;
     this.agent = agent;
     this.cwd = cwd;
@@ -97,13 +63,22 @@ export class AcpSession {
       if (!this.mirrorUpdates) return;
       this.turns.apply(item, replaceId);
     });
-  }
-
-  /** Fork siblings share one agent process; warm-pool sessions must not steal updates. */
-  isSameAgentConnection(other: AcpSession): boolean {
-    const self = this.connectionOwner ?? this;
-    const peer = other.connectionOwner ?? other;
-    return self === peer;
+    this.runner = new PromptRunner({
+      turns: this.turns,
+      output: this.output,
+      questions: this.questions,
+      callbacks: () => this.cb,
+      connection: () => this.connection,
+      sessionId: () => this.sessionId,
+      isDisposed: () => this.disposed,
+      showUpdates: () => { this.mirrorUpdates = true; },
+      renewSession: async () => {
+        this.clearSessionId();
+        await this.createAgentSession();
+      },
+      finishPending: (status) => this.finishPending(status),
+      noteSystem: (text) => this.noteSystem(text),
+    });
   }
 
   /** Replace in-memory turns after hydrate/fork (does not emit). */
@@ -123,18 +98,19 @@ export class AcpSession {
   }
 
   start(options?: { quiet?: boolean }): Promise<void> {
-    if (this.sessionId) return Promise.resolve();
-    if (!this.starting) {
-      this.starting = this.startSession(options).finally(() => { this.starting = null; });
-    }
-    return this.starting;
+    return this.startOnce(() => this.startSession(options));
   }
 
   /** Reopen a persisted session via resume, then load. */
   attachExisting(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
+    return this.startOnce(() => this.attachSession(sessionId, options));
+  }
+
+  /** Concurrent start/attach calls share one in-flight connect. */
+  private startOnce(run: () => Promise<void>): Promise<void> {
     if (this.sessionId) return Promise.resolve();
     if (!this.starting) {
-      this.starting = this.attachSession(sessionId, options).finally(() => { this.starting = null; });
+      this.starting = run().finally(() => { this.starting = null; });
     }
     return this.starting;
   }
@@ -152,8 +128,7 @@ export class AcpSession {
       mcpServers: [],
     });
     this.setSessionId(session.sessionId);
-    this.turnRunning = false;
-    this.remoteTurnActive = null;
+    this.runner.markIdle();
     this.cb.onStatus("ready");
   }
 
@@ -166,8 +141,7 @@ export class AcpSession {
       cwd: this.cwd,
       turnCount: () => this.turns.list().length,
       setMirrorUpdates: (value) => { this.mirrorUpdates = value; },
-      setTurnRunning: (value) => { this.turnRunning = value; },
-      setRemoteTurnActive: (value) => { this.remoteTurnActive = value; },
+      markIdle: () => this.runner.markIdle(),
       setSessionId: (id) => this.setSessionId(id),
       clearSessionId: () => this.clearSessionId(),
       resetOutput: () => this.output.reset(),
@@ -190,15 +164,11 @@ export class AcpSession {
     forkPoint?: AirForkPoint,
   ): Promise<AcpSession> {
     const forkedId = await this.fork(forkPoint);
-    const owner = this.connectionOwner ?? this;
     const child = new AcpSession(id, this.agent, this.cwd, cb);
-    child.connection = this.connection;
-    child.proc = null;
-    child.connectionOwner = owner;
-    owner.connectionUsers += 1;
+    this.shareConnectionWith(child);
     child.setSessionId(forkedId);
     child.initializationMeta = this.initializationMeta;
-    child.delivery.configure(this.initializationMeta);
+    child.runner.configureDelivery(this.initializationMeta);
     try {
       // Fork only allocates a session id. Codex and Claude need resume before
       // prompts/updates work on the forked id.
@@ -224,11 +194,11 @@ export class AcpSession {
   private setSessionId(sessionId: string): void {
     this.clearSessionId();
     this.sessionId = sessionId;
-    registerSessionRoute(sessionId, this);
+    sessionRoutes.register(sessionId, this);
   }
 
   private clearSessionId(): void {
-    unregisterSessionRoute(this.sessionId);
+    sessionRoutes.unregister(this.sessionId);
     this.sessionId = null;
   }
 
@@ -242,17 +212,21 @@ export class AcpSession {
         if (status === "connecting") this.cb.onStatus("connecting");
         else this.cb.onStatus("error", message);
       },
-      onPermission: (params) => this.handlePermission(params),
+      onPermission: async (params) => {
+        const { note, response } = answerPermission(params);
+        this.noteSystem(note);
+        return response;
+      },
       onReadFile: (params) => this.files.read(params),
       onWriteFile: (params) => this.files.write(params),
       onAskQuestion: async (params, signal) => {
-        if (this.disposed || this.stopRequested) return { outcome: "cancelled" };
+        if (this.disposed || this.runner.stopRequested) return { outcome: "cancelled" };
         this.noteSystem("Question from agent");
         return this.questions.request(params, signal);
       },
       onTodosUpdated: () => this.noteSystem("Todos updated"),
       onSessionUpdate: (sessionId, update) => {
-        const target = sessionForUpdate(sessionId, this);
+        const target = sessionRoutes.forUpdate(sessionId, this);
         if (target.disposed) return;
         target.handleSessionUpdate(update);
       },
@@ -266,7 +240,7 @@ export class AcpSession {
         if (!this.disposed) this.cb.onStatus("error", "Agent connection closed");
       },
       onForkSupport: (supported) => this.cb.onForkSupport(supported),
-      configureDelivery: (meta) => this.delivery.configure(meta),
+      configureDelivery: (meta) => this.runner.configureDelivery(meta),
     });
     this.proc = result.proc;
     this.connection = result.connection;
@@ -276,183 +250,25 @@ export class AcpSession {
   }
 
   private handleSessionUpdate(update: acp.SessionUpdate): void {
-    if (update.sessionUpdate === "available_commands_update") {
-      this.cb.onAvailableCommands(
-        update.availableCommands.map((command) => ({
-          name: command.name,
-          description: command.description,
-          hint: command.input && "hint" in command.input ? command.input.hint : undefined,
-        })),
-      );
-      return;
-    }
-    if (update.sessionUpdate === "usage_update") {
-      this.cb.onUsage({
-        used: update.used,
-        size: update.size,
-        cost: update.cost
-          ? { amount: update.cost.amount, currency: update.cost.currency }
-          : undefined,
-      });
-      return;
-    }
-    this.output.handleUpdate(update);
-    const codex = update._meta?.codex;
-    const status = codex && typeof codex === "object" && "threadStatus" in codex
-      ? codex.threadStatus : null;
-    if (status && typeof status === "object" && "type" in status) {
-      if (status.type === "active" || status.type === "idle" || status.type === "systemError") {
+    dispatchSessionUpdate(update, {
+      onAvailableCommands: (commands) => this.cb.onAvailableCommands(commands),
+      onUsage: (usage) => this.cb.onUsage(usage),
+      onOutput: (output) => this.output.handleUpdate(output),
+      onThreadStatus: (status) => {
         // Ignore live-status during load/resume replay — it would leave turnRunning
         // stuck true and the next user message would be sent as a steer.
-        if (!this.mirrorUpdates) return;
-        if (status.type !== "active") this.finishPending(status.type === "idle" ? "status unavailable" : "interrupted");
-        this.completion.status(status.type);
-        this.remoteTurnActive = status.type === "active";
-        this.turnRunning = this.remoteTurnActive;
-        this.cb.onStatus(status.type === "active" ? "running" : status.type === "idle" ? "ready" : "error");
-      }
-    }
-  }
-
-  /**
-   * Start a prompt. By default waits until the turn finishes.
-   * Pass `{ wait: false }` to return the turn id as soon as delivery is accepted.
-   */
-  async prompt(text: string, options?: { wait?: boolean }): Promise<string> {
-    if (!this.sessionId || this.disposed) throw new Error("Session not ready");
-    this.mirrorUpdates = true;
-    this.output.reset();
-    const userItem: TranscriptItem = {
-      id: randomUUID(),
-      role: "user",
-      text,
-      at: Date.now(),
-    };
-    // Decide steer vs prompt before opening a turn so an inject lands on the
-    // in-flight turn as an event instead of a sibling user-only turn.
-    // Prompt mode must NOT start the agent request until the turn exists —
-    // otherwise a fast end_turn drops every streamed chunk.
-    const decision = await this.delivery.enqueue(text, userItem.id);
-
-    let turnId: string;
-    let completion: Promise<void>;
-    if (decision.mode === "injected") {
-      // Start a fresh assistant bubble after the steer so chunks don't splice into pre-steer text.
-      this.output.reset();
-      this.turns.apply(userItem);
-      turnId = this.turns.activeTurnId() ?? userItem.id;
-      completion = decision.completion;
-    } else if (decision.mode === "startedNewTurn") {
-      const turn = this.turns.open(userItem);
-      turnId = turn.id;
-      this.completion.detached();
-      this.turns.activateLatestRunning();
-      if (this.remoteTurnActive !== false) {
-        this.turnRunning = true;
-        this.cb.onStatus("running");
-      }
-      completion = decision.completion;
-    } else {
-      const turn = this.turns.open(userItem);
-      turnId = turn.id;
-      completion = this.delivery.startPrompt(text, userItem.id);
-    }
-
-    const finished = completion.then(
-      () => {
-        if (decision.mode === "injected") return;
-        // Steering startedNewTurn finishes without runPrompt; prompt mode waits on the queue.
-        if (!this.turnRunning) this.turns.complete();
-        else this.turns.completeIfOrphan(userItem.id);
+        if (this.mirrorUpdates) this.runner.applyThreadStatus(status);
       },
-      (error) => {
-        // Errors must clear the thinking state even when PromptCompletion cancels.
-        this.turns.complete();
-        throw error;
-      },
-    );
-    if (options?.wait === false) {
-      void finished.catch(() => undefined);
-      return turnId;
-    }
-    await finished;
-    return turnId;
-  }
-
-  private async runPrompt(text: string): Promise<void> {
-    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
-    this.completion.start();
-    this.turnRunning = true;
-    this.remoteTurnActive = null;
-    this.stopRequested = false;
-    this.cb.onStatus("running");
-    this.output.reset();
-
-    try {
-      await this.requestPrompt(text);
-    } catch (err) {
-      const msg = formatAgentError(err);
-      if (!/session not found/i.test(msg) || this.disposed || !this.connection) {
-        this.failPrompt(msg);
-        throw err;
-      }
-      // Stale agent session after restart: mint a fresh one and retry once.
-      this.clearSessionId();
-      await this.createAgentSession();
-      this.mirrorUpdates = true;
-      this.turnRunning = true;
-      this.remoteTurnActive = null;
-      this.cb.onStatus("running");
-      try {
-        await this.requestPrompt(text);
-      } catch (retryErr) {
-        this.failPrompt(formatAgentError(retryErr));
-        throw retryErr;
-      }
-    }
-  }
-
-  private async requestPrompt(text: string): Promise<void> {
-    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready");
-    const response = await this.connection.agent.request(acp.methods.agent.session.prompt, {
-      sessionId: this.sessionId,
-      prompt: [{ type: "text", text }],
     });
-    if (this.remoteTurnActive !== true) this.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
-    this.completion.finish(response.stopReason);
-    if (this.remoteTurnActive !== true && !this.disposed) {
-      this.turnRunning = false;
-      this.cb.onStatus("ready");
-    }
   }
 
-  private failPrompt(msg: string): void {
-    this.finishPending("interrupted");
-    // finish("error") cancels PromptCompletion (no done-sound) — still end the turn.
-    this.completion.finish("error");
-    this.noteSystem(msg);
-    this.turns.complete();
-    if (this.remoteTurnActive !== true && !this.disposed) {
-      this.turnRunning = false;
-      this.cb.onStatus("error", msg);
-    }
+  /** Waits for the turn to finish unless `{ wait: false }`; returns the turn id. */
+  prompt(text: string, options?: { wait?: boolean }): Promise<string> {
+    return this.runner.prompt(text, options);
   }
 
-  async cancel(): Promise<void> {
-    this.prompts.clearPending();
-    if (!this.connection || !this.sessionId || !this.turnRunning || this.stopRequested || this.disposed) return;
-    this.stopRequested = true;
-    this.questions.cancel();
-    this.completion.cancel();
-    try {
-      await this.connection.agent.notify(acp.methods.agent.session.cancel, {
-        sessionId: this.sessionId,
-      });
-      this.turns.stop({ id: randomUUID(), role: "stopped", text: "Stopped", at: Date.now() });
-    } catch (error) {
-      this.stopRequested = false;
-      throw error;
-    }
+  cancel(): Promise<void> {
+    return this.runner.cancel();
   }
 
   respondPermission(_requestId: string, _optionId: string): void {
@@ -469,18 +285,6 @@ export class AcpSession {
     this.output.finish(status);
   }
 
-  private async handlePermission(
-    params: acp.RequestPermissionRequest,
-  ): Promise<acp.RequestPermissionResponse> {
-    const title = params.toolCall?.title ?? "Permission requested";
-    const optionId = autoApprovePermission(params.options ?? []);
-    this.noteSystem(optionId ? `Auto-approved: ${title}` : title);
-    if (!optionId) {
-      return { outcome: { outcome: "cancelled" } };
-    }
-    return { outcome: { outcome: "selected", optionId } };
-  }
-
   private noteSystem(text: string): void {
     if (this.disposed || !this.mirrorUpdates) return;
     this.turns.apply({ id: randomUUID(), role: "system", text, at: Date.now() });
@@ -489,18 +293,8 @@ export class AcpSession {
   async dispose(): Promise<void> {
     this.finishPending("interrupted");
     this.disposed = true;
-    this.completion.cancel();
-    this.prompts.dispose();
+    this.runner.dispose();
     this.clearSessionId();
-    const owner = this.connectionOwner ?? this;
-    owner.connectionUsers -= 1;
-    if (owner.connectionUsers <= 0) {
-      owner.connection?.close();
-      if (owner.proc && !owner.proc.killed) owner.proc.kill();
-      owner.proc = null;
-      owner.connection = null;
-    }
-    this.connection = null;
-    this.proc = null;
+    this.releaseConnection();
   }
 }

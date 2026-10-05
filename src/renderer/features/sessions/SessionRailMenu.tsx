@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { Session } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
 

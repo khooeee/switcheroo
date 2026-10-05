@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { SwitchboardTurn } from "../src/shared/types";
+import type { SwitchboardTurn } from "../src/shared/switchboardTurn";
 
 const electronState = vi.hoisted(() => ({
   userData: "" as string,

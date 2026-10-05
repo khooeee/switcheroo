@@ -1,7 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { randomBytes } from "node:crypto";
-import type { SessionManager } from "../sessions";
-import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlAuth";
+import type { SessionManager } from "../sessions/SessionManager";
+import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
 import { handleControlRequest } from "./controlRoutes";
 
 /** Localhost HTTP control plane for SessionManager (curl / scripts). */

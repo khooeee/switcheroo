@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import type { AgentKind } from "../../../shared/types";
+import type { AgentKind } from "../../../shared/agentKind";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";

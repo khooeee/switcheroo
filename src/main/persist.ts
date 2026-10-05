@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { PersistedState } from "../shared/types";
+import type { PersistedState } from "../shared/persistedState";
 import { statePath } from "./userDataPaths";
 
 let canPersist = true;

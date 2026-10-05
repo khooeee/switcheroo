@@ -1,11 +1,9 @@
 import { test, expect } from "vitest";
-import {
-  pinSessionInLists,
-  unpinSessionInLists,
-  prependUnpinnedInLists,
-  loadListsFromPersisted,
-  nextActiveAfterClose,
-} from "../src/main/sessionRailLists";
+import { pinSessionInLists } from "../src/main/railLists/pinSessionInLists";
+import { unpinSessionInLists } from "../src/main/railLists/unpinSessionInLists";
+import { prependUnpinnedInLists } from "../src/main/railLists/prependUnpinnedInLists";
+import { loadListsFromPersisted } from "../src/main/railLists/loadListsFromPersisted";
+import { nextActiveAfterClose } from "../src/main/railLists/nextActiveAfterClose";
 
 const base = { pinnedIds: ["p1", "p2"], unpinnedIds: ["u1", "u2", "u3"] };
 

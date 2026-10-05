@@ -1,4 +1,4 @@
-import type { FindInSessionsHit } from "../../../shared/types";
+import type { FindInSessionsHit } from "../../../shared/findInSessionsHit";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { boldQueryMatches } from "./boldQueryMatches";
 import type { useFindInHistorySearch } from "./useFindInHistorySearch";

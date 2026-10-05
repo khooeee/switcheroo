@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AgentKind } from "../shared/types";
-import { SWITCHBOARD_ID } from "../shared/types";
+import { useCallback, useMemo, useRef, useState } from "react";
+import type { AgentKind } from "../shared/agentKind";
+import type { TranscriptTurn } from "../shared/transcript";
+import { SWITCHBOARD_ID } from "../shared/switchboardId";
 import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
 import { SessionRail } from "./features/sessions/SessionRail";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
@@ -9,6 +10,7 @@ import { ChatPanel } from "./features/chat/ChatPanel";
 import { TerminalStack } from "./features/terminal/TerminalStack";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
+import { useTurnDetailsEvent } from "./features/chat/useTurnDetailsEvent";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
 import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
@@ -19,6 +21,9 @@ import { useSessionRailActions } from "./features/sessions/useSessionRailActions
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
+
+/** Stable fallback so memoized SessionTranscript does not re-render on a new `[]`. */
+const NO_TURNS: TranscriptTurn[] = [];
 
 export function App() {
   useCompletionSound();
@@ -84,19 +89,12 @@ export function App() {
     return [activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef];
   }, [activeTabId, findScope, rightRailView]);
 
-  useEffect(() => {
-    const onTurnDetails = (event: Event) => {
-      const detail = (event as CustomEvent<{ turnId: string; eventId: string }>).detail;
-      if (!detail?.turnId || !detail.eventId) return;
-      if (activeTabId === SWITCHBOARD_ID) {
-        toggleSwitchboardRightRail(detail.turnId, detail.eventId);
-      } else if (!activeTerminalTab) {
-        toggleSessionRightRail(detail.turnId, detail.eventId);
-      }
-    };
-    window.addEventListener("switcheroo:turn-details", onTurnDetails);
-    return () => window.removeEventListener("switcheroo:turn-details", onTurnDetails);
-  }, [activeTabId, activeTerminalTab, toggleSessionRightRail, toggleSwitchboardRightRail]);
+  useTurnDetailsEvent(
+    activeTabId,
+    activeTerminalTab,
+    toggleSessionRightRail,
+    toggleSwitchboardRightRail,
+  );
 
   const selectTab = useCallback((id: typeof activeTabId) => {
     void window.switcheroo.setActiveTab(id);
@@ -192,7 +190,7 @@ export function App() {
         ) : activeTerminalTab ? null : activeSession ? (
           <ChatPanel
             session={activeSession}
-            turns={transcripts[activeSession.id] ?? []}
+            turns={transcripts[activeSession.id] ?? NO_TURNS}
             focusEventId={focusEvent?.id ?? null}
             focusTurnId={focusEvent?.turnId ?? null}
             focusEventKey={focusEvent?.key ?? 0}

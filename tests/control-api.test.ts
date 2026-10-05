@@ -1,11 +1,12 @@
 import { test, expect } from "vitest";
 import { PassThrough } from "node:stream";
-import { controlCatalogJson, controlOpenApi } from "../src/main/control/controlCatalog";
-import { bearerAuthorized } from "../src/main/control/controlAuth";
+import { controlCatalogJson } from "../src/main/control/controlCatalogJson";
+import { controlOpenApi } from "../src/main/control/controlOpenApi";
+import { bearerAuthorized } from "../src/main/control/bearerAuthorized";
 import { controlBootstrapText } from "../src/main/acp/controlBootstrapPrompt";
 import { applyTranscriptQuery } from "../src/main/control/transcriptQuery";
 import { handleControlRequest } from "../src/main/control/controlRoutes";
-import type { SessionManager } from "../src/main/sessions";
+import type { SessionManager } from "../src/main/sessions/SessionManager";
 
 test("catalog includes core session routes without blocking wait", () => {
   const catalog = controlCatalogJson("http://127.0.0.1:9/", "hint");

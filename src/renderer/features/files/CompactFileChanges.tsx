@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
-import type { FileChange } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
 import { coalesceFileChanges } from "./coalesceFileChanges";
 import { FileDiff } from "./FileDiff";
-import { markdownPreviewText } from "./isMarkdownFile";
+import { markdownPreviewText } from "./markdownPreviewText";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 import { relativeChangePath } from "./relativeChangePath";
 

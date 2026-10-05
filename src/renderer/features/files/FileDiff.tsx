@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import type { FileChange } from "../../../shared/types";
+import type { FileChange } from "../../../shared/fileChange";
 import { FileDiffFrame } from "./FileDiffFrame";
 import { diffLines } from "./diffLines";
-import { markdownPreviewText } from "./isMarkdownFile";
+import { markdownPreviewText } from "./markdownPreviewText";
 
 export function FileDiff({
   change,

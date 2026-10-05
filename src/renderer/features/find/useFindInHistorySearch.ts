@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FindInSessionsHit } from "../../../shared/types";
+import type { FindInSessionsHit } from "../../../shared/findInSessionsHit";
 import { groupFindHits } from "./groupFindHits";
 
 /** Search state for Find in History; survives modal close while the hook stays mounted. */

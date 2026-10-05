@@ -1,4 +1,4 @@
-import type { TranscriptTurn } from "../../shared/types";
+import type { TranscriptTurn } from "../../shared/transcript";
 
 /** `?last=N` keeps the newest N turns. */
 export function applyTranscriptQuery(

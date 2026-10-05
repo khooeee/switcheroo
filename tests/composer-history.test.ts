@@ -1,9 +1,7 @@
 import { test, expect } from "vitest";
-import {
-  applyComposerHistoryEdit,
-  applyComposerHistoryKey,
-  emptyComposerHistory,
-} from "../src/renderer/features/chat/composerHistory";
+import { applyComposerHistoryEdit } from "../src/renderer/features/chat/applyComposerHistoryEdit";
+import { applyComposerHistoryKey } from "../src/renderer/features/chat/applyComposerHistoryKey";
+import { emptyComposerHistory } from "../src/renderer/features/chat/composerHistoryState";
 import { userPromptHistory } from "../src/renderer/features/chat/userPromptHistory";
 
 function plain<T>(value: T): T {

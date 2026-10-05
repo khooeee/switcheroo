@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { FindInSessionsHit } from "../../../shared/types";
+import type { FindInSessionsHit } from "../../../shared/findInSessionsHit";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { FindInHistoryResults } from "./FindInHistoryResults";
 import { useFindInHistorySearch } from "./useFindInHistorySearch";

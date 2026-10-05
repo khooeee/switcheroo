@@ -1,9 +1,11 @@
 import { memo, type RefObject, useEffect } from "react";
-import type { Session, TranscriptTurn } from "../../../shared/types";
+import type { Session } from "../../../shared/session";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
+import { useMessageSession } from "./useMessageSession";
 
 export const SessionTranscript = memo(function SessionTranscript({
   session,
@@ -26,6 +28,8 @@ export const SessionTranscript = memo(function SessionTranscript({
   onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
 }) {
+  const messageSession = useMessageSession(session);
+
   useEffect(() => {
     if (focusTurnId) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
   }, [focusTurnId, focusEventId, focusEventKey, onForceOpenRightRail]);
@@ -44,7 +48,7 @@ export const SessionTranscript = memo(function SessionTranscript({
           {turns.map((turn) => (
             <SessionTurn
               key={turn.id}
-              session={session}
+              session={messageSession}
               turn={turn}
               onOpenRightRail={onOpenRightRail}
             />

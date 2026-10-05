@@ -1,13 +1,14 @@
 import { memo, useCallback } from "react";
-import type { Session, TranscriptItem } from "../../../shared/types";
+import type { TranscriptItem } from "../../../shared/transcript";
 import { TranscriptMessage } from "./TranscriptMessage";
+import type { MessageSession } from "./useMessageSession";
 
 export const TurnEvents = memo(function TurnEvents({
   session,
   events,
   onActivate,
 }: {
-  session: Session;
+  session: MessageSession;
   events: TranscriptItem[];
   onActivate?: (eventId: string) => void;
 }) {
@@ -32,7 +33,7 @@ const TurnEventMessage = memo(function TurnEventMessage({
   item,
   onActivate,
 }: {
-  session: Session;
+  session: MessageSession;
   item: TranscriptItem;
   onActivate?: (eventId: string) => void;
 }) {

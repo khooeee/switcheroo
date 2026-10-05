@@ -1,10 +1,11 @@
 import { useMemo, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import { createPortal } from "react-dom";
-import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session, SessionTab } from "../../../shared/session";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 import { SettingsMenu } from "../settings/SettingsMenu";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
-import { groupMatchesFilter } from "../../../shared/tabNav";
+import { groupMatchesFilter } from "../../../shared/tabNav/groupMatchesFilter";
 import { confirmCloseSession } from "./confirmCloseSession";
 import { flatRailSessions } from "./flatRailSessions";
 import { SessionRailChildMenu } from "./SessionRailChildMenu";
@@ -17,6 +18,7 @@ import { useSessionRailDnD } from "./useSessionRailDnD";
 import { useSessionRailMenus } from "./useSessionRailMenus";
 import { useSessionUnreadDots } from "./useSessionUnreadDots";
 import "./sessionRail.css";
+import "./sessionRailRow.css";
 import "./sessionSpinner.css";
 import "./sessionRailPin.css";
 

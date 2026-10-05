@@ -8,8 +8,8 @@ type AttachHost = {
   cwd: string;
   turnCount: () => number;
   setMirrorUpdates: (value: boolean) => void;
-  setTurnRunning: (value: boolean) => void;
-  setRemoteTurnActive: (value: boolean | null) => void;
+  /** No turn running; remote turn status unknown. */
+  markIdle: () => void;
   setSessionId: (sessionId: string) => void;
   clearSessionId: () => void;
   resetOutput: () => void;
@@ -46,8 +46,7 @@ export async function attachAcpSession(
       // load/resume often replays history as session updates — keep those off the
       // transcript until the next prompt (replay can arrive after the RPC returns).
       host.setMirrorUpdates(false);
-      host.setTurnRunning(false);
-      host.setRemoteTurnActive(null);
+      host.markIdle();
       const response = await host.connection.agent.request(method, params) as {
         sessionId?: string;
       } | void;
@@ -57,15 +56,13 @@ export async function attachAcpSession(
           : sessionId;
       host.setSessionId(resumedId);
       // Replay may have flipped turnRunning via status updates; we are idle until the next prompt.
-      host.setTurnRunning(false);
-      host.setRemoteTurnActive(null);
+      host.markIdle();
       host.resetOutput();
       host.onReady();
       return;
     } catch (err) {
       host.clearSessionId();
-      host.setTurnRunning(false);
-      host.setRemoteTurnActive(null);
+      host.markIdle();
       errors.push(formatAgentError(err));
     }
   }

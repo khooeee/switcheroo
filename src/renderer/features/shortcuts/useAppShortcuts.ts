@@ -1,19 +1,17 @@
 import { useEffect, useRef } from "react";
-import type { ActiveTabId, Session, SessionTab } from "../../../shared/types";
-import { SWITCHBOARD_ID } from "../../../shared/types";
-import { findChildTab, sessionIdForTab } from "../../../shared/tabNav";
-import { isComposerDraftEmpty } from "../chat/useComposerDraft";
+import type { ActiveTabId } from "../../../shared/activeTabId";
+import type { Session, SessionTab } from "../../../shared/session";
+import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
+import { findChildTab } from "../../../shared/tabNav/findChildTab";
+import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
+import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
 import { confirmCloseSession } from "../sessions/confirmCloseSession";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
+import { modKey } from "./modKey";
+import { useEscapeShortcut } from "./useEscapeShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
-
-function modKey(event: KeyboardEvent, key: string, shift = false): boolean {
-  if (!(event.metaKey || event.ctrlKey) || (event.metaKey && event.ctrlKey)) return false;
-  if (event.altKey || event.shiftKey !== shift) return false;
-  return event.key.toLowerCase() === key;
-}
 
 /** Window-level shortcuts: find, sessions, pin, focus, rename, fork, unread, stop, close, zen, Escape. */
 export function useAppShortcuts({
@@ -234,30 +232,7 @@ export function useAppShortcuts({
     };
   }, [setFindOpen, setFindQuery, setShowFindInSessions, setShowNewSession]);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
-      if (event.key !== "Escape") return;
-      if (event.defaultPrevented || event.repeat || event.isComposing || blocked) return;
-      if (document.querySelector('[role="menu"]')) return;
-      if (findOpen) {
-        setFindOpen(false);
-        setFindQuery("");
-        return;
-      }
-      if (!activeTerminalTab && activeSession?.status === "running") {
-        event.preventDefault();
-        void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
-        return;
-      }
-      if (rightRailOpen) {
-        event.preventDefault();
-        onCloseRightRail();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [
+  useEscapeShortcut({
     activeSession,
     activeTerminalTab,
     blocked,
@@ -266,7 +241,7 @@ export function useAppShortcuts({
     setFindOpen,
     setFindQuery,
     onCloseRightRail,
-  ]);
+  });
 
   return promptFocus;
 }

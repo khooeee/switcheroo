@@ -1,9 +1,7 @@
 import * as os from "node:os";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { spawn as ptySpawn, type IPty } from "node-pty";
-
-const execFileAsync = promisify(execFile);
+import { cwdFromOsc7 } from "./cwdFromOsc7";
+import { cwdFromPid } from "./cwdFromPid";
 
 type DataListener = (tabId: string, data: string) => void;
 type ExitListener = (tabId: string) => void;
@@ -13,9 +11,6 @@ interface HostedPty {
   pty: IPty;
   cwd: string;
 }
-
-const OSC7_RE = /\x1b\]7;file:\/\/[^\x07\x1b]*?(\/[^\x07\x1b]*)\x07/g;
-const OSC7_ST_RE = /\x1b\]7;file:\/\/[^\x1b]*?(\/[^\x1b]*)\x1b\\/g;
 
 /** Main-process PTY map keyed by terminal tabId. Lazy spawn; never remount on drag. */
 export class TerminalHost {
@@ -147,34 +142,4 @@ function defaultShell(): string {
     return process.env.COMSPEC || "powershell.exe";
   }
   return process.env.SHELL || "/bin/zsh";
-}
-
-function cwdFromOsc7(data: string): string | null {
-  let last: string | null = null;
-  for (const re of [OSC7_RE, OSC7_ST_RE]) {
-    re.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = re.exec(data))) {
-      try {
-        last = decodeURIComponent(match[1] ?? "");
-      } catch {
-        last = match[1] ?? null;
-      }
-    }
-  }
-  return last;
-}
-
-async function cwdFromPid(pid: number): Promise<string | null> {
-  if (!Number.isFinite(pid) || pid <= 0) return null;
-  try {
-    if (process.platform === "darwin" || process.platform === "linux") {
-      const { stdout } = await execFileAsync("lsof", ["-a", "-p", String(pid), "-d", "cwd", "-Fn"]);
-      const line = stdout.split("\n").find((entry) => entry.startsWith("n"));
-      if (line && line.length > 1) return line.slice(1);
-    }
-  } catch {
-    return null;
-  }
-  return null;
 }

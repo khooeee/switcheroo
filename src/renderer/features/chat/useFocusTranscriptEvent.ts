@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { TranscriptTurn } from "../../../shared/types";
+import type { TranscriptTurn } from "../../../shared/transcript";
 import { flashEventElement } from "./flashEventElement";
 
 /** Scroll to and flash a transcript event (prefers the right rail when open). */

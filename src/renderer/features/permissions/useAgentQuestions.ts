@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CursorAskQuestionRequest } from "../../../shared/types";
+import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 
 export function useAgentQuestions(sessionId: string): CursorAskQuestionRequest | null {
   const [questions, setQuestions] = useState<CursorAskQuestionRequest[]>([]);
