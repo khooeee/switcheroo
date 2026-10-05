@@ -3,6 +3,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { terminalXtermTheme } from "./terminalTheme";
+import { installTerminalLinks } from "./terminalLinks";
 import "./terminalPanel.css";
 
 /** Full-pane terminal for a child tab. Stays mounted while visited so scrollback is kept. */
@@ -40,6 +41,7 @@ export function TerminalPanel({
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
+    installTerminalLinks(term);
     term.open(host);
     fit.fit();
     fitRef.current = fit;
