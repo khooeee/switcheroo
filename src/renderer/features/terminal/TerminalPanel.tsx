@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
+import { terminalXtermTheme } from "./terminalTheme";
 import "./terminalPanel.css";
 
 /** Full-pane terminal for a child tab. Stays mounted while visited so scrollback is kept. */
@@ -14,15 +15,14 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
     const host = hostRef.current;
     if (!host) return;
 
+    const mono = getComputedStyle(document.documentElement)
+      .getPropertyValue("--font-mono")
+      .trim() || "ui-monospace, monospace";
     const term = new Terminal({
       cursorBlink: true,
-      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+      fontFamily: mono,
       fontSize: 13,
-      theme: {
-        background: "#0d1117",
-        foreground: "#e6edf3",
-        cursor: "#e6edf3",
-      },
+      theme: terminalXtermTheme(),
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
@@ -62,8 +62,17 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
     });
     observer.observe(host);
 
+    const themeObserver = new MutationObserver(() => {
+      term.options.theme = terminalXtermTheme();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
     return () => {
       disposed = true;
+      themeObserver.disconnect();
       observer.disconnect();
       onData.dispose();
       unsubData();
