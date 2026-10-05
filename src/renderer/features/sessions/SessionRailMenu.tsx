@@ -58,6 +58,19 @@ export function SessionRailMenu({
         type="button"
         role="menuitem"
         className="context-item"
+        aria-keyshortcuts="Meta+U Control+U"
+        onClick={() => {
+          onToggleUnread(session.id);
+          onDismiss();
+        }}
+      >
+        {unread ? "Mark as Read" : "Mark as Unread"}
+        <kbd className="settings-shortcut">⌘U</kbd>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="context-item"
         disabled={forkDisabled}
         aria-keyshortcuts="Meta+Y Control+Y"
         onClick={() => {
@@ -68,19 +81,6 @@ export function SessionRailMenu({
       >
         Fork
         <kbd className="settings-shortcut">⌘Y</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+U Control+U"
-        onClick={() => {
-          onToggleUnread(session.id);
-          onDismiss();
-        }}
-      >
-        {unread ? "Mark as Read" : "Mark as Unread"}
-        <kbd className="settings-shortcut">⌘U</kbd>
       </button>
       <button
         type="button"

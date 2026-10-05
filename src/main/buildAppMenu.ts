@@ -59,21 +59,21 @@ export function buildAppMenu(opts: {
           },
         },
         {
-          id: FORK_MENU_ID,
-          label: "Fork",
-          enabled: opts.getForkEnabled(),
-          accelerator: "CmdOrCtrl+Y",
-          click: () => {
-            win()?.webContents.send("session:fork");
-          },
-        },
-        {
           id: MARK_UNREAD_MENU_ID,
           label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
           enabled: opts.getRenameEnabled(),
           accelerator: "CmdOrCtrl+U",
           click: () => {
             win()?.webContents.send("session:mark-unread");
+          },
+        },
+        {
+          id: FORK_MENU_ID,
+          label: "Fork",
+          enabled: opts.getForkEnabled(),
+          accelerator: "CmdOrCtrl+Y",
+          click: () => {
+            win()?.webContents.send("session:fork");
           },
         },
         {
