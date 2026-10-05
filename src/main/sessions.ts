@@ -89,7 +89,10 @@ export class SessionManager {
     this.window = win;
     this.terminals.setListeners(
       (tabId, data) => this.send("terminal:data", { tabId, data }),
-      (tabId) => this.send("terminal:exit", { tabId }),
+      (tabId) => {
+        this.send("terminal:exit", { tabId });
+        void this.closeTab(tabId);
+      },
     );
     const parentId = this.activeParentSessionId();
     if (parentId) this.refreshCommandsIfNeeded(parentId);

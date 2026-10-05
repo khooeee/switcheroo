@@ -147,6 +147,7 @@ export function useAppShortcuts({
         return;
       }
 
+      // Ctrl+D closes a chat session on empty draft; terminals keep it as shell EOF.
       if (
         event.key.toLowerCase() === "d"
         && event.ctrlKey

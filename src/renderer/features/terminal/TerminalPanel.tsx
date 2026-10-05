@@ -50,10 +50,6 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
       if (id !== tabId) return;
       term.write(data);
     });
-    const unsubExit = window.switcheroo.onTerminalExit(({ tabId: id }) => {
-      if (id !== tabId) return;
-      term.writeln("\r\n[Process exited]");
-    });
 
     const onData = term.onData((data) => {
       void window.switcheroo.writeTerminal(tabId, data);
@@ -71,7 +67,6 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
       observer.disconnect();
       onData.dispose();
       unsubData();
-      unsubExit();
       fitRef.current = null;
       termRef.current = null;
       term.dispose();
