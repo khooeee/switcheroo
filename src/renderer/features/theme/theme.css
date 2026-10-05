@@ -4,6 +4,7 @@
   --bg-1: #12161a;
   --bg-2: #1a2026;
   --bg-3: #232b33;
+  --bg-selected-tab: #383d42;
   --border: #2c3640;
   --text: #e8eef3;
   --text-dim: #8b9aab;
@@ -46,6 +47,7 @@ html[data-theme="light"] {
   --bg-1: #ffffff;
   --bg-2: #e7eef2;
   --bg-3: #d7e2e8;
+  --bg-selected-tab: #f0f0f0;
   --border: #c9d5dc;
   --text: #000000;
   --text-dim: #5c6d7a;

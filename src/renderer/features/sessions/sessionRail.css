@@ -110,7 +110,7 @@
 }
 
 .rail-session.active {
-  background: var(--bg-2);
+  background: var(--bg-selected-tab);
   color: var(--text);
 }
 
