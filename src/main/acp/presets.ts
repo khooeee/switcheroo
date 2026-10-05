@@ -29,16 +29,26 @@ function packageBin(packageName: string): string {
   throw new Error(`ACP adapter not installed: ${packageName}`);
 }
 
-function resolveCursorAgent(): string {
+function resolvePathCommand(name: string, extras: string[] = []): string {
   const candidates = [
-    join(homedir(), ".local", "bin", "agent"),
-    "/usr/local/bin/agent",
-    "agent",
+    join(homedir(), ".local", "bin", name),
+    join("/usr/local/bin", name),
+    join("/opt/homebrew/bin", name),
+    ...extras,
+    name,
   ];
   for (const c of candidates) {
-    if (c === "agent" || existsSync(c)) return c;
+    if (c === name || existsSync(c)) return c;
   }
-  return "agent";
+  return name;
+}
+
+function resolveCursorAgent(): string {
+  return resolvePathCommand("agent");
+}
+
+function resolvePrimeAgent(): string {
+  return resolvePathCommand("prime-agent");
 }
 
 export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
@@ -79,6 +89,14 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     get requiredCommand() {
       return process.env.PI_ACP_PI_COMMAND || "pi";
     },
+  },
+  prime: {
+    kind: "prime",
+    label: "Prime Agent",
+    get command() {
+      return resolvePrimeAgent();
+    },
+    args: ["--mode", "acp"],
   },
 };
 

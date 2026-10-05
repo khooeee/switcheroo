@@ -11,6 +11,7 @@ const AGENT_OPTIONS: Array<{ kind: AgentKind; label: string }> = [
   { kind: "codex", label: "Codex" },
   { kind: "cursor", label: "Cursor" },
   { kind: "pi", label: "Pi" },
+  { kind: "prime", label: "Prime Agent" },
 ];
 
 interface Props {

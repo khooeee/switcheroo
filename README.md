@@ -7,7 +7,7 @@ To remove & simplify as much as possible for maximum focus on GitHub repos:
 - Each session on the left sidebar only shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - No maintenance of past sessions, switchboard, etc. needed from you - we trim the session list & switchboard, however everything still stays on disk and is easily accessible through find in history.
 - Project management is basically having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.
-- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue, due to lack of support for queueing in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor, Pi & Prime Agent queue, due to lack of support for steering in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 More find features beyond searching the current session are supported:
@@ -30,11 +30,12 @@ There's also orchestration features:
 ## Prerequisites
 
 - Node.js 22 LTS (`>=22.12.0 <23`)
-- At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with `npm install`):
+- At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with `npm install`; Cursor and Prime use their installed CLIs):
   - **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
   - **Codex**: Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
   - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
   - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
+  - **Prime Agent**: `prime-agent` on `PATH` (installer puts it in `~/.local/bin`) and authenticated via `/login` or a provider API key
 
 ## Develop
 
@@ -66,6 +67,7 @@ When you send a message while the agent is already thinking, we prefer steering 
 | Codex | Steer |
 | Cursor | Queue |
 | Pi | Queue |
+| Prime Agent | Queue |
 
 ## History management
 

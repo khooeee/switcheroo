@@ -64,7 +64,7 @@ test("prefix comes before title; title is still the focused field", () => {
 
 test("agent dropdown lists every agent until availability is known", () => {
   const html = render();
-  for (const label of ["Claude Code", "Codex", "Cursor", "Pi"]) {
+  for (const label of ["Claude Code", "Codex", "Cursor", "Pi", "Prime Agent"]) {
     expect(html).toContain(`>${label}<`);
   }
 });
