@@ -78,21 +78,29 @@
   text-align: left;
 }
 
-.rail-rename {
-  width: calc(100% - 16px);
-  min-height: 40px;
-  border: 1px solid var(--accent);
-  border-radius: 10px;
+.rail-session.rail-renaming {
+  border-color: var(--accent);
   background: var(--bg-2);
   color: var(--text);
+}
+
+.rail-rename-input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
   font: inherit;
   font-size: 12px;
-  line-height: 1.35;
-  padding: 8px;
+  line-height: inherit;
+  padding: 0;
+  margin: 0;
   outline: none;
   resize: none;
   overflow: hidden;
   field-sizing: content;
+  text-align: left;
 }
 
 .rail-session:hover {

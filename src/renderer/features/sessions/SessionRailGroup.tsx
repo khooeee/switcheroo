@@ -132,6 +132,7 @@ export function SessionRailGroup({
           <SessionRailRename
             key={tab.tabId}
             title={tab.title}
+            child
             onSave={(title) => {
               onRenameTab(tab.tabId, title);
               setRename(null);
