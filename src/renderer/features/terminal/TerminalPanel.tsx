@@ -15,13 +15,15 @@ export function TerminalPanel({ tabId, active }: { tabId: string; active: boolea
     const host = hostRef.current;
     if (!host) return;
 
-    const mono = getComputedStyle(document.documentElement)
-      .getPropertyValue("--font-mono")
-      .trim() || "ui-monospace, monospace";
+    const rootStyle = getComputedStyle(document.documentElement);
+    const mono =
+      rootStyle.getPropertyValue("--font-mono").trim() || "ui-monospace, monospace";
+    // Match `.message .body` in the session transcript.
+    const fontSize = 12;
     const term = new Terminal({
       cursorBlink: true,
       fontFamily: mono,
-      fontSize: 13,
+      fontSize,
       theme: terminalXtermTheme(),
     });
     const fit = new FitAddon();
