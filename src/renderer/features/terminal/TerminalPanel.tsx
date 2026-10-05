@@ -27,6 +27,14 @@ export function TerminalPanel({ tabId }: { tabId: string }) {
     term.open(host);
     fit.fit();
 
+    // Let app tab-switching win over the terminal textarea.
+    term.attachCustomKeyEventHandler((event) => {
+      if (event.key === "Tab" && event.ctrlKey && !event.metaKey && !event.altKey) {
+        return false;
+      }
+      return true;
+    });
+
     let disposed = false;
     void window.switcheroo.attachTerminal(tabId).then(() => {
       if (disposed) return;
