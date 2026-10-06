@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { pinScrollToBottom } from "../src/renderer/features/sessions/pinScrollToBottom";
-import { trackScrollPosition } from "../src/renderer/features/sessions/trackScrollPosition";
+import { trackScrollPosition, type ScrollPosition } from "../src/renderer/features/sessions/trackScrollPosition";
 
 function fixture() {
   const observers: Array<{ callback: () => void; active: boolean }> = [];
@@ -23,10 +23,23 @@ function fixture() {
 
   let top = 0;
   let scroll: (() => void) | undefined;
+  /** Messages laid out in content coordinates; rects are relative to a viewport at y = 0. */
+  let items: Array<{ id: string; top: number; height: number }> = [];
   const element = {
     scrollHeight: 1000,
     clientHeight: 200,
+    clientWidth: 600,
     children: [{}],
+    getBoundingClientRect: () => ({ top: 0 }),
+    querySelectorAll: () =>
+      items.map((item) => ({
+        dataset: { eventId: item.id },
+        getBoundingClientRect: () => ({
+          top: item.top - top,
+          bottom: item.top + item.height - top,
+          height: item.height,
+        }),
+      })),
     get scrollTop() {
       return top;
     },
@@ -43,7 +56,12 @@ function fixture() {
 
   return {
     element,
-    track: (position: { top: number; pinned: boolean }) => trackScrollPosition(element, position),
+    track: (position: ScrollPosition) => trackScrollPosition(element, position),
+    /** Lay out equal-height messages, as if the text wrapped to `height` at `width`. */
+    layout(ids: string[], height: number, width: number) {
+      items = ids.map((id, index) => ({ id, top: index * height, height }));
+      Object.assign(element, { scrollHeight: ids.length * height, clientWidth: width });
+    },
     scrollTo(value: number) {
       (element as unknown as { scrollTop: number }).scrollTop = value;
       scroll?.();
@@ -142,4 +160,43 @@ test("leaving a session disconnects tracking so future events cannot change its 
   expect(f.activeObservers()).toBe(0);
   f.scrollTo(800);
   expect(position).toEqual({ top: 300, pinned: false });
+});
+
+test("a width change keeps the same message at the top instead of the same pixel offset", () => {
+  const f = fixture();
+  const ids = ["a", "b", "c", "d", "e"];
+  f.layout(ids, 200, 600);
+  const position: ScrollPosition = { top: 0, pinned: true };
+  f.track(position);
+  f.scrollTo(500);
+  expect(position.anchor).toEqual({ id: "c", ratio: 0.5, width: 600 });
+
+  // The right rail opens: the transcript narrows and every message wraps taller.
+  f.layout(ids, 300, 400);
+  f.resize();
+  expect(f.element.scrollTop).toBe(750);
+  expect(position.top).toBe(750);
+  f.flushScroll();
+  expect(position.anchor).toEqual({ id: "c", ratio: 0.5, width: 400 });
+
+  // It closes again.
+  f.layout(ids, 200, 600);
+  f.resize();
+  expect(f.element.scrollTop).toBe(500);
+
+  // At the same width, growth below the viewport still keeps the offset.
+  f.layout([...ids, "f"], 200, 600);
+  f.resize();
+  expect(f.element.scrollTop).toBe(500);
+});
+
+test("a width change while following the bottom stays at the bottom", () => {
+  const f = fixture();
+  f.layout(["a", "b", "c", "d", "e"], 200, 600);
+  const position: ScrollPosition = { top: 0, pinned: true };
+  f.track(position);
+  f.layout(["a", "b", "c", "d", "e"], 300, 400);
+  f.resize();
+  expect(f.element.scrollTop).toBe(1300);
+  expect(position.anchor).toBeUndefined();
 });
