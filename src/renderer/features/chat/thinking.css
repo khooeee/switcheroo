@@ -3,7 +3,8 @@
   --thinking-highlight: var(--text);
   padding: 8px 12px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
   line-height: 1.5;
   color: var(--thinking-color);
 }

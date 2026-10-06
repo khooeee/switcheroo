@@ -89,9 +89,10 @@ button {
 }
 
 .panel-header .meta {
-  color: var(--text-dim);
+  color: color-mix(in srgb, var(--text-dim) 65%, transparent);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
 }
 
 .btn {

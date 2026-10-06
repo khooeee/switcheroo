@@ -15,7 +15,8 @@
 
 .composer textarea {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
   line-height: 1.5;
   width: 100%;
   min-height: 72px;
@@ -48,11 +49,12 @@
   flex: 1;
   min-width: 0;
   padding-left: 13px; /* match textarea border (1px) + padding (12px) */
-  font-size: 11px;
+  font-size: var(--font-mono-size);
   color: var(--placeholder);
   text-align: left;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
+  font-weight: var(--font-mono-weight);
   cursor: default;
 }
 

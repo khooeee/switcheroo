@@ -1,5 +1,6 @@
 .file-changes {
   font-family: var(--font-mono);
+  font-weight: var(--font-mono-weight);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -10,7 +11,7 @@
 }
 
 .file-changes.compact .file-change-names {
-  font-size: 11px;
+  font-size: var(--font-mono-size-small);
   line-height: 1.45;
 }
 
@@ -21,12 +22,12 @@
 }
 
 .file-changes.compact .file-change-panel {
-  font-size: 12px;
+  font-size: var(--font-mono-size);
   line-height: 1.5;
 }
 
 .file-changes.detailed {
-  font-size: 12px;
+  font-size: var(--font-mono-size);
   line-height: 1.5;
 }
 
@@ -191,7 +192,7 @@
   flex-wrap: wrap;
   gap: 8px 20px;
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--font-mono-size);
 }
 
 .file-open-button {

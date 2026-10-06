@@ -115,8 +115,9 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   align-items: center;
   margin-bottom: 6px;
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: var(--font-mono-size);
   font-family: var(--font-mono);
+  font-weight: var(--font-mono-weight);
 }
 
 .kind-pill {
@@ -180,7 +181,8 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(
   word-break: break-word;
   line-height: 1.5;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
 }
 
 .message .body mark {

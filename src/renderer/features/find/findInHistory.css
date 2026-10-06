@@ -16,7 +16,8 @@
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
 }
 
 .modal.find-sessions-modal input:focus {
@@ -129,7 +130,8 @@
   margin-left: auto;
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
   color: var(--text-dim);
 }
 
@@ -155,8 +157,9 @@
 
 .find-sessions-hit-time {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--font-mono-size);
   font-family: var(--font-mono);
+  font-weight: var(--font-mono-weight);
   color: var(--text-dim);
   line-height: 1.45;
 }
@@ -165,7 +168,8 @@
   flex: 1;
   min-width: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
   line-height: 1.45;
   color: var(--text);
   overflow: hidden;

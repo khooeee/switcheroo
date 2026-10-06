@@ -31,11 +31,15 @@ export function TerminalPanel({
     const rootStyle = getComputedStyle(document.documentElement);
     const mono =
       rootStyle.getPropertyValue("--font-mono").trim() || "ui-monospace, monospace";
-    // Match `.message .body` in the session transcript.
-    const fontSize = 12;
+    const fontWeight =
+      rootStyle.getPropertyValue("--font-mono-weight").trim() || "500";
+    const fontSize = Number.parseFloat(
+      rootStyle.getPropertyValue("--font-mono-size").trim(),
+    ) || 13;
     const term = new Terminal({
       cursorBlink: true,
       fontFamily: mono,
+      fontWeight,
       fontSize,
       theme: terminalXtermTheme(),
     });
