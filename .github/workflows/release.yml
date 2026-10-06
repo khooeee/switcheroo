@@ -41,15 +41,13 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           ARCH="${{ matrix.arch }}"
           mkdir -p staged
-          shopt -s globstar nullglob
-          for f in out/make/**/*.dmg; do
-            cp "$f" "staged/Switcheroo-${VERSION}-${ARCH}.dmg"
-          done
-          for f in out/make/**/*.zip; do
-            cp "$f" "staged/Switcheroo-${VERSION}-darwin-${ARCH}.zip"
-          done
+          dmg="$(find out/make -type f -name '*.dmg' | head -n 1)"
+          zip="$(find out/make -type f -name '*.zip' | head -n 1)"
+          test -n "$dmg"
+          test -n "$zip"
+          cp "$dmg" "staged/Switcheroo-${VERSION}-${ARCH}.dmg"
+          cp "$zip" "staged/Switcheroo-${VERSION}-darwin-${ARCH}.zip"
           ls -la staged/
-          test -n "$(ls -A staged)"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
