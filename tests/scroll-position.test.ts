@@ -200,3 +200,24 @@ test("a width change while following the bottom stays at the bottom", () => {
   expect(f.element.scrollTop).toBe(1300);
   expect(position.anchor).toBeUndefined();
 });
+
+test("a browser clamp after the rail closes is not mistaken for scrolling to the bottom", () => {
+  const f = fixture();
+  const ids = Array.from({ length: 10 }, (_, index) => `m${index}`);
+  // Rail open: narrow, tall messages.
+  f.layout(ids, 500, 220);
+  const position: ScrollPosition = { top: 0, pinned: true };
+  f.track(position);
+  f.scrollTo(3250);
+  expect(position.anchor).toEqual({ id: "m6", ratio: 0.5, width: 220 });
+
+  // Rail closes: content re-wraps to a fifth of the height. The browser clamps scrollTop to the
+  // new bottom and fires a scroll event before the ResizeObserver callback runs.
+  f.layout(ids, 100, 650);
+  f.scrollTo(3250);
+  expect(f.element.scrollTop).toBe(800);
+  expect(position.pinned).toBe(false);
+  f.resize();
+  expect(f.element.scrollTop).toBe(650);
+  expect(position.anchor).toEqual({ id: "m6", ratio: 0.5, width: 650 });
+});

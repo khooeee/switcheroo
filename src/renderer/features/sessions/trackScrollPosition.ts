@@ -11,6 +11,13 @@ export interface ScrollPosition {
 
 export function trackScrollPosition(element: HTMLElement, position: ScrollPosition): () => void {
   let appliedTop = element.scrollTop;
+  // Layout as of the last restore or handled scroll.
+  let seenWidth = element.clientWidth;
+  let seenHeight = element.scrollHeight;
+  const noteLayout = () => {
+    seenWidth = element.clientWidth;
+    seenHeight = element.scrollHeight;
+  };
 
   const restore = () => {
     const anchor = position.anchor;
@@ -25,15 +32,21 @@ export function trackScrollPosition(element: HTMLElement, position: ScrollPositi
       element.scrollTop = position.top;
     }
     appliedTop = element.scrollTop;
+    noteLayout();
   };
   const onScroll = () => {
     // Restoration also emits scroll events; keep the saved intent when content
     // is temporarily shorter (for example, while a transcript is loading).
     if (element.scrollTop === appliedTop) return;
+    // When content re-wraps shorter (the right rail closing), the browser clamps scrollTop and
+    // fires this event before the ResizeObserver runs. That is not the user scrolling to the
+    // bottom: leave the saved intent for `restore`.
+    if (element.clientWidth !== seenWidth || element.scrollHeight !== seenHeight) return;
     position.top = element.scrollTop;
     position.pinned = element.scrollHeight - element.clientHeight - element.scrollTop <= 4;
     position.anchor = position.pinned ? undefined : captureScrollAnchor(element);
     appliedTop = element.scrollTop;
+    noteLayout();
   };
 
   const resize = new ResizeObserver(restore);
