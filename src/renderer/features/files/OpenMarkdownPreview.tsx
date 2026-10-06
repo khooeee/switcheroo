@@ -9,7 +9,7 @@ export function OpenMarkdownPreview({ path, text }: { path: string; text: string
       <button
         type="button"
         className="file-open-button"
-        data-tooltip={`Preview ${path} as on GitHub`}
+        data-tooltip={`Preview ${path}`}
         onClick={() => setOpen(true)}
       >
         Preview
