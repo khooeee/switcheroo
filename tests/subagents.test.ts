@@ -55,21 +55,18 @@ test("subagent notifications are validated before they reach the session", () =>
   expect(parseSubagentNotification(null)).toBeNull();
 });
 
-test("only Claude opts into native subagent sessions", async () => {
-  const claude = await fixture(true, { agent: "claude" });
-  const claudeInit = claude.requests.find((request) => request.method === "initialize")!;
-  expect(claudeInit.params).toMatchObject({
+test.each(["claude", "codex"] as const)("%s opts into native subagent sessions", async (agent) => {
+  const f = await fixture(true, { agent });
+  const initialization = f.requests.find((request) => request.method === "initialize")!;
+  expect(initialization.params).toMatchObject({
     clientCapabilities: {
       _meta: { jetbrains: { air: { version: 1, capabilities: ["nativeSubagentSessions"] } } },
     },
   });
-  const codex = await fixture();
-  const codexInit = codex.requests.find((request) => request.method === "initialize")!;
-  expect((codexInit.params as { clientCapabilities: Record<string, unknown> }).clientCapabilities._meta).toBeUndefined();
 });
 
-test("a subagent streams into its own transcript and shows as a row in the parent turn", async () => {
-  const f = await fixture(true, { agent: "claude" });
+test.each(["claude", "codex"] as const)("%s subagents stream into their own transcripts and parent rows", async (agent) => {
+  const f = await fixture(true, { agent });
   const turn = f.session.prompt("Research auth");
   await tick();
   f.subagent({
@@ -77,7 +74,8 @@ test("a subagent streams into its own transcript and shows as a row in the paren
     subagentSessionId: "task-1",
     name: "Explore auth",
     task: "Find the login flow",
-    prompt: "Look at src/auth",
+    // Codex supplies a task and capabilities; Claude also supplies the full prompt.
+    ...(agent === "claude" ? { prompt: "Look at src/auth" } : { capabilities: {} }),
   });
   f.update(chunk("Found "), "task-1");
   f.update(chunk("it"), "task-1");
@@ -103,7 +101,7 @@ test("a subagent streams into its own transcript and shows as a row in the paren
   expect(JSON.stringify(f.transcripts)).not.toMatch(/Found|Read login/);
 
   const child = f.subagentTurns.filter((entry) => entry.subagentId === "task-1").at(-1)!.turn;
-  expect(child.user.text).toBe("Look at src/auth");
+  expect(child.user.text).toBe(agent === "claude" ? "Look at src/auth" : "Find the login flow");
   expect(child.assistant?.text).toBe("Found it");
   expect(child.status).toBe("complete");
   expect(child.events).toEqual([
@@ -115,8 +113,8 @@ test("a subagent streams into its own transcript and shows as a row in the paren
   expect(nested.status).toBe("complete");
 });
 
-test("a resumed subagent adds a turn to the same transcript and a row in the new parent turn", async () => {
-  const f = await fixture(true, { agent: "claude" });
+test.each(["claude", "codex"] as const)("%s resumed subagents keep their transcript and add a parent row", async (agent) => {
+  const f = await fixture(true, { agent });
   const first = f.session.prompt("one");
   await tick();
   f.subagent({ sessionUpdate: "subagent_spawned", subagentSessionId: "task-1", name: "Helper", prompt: "Start" });
@@ -150,8 +148,8 @@ test("a resumed subagent adds a turn to the same transcript and a row in the new
   await second;
 });
 
-test("disposal settles running subagents and replayed lifecycle is ignored", async () => {
-  const f = await fixture(true, { agent: "claude" });
+test.each(["claude", "codex"] as const)("%s disposal settles running subagents", async (agent) => {
+  const f = await fixture(true, { agent });
   const turn = f.session.prompt("go");
   await tick();
   f.subagent({ sessionUpdate: "subagent_spawned", subagentSessionId: "task-1", name: "Long job" });
@@ -162,6 +160,40 @@ test("disposal settles running subagents and replayed lifecycle is ignored", asy
   const row = f.transcripts.flatMap((entry) => entry.events).filter((event) => event.subagentId === "task-1").at(-1);
   expect(row?.toolStatus).toBe("cancelled");
   expect(f.subagentTurns.at(-1)?.turn.status).toBe("stopped");
+});
+
+test("Codex child status updates do not complete a parent continuation", async () => {
+  const f = await fixture(true, { agent: "codex" });
+  const turn = f.session.prompt("Delegate research");
+  await tick();
+  const status = (type: string) => ({
+    sessionUpdate: "session_info_update",
+    _meta: { codex: { threadStatus: { type } } },
+  });
+  f.update(status("active"));
+  f.subagent({
+    sessionUpdate: "subagent_spawned",
+    subagentSessionId: "child",
+    name: "Researcher",
+    task: "Find the answer",
+    capabilities: {},
+  });
+  f.update(chunk("Found the answer"), "child");
+  f.update(status("idle"), "child");
+  f.subagent({ sessionUpdate: "subagent_state_update", subagentSessionId: "child", state: "completed" });
+
+  expect(f.statuses.at(-1)).toBe("running");
+  expect(f.transcripts.at(-1)?.status).toBe("running");
+  expect(f.transcripts.at(-1)?.assistant).toBeNull();
+  expect(f.subagentTurns.at(-1)?.turn.status).toBe("complete");
+  f.turns[0]!({ stopReason: "end_turn" });
+  await turn;
+  expect(f.completions).toEqual([]);
+
+  f.update(chunk("Collected the result"));
+  f.update(status("idle"));
+  expect(f.transcripts.at(-1)?.assistant?.text).toBe("Collected the result");
+  expect(f.completions).toEqual([true]);
 });
 
 test("restart marks running subagent rows disconnected, and saved turns merge by id", () => {

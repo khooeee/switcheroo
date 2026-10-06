@@ -101,8 +101,10 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
     clientCapabilities: {
       fs: { readTextFile: true, writeTextFile: true },
       terminal: false,
-      // Only Claude is wired for native subagent sessions so far.
-      ...(handlers.agent === "claude" ? { _meta: subagentCapabilityMeta() } : {}),
+      // Claude and Codex both expose native subagent sessions through this AIR capability.
+      ...(handlers.agent === "claude" || handlers.agent === "codex"
+        ? { _meta: subagentCapabilityMeta() }
+        : {}),
     },
     clientInfo: { name: "switcheroo", version: "1.0.0" },
   });
