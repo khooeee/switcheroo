@@ -39,6 +39,8 @@ const runtimeNodeModules = [
   'define-lazy-prop',
   'wsl-utils',
   'node-pty',
+  // Hoisted dependency of node-pty; required when electron-rebuild runs in the staged app.
+  'node-addon-api',
 ];
 
 function keepPackagedPath(file: string): boolean {
