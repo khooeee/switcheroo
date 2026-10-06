@@ -34,14 +34,12 @@ const SubagentChip = memo(function SubagentChip({
   const openSubagent = useContext(SubagentOpenContext);
   const active = useContext(OpenSubagentIdContext) === row.subagentId;
   const state = row.toolStatus ?? "unknown";
-  const tooltip = row.toolTitle ? `${row.toolTitle}\n${state}` : state;
   return (
     <button
       type="button"
       className={`subagent-chip ${state}${active ? " active" : ""}`}
       aria-pressed={active}
       aria-label={`${row.text}, ${state}`}
-      data-tooltip={tooltip}
       onClick={() => openSubagent(sessionId, row.subagentId!)}
     >
       <SubagentStateIcon state={row.toolStatus} />
