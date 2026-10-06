@@ -5,6 +5,7 @@ import { FileDiff } from "./FileDiff";
 import { markdownPreviewText } from "./markdownPreviewText";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 import { relativeChangePath } from "./relativeChangePath";
+import { shortChangeNames } from "./shortChangeNames";
 
 /** Filename chips under the final assistant message; click to toggle a coalesced diff. */
 export function CompactFileChanges({
@@ -17,6 +18,10 @@ export function CompactFileChanges({
   sessionId?: string;
 }) {
   const unique = useMemo(() => coalesceFileChanges(changes), [changes]);
+  const names = useMemo(
+    () => shortChangeNames(unique.map((change) => relativeChangePath(change.path, cwd))),
+    [unique, cwd],
+  );
   const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set());
   const toggle = useCallback((index: number) => {
     setOpen((prev) => {
@@ -34,7 +39,7 @@ export function CompactFileChanges({
           <FileChip
             key={change.path}
             change={change}
-            cwd={cwd}
+            name={names[index]}
             index={index}
             expanded={open.has(index)}
             onToggle={toggle}
@@ -82,18 +87,18 @@ function OpenDiff({
 
 function FileChip({
   change,
-  cwd,
+  name,
   index,
   expanded,
   onToggle,
 }: {
   change: FileChange;
-  cwd?: string;
+  /** Filename, plus parent folders only as needed to tell same-named files apart. */
+  name: string;
   index: number;
   expanded: boolean;
   onToggle: (index: number) => void;
 }) {
-  const path = relativeChangePath(change.path, cwd);
   const preview = markdownPreviewText(change);
   return (
     <span className="file-change-item">
@@ -104,7 +109,7 @@ function FileChip({
         aria-expanded={expanded}
         onClick={() => onToggle(index)}
       >
-        {path}
+        {name}
       </button>
       {preview != null ? (
         <span className="file-change-preview-wrap">

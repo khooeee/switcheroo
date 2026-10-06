@@ -5,6 +5,7 @@ import { toolFileChanges } from "../src/main/acp/toolFileChanges";
 import { diffLines } from "../src/renderer/features/files/diffLines";
 import { FileChanges } from "../src/renderer/features/files/FileChanges";
 import { coalesceFileChanges } from "../src/renderer/features/files/coalesceFileChanges";
+import { shortChangeNames } from "../src/renderer/features/files/shortChangeNames";
 import { FileDiff } from "../src/renderer/features/files/FileDiff";
 import type { TranscriptItem } from "../src/shared/transcript";
 
@@ -138,7 +139,7 @@ test("compact markdown edits append a Preview link beside the filename", () => {
     <FileChanges changes={changes} cwd="/project" sessionId="s1" compact />,
   );
   expect(html).toMatch(/>README\.md</);
-  expect(html).toMatch(/>train\/train\.py</);
+  expect(html).toMatch(/>train\.py</);
   expect(html.match(/>Preview</g)?.length).toBe(1);
   expect(html).not.toMatch(/Open in Cursor/);
 });
@@ -170,6 +171,30 @@ test("compact chips coalesce multiple edits of the same path", () => {
   );
   expect(html.match(/>a\.ts</g)?.length).toBe(1);
   expect(html.match(/>b\.ts</g)?.length).toBe(1);
+});
+
+test("compact chips show just the filename, adding parent folders only to break ties", () => {
+  const changes = [
+    { path: "/project/src/a/index.ts", kind: "updated" as const, oldText: "1", newText: "2" },
+    { path: "/project/src/b/index.ts", kind: "updated" as const, oldText: "1", newText: "2" },
+    { path: "/project/lib/deep/util.ts", kind: "created" as const, oldText: null, newText: "x" },
+  ];
+  const html = renderToStaticMarkup(
+    <FileChanges changes={changes} cwd="/project" compact />,
+  );
+  expect(html).toMatch(/>a\/index\.ts</);
+  expect(html).toMatch(/>b\/index\.ts</);
+  expect(html).toMatch(/>util\.ts</);
+  expect(html).toMatch(/data-tooltip="\/project\/src\/a\/index\.ts"/);
+});
+
+test("shortChangeNames widens past shared parent folders and handles nested suffixes", () => {
+  expect(shortChangeNames(["x/lib/index.ts", "y/lib/index.ts", "README.md"])).toEqual([
+    "x/lib/index.ts",
+    "y/lib/index.ts",
+    "README.md",
+  ]);
+  expect(shortChangeNames(["index.ts", "src/index.ts"])).toEqual(["index.ts", "src/index.ts"]);
 });
 
 test("coalesceFileChanges keeps first oldText and last newText per path", () => {
