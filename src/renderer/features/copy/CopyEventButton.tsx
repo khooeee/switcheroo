@@ -3,10 +3,10 @@ import { CopyIcon } from "./CopyIcon";
 import { useCopiedFlash } from "./useCopiedFlash";
 import "./eventActionButton.css";
 
-/** Right-aligned icon that copies message text; shows an instant Copy as Markdown tooltip on hover. */
+/** Right-aligned icon that copies message text; shows an instant Copy Message tooltip on hover. */
 export function CopyEventButton({ text }: { text: string }) {
   const [copied, copy] = useCopiedFlash();
-  const label = copied ? "Copied" : "Copy as Markdown";
+  const label = copied ? "Copied" : "Copy Message";
 
   return (
     <button

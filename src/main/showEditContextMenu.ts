@@ -1,6 +1,6 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 
-/** Native Copy (+ optional Copy as Markdown / Find / Turn Details). */
+/** Native Copy (+ optional Copy Message / Find / Turn Details). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
   opts: {
@@ -16,7 +16,7 @@ export function showEditContextMenu(
   ];
   if (opts.markdown) {
     items.push({
-      label: "Copy as Markdown",
+      label: "Copy Message",
       click: () => void clipboard.writeText(opts.markdown!),
     });
   }
