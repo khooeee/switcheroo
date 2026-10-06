@@ -5,6 +5,7 @@ import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
 import { SessionManager } from "./main/sessions/SessionManager";
 import { installQuitHandler } from "./main/installQuitHandler";
+import { confirmQuit } from "./main/confirmQuit";
 import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { installStdioGuards } from "./main/installStdioGuards";
 import { ControlServer } from "./main/control/ControlServer";
@@ -127,8 +128,11 @@ if (installSingleInstanceLock(() => mainWindow)) {
     if (BrowserWindow.getAllWindows().length === 0) void createWindow();
   });
 
-  installQuitHandler(async () => {
-    await sessions.disposeAll();
-    await control.stop();
-  });
+  installQuitHandler(
+    () => confirmQuit(mainWindow, sessions.quitBusyCounts()),
+    async () => {
+      await sessions.disposeAll();
+      await control.stop();
+    },
+  );
 }

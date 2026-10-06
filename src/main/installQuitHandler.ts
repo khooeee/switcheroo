@@ -1,6 +1,10 @@
 import { app, dialog } from "electron";
 
-export function installQuitHandler(saveAndDispose: () => Promise<void>): void {
+/** Holds every quit until the user confirms (when work is running) and state is saved. */
+export function installQuitHandler(
+  confirm: () => Promise<boolean>,
+  saveAndDispose: () => Promise<void>,
+): void {
   let quitting = false;
   let saved = false;
 
@@ -10,18 +14,22 @@ export function installQuitHandler(saveAndDispose: () => Promise<void>): void {
     if (quitting) return;
     quitting = true;
 
-    void saveAndDispose().then(
-      () => {
+    void confirm()
+      .then(async (ok) => {
+        if (!ok) {
+          quitting = false;
+          return;
+        }
+        await saveAndDispose();
         saved = true;
         app.quit();
-      },
-      (error: unknown) => {
+      })
+      .catch((error: unknown) => {
         quitting = false;
         dialog.showErrorBox(
           "Could not save Switcheroo",
           `The app has stayed open so you can retry quitting.\n\n${String(error)}`,
         );
-      },
-    );
+      });
   });
 }

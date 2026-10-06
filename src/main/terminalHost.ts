@@ -30,6 +30,11 @@ export class TerminalHost {
     return this.ptys.has(tabId);
   }
 
+  /** Live shells; tabs restored from disk have none until attached. */
+  count(): number {
+    return this.ptys.size;
+  }
+
   ensure(tabId: string, cwd: string): void {
     if (this.ptys.has(tabId)) return;
     const shell = defaultShell();

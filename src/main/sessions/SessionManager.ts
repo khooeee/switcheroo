@@ -267,6 +267,15 @@ export class SessionManager {
     return this.state.transcripts.get(sessionId) ?? [];
   }
 
+  /** Work a quit would interrupt: chats mid-turn and live terminal shells. */
+  quitBusyCounts(): { runningChats: number; openTerminals: number } {
+    const sessions = [...this.state.sessions.values()];
+    return {
+      runningChats: sessions.filter((session) => session.status === "running").length,
+      openTerminals: this.state.terminals.count(),
+    };
+  }
+
   async disposeAll(): Promise<void> {
     await this.persist();
     await this.state.terminals.disposeAll();

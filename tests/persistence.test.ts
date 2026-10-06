@@ -163,7 +163,7 @@ async function quitFixture(save: () => Promise<void>) {
   };
   vi.resetModules();
   const { installQuitHandler } = await import("../src/main/installQuitHandler");
-  installQuitHandler(save);
+  installQuitHandler(async () => true, save);
   return {
     app,
     errors: electronState.errors,
@@ -184,6 +184,7 @@ test("quitting waits for saving and ignores repeated quit attempts while saving"
   });
   quit.app.quit();
   quit.app.quit();
+  await new Promise((resolve) => setImmediate(resolve));
   expect(quit.exited()).toBe(0);
   expect(quit.prevented()).toBe(2);
   expect(calls).toBe(1);
