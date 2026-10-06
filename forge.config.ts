@@ -8,6 +8,8 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { join } from 'node:path';
+import { applyFinderIcon } from './scripts/apply-finder-icon.mjs';
 
 /**
  * Runtime packages Vite leaves external (native addons + ACP adapters spawned via
@@ -66,6 +68,15 @@ const config: ForgeConfig = {
     extraResource: ["./assets/icon.png"],
   },
   rebuildConfig: {},
+  hooks: {
+    postPackage: async (_config, { platform, outputPaths }) => {
+      if (platform !== 'darwin') return;
+      for (const outputPath of outputPaths) {
+        const appDir = join(outputPath, 'Switcheroo.app');
+        applyFinderIcon(appDir, join(appDir, 'Contents', 'Resources', 'icon.png'));
+      }
+    },
+  },
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ['darwin']),

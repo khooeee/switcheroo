@@ -4,12 +4,14 @@
  *
  * Dock / Cmd+Tab use the .app folder name, not just Info.plist — so we rename
  * Electron.app → <productName>.app and keep path.txt in sync.
+ * Finder uses the bundle's ICNS, which must stay in sync with our app artwork.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, renameSync, utimesSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyFinderIcon } from "./apply-finder-icon.mjs";
 
 const NAME_KEYS = ["CFBundleDisplayName", "CFBundleName"];
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -100,6 +102,26 @@ function ensureBundleName(pkgDir, name) {
   return { appDir: desiredDir, renamed };
 }
 
+/** Sync Finder's bundle icon with the artwork used by Dock / Cmd+Tab. */
+function syncBundleIcon(appDir, plistPath) {
+  const source = join(projectRoot, "assets", "icon.icns");
+  if (!existsSync(source)) {
+    warn(`Missing ${source}`);
+    return false;
+  }
+
+  const iconName = "icon.icns";
+  const destination = join(appDir, "Contents", "Resources", iconName);
+  const changed = !existsSync(destination) ||
+    !readFileSync(destination).equals(readFileSync(source));
+  if (changed) copyFileSync(source, destination);
+
+  const stale = readPlistString(plistPath, "CFBundleIconFile") !== iconName;
+  if (stale) writePlistString(plistPath, "CFBundleIconFile", iconName);
+  const finderChanged = applyFinderIcon(appDir, join(projectRoot, "assets", "icon.png"));
+  return changed || stale || finderChanged;
+}
+
 function registerBundle(appDir) {
   const lsregister =
     "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister";
@@ -146,16 +168,20 @@ function main() {
   }
 
   const stale = NAME_KEYS.filter((key) => readPlistString(plistPath, key) !== name);
+  let iconChanged;
   try {
     for (const key of stale) writePlistString(plistPath, key, name);
+    iconChanged = syncBundleIcon(bundle.appDir, plistPath);
   } catch (err) {
-    warn(`Could not patch plist: ${err.message}`);
+    warn(`Could not update bundle branding: ${err.message}`);
     return;
   }
 
-  if (bundle.renamed || stale.length > 0) {
+  if (bundle.renamed || stale.length > 0 || iconChanged) {
+    const now = new Date();
+    utimesSync(bundle.appDir, now, now);
     registerBundle(bundle.appDir);
-    console.log(`[brand-dev-electron] Dev bundle is now "${name}"`);
+    console.log(`[brand-dev-electron] Dev bundle name and icon now match "${name}"`);
   }
 }
 
