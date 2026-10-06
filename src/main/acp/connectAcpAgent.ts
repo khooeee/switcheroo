@@ -5,6 +5,11 @@ import type { AgentKind } from "../../shared/agentKind";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
+import { parseSubagentNotification } from "./subagents/parseSubagentNotification";
+import { rewriteSubagentUpdates } from "./subagents/rewriteSubagentUpdates";
+import { subagentCapabilityMeta } from "./subagents/subagentCapabilityMeta";
+import type { SubagentUpdate } from "./subagents/SubagentUpdate";
+import { SUBAGENT_UPDATE_METHOD } from "./subagents/subagentUpdateMethod";
 
 type ConnectAcpResult = {
   proc: ChildProcessWithoutNullStreams;
@@ -29,6 +34,8 @@ type ConnectHandlers = {
   ) => Promise<{ outcome: string } | Record<string, unknown>>;
   onTodosUpdated: () => void;
   onSessionUpdate: (sessionId: string, update: acp.SessionUpdate) => void;
+  /** Draft ACP subagent lifecycle, sent on the session that started the subagent. */
+  onSubagentUpdate: (sessionId: string, update: SubagentUpdate) => void;
   onProcessExit: (code: number | null) => void;
   onConnectionAbort: () => void;
   onForkSupport: (supported: boolean) => void;
@@ -57,7 +64,7 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
 
   const input = Writable.toWeb(proc.stdin) as WritableStream<Uint8Array>;
   const output = Readable.toWeb(proc.stdout) as ReadableStream<Uint8Array>;
-  const stream = acp.ndJsonStream(input, output);
+  const stream = rewriteSubagentUpdates(acp.ndJsonStream(input, output));
 
   const connection = acp
     .client({ name: "switcheroo" })
@@ -79,6 +86,9 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
     .onNotification(acp.methods.client.session.update, (ctx) => {
       handlers.onSessionUpdate(ctx.params.sessionId, ctx.params.update);
     })
+    .onNotification(SUBAGENT_UPDATE_METHOD, parseSubagentNotification, (ctx) => {
+      if (ctx.params) handlers.onSubagentUpdate(ctx.params.sessionId, ctx.params.update);
+    })
     .connect(stream);
 
   connection.signal?.addEventListener("abort", () => {
@@ -91,6 +101,8 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
     clientCapabilities: {
       fs: { readTextFile: true, writeTextFile: true },
       terminal: false,
+      // Only Claude is wired for native subagent sessions so far.
+      ...(handlers.agent === "claude" ? { _meta: subagentCapabilityMeta() } : {}),
     },
     clientInfo: { name: "switcheroo", version: "1.0.0" },
   });

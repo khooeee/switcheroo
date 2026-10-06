@@ -276,6 +276,10 @@ export class SessionManager {
     };
   }
 
+  getSubagentTranscript(sessionId: string, subagentId: string): Promise<TranscriptTurn[]> {
+    return this.state.subagentTranscripts.get(sessionId, subagentId);
+  }
+
   async disposeAll(): Promise<void> {
     await this.persist();
     await this.state.terminals.disposeAll();

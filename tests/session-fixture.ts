@@ -26,8 +26,9 @@ const harness = vi.hoisted(() => {
       id: string;
       status?: string;
       assistant?: { text?: string } | null;
-      events: Array<{ role: string; text?: string; toolStatus?: string }>;
+      events: Array<{ role: string; text?: string; toolStatus?: string; toolTitle?: string; subagentId?: string }>;
     }>,
+    subagentTurns: [] as Array<{ subagentId: string; turn: TranscriptTurn }>,
     capabilities: [] as boolean[],
     forkSupport: [] as boolean[],
     events: [] as unknown[],
@@ -59,6 +60,7 @@ const harness = vi.hoisted(() => {
     state.failures = [];
     state.statuses = [];
     state.transcripts = [];
+    state.subagentTurns = [];
     state.capabilities = [];
     state.forkSupport = [];
     state.events = [];
@@ -92,8 +94,8 @@ vi.mock("@agentclientprotocol/sdk", () => {
       harness.state.handlers.set(method, args.at(-1) as (...args: unknown[]) => unknown);
       return this;
     },
-    onNotification(method: string, handler: (msg: { params: unknown }) => void) {
-      harness.state.notifications.set(method, handler);
+    onNotification(method: string, ...args: unknown[]) {
+      harness.state.notifications.set(method, args.at(-1) as (msg: { params: unknown }) => void);
       return this;
     },
     connect() {
@@ -147,7 +149,7 @@ vi.mock("@agentclientprotocol/sdk", () => {
   return {
     PROTOCOL_VERSION: 1,
     client: () => builder,
-    ndJsonStream() {},
+    ndJsonStream: () => ({ readable: new ReadableStream(), writable: new WritableStream() }),
     methods: {
       agent: {
         initialize: "initialize",
@@ -174,6 +176,8 @@ vi.mock("../src/main/acp/spawnAgentProcess", () => ({
 }));
 
 import { AcpSession } from "../src/main/acp/session";
+import { SUBAGENT_UPDATE_METHOD } from "../src/main/acp/subagents/subagentUpdateMethod";
+import type { TranscriptTurn } from "../src/shared/transcript";
 
 export async function fixture(supported = true, options: FixtureOptions = {}) {
   harness.reset(supported, options);
@@ -184,6 +188,7 @@ export async function fixture(supported = true, options: FixtureOptions = {}) {
     onPromptComplete: () => state.completions.push(true),
     onStatus: (status) => state.statuses.push(status),
     onTurn: (turn) => state.transcripts.push(turn as (typeof state.transcripts)[number]),
+    onSubagentTurn: (subagentId, turn) => state.subagentTurns.push({ subagentId, turn }),
     onTurnRemoved: (turnId) => {
       const idx = state.transcripts.findIndex((entry) => entry.id === turnId);
       if (idx >= 0) state.transcripts.splice(idx, 1);
@@ -210,6 +215,7 @@ export async function fixture(supported = true, options: FixtureOptions = {}) {
     failures: state.failures,
     statuses: state.statuses,
     transcripts: state.transcripts,
+    subagentTurns: state.subagentTurns,
     capabilities: state.capabilities,
     forkSupport: state.forkSupport,
     cancellations: state.cancellations,
@@ -220,5 +226,8 @@ export async function fixture(supported = true, options: FixtureOptions = {}) {
     },
     update: (update: unknown, sessionId = "session-1") =>
       state.notifications.get("update")?.({ params: { sessionId, update } }),
+    /** Subagent lifecycle as the connection delivers it after `rewriteSubagentUpdates`. */
+    subagent: (update: unknown, sessionId = "session-1") =>
+      state.notifications.get(SUBAGENT_UPDATE_METHOD)?.({ params: { sessionId, update } }),
   };
 }

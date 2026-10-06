@@ -19,19 +19,23 @@ function isSameSelection(
   );
 }
 
-/** Selection + resolved turn for the events right rail. */
+/** Selection + resolved turn (or subagent transcript) for the events right rail. */
 export function useRightRail({
   activeSessionId,
   activeSession,
   transcripts,
   switchboardTurns,
   openSessions,
+  subagentTranscripts,
+  loadingSubagents,
 }: {
   activeSessionId: ActiveSessionId;
   activeSession: Session | null;
   transcripts: Record<string, TranscriptTurn[]>;
   switchboardTurns: SwitchboardTurn[];
   openSessions: Session[];
+  subagentTranscripts: Record<string, TranscriptTurn[]>;
+  loadingSubagents: ReadonlySet<string>;
 }) {
   const [rightRail, setRightRail] = useState<RightRailSelection | null>(null);
   // Callbacks read these through refs/ids so they stay stable while turns stream
@@ -76,6 +80,15 @@ export function useRightRail({
     [],
   );
 
+  /** Show a subagent's transcript; selecting the open subagent again closes the rail. */
+  const toggleSubagentRightRail = useCallback((subagentSessionId: string, subagentId: string) => {
+    setRightRail((prev) =>
+      prev?.sessionId === subagentSessionId && prev.subagentId === subagentId
+        ? null
+        : { sessionId: subagentSessionId, turnId: "", subagentId, focusKey: (prev?.focusKey ?? 0) + 1 },
+    );
+  }, []);
+
   const rightRailView = useMemo(
     () =>
       resolveRightRailView({
@@ -85,8 +98,19 @@ export function useRightRail({
         transcripts,
         switchboardTurns,
         openSessions,
+        subagentTranscripts,
+        loadingSubagents,
       }),
-    [rightRail, activeSessionId, switchboardTurns, openSessions, transcripts, activeSession],
+    [
+      rightRail,
+      activeSessionId,
+      switchboardTurns,
+      openSessions,
+      transcripts,
+      activeSession,
+      subagentTranscripts,
+      loadingSubagents,
+    ],
   );
 
   useEffect(() => {
@@ -99,5 +123,6 @@ export function useRightRail({
     toggleSessionRightRail,
     forceSessionRightRail,
     toggleSwitchboardRightRail,
+    toggleSubagentRightRail,
   };
 }

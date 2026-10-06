@@ -3,9 +3,11 @@ import type { TranscriptTurn } from "../../../shared/transcript";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
+import { SubagentChips } from "../subagents/SubagentChips";
+import { subagentRows } from "../subagents/subagentRows";
 import type { MessageSession } from "./useMessageSession";
 
-/** Compact session turn: user + steers + assistant. Mid-turn events live in the right rail. */
+/** Compact session turn: user + steers + subagents + assistant. Other mid-turn events live in the right rail. */
 export const SessionTurn = memo(function SessionTurn({
   session,
   turn,
@@ -30,6 +32,7 @@ export const SessionTurn = memo(function SessionTurn({
     () => turn.events.filter((event) => event.role === "user"),
     [turn.events],
   );
+  const subagents = useMemo(() => subagentRows(turn.events), [turn.events]);
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
@@ -40,6 +43,7 @@ export const SessionTurn = memo(function SessionTurn({
         forkable
       />
       <TurnEvents session={session} events={steerEvents} />
+      <SubagentChips sessionId={session.id} rows={subagents} />
       {running ? <ThinkingIndicator onActivate={handleOpenUser} /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage

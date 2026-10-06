@@ -108,7 +108,7 @@ export class TurnBuilder {
       if (idx >= 0) {
         const prev = turn.events[idx]!;
         const next =
-          item.role === "tool"
+          item.role === "tool" || item.role === "subagent"
             ? { ...item }
             : { ...prev, text: prev.text + item.text, at: item.at };
         turn.events = turn.events.map((event, i) => (i === idx ? next : event));
@@ -133,6 +133,14 @@ export class TurnBuilder {
 
     turn.events = [...turn.events, { ...item }];
     this.refreshFiles(turn);
+    this.emit(turn);
+  }
+
+  /** Replace an event in whichever turn holds it (a subagent row can settle after its turn). */
+  replaceEvent(item: TranscriptItem): void {
+    const turn = this.turns.find((entry) => entry.events.some((event) => event.id === item.id));
+    if (!turn) return;
+    turn.events = turn.events.map((event) => (event.id === item.id ? { ...item } : event));
     this.emit(turn);
   }
 

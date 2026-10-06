@@ -12,6 +12,8 @@ export interface SessionCallbacks {
   onUsage: (usage: SessionUsage) => void;
   onTurn: (turn: TranscriptTurn) => void;
   onTurnRemoved?: (turnId: string) => void;
+  /** A turn in one of this session's subagent transcripts started or changed. */
+  onSubagentTurn?: (subagentId: string, turn: TranscriptTurn) => void;
   onStatus: (status: "connecting" | "ready" | "running" | "error" | "idle", error?: string | null) => void;
   onPermission: (req: PermissionRequest) => void;
   onAskQuestion: (req: {

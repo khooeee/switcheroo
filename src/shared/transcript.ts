@@ -2,7 +2,15 @@ import type { FileChange } from "./fileChange";
 
 type TurnStatus = "running" | "complete" | "stopped";
 
-export type TranscriptRole = "user" | "assistant" | "thought" | "tool" | "system" | "stopped";
+export type TranscriptRole =
+  | "user"
+  | "assistant"
+  | "thought"
+  | "tool"
+  | "system"
+  | "stopped"
+  /** A subagent the agent started; its own transcript is stored separately. */
+  | "subagent";
 
 export interface TranscriptItem {
   id: string;
@@ -15,6 +23,8 @@ export interface TranscriptItem {
   toolStatus?: string;
   toolTitle?: string;
   fileChanges?: FileChange[];
+  /** `subagent` rows: id of the subagent transcript this row opens. */
+  subagentId?: string;
 }
 
 /** One user prompt and the session updates that followed it. */

@@ -23,6 +23,7 @@ export class SessionPersistence {
     await this.persistTerminalCwds();
     await this.persistStateFile();
     await saveSwitchboardTurns(state.bus.list());
+    await state.subagentTranscripts.flush();
     await Promise.all(
       [...state.sessions.values()].map(async (session) => {
         await saveSessionMeta(session.id, metaFromSession(session));

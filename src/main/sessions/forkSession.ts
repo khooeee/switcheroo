@@ -22,6 +22,7 @@ export async function forkSession(
       state.prependSession(session, pin);
       state.transcripts.set(session.id, transcript);
       state.hydrated.add(session.id);
+      void state.subagentTranscripts.copySession(sessionId, session.id).catch(() => undefined);
     },
     setActiveSession: (id) => { state.activeTabId = id; },
     emitSessions: () => state.emitSessions(),

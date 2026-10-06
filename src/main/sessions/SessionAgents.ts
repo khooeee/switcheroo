@@ -8,6 +8,7 @@ import type { SessionState } from "./SessionState";
 import type { SessionPersistence } from "./SessionPersistence";
 import type { SessionHydration } from "./SessionHydration";
 import { recordTurn } from "./recordTurn";
+import { recordSubagentTurn } from "./recordSubagentTurn";
 import { removeTurn } from "./removeTurn";
 import { setSessionStatus } from "./setSessionStatus";
 import { warmCallbacks } from "./warmCallbacks";
@@ -72,6 +73,8 @@ export class SessionAgents {
       session,
       send: (channel, payload) => state.send(channel, payload),
       handleTurn: (sessionId, turn) => recordTurn(state, sessionId, turn),
+      handleSubagentTurn: (sessionId, subagentId, turn) =>
+        recordSubagentTurn(state, sessionId, subagentId, turn),
       removeTurn: (sessionId, turnId) => removeTurn(state, sessionId, turnId),
       setStatus: (sessionId, status, error) => setSessionStatus(state, sessionId, status, error),
       emitSessions: () => state.emitSessions(),

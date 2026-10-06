@@ -4,6 +4,7 @@ import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
 import { PermissionBar } from "../permissions/PermissionBar";
+import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
 import "./transcript.css";
@@ -19,6 +20,8 @@ interface Props {
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
   rightRailOpen: boolean;
+  /** Subagent shown in the right rail; its chip in the transcript looks pressed. */
+  openSubagentId: string | null;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
   permission: PermissionRequest | null;
@@ -38,6 +41,7 @@ export function ChatPanel({
   onOpenRightRail,
   onForceOpenRightRail,
   rightRailOpen,
+  openSubagentId,
   onSend,
   onInterrupt,
   permission,
@@ -54,17 +58,19 @@ export function ChatPanel({
         </div>
       </div>
 
-      <SessionTranscript
-        session={session}
-        turns={turns}
-        focusEventId={focusEventId}
-        focusTurnId={focusTurnId}
-        focusEventKey={focusEventKey}
-        chatRef={chatRef}
-        onOpenRightRail={onOpenRightRail}
-        onForceOpenRightRail={onForceOpenRightRail}
-        rightRailOpen={rightRailOpen}
-      />
+      <OpenSubagentIdContext.Provider value={openSubagentId}>
+        <SessionTranscript
+          session={session}
+          turns={turns}
+          focusEventId={focusEventId}
+          focusTurnId={focusTurnId}
+          focusEventKey={focusEventKey}
+          chatRef={chatRef}
+          onOpenRightRail={onOpenRightRail}
+          onForceOpenRightRail={onForceOpenRightRail}
+          rightRailOpen={rightRailOpen}
+        />
+      </OpenSubagentIdContext.Provider>
 
       {permission && (
         <PermissionBar request={permission} onRespond={onPermission} />

@@ -14,8 +14,8 @@ import { sessionRoutes } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
 import { connectAcpAgent } from "./connectAcpAgent";
 import { attachAcpSession } from "./attachAcpSession";
-import { dispatchSessionUpdate } from "./dispatchSessionUpdate";
 import { SharedAgentConnection } from "./SharedAgentConnection";
+import { SessionUpdateRouter } from "./SessionUpdateRouter";
 
 export class AcpSession extends SharedAgentConnection {
   id: string;
@@ -31,6 +31,7 @@ export class AcpSession extends SharedAgentConnection {
   private files: SessionFiles;
   private output: SessionOutput;
   private turns: TurnBuilder;
+  private updates: SessionUpdateRouter;
   private runner: PromptRunner;
   private disposed = false;
   /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
@@ -78,6 +79,15 @@ export class AcpSession extends SharedAgentConnection {
       },
       finishPending: (status) => this.finishPending(status),
       noteSystem: (text) => this.noteSystem(text),
+    });
+    this.updates = new SessionUpdateRouter({
+      agent,
+      turns: this.turns,
+      output: this.output,
+      callbacks: () => this.cb,
+      mirroring: () => this.mirrorUpdates,
+      applyThreadStatus: (status) => this.runner.applyThreadStatus(status),
+      owner: this,
     });
   }
 
@@ -225,11 +235,8 @@ export class AcpSession extends SharedAgentConnection {
         return this.questions.request(params, signal);
       },
       onTodosUpdated: () => this.noteSystem("Todos updated"),
-      onSessionUpdate: (sessionId, update) => {
-        const target = sessionRoutes.forUpdate(sessionId, this);
-        if (target.disposed) return;
-        target.handleSessionUpdate(update);
-      },
+      onSessionUpdate: (sessionId, update) => this.routerFor(sessionId)?.update(sessionId, update),
+      onSubagentUpdate: (sessionId, update) => this.routerFor(sessionId)?.lifecycle(sessionId, update),
       onProcessExit: (code) => {
         this.finishPending("interrupted");
         this.connection?.close();
@@ -249,17 +256,10 @@ export class AcpSession extends SharedAgentConnection {
     this.initializationMeta = result.initializationMeta;
   }
 
-  private handleSessionUpdate(update: acp.SessionUpdate): void {
-    dispatchSessionUpdate(update, {
-      onAvailableCommands: (commands) => this.cb.onAvailableCommands(commands),
-      onUsage: (usage) => this.cb.onUsage(usage),
-      onOutput: (output) => this.output.handleUpdate(output),
-      onThreadStatus: (status) => {
-        // Ignore live-status during load/resume replay — it would leave turnRunning
-        // stuck true and the next user message would be sent as a steer.
-        if (this.mirrorUpdates) this.runner.applyThreadStatus(status);
-      },
-    });
+  /** Fork siblings share this connection, so an update may belong to another AcpSession. */
+  private routerFor(sessionId: string): SessionUpdateRouter | null {
+    const target = sessionRoutes.forUpdate(sessionId, this);
+    return target.disposed ? null : target.updates;
   }
 
   /** Waits for the turn to finish unless `{ wait: false }`; returns the turn id. */
@@ -283,6 +283,7 @@ export class AcpSession extends SharedAgentConnection {
   private finishPending(status: string): void {
     this.questions.cancel();
     this.output.finish(status);
+    this.updates.subagents.finish();
   }
 
   private noteSystem(text: string): void {
@@ -294,6 +295,7 @@ export class AcpSession extends SharedAgentConnection {
     this.finishPending("interrupted");
     this.disposed = true;
     this.runner.dispose();
+    this.updates.dispose();
     this.clearSessionId();
     this.releaseConnection();
   }

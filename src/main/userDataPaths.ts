@@ -21,6 +21,14 @@ export function sessionTranscriptPath(sessionId: string): string {
   return path.join(sessionDir(sessionId), "transcript.jsonl");
 }
 
+export function subagentsDir(sessionId: string): string {
+  return path.join(sessionDir(sessionId), "subagents");
+}
+
+export function subagentTranscriptPath(sessionId: string, subagentId: string): string {
+  return path.join(subagentsDir(sessionId), `${subagentId.replace(/[^\w.-]/g, "_")}.jsonl`);
+}
+
 export function sessionMetaPath(sessionId: string): string {
   return path.join(sessionDir(sessionId), "meta.json");
 }

@@ -1,0 +1,127 @@
+.subagent-spinner {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  color: var(--text-dim);
+  animation: subagent-spinner-turn 0.8s linear infinite;
+}
+
+.subagent-state-glyph {
+  display: inline-block;
+  width: 11px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text-dim);
+}
+
+.subagent-state-glyph.completed { color: var(--copy-done); }
+.subagent-state-glyph.failed { color: var(--danger-text); }
+
+@keyframes subagent-spinner-turn {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subagent-spinner { animation: none; }
+}
+
+.subagent-rail-heading {
+  min-width: 0;
+}
+
+.subagent-rail-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.subagent-rail-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subagent-rail-meta {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--text-dim) 65%, transparent);
+  font-size: 12px;
+}
+
+.subagent-rail-empty {
+  padding: 16px 14px;
+  color: var(--text-dim);
+}
+
+.message .subagent-row-task {
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.subagent-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 12px;
+  overflow: hidden;
+}
+
+.subagent-chips.expanded {
+  flex-wrap: wrap;
+}
+
+.subagent-chips-label {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.subagent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 240px;
+  flex-shrink: 1;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.subagent-chip:hover {
+  background: color-mix(in srgb, var(--text) 8%, var(--card-bg));
+}
+
+.subagent-chip.active {
+  border-color: var(--codex);
+}
+
+.subagent-chip.more {
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.subagent-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

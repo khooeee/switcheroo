@@ -83,6 +83,7 @@ export interface SwitcherooApi {
     canSelectAll?: boolean;
   }) => Promise<void>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
+  getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;
   stopFindInSessions: () => Promise<void>;
   onFindProgress: (
@@ -107,6 +108,9 @@ export interface SwitcherooApi {
   ) => () => void;
   onTranscript: (
     cb: (payload: { sessionId: string; turn: TranscriptTurn }) => void,
+  ) => () => void;
+  onSubagentTurn: (
+    cb: (payload: { sessionId: string; subagentId: string; turn: TranscriptTurn }) => void,
   ) => () => void;
   /** `draft` seeds the composer (fork on a user message). */
   onTranscriptReset: (

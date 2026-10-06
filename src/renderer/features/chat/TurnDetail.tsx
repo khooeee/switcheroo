@@ -9,15 +9,21 @@ import type { MessageSession } from "./useMessageSession";
 export const TurnDetail = memo(function TurnDetail({
   session,
   turn,
+  userLabel,
+  forkable = true,
 }: {
   session: MessageSession;
   turn: TranscriptTurn;
+  /** Pill text for the opening message (a subagent's comes from the agent, not the user). */
+  userLabel?: string;
+  /** Subagent transcripts are read-only. */
+  forkable?: boolean;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
-      <TranscriptMessage session={session} item={turn.user} forkable />
+      <TranscriptMessage session={session} item={turn.user} label={userLabel} forkable={forkable} />
       <TurnEvents session={session} events={turn.events} />
       {running && turn.assistant ? (
         <TranscriptMessage session={session} item={turn.assistant} />
@@ -28,7 +34,7 @@ export const TurnDetail = memo(function TurnDetail({
           session={session}
           item={turn.assistant}
           extraFileChanges={turn.fileChanges}
-          forkable
+          forkable={forkable}
         />
       ) : null}
       {!running && !turn.assistant && turn.status === "stopped" ? (

@@ -1,19 +1,24 @@
-import { memo, useEffect, useRef, type RefObject } from "react";
+import { memo, useEffect, useMemo, useRef, type RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { SubagentRailHeading } from "../subagents/SubagentRailHeading";
 import { flashEventElement } from "./flashEventElement";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
+import type { RightRailView } from "./RightRailView";
 import { TurnDetail } from "./TurnDetail";
 import { useMessageSession } from "./useMessageSession";
 import { startRightRailResize } from "./startRightRailResize";
 import { useShowRightRail } from "./useShowRightRail";
 import "./rightRail.css";
 
-/** Scrollable right rail showing one turn in full (user + events + assistant). */
+const NO_TURNS: TranscriptTurn[] = [];
+
+/** Scrollable right rail: one turn in full (Turn Details), or a subagent's whole transcript. */
 export const RightRail = memo(function RightRail({
   session,
   turn,
+  subagent,
   agent,
   cwd,
   scrollRef,
@@ -22,7 +27,8 @@ export const RightRail = memo(function RightRail({
   onClose,
 }: {
   session: Session | undefined;
-  turn: TranscriptTurn;
+  turn: TranscriptTurn | null;
+  subagent: RightRailView["subagent"];
   /** When session is missing (closed Switchboard turn). */
   agent?: string;
   cwd?: string;
@@ -34,6 +40,12 @@ export const RightRail = memo(function RightRail({
   const messageSession = useMessageSession(session);
   const localScrollRef = useRef<HTMLDivElement>(null);
   const resolvedScrollRef = scrollRef ?? localScrollRef;
+  const turns = useMemo(
+    () => subagent?.turns ?? (turn ? [turn] : NO_TURNS),
+    [subagent?.turns, turn],
+  );
+  const firstTurnId = turns[0]?.id;
+  const label = subagent ? "Subagent" : "Turn Details";
 
   useShowRightRail();
 
@@ -46,10 +58,10 @@ export const RightRail = memo(function RightRail({
     ) as HTMLElement | null;
     if (!el) return;
     return flashEventElement(el);
-  }, [focusEventId, focusKey, turn.id, resolvedScrollRef]);
+  }, [focusEventId, focusKey, firstTurnId, resolvedScrollRef]);
 
   return (
-    <aside className="right-rail" aria-label="Turn Details">
+    <aside className="right-rail" aria-label={label}>
       <div
         className="right-rail-resize"
         role="separator"
@@ -58,7 +70,7 @@ export const RightRail = memo(function RightRail({
         onPointerDown={startRightRailResize}
       />
       <div className="right-rail-header">
-        <h2>Turn Details</h2>
+        {subagent ? <SubagentRailHeading subagent={subagent} /> : <h2>Turn Details</h2>}
         <button
           type="button"
           className="btn"
@@ -70,10 +82,23 @@ export const RightRail = memo(function RightRail({
         </button>
       </div>
       <div className="right-rail-scroll" ref={resolvedScrollRef} onContextMenu={onEditContextMenu}>
-        {messageSession ? (
-          <TurnDetail session={messageSession} turn={turn} />
-        ) : (
-          <ClosedTurnDetail turn={turn} agent={agent} cwd={cwd} />
+        {subagent && turns.length === 0 ? (
+          <div className="subagent-rail-empty">
+            {subagent.loading ? "Loading…" : "No transcript was saved for this subagent."}
+          </div>
+        ) : null}
+        {turns.map((entry) =>
+          messageSession ? (
+            <TurnDetail
+              key={entry.id}
+              session={messageSession}
+              turn={entry}
+              userLabel={subagent ? "prompt" : undefined}
+              forkable={!subagent}
+            />
+          ) : (
+            <ClosedTurnDetail key={entry.id} turn={entry} agent={agent} cwd={cwd} />
+          ),
         )}
       </div>
     </aside>

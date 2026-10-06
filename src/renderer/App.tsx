@@ -21,6 +21,8 @@ import { useSessionRailActions } from "./features/sessions/useSessionRailActions
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { PermissionBar } from "./features/permissions/PermissionBar";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
+import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
+import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
 
 /** Stable fallback so memoized SessionTranscript does not re-render on a new `[]`. */
 const NO_TURNS: TranscriptTurn[] = [];
@@ -45,6 +47,7 @@ export function App() {
     setSwitchboardNotice,
   } = useAppSessionState();
   const railActions = useSessionRailActions();
+  const { subagentTranscripts, loadingSubagents, loadSubagentTranscript } = useSubagentTranscripts();
 
   const [showNewSession, setShowNewSession] = useState(false);
   const [sessionFilter, setSessionFilter] = useState("");
@@ -75,13 +78,21 @@ export function App() {
     toggleSessionRightRail,
     forceSessionRightRail,
     toggleSwitchboardRightRail,
+    toggleSubagentRightRail,
   } = useRightRail({
     activeSessionId: activeTerminalTab ? SWITCHBOARD_ID : activeTabId,
     activeSession: activeTerminalTab ? null : activeSession,
     transcripts,
     switchboardTurns,
     openSessions,
+    subagentTranscripts,
+    loadingSubagents,
   });
+
+  const openSubagent = useCallback((sessionId: string, subagentId: string) => {
+    loadSubagentTranscript(sessionId, subagentId);
+    toggleSubagentRightRail(sessionId, subagentId);
+  }, [loadSubagentTranscript, toggleSubagentRightRail]);
 
   const findRootRefs = useMemo(() => {
     if (findScope) return [findScopeRef];
@@ -152,116 +163,120 @@ export function App() {
   }, []);
 
   return (
-    <div className="app">
-      <SessionRail
-        pinned={pinnedSessions}
-        unpinned={unpinnedSessions}
-        activeTabId={activeTabId}
-        filter={sessionFilter}
-        onFilter={setSessionFilter}
-        onSelect={selectTab}
-        onAdd={() => setShowNewSession(true)}
-        {...railActions}
-      />
+    <SubagentOpenContext.Provider value={openSubagent}>
+      <div className="app">
+        <SessionRail
+          pinned={pinnedSessions}
+          unpinned={unpinnedSessions}
+          activeTabId={activeTabId}
+          filter={sessionFilter}
+          onFilter={setSessionFilter}
+          onSelect={selectTab}
+          onAdd={() => setShowNewSession(true)}
+          {...railActions}
+        />
 
-      <div className="main relative">
-        {findOpen && !activeTerminalTab && (
-          <FindBar
-            key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
-            query={findQuery}
-            onQuery={setFindQuery}
-            rootRefs={findRootRefs}
-            rootsKey={`${rightRailView ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
-            scope={findScope ? "message" : rightRailView ? "turn-details" : "session"}
-            onClose={closeFind}
-          />
-        )}
+        <div className="main relative">
+          {findOpen && !activeTerminalTab && (
+            <FindBar
+              key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
+              query={findQuery}
+              onQuery={setFindQuery}
+              rootRefs={findRootRefs}
+              rootsKey={`${rightRailView ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
+              scope={findScope ? "message" : rightRailView ? "turn-details" : "session"}
+              onClose={closeFind}
+            />
+          )}
 
-        {activeTabId === SWITCHBOARD_ID ? (
-          <SwitchboardPanel
-            turns={switchboardTurns}
-            sessions={openSessions}
-            notice={switchboardNotice}
-            scrollRef={switchboardRef}
-            onNoticeDismiss={() => setSwitchboardNotice(null)}
-            onTurnClick={onSwitchboardClick}
-            onOpenRightRail={toggleSwitchboardRightRail}
+          {activeTabId === SWITCHBOARD_ID ? (
+            <SwitchboardPanel
+              turns={switchboardTurns}
+              sessions={openSessions}
+              notice={switchboardNotice}
+              scrollRef={switchboardRef}
+              onNoticeDismiss={() => setSwitchboardNotice(null)}
+              onTurnClick={onSwitchboardClick}
+              onOpenRightRail={toggleSwitchboardRightRail}
+            />
+          ) : activeTerminalTab ? null : activeSession ? (
+            <ChatPanel
+              session={activeSession}
+              turns={transcripts[activeSession.id] ?? NO_TURNS}
+              focusEventId={focusEvent?.id ?? null}
+              focusTurnId={focusEvent?.turnId ?? null}
+              focusEventKey={focusEvent?.key ?? 0}
+              promptFocus={promptFocus}
+              chatRef={chatRef}
+              onOpenRightRail={toggleSessionRightRail}
+              onForceOpenRightRail={forceSessionRightRail}
+              rightRailOpen={!!rightRailView}
+              openSubagentId={rightRailView?.subagent?.id ?? null}
+              onSend={sendPrompt}
+              onInterrupt={() => {
+                void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
+              }}
+              permission={permission?.sessionId === activeSession.id ? permission : null}
+              askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
+              onPermission={(optionId) => {
+                if (!permission) return;
+                void window.switcheroo.respondPermission(permission.requestId, optionId);
+                setPermission(null);
+              }}
+              onAsk={(outcome) => {
+                if (!askQuestion) return;
+                void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
+              }}
+            />
+          ) : (
+            <section className="panel">
+              <div className="empty">Select or create a session to begin.</div>
+            </section>
+          )}
+          <TerminalStack sessions={openSessions} activeTab={activeTerminalTab} />
+        </div>
+
+        {rightRailView && !activeTerminalTab ? (
+          <RightRail
+            session={rightRailView.session}
+            turn={rightRailView.turn}
+            subagent={rightRailView.subagent}
+            agent={rightRailView.agent}
+            cwd={rightRailView.cwd}
+            scrollRef={rightRailScrollRef}
+            focusEventId={rightRailView.focusEventId}
+            focusKey={rightRailView.focusKey}
+            onClose={closeRightRail}
           />
-        ) : activeTerminalTab ? null : activeSession ? (
-          <ChatPanel
-            session={activeSession}
-            turns={transcripts[activeSession.id] ?? NO_TURNS}
-            focusEventId={focusEvent?.id ?? null}
-            focusTurnId={focusEvent?.turnId ?? null}
-            focusEventKey={focusEvent?.key ?? 0}
-            promptFocus={promptFocus}
-            chatRef={chatRef}
-            onOpenRightRail={toggleSessionRightRail}
-            onForceOpenRightRail={forceSessionRightRail}
-            rightRailOpen={!!rightRailView}
-            onSend={sendPrompt}
-            onInterrupt={() => {
-              void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
-            }}
-            permission={permission?.sessionId === activeSession.id ? permission : null}
-            askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
-            onPermission={(optionId) => {
-              if (!permission) return;
+        ) : null}
+
+        {permission && activeTabId === SWITCHBOARD_ID && (
+          <PermissionBar
+            request={permission}
+            onRespond={(optionId) => {
               void window.switcheroo.respondPermission(permission.requestId, optionId);
               setPermission(null);
             }}
-            onAsk={(outcome) => {
-              if (!askQuestion) return;
-              void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
-            }}
           />
-        ) : (
-          <section className="panel">
-            <div className="empty">Select or create a session to begin.</div>
-          </section>
         )}
-        <TerminalStack sessions={openSessions} activeTab={activeTerminalTab} />
-      </div>
 
-      {rightRailView && !activeTerminalTab ? (
-        <RightRail
-          session={rightRailView.session}
-          turn={rightRailView.turn}
-          agent={rightRailView.agent}
-          cwd={rightRailView.cwd}
-          scrollRef={rightRailScrollRef}
-          focusEventId={rightRailView.focusEventId}
-          focusKey={rightRailView.focusKey}
-          onClose={closeRightRail}
-        />
-      ) : null}
+        {showNewSession && (
+          <NewSessionModal
+            canPin={pinnedSessions.length < MAX_PINNED_SESSIONS}
+            onCancel={() => setShowNewSession(false)}
+            onCreate={createSession}
+          />
+        )}
 
-      {permission && activeTabId === SWITCHBOARD_ID && (
-        <PermissionBar
-          request={permission}
-          onRespond={(optionId) => {
-            void window.switcheroo.respondPermission(permission.requestId, optionId);
-            setPermission(null);
+        <FindInHistoryModal
+          open={showFindInSessions}
+          onCancel={() => setShowFindInSessions(false)}
+          onSelect={(hit) => {
+            setShowFindInSessions(false);
+            void window.switcheroo.navigateToEvent(hit.sessionId, hit.turnId, hit.eventId);
           }}
         />
-      )}
-
-      {showNewSession && (
-        <NewSessionModal
-          canPin={pinnedSessions.length < MAX_PINNED_SESSIONS}
-          onCancel={() => setShowNewSession(false)}
-          onCreate={createSession}
-        />
-      )}
-
-      <FindInHistoryModal
-        open={showFindInSessions}
-        onCancel={() => setShowFindInSessions(false)}
-        onSelect={(hit) => {
-          setShowFindInSessions(false);
-          void window.switcheroo.navigateToEvent(hit.sessionId, hit.turnId, hit.eventId);
-        }}
-      />
-    </div>
+      </div>
+    </SubagentOpenContext.Provider>
   );
 }

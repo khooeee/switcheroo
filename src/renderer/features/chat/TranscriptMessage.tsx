@@ -8,6 +8,7 @@ import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
+import { OpenSubagentButton } from "../subagents/OpenSubagentButton";
 import { QueuedStatus } from "./QueuedStatus";
 import type { MessageSession } from "./useMessageSession";
 
@@ -19,6 +20,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   onToggleDetails,
   extraFileChanges,
   forkable,
+  label,
 }: {
   session: MessageSession;
   item: TranscriptItem;
@@ -30,6 +32,8 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
   extraFileChanges?: FileChange[];
+  /** Pill text; defaults to the role. */
+  label?: string;
 }) {
   const text =
     session.agent === "cursor" ? stripCursorStreamNoise(item.text) : item.text;
@@ -37,7 +41,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   const clickable = !!onActivate;
   const markdown =
     item.role === "assistant" || item.role === "user" || item.role === "thought";
-  const showActions = forkable || !!text || !!onToggleDetails;
+  const showActions = forkable || !!text || !!onToggleDetails || !!item.subagentId;
 
   const canFork = !!(forkable && session.supportsForkAtMessage);
 
@@ -62,7 +66,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
     >
       {item.role !== "stopped" && (
         <div className="row">
-          <span className="kind-pill">{item.role}</span>
+          <span className="kind-pill">{label ?? item.role}</span>
           {item.queued ? <QueuedStatus /> : null}
           {item.toolStatus && <span className="tool-status">{item.toolStatus}</span>}
           <span className="event-timestamp">
@@ -87,12 +91,16 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       ) : (
         <div className="body">{text}</div>
       )}
+      {item.subagentId && item.toolTitle ? <div className="subagent-row-task">{item.toolTitle}</div> : null}
       {showActions ? (
         <div className="event-actions">
           {canFork ? (
             <ForkEventButton sessionId={session.id} eventId={item.id} />
           ) : null}
           {text ? <CopyEventButton text={text} /> : null}
+          {item.subagentId ? (
+            <OpenSubagentButton sessionId={session.id} subagentId={item.subagentId} />
+          ) : null}
           {onToggleDetails ? <TurnDetailsButton onToggle={onToggleDetails} /> : null}
         </div>
       ) : null}

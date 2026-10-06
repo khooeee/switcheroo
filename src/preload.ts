@@ -66,6 +66,8 @@ const api: SwitcherooApi = {
   showEditContextMenu: (opts) => ipcRenderer.invoke("edit:contextMenu", opts),
   showComposerContextMenu: (opts) => ipcRenderer.invoke("composer:contextMenu", opts),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
+  getSubagentTranscript: (sessionId: string, subagentId: string) =>
+    ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),
   findInSessions: (query: string, searchId: number) =>
     ipcRenderer.invoke("sessions:findInSessions", query, searchId) as Promise<{ searchId: number }>,
   stopFindInSessions: () => ipcRenderer.invoke("sessions:stopFindInSessions"),
@@ -79,6 +81,8 @@ const api: SwitcherooApi = {
     subscribe<{ sessionId: string; message: string }>("switchboard:session-removed", cb),
   onTranscript: (cb) =>
     subscribe<{ sessionId: string; turn: TranscriptTurn }>("transcript", cb),
+  onSubagentTurn: (cb) =>
+    subscribe<{ sessionId: string; subagentId: string; turn: TranscriptTurn }>("subagent:turn", cb),
   onTranscriptReset: (cb) =>
     subscribe<{ sessionId: string; turns: TranscriptTurn[]; draft?: string }>("transcript:reset", cb),
   onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),

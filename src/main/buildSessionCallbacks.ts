@@ -7,6 +7,7 @@ type CallbackDeps = {
   session: Session;
   send: (channel: string, payload: unknown) => void;
   handleTurn: (sessionId: string, turn: TranscriptTurn) => void;
+  handleSubagentTurn: (sessionId: string, subagentId: string, turn: TranscriptTurn) => void;
   removeTurn: (sessionId: string, turnId: string) => void;
   setStatus: (sessionId: string, status: SessionStatus, error: string | null) => void;
   emitSessions: () => void;
@@ -24,6 +25,7 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
       deps.send("prompt:complete", { sessionId: session.id });
     },
     onTurn: (turn) => deps.handleTurn(session.id, turn),
+    onSubagentTurn: (subagentId, turn) => deps.handleSubagentTurn(session.id, subagentId, turn),
     onTurnRemoved: (turnId) => deps.removeTurn(session.id, turnId),
     onStatus: (status, error) => deps.setStatus(session.id, status, error ?? null),
     onSteeringSupport: (supported) => {

@@ -144,6 +144,8 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     return savePastedImage(png, "image/png");
   });
   ipcMain.handle("transcript:get", (_e, sessionId: string) => sessions.getTranscript(sessionId));
+  ipcMain.handle("subagent:transcript", (_e, sessionId: string, subagentId: string) =>
+    sessions.getSubagentTranscript(sessionId, subagentId));
 
   function requireSession(sessionId: string) {
     const session = sessions.getSession(sessionId);
