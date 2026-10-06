@@ -39,7 +39,7 @@ export class TerminalHost {
     if (this.ptys.has(tabId)) return;
     const shell = defaultShell();
     const startCwd = cwd.trim() || os.homedir();
-    const pty = ptySpawn(shell, [], {
+    const pty = ptySpawn(shell, defaultShellArgs(), {
       name: "xterm-256color",
       cols: 80,
       rows: 24,
@@ -140,6 +140,11 @@ export class TerminalHost {
     clearTimeout(timer);
     this.cwdTimers.delete(tabId);
   }
+}
+
+/** Login shell on Unix, like Terminal.app / iTerm, so ~/.zprofile and friends run. */
+function defaultShellArgs(): string[] {
+  return process.platform === "win32" ? [] : ["-l"];
 }
 
 function defaultShell(): string {
