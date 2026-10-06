@@ -58,6 +58,13 @@ test("renders rich Markdown and scroll containers for code and GFM tables", () =
   }
 });
 
+test("each fenced code block gets its own copy button; inline code does not", () => {
+  const html = render("Run `npm i` then:\n\n```sh\nnpm test\nnpm start\n```\n\n```ts\nconst x = 1;\n```");
+  expect((html.match(/class="markdown-code-block"/g) || []).length).toBe(2);
+  expect((html.match(/aria-label="Copy code"/g) || []).length).toBe(2);
+  expect(html).toContain("<code>npm i</code>");
+});
+
 test("loose lists still render as one list with paragraph-wrapped items", () => {
   const html = render("- one\n\n- two\n\n- three");
   expect(html).toMatch(/<ul>\s*<li>\s*<p>one<\/p>\s*<\/li>\s*<li>\s*<p>two<\/p>/);

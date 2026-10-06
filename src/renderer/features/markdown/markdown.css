@@ -10,7 +10,7 @@
 .markdown-body ul,
 .markdown-body ol,
 .markdown-body blockquote,
-.markdown-body pre,
+.markdown-code-block,
 .markdown-table { margin: 0.5em 0; }
 .markdown-body h1 { font-size: 1.45em; }
 .markdown-body h2 { font-size: 1.3em; }
@@ -30,6 +30,16 @@
 .markdown-body code { font-family: var(--font-mono); font-weight: var(--font-mono-weight); background: var(--code-bg); border-radius: 3px; padding: 0.1em 0.3em; }
 .markdown-body pre { overflow-x: auto; white-space: pre; word-break: normal; overflow-wrap: normal; padding: 10px; background: var(--code-bg); border-radius: 6px; tab-size: 2; }
 .markdown-body pre code { padding: 0; background: transparent; }
+.markdown-code-block { position: relative; }
+.markdown-code-block > pre { margin: 0; }
+/* Sits over the block's bottom-right corner; revealed on hover so it never hides code at rest.
+   Backgrounds stay opaque so code scrolled underneath does not bleed through. */
+.markdown-code-block .markdown-code-copy { position: absolute; bottom: 5px; right: 5px; background: var(--code-bg); opacity: 0; transition: opacity 0.12s ease; user-select: none; }
+.markdown-code-block .markdown-code-copy:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 10%, var(--code-bg)); }
+.markdown-code-block .markdown-code-copy.copied { background: color-mix(in srgb, var(--copy-done) 14%, var(--code-bg)); }
+.markdown-code-block:hover .markdown-code-copy,
+.markdown-code-block .markdown-code-copy:focus-visible,
+.markdown-code-block .markdown-code-copy.copied { opacity: 1; }
 .markdown-table { overflow-x: auto; }
 .markdown-body table { border-collapse: collapse; min-width: 0; }
 .markdown-body :is(th, td) { border: 1px solid var(--border); padding: 5px 9px; }
