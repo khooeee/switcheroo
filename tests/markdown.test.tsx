@@ -61,7 +61,7 @@ test("renders rich Markdown and scroll containers for code and GFM tables", () =
 test("each fenced code block gets its own copy button; inline code does not", () => {
   const html = render("Run `npm i` then:\n\n```sh\nnpm test\nnpm start\n```\n\n```ts\nconst x = 1;\n```");
   expect((html.match(/class="markdown-code-block"/g) || []).length).toBe(2);
-  expect((html.match(/aria-label="Copy code"/g) || []).length).toBe(2);
+  expect((html.match(/aria-label="Copy Code"/g) || []).length).toBe(2);
   expect(html).toContain("<code>npm i</code>");
 });
 

@@ -1,19 +1,19 @@
-import { useRef, type ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import type { ExtraProps } from "react-markdown";
 import { CheckIcon } from "../copy/CheckIcon";
 import { CopyIcon } from "../copy/CopyIcon";
 import { useCopiedFlash } from "../copy/useCopiedFlash";
+import { codeBlockText } from "./codeBlockText";
 import "../copy/eventActionButton.css";
 
 /** Fenced code block with its own copy icon; copies the rendered code text, not the fence. */
 export function MarkdownCodeBlock({ node: _node, ...props }: ComponentPropsWithoutRef<"pre"> & ExtraProps) {
-  const preRef = useRef<HTMLPreElement>(null);
   const [copied, copy] = useCopiedFlash();
-  const label = copied ? "Copied" : "Copy code";
+  const label = copied ? "Copied" : "Copy Code";
 
   return (
     <div className="markdown-code-block">
-      <pre ref={preRef} {...props} />
+      <pre {...props} />
       <button
         type="button"
         className={`event-action markdown-code-copy${copied ? " copied" : ""}`}
@@ -23,7 +23,7 @@ export function MarkdownCodeBlock({ node: _node, ...props }: ComponentPropsWitho
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          copy((preRef.current?.textContent ?? "").replace(/\n$/, ""));
+          copy(codeBlockText(event.currentTarget.closest(".markdown-code-block")));
         }}
       >
         {copied ? <CheckIcon /> : <CopyIcon />}

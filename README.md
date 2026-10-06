@@ -17,12 +17,16 @@ More find features beyond searching the current session are supported:
 - Find in history will search your entire history
 - And find in the current session works as usual
 
+And in the same vein, copying is much easier:
+- Copy code
+- Copy message
+
 There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
 There's also GitHub niceties:
-- Open Markdown files like how they would appear in GitHub
+- Preview Markdown files like how they would appear in GitHub
 
 There's also orchestration features:
 - "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization (e.g. reading GitHub issues & implementing them in parallel).
@@ -31,7 +35,7 @@ There's also orchestration features:
 
 Download the latest release from [GitHub Releases](https://github.com/khooeee/switcheroo/releases):
 
-- **Apple Silicon** (M1/M2/M3/M4): `Switcheroo-*-arm64.dmg`
+- **Apple Silicon** (M1 onwards): `Switcheroo-*-arm64.dmg`
 - **Intel**: `Switcheroo-*-x64.dmg`
 
 Open the `.dmg`, drag **Switcheroo** into Applications, then launch it.
