@@ -1,5 +1,22 @@
 # Contributing
 
+## Releasing (macOS)
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds Apple Silicon and Intel DMGs/ZIPs and publishes a GitHub Release.
+
+```bash
+# Keep package.json version in sync with the tag when you can
+npm version patch   # or minor / major — creates commit + tag
+git push origin main --follow-tags
+```
+
+Or tag manually after updating `version` in `package.json`:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
 ## Find in History test data
 
 To stress-test **Find in History** (Cmd/Ctrl+Shift+F) without a large real archive, seed fake sessions:

@@ -27,17 +27,36 @@ There's also GitHub niceties:
 There's also orchestration features:
 - "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization (e.g. reading GitHub issues & implementing them in parallel).
 
+## Install (macOS)
+
+Download the latest release from [GitHub Releases](https://github.com/khooeee/switcheroo/releases):
+
+- **Apple Silicon** (M1/M2/M3/M4): `Switcheroo-*-arm64.dmg`
+- **Intel**: `Switcheroo-*-x64.dmg`
+
+Open the `.dmg`, drag **Switcheroo** into Applications, then launch it.
+
+Builds are not notarized. On first open, if macOS blocks the app, right-click **Switcheroo** → **Open**, or clear quarantine:
+
+```bash
+xattr -cr /Applications/Switcheroo.app
+```
+
+A `.zip` of the app is also attached to each release if you prefer not to use the DMG.
+
 ## Prerequisites
 
-- Node.js 22 LTS (`>=22.12.0 <23`)
-- At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with `npm install`; Cursor and Prime use their installed CLIs):
-  - **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
-  - **Codex**: Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
-  - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
-  - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
-  - **Prime Agent**: `prime-agent` on `PATH` (installer puts it in `~/.local/bin`) and authenticated via `/login` or a provider API key
+At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with the app; Cursor and Prime use their installed CLIs):
+
+- **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
+- **Codex**: Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
+- **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
+- **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
+- **Prime Agent**: `prime-agent` on `PATH` (installer puts it in `~/.local/bin`) and authenticated via `/login` or a provider API key
 
 ## Develop
+
+Requires Node.js 22 LTS (`>=22.12.0 <23`).
 
 ```bash
 npm install
