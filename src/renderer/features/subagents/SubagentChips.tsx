@@ -1,12 +1,9 @@
-import { memo, useContext, useState } from "react";
+import { memo, useContext } from "react";
 import type { TranscriptItem } from "../../../shared/transcript";
 import { OpenSubagentIdContext } from "./OpenSubagentIdContext";
 import { SubagentOpenContext } from "./SubagentOpenContext";
 import { SubagentStateIcon } from "./SubagentStateIcon";
 import "./subagents.css";
-
-/** Chips beyond this collapse into "+N" until expanded. */
-const MAX_VISIBLE = 4;
 
 /** A turn's subagents between its user message and final reply; click one to open it in the right rail. */
 export const SubagentChips = memo(function SubagentChips({
@@ -16,22 +13,13 @@ export const SubagentChips = memo(function SubagentChips({
   sessionId: string;
   rows: TranscriptItem[];
 }) {
-  const [expanded, setExpanded] = useState(false);
   if (!rows.length) return null;
-  const visible = expanded ? rows : rows.slice(0, MAX_VISIBLE);
-  const hidden = rows.length - visible.length;
-
   return (
-    <div className={`subagent-chips${expanded ? " expanded" : ""}`} role="toolbar" aria-label="Subagents">
-      <span className="subagent-chips-label">Subagents</span>
-      {visible.map((row) => (
+    <div className="subagent-chips" role="toolbar" aria-label="Subagents">
+      <span className="subagent-chips-label">Subagents:</span>
+      {rows.map((row) => (
         <SubagentChip key={row.subagentId} sessionId={sessionId} row={row} />
       ))}
-      {hidden > 0 || expanded ? (
-        <button type="button" className="subagent-chip more" onClick={() => setExpanded((value) => !value)}>
-          {expanded ? "Less" : `+${hidden}`}
-        </button>
-      ) : null}
     </div>
   );
 });

@@ -69,8 +69,9 @@ test("each turn shows its subagent chips between the user message and the final 
   expect(user).toBeGreaterThanOrEqual(0);
   expect(chips).toBeGreaterThan(user);
   expect(reply).toBeGreaterThan(chips);
-  expect(html.match(/aria-pressed=/g)?.length).toBe(4);
-  expect(html).toContain(">+1<");
+  // Like file chips, every subagent gets a chip and the row wraps.
+  expect(html.match(/aria-pressed=/g)?.length).toBe(5);
+  expect(html).toContain(">Subagents:<");
   expect(html).toMatch(/class="subagent-chip completed active" aria-pressed="true"/);
 
   const running = renderToStaticMarkup(
@@ -109,7 +110,9 @@ test("the right rail shows a subagent's turns read-only under a subagent heading
   );
   expect(html).toContain('aria-label="Subagent"');
   expect(html).toContain("Subagent · Explore auth");
-  expect(html).toContain("completed · Find login");
+  expect(html).toContain('<h2 class="subagent-rail-name">Subagent · Explore auth</h2>');
+  expect(html).toContain('<div class="subagent-rail-meta">Completed</div>');
+  expect(html).not.toContain("Find login");
   expect(html).toContain(">prompt<");
   expect(html).toContain("Found the login flow");
   expect(html).not.toContain('aria-label="Fork"');
