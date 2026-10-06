@@ -26,7 +26,7 @@ body,
   background: var(--bg-1);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--font-ui-size);
   overflow: hidden;
 }
 
@@ -40,7 +40,7 @@ select {
 
 h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-ui-heading-size);
   font-weight: 600;
 }
 

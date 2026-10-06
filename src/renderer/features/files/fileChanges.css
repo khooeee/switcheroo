@@ -11,7 +11,7 @@
 }
 
 .file-changes.compact .file-change-names {
-  font-size: var(--font-mono-size-small);
+  font-size: var(--font-mono-small-size);
   line-height: 1.45;
 }
 

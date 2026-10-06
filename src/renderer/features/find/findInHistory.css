@@ -67,7 +67,7 @@
   background: transparent;
   color: var(--text-dim);
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: var(--font-ui-size);
   padding: 6px 8px;
   cursor: pointer;
 }
@@ -120,7 +120,7 @@
 .find-sessions-group-title {
   color: var(--codex);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--font-ui-size);
   overflow: hidden;
   white-space: pre-line;
   word-break: break-word;

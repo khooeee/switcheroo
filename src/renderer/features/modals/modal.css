@@ -21,7 +21,7 @@
 .modal-copy {
   margin: 0;
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: var(--font-ui-size);
   line-height: 1.45;
 }
 
@@ -30,7 +30,7 @@
   flex-direction: column;
   gap: 6px;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: var(--font-ui-size);
 }
 
 .modal label.modal-check {

@@ -10,7 +10,7 @@
 
 .composer-error {
   color: var(--danger-text);
-  font-size: 12px;
+  font-size: var(--font-ui-size);
 }
 
 .composer textarea {

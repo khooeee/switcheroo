@@ -38,10 +38,13 @@
   --find-history-bg: #000000;
   --find-expand-icon: #e8eef3;
   --font-ui: "Sora", system-ui, sans-serif;
+  --font-ui-size: 12px;
+  --font-ui-heading-size: 14px;
+  --font-tooltip-size: 11px;
   --font-mono: "Hack", ui-monospace, monospace;
   --font-mono-weight: 500;
   --font-mono-size: 13px;
-  --font-mono-size-small: 11px;
+  --font-mono-small-size: 11px;
 }
 
 html[data-theme="light"] {

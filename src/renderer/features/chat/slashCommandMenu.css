@@ -57,7 +57,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: var(--font-ui-size);
 }
 
 .slash-command-hint {

@@ -32,7 +32,7 @@
   overflow: hidden;
   white-space: pre-line;
   word-break: break-word;
-  font-size: 12px;
+  font-size: var(--font-ui-size);
   text-align: left;
 }
 
