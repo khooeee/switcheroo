@@ -62,7 +62,7 @@
   font-size: 12px;
 }
 
-/* Same look as the "Changes:" file chips under a final reply (fileChanges.css). */
+/* Same look as the "Files:" chips under a final reply (fileChanges.css). */
 .subagent-chips {
   display: flex;
   flex-wrap: wrap;

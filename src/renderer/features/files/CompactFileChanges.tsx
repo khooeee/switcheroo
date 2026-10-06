@@ -34,7 +34,7 @@ export function CompactFileChanges({
   return (
     <div className="file-changes compact">
       <div className="file-change-names">
-        <span className="file-change-label-prefix">Changes:</span>
+        <span className="file-change-label-prefix">Files:</span>
         {unique.map((change, index) => (
           <FileChip
             key={change.path}
