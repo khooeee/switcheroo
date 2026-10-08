@@ -65,6 +65,8 @@
     "fsevents@2.3.3": true,
     "electron@44.5.1": true,
     "electron-winstaller@5.4.4": true,
-    "node-pty@1.1.0": true
+    "node-pty@1.1.0": true,
+    "fs-xattr@0.3.1": true,
+    "macos-alias@0.2.12": true
   }
 }
