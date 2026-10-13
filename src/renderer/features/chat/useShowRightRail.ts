@@ -1,12 +1,15 @@
-import { useEffect } from "react";
-import { applyRightRailWidth, readRightRailWidth } from "./rightRailWidth";
+import { useLayoutEffect } from "react";
+import { rightRailWidth } from "./rightRailWidth";
 
-/** Show the right rail at the stored width while mounted; hide it (keeping the stored width) on unmount. */
-export function useShowRightRail(): void {
-  useEffect(() => {
-    applyRightRailWidth(readRightRailWidth(), false);
+/**
+ * Show the right rail at `tabId`'s width while mounted; hide it (keeping the width) on unmount.
+ * Layout effect: the width must be in place before the rail restores its scroll offset.
+ */
+export function useShowRightRail(tabId: string): void {
+  useLayoutEffect(() => {
+    rightRailWidth.show(tabId);
     return () => {
-      applyRightRailWidth(0, false);
+      rightRailWidth.hide();
     };
-  }, []);
+  }, [tabId]);
 }

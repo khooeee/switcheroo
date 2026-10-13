@@ -80,7 +80,7 @@ export function App() {
     toggleSwitchboardRightRail,
     toggleSubagentRightRail,
   } = useRightRail({
-    activeSessionId: activeTerminalTab ? SWITCHBOARD_ID : activeTabId,
+    tabId: activeTerminalTab ? null : activeTabId,
     activeSession: activeTerminalTab ? null : activeSession,
     transcripts,
     switchboardTurns,
@@ -107,11 +107,11 @@ export function App() {
     toggleSwitchboardRightRail,
   );
 
+  // Each tab keeps its right rail open (or closed) across tab switches.
   const selectTab = useCallback((id: typeof activeTabId) => {
     void window.switcheroo.setActiveTab(id);
     setFocusEvent(null);
-    closeRightRail();
-  }, [closeRightRail, setFocusEvent]);
+  }, [setFocusEvent]);
 
   const promptFocus = useAppShortcuts({
     pinned: pinnedSessions,
@@ -238,6 +238,7 @@ export function App() {
 
         {rightRailView && !activeTerminalTab ? (
           <RightRail
+            tabId={activeTabId}
             session={rightRailView.session}
             turn={rightRailView.turn}
             subagent={rightRailView.subagent}

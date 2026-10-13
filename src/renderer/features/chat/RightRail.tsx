@@ -1,14 +1,15 @@
-import { memo, useEffect, useMemo, useRef, type RefObject } from "react";
+import { memo, useMemo, useRef, type RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { SubagentRailHeading } from "../subagents/SubagentRailHeading";
-import { flashEventElement } from "./flashEventElement";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import type { RightRailView } from "./RightRailView";
 import { TurnDetail } from "./TurnDetail";
 import { useMessageSession } from "./useMessageSession";
 import { startRightRailResize } from "./startRightRailResize";
+import { useFlashRightRailFocus } from "./useFlashRightRailFocus";
+import { useRightRailScroll } from "./useRightRailScroll";
 import { useShowRightRail } from "./useShowRightRail";
 import "./rightRail.css";
 
@@ -16,6 +17,7 @@ const NO_TURNS: TranscriptTurn[] = [];
 
 /** Scrollable right rail: one turn in full (Turn Details), or a subagent's whole transcript. */
 export const RightRail = memo(function RightRail({
+  tabId,
   session,
   turn,
   subagent,
@@ -26,6 +28,8 @@ export const RightRail = memo(function RightRail({
   focusKey = 0,
   onClose,
 }: {
+  /** Tab (Switchboard or a chat) this rail belongs to; it keeps its own width and scroll. */
+  tabId: string;
   session: Session | undefined;
   turn: TranscriptTurn | null;
   subagent: RightRailView["subagent"];
@@ -47,18 +51,10 @@ export const RightRail = memo(function RightRail({
   const firstTurnId = turns[0]?.id;
   const label = subagent ? "Subagent" : "Turn Details";
 
-  useShowRightRail();
-
-  useEffect(() => {
-    if (!focusEventId) return;
-    const root = resolvedScrollRef.current;
-    if (!root) return;
-    const el = root.querySelector(
-      `[data-event-id="${CSS.escape(focusEventId)}"]`,
-    ) as HTMLElement | null;
-    if (!el) return;
-    return flashEventElement(el);
-  }, [focusEventId, focusKey, firstTurnId, resolvedScrollRef]);
+  // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
+  useShowRightRail(tabId);
+  useRightRailScroll(tabId, focusKey, resolvedScrollRef);
+  useFlashRightRailFocus(tabId, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
 
   return (
     <aside className="right-rail" aria-label={label}>

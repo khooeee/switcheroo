@@ -7,17 +7,20 @@ export type RightRailSelection = {
   subagentId?: string;
 };
 
-/** Select a turn (and focus event) in the right rail; bumps `focusKey` so re-selecting re-flashes. */
+/** Unique across tabs, so a tab never mistakes a new selection for the one it last showed. */
+let lastFocusKey = 0;
+
+/** Select a turn (and focus event) in the right rail; a new `focusKey` makes re-selecting re-flash. */
 export function nextRightRailSelection(
-  prev: RightRailSelection | null,
   sessionId: string,
   turnId: string,
   focusEventId?: string,
 ): RightRailSelection {
+  lastFocusKey += 1;
   return {
     sessionId,
     turnId,
     focusEventId,
-    focusKey: (prev?.focusKey ?? 0) + 1,
+    focusKey: lastFocusKey,
   };
 }

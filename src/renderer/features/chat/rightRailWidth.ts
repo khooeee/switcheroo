@@ -6,6 +6,11 @@ import { reclampRailWidth } from "../sessions/reclampRailWidth";
 const MIN_WIDTH = 240;
 const DEFAULT_WIDTH = 320;
 
+/** Width each tab's rail opened at or was resized to; this app run only. */
+const tabWidths = new Map<string, number>();
+/** Tab whose rail is on screen; null while hidden. */
+let shownTabId: string | null = null;
+
 function viewportWidth(explicit?: number): number {
   if (Number.isFinite(explicit)) return explicit as number;
   return typeof window !== "undefined" ? window.innerWidth : 1440;
@@ -15,21 +20,40 @@ function clampWidth(width: number, viewport?: number): number {
   return fitSidePaneWidth(width, readCssPx("--rail"), viewportWidth(viewport), MIN_WIDTH);
 }
 
-export function readRightRailWidth(): number {
-  const value = getAppSettingsCache().rightRailWidth;
+function setCssWidth(px: number): void {
+  document.documentElement.style.setProperty("--right-rail", `${px}px`);
+  reclampRailWidth();
+}
+
+/** The shown tab's width (or the stored default), fitted to the window. */
+function read(): number {
+  const value = (shownTabId ? tabWidths.get(shownTabId) : undefined) ?? getAppSettingsCache().rightRailWidth;
   return Number.isFinite(value) ? clampWidth(value) : DEFAULT_WIDTH;
 }
 
-/** Apply width to `--right-rail`. Pass `persist` on drag end. Use 0 to hide without changing settings. */
-export function applyRightRailWidth(width: number, persist = false): number {
-  if (width <= 0) {
-    document.documentElement.style.setProperty("--right-rail", "0px");
-    reclampRailWidth();
-    return 0;
-  }
+/** Apply width to `--right-rail`. Pass `persist` on drag end: it sticks to this tab and becomes the default for new ones. */
+function apply(width: number, persist = false): number {
   const next = clampWidth(width);
-  document.documentElement.style.setProperty("--right-rail", `${next}px`);
-  if (persist) void patchAppSettings({ rightRailWidth: next });
-  reclampRailWidth();
+  setCssWidth(next);
+  if (persist) {
+    if (shownTabId) tabWidths.set(shownTabId, next);
+    void patchAppSettings({ rightRailWidth: next });
+  }
   return next;
 }
+
+/** Show `tabId`'s rail at its own width. */
+function show(tabId: string): number {
+  shownTabId = tabId;
+  // Take the default now, so resizing another tab's rail later leaves this one alone.
+  if (!tabWidths.has(tabId)) tabWidths.set(tabId, getAppSettingsCache().rightRailWidth);
+  return apply(read());
+}
+
+/** Hide the rail; every tab keeps its width for the next `show`. */
+function hide(): void {
+  shownTabId = null;
+  setCssWidth(0);
+}
+
+export const rightRailWidth = { read, apply, show, hide };

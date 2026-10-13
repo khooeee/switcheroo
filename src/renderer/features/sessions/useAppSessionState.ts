@@ -24,6 +24,7 @@ export function useAppSessionState() {
   const [focusEvent, setFocusEvent] = useState<{
     id: string;
     turnId: string;
+    sessionId: string;
     key: number;
   } | null>(null);
   const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
@@ -47,6 +48,9 @@ export function useAppSessionState() {
         setPinnedSessions((prev) => shareById(prev, p));
         setUnpinnedSessions((prev) => shareById(prev, u));
         setActiveTabId(a);
+        // A focus belongs to one session. Clear it on leaving so a later visit does not force
+        // that session's right rail (which each tab keeps) back onto the old event.
+        setFocusEvent((prev) => (prev && prev.sessionId !== a ? null : prev));
       }),
       window.switcheroo.onSwitchboardTurn((turn) => {
         setSwitchboardTurns((prev) => {
@@ -59,6 +63,7 @@ export function useAppSessionState() {
         setSwitchboardTurns((prev) => prev.filter((turn) => turn.sessionId !== sessionId));
         setSwitchboardNotice(message);
         setActiveTabId(SWITCHBOARD_ID);
+        setFocusEvent(null);
       }),
       window.switcheroo.onTranscript(({ sessionId, turn }) => {
         setTranscripts((prev) => {
@@ -72,10 +77,11 @@ export function useAppSessionState() {
         setTranscripts((prev) => ({ ...prev, [sessionId]: turns }));
       }),
       window.switcheroo.onPermission((req) => setPermission(req)),
-      window.switcheroo.onNavigateToEvent(({ turnId, eventId }) => {
+      window.switcheroo.onNavigateToEvent(({ sessionId, turnId, eventId }) => {
         setFocusEvent((prev) => ({
           id: eventId,
           turnId,
+          sessionId,
           key: (prev?.key ?? 0) + 1,
         }));
       }),

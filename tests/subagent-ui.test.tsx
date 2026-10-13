@@ -102,6 +102,7 @@ test("the right rail shows a subagent's turns read-only under a subagent heading
   });
   const html = renderToStaticMarkup(
     <RightRail
+      tabId="s1"
       session={{ ...session, supportsForkAtMessage: true }}
       turn={null}
       subagent={{ id: "a", name: "Explore auth", task: "Find login", state: "completed", turns: [subagentTurn], loading: false }}
@@ -118,7 +119,7 @@ test("the right rail shows a subagent's turns read-only under a subagent heading
   expect(html).not.toContain('aria-label="Fork"');
 
   const loading = renderToStaticMarkup(
-    <RightRail session={session} turn={null} subagent={{ id: "a", name: "A", turns: [], loading: true }} onClose={() => {}} />,
+    <RightRail tabId="s1" session={session} turn={null} subagent={{ id: "a", name: "A", turns: [], loading: true }} onClose={() => {}} />,
   );
   expect(loading).toContain("Loading…");
 });
