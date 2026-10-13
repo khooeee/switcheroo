@@ -3,12 +3,12 @@
 An agentic development environment that attempts to spark joy in your everyday coding:
 - The user message & final assistant message are the only messages shown in the main content area.  Most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
-- Project management is basically having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session, switchboard or history)
-- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor, Pi & Prime Agent queue, due to lack of support for steering in their ACP implementation.  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
+- Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session, switchboard or history).
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor, Pi & Prime Agent queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 There are also speed optimizations to eliminate unnecessary waiting:
-- Pre-warmed session so time to first prompt is very fast
+- Pre-warmed session pool so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
 There's also some niceties:
