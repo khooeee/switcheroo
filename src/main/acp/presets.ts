@@ -1,4 +1,7 @@
+import { homedir } from "node:os";
 import type { AgentKind } from "../../shared/agentKind";
+import { agentSearchPath } from "./agentSearchPath";
+import { findOnPath } from "./findOnPath";
 import { packageBin } from "./packageBin";
 import { resolvePathCommand } from "./resolvePathCommand";
 
@@ -12,6 +15,8 @@ interface AgentPreset {
   forksAtMessage?: boolean;
   /** External CLI the adapter shells out to; the agent is unavailable without it. */
   requiredCommand?: string;
+  /** Extra environment for the adapter process. */
+  env?: Record<string, string>;
 }
 
 function resolveCursorAgent(): string {
@@ -20,6 +25,19 @@ function resolveCursorAgent(): string {
 
 function resolvePrimeAgent(): string {
   return resolvePathCommand("prime-agent");
+}
+
+function claudeCommand(): string {
+  return process.env.CLAUDE_CODE_EXECUTABLE || "claude";
+}
+
+function codexCommand(): string {
+  return process.env.CODEX_PATH || "codex";
+}
+
+/** The user's own install of an agent CLI; the app does not bundle Claude Code or Codex. */
+function userCli(command: string): string {
+  return findOnPath(command, agentSearchPath(process.env.HOME ?? homedir())) ?? command;
 }
 
 export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
@@ -31,6 +49,12 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
       return [packageBin("@agentclientprotocol/claude-agent-acp")];
     },
     forksAtMessage: true,
+    get requiredCommand() {
+      return claudeCommand();
+    },
+    get env() {
+      return { CLAUDE_CODE_EXECUTABLE: userCli(claudeCommand()) };
+    },
   },
   codex: {
     kind: "codex",
@@ -40,6 +64,12 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
       return [packageBin("@agentclientprotocol/codex-acp")];
     },
     forksAtMessage: true,
+    get requiredCommand() {
+      return codexCommand();
+    },
+    get env() {
+      return { CODEX_PATH: userCli(codexCommand()) };
+    },
   },
   cursor: {
     kind: "cursor",

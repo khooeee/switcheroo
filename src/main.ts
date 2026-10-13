@@ -1,6 +1,5 @@
 import { app, BrowserWindow, dialog } from "electron";
 import path from "node:path";
-import started from "electron-squirrel-startup";
 import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
 import { SessionManager } from "./main/sessions/SessionManager";
@@ -21,10 +20,6 @@ installStdioGuards((error) => {
     );
   }
 });
-
-if (started) {
-  app.quit();
-}
 
 app.setName("Switcheroo");
 

@@ -22,6 +22,7 @@ export function spawnAgentProcess(
   command: string,
   args: string[],
   cwd: string,
+  extraEnv: Record<string, string> = {},
 ): Promise<ChildProcessWithoutNullStreams> {
   try {
     assertSpawnCwd(cwd);
@@ -33,7 +34,7 @@ export function spawnAgentProcess(
   const proc = spawn(command, args, {
     cwd,
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, HOME: home, PATH: agentSearchPath(home) },
+    env: { ...process.env, ...extraEnv, HOME: home, PATH: agentSearchPath(home) },
     shell: false,
   }) as ChildProcessWithoutNullStreams;
 
