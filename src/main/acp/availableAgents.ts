@@ -1,24 +1,12 @@
-import { accessSync, constants, existsSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
 import type { AgentKind } from "../../shared/agentKind";
 import { agentSearchPath } from "./agentSearchPath";
+import { findOnPath } from "./findOnPath";
 import { AGENT_PRESETS } from "./presets";
 
-function isExecutableFile(file: string): boolean {
-  try {
-    accessSync(file, constants.X_OK);
-    return statSync(file).isFile();
-  } catch {
-    return false;
-  }
-}
-
 function commandExists(command: string, searchPath: string): boolean {
-  if (command.includes("/")) return isExecutableFile(command);
-  return searchPath
-    .split(":")
-    .some((dir) => dir !== "" && isExecutableFile(join(dir, command)));
+  return findOnPath(command, searchPath) !== undefined;
 }
 
 function isAvailable(kind: AgentKind, searchPath: string): boolean {

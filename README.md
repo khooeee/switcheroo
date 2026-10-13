@@ -33,10 +33,7 @@ There's also orchestration features:
 
 ## Install (macOS)
 
-Download the latest release from [GitHub Releases](https://github.com/khooeee/switcheroo/releases):
-
-- **Apple Silicon** (M1 onwards): `Switcheroo-*-arm64.dmg`
-- **Intel**: `Switcheroo-*-x64.dmg`
+Download `Switcheroo-*-arm64.dmg` from the latest [GitHub Release](https://github.com/khooeee/switcheroo/releases). Apple Silicon (M1 onwards) only.
 
 Open the `.dmg`, drag **Switcheroo** into Applications, then launch it.
 
@@ -46,14 +43,12 @@ Builds are not notarized. On first open, macOS says it can't verify the app. Go 
 xattr -cr /Applications/Switcheroo.app
 ```
 
-A `.zip` of the app is also attached to each release if you prefer not to use the DMG.
-
 ## Prerequisites
 
-At least one ACP agent authenticated (Claude Code, Codex, and Pi ACP adapters ship with the app; Cursor and Prime use their installed CLIs):
+At least one agent CLI installed and authenticated. The Claude Code, Codex, and Pi ACP adapters ship with the app, but every agent runs on your own installed CLI:
 
-- **Claude Code**: Claude login or `ANTHROPIC_API_KEY`
-- **Codex**: Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
+- **Claude Code**: `claude` on `PATH` (e.g. `brew install --cask claude-code`) and Claude login or `ANTHROPIC_API_KEY`
+- **Codex**: `codex` on `PATH` (e.g. `brew install --cask codex`) and Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
 - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
 - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
 - **Prime Agent**: `prime-agent` on `PATH` (installer puts it in `~/.local/bin`) and authenticated via `/login` or a provider API key

@@ -1,9 +1,5 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
-import { MakerSquirrel } from '@electron-forge/maker-squirrel';
-import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDMG } from '@electron-forge/maker-dmg';
-import { MakerDeb } from '@electron-forge/maker-deb';
-import { MakerRpm } from '@electron-forge/maker-rpm';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
@@ -45,8 +41,19 @@ const runtimeNodeModules = [
   'node-addon-api',
 ];
 
+/**
+ * Never shipped: the Claude Code and Codex CLIs (~550 MB) come from the user's own
+ * installs, and node-pty's Windows prebuilds are dead weight in a macOS build.
+ */
+const excludedPathPrefixes = [
+  '/node_modules/@anthropic-ai/claude-agent-sdk-',
+  '/node_modules/@openai/codex-',
+  '/node_modules/node-pty/prebuilds/win32-',
+];
+
 function keepPackagedPath(file: string): boolean {
   if (!file || file === '/package.json') return true;
+  if (excludedPathPrefixes.some((prefix) => file.startsWith(prefix))) return false;
   if (file.startsWith('/.vite')) return true;
   if (file === '/node_modules') return true;
   return runtimeNodeModules.some((name) => {
@@ -79,13 +86,9 @@ const config: ForgeConfig = {
     },
   },
   makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ['darwin']),
     new MakerDMG({
       icon: './assets/icon.icns',
     }, ['darwin']),
-    new MakerRpm({}),
-    new MakerDeb({}),
   ],
   plugins: [
     new AutoUnpackNativesPlugin({}),

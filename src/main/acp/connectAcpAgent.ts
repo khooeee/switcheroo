@@ -49,7 +49,7 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
 
   let proc: ChildProcessWithoutNullStreams;
   try {
-    proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd);
+    proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, preset.env);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (!handlers.isDisposed()) handlers.onStatus("error", message);
