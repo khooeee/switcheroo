@@ -61,7 +61,7 @@ export function spawnAgentProcess(
     };
     proc.once("error", onError);
     proc.once("spawn", onSpawn);
-    // Successful spawns set pid synchronously; test doubles may only set pid.
+    // Successful spawns set pid synchronously, so resolve without waiting for "spawn".
     if (proc.pid != null) onSpawn();
   });
 }

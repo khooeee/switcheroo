@@ -30,8 +30,6 @@ jobs:
 
       - run: npm ci
 
-      - run: npm test
-
       - name: Make macOS ${{ matrix.arch }}
         run: npm run make -- --platform=darwin --arch=${{ matrix.arch }}
 

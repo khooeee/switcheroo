@@ -1,16 +1,6 @@
-import {
-  getAppSettingsCache,
-  patchAppSettings,
-  replaceAppSettingsCache,
-  subscribeAppSettings,
-} from "../settings/appSettingsCache";
+import { getAppSettingsCache, patchAppSettings, subscribeAppSettings } from "../settings/appSettingsCache";
 
 export const soundPreference = {
-  /** Test/helper: set in-memory preference without writing settings. */
-  hydrate(enabled: boolean): void {
-    replaceAppSettingsCache({ ...getAppSettingsCache(), soundEnabled: enabled });
-  },
-
   getSnapshot(): boolean {
     return getAppSettingsCache().soundEnabled;
   },

@@ -20,12 +20,6 @@ export function getAppSettingsCache(): AppSettings {
   return cache;
 }
 
-/** Replace the in-memory cache (boot helpers / tests). */
-export function replaceAppSettingsCache(next: AppSettings): void {
-  cache = next;
-  emitChange();
-}
-
 export async function patchAppSettings(patch: Partial<AppSettings>): Promise<AppSettings> {
   cache = { ...cache, ...patch };
   emitChange();
