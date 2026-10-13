@@ -45,8 +45,6 @@ At least one agent CLI installed and authenticated. The Claude Code, Codex, and 
 
 ## Develop
 
-Requires Node.js 22 LTS (`>=22.12.0 <23`).
-
 ```bash
 npm install
 npm start
