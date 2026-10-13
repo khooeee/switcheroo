@@ -62,18 +62,6 @@ On the top left, you'll see **Switchboard** which will show you a live feed of a
 - Zen mode is on because it's generally not useful to look at all the tool calls, timestamps, etc.  You can always turn it off to see those details as needed.
 - While a turn is running, follow-up messages **steer** if the agent advertises ACP steering support (typically Claude Code & Codex); otherwise they are **queued**.
 
-## Steer or Queue?
-
-When you send a message while the agent is already thinking, we prefer steering if it is available.  However not all ACP adapters support steering, so those agents will queue instead.
-
-| Agent | Mid-turn follow-ups |
-|-------|---------------------|
-| Claude Code | Steer |
-| Codex | Steer |
-| Cursor | Queue |
-| Pi | Queue |
-| Prime Agent | Queue |
-
 ## History management
 
 It's likely you don't have to read this section ever, but it's here in case the app gets slow.
