@@ -9,7 +9,7 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { join } from 'node:path';
-import { applyFinderIcon } from './scripts/apply-finder-icon.mjs';
+import { adHocSignApp } from './scripts/ad-hoc-sign-app.mjs';
 
 /**
  * Runtime packages Vite leaves external (native addons + ACP adapters spawned via
@@ -71,9 +71,10 @@ const config: ForgeConfig = {
   hooks: {
     postPackage: async (_config, { platform, outputPaths }) => {
       if (platform !== 'darwin') return;
+      // No custom Finder icon here: its `Icon\r` file and FinderInfo xattr can't be
+      // code-signed, and an unsigned bundle opens as "damaged" once downloaded.
       for (const outputPath of outputPaths) {
-        const appDir = join(outputPath, 'Switcheroo.app');
-        applyFinderIcon(appDir, join(appDir, 'Contents', 'Resources', 'icon.png'));
+        adHocSignApp(join(outputPath, 'Switcheroo.app'));
       }
     },
   },

@@ -40,7 +40,7 @@ Download the latest release from [GitHub Releases](https://github.com/khooeee/sw
 
 Open the `.dmg`, drag **Switcheroo** into Applications, then launch it.
 
-Builds are not notarized. On first open, if macOS blocks the app, right-click **Switcheroo** → **Open**, or clear quarantine:
+Builds are not notarized. On first open, macOS says it can't verify the app. Go to **System Settings** → **Privacy & Security** and click **Open Anyway**, or clear quarantine:
 
 ```bash
 xattr -cr /Applications/Switcheroo.app
