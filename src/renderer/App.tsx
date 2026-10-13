@@ -198,7 +198,6 @@ export function App() {
               chatRef={chatRef}
               onOpenRightRail={toggleSessionRightRail}
               onForceOpenRightRail={forceSessionRightRail}
-              rightRailOpen={!!rightRailView}
               openSubagentId={rightRailView?.subagent?.id ?? null}
               onSend={chat.send}
               onInterrupt={chat.interrupt}

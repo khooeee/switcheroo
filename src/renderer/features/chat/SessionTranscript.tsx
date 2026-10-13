@@ -2,6 +2,7 @@ import { memo, type RefObject, useEffect } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { isFeedEvent } from "./isFeedEvent";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { SessionTurn } from "./SessionTurn";
 import { useFocusTranscriptEvent } from "./useFocusTranscriptEvent";
@@ -16,7 +17,6 @@ export const SessionTranscript = memo(function SessionTranscript({
   chatRef,
   onOpenRightRail,
   onForceOpenRightRail,
-  rightRailOpen,
 }: {
   session: Session;
   turns: TranscriptTurn[];
@@ -26,17 +26,18 @@ export const SessionTranscript = memo(function SessionTranscript({
   chatRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  rightRailOpen: boolean;
 }) {
   const messageSession = useMessageSession(session);
 
-  useEffect(() => {
-    if (focusTurnId) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
-  }, [focusTurnId, focusEventId, focusEventKey, onForceOpenRightRail]);
+  // User messages and final replies flash in the transcript; mid-turn events open Turn Details.
+  const focusTurn = focusTurnId ? turns.find((turn) => turn.id === focusTurnId) : undefined;
+  const focusInFeed = !!focusTurn && !!focusEventId && isFeedEvent(focusTurn, focusEventId);
 
-  // Wait for the right rail when focusing a turn so mid-turn events can be found.
-  const focusReady = !focusTurnId || rightRailOpen;
-  useFocusTranscriptEvent(focusEventId, focusEventKey, session.id, turns, focusReady);
+  useEffect(() => {
+    if (focusTurnId && !focusInFeed) onForceOpenRightRail(focusTurnId, focusEventId ?? undefined);
+  }, [focusTurnId, focusEventId, focusEventKey, focusInFeed, onForceOpenRightRail]);
+
+  useFocusTranscriptEvent(focusInFeed ? focusEventId : null, focusEventKey, chatRef, turns);
 
   return (
     <>

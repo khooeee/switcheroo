@@ -18,7 +18,6 @@ interface Props {
   chatRef: RefObject<HTMLDivElement | null>;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onForceOpenRightRail: (turnId: string, focusEventId?: string) => void;
-  rightRailOpen: boolean;
   /** Subagent shown in the right rail; its chip in the transcript looks pressed. */
   openSubagentId: string | null;
   onSend: (text: string) => Promise<void>;
@@ -37,7 +36,6 @@ export function ChatPanel({
   chatRef,
   onOpenRightRail,
   onForceOpenRightRail,
-  rightRailOpen,
   openSubagentId,
   onSend,
   onInterrupt,
@@ -63,7 +61,6 @@ export function ChatPanel({
           chatRef={chatRef}
           onOpenRightRail={onOpenRightRail}
           onForceOpenRightRail={onForceOpenRightRail}
-          rightRailOpen={rightRailOpen}
         />
       </OpenSubagentIdContext.Provider>
 
