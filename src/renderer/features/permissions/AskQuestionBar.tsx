@@ -1,4 +1,5 @@
 import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
+import "./askQuestionBar.css";
 
 export type AskQuestionOutcome =
   | {
@@ -17,7 +18,7 @@ export function AskQuestionBar({
   onAnswer: (outcome: AskQuestionOutcome) => void;
 }) {
   return (
-    <div className="permission-bar">
+    <div className="ask-question-bar">
       <strong>{request.title ?? "Agent question"}</strong>
       {request.questions.map((q) => (
         <div key={q.id} style={{ width: "100%" }}>

@@ -110,12 +110,6 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     sessions.sendPrompt(sessionId, text),
   );
   ipcMain.handle("session:cancel", (_e, sessionId: string) => sessions.cancelPrompt(sessionId));
-  ipcMain.handle(
-    "session:permission",
-    (_e, requestId: string, optionId: string | "cancelled") => {
-      sessions.respondPermission(requestId, optionId);
-    },
-  );
   ipcMain.handle("session:askQuestion", (_e, requestId: string, outcome: unknown) => {
     sessions.respondAskQuestion(requestId, outcome);
   });

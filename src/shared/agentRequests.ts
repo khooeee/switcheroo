@@ -1,10 +1,3 @@
-export interface PermissionRequest {
-  requestId: string;
-  sessionId: string;
-  toolCallTitle: string;
-  options: Array<{ optionId: string; name: string; kind: string }>;
-}
-
 export interface CursorAskQuestionRequest {
   requestId: string;
   sessionId: string;

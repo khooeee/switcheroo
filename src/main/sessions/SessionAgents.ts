@@ -85,7 +85,6 @@ export class SessionAgents {
       emitSessions: () => state.emitSessions(),
       noteForkSupport: (agent, supported) => this.noteForkSupport(agent, supported),
       queuePersist: () => persistence.queuePersist(),
-      permissionOwners: state.permissionOwners,
       askOwners: state.askOwners,
     });
   }

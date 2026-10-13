@@ -1,9 +1,8 @@
 import type { RefObject } from "react";
-import type { CursorAskQuestionRequest, PermissionRequest } from "../../../shared/agentRequests";
+import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
-import { PermissionBar } from "../permissions/PermissionBar";
 import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
@@ -24,9 +23,7 @@ interface Props {
   openSubagentId: string | null;
   onSend: (text: string) => Promise<void>;
   onInterrupt: () => void;
-  permission: PermissionRequest | null;
   askQuestion: CursorAskQuestionRequest | null;
-  onPermission: (optionId: string | "cancelled") => void;
   onAsk: (outcome: AskQuestionOutcome) => void;
 }
 
@@ -44,9 +41,7 @@ export function ChatPanel({
   openSubagentId,
   onSend,
   onInterrupt,
-  permission,
   askQuestion,
-  onPermission,
   onAsk,
 }: Props) {
   return (
@@ -71,10 +66,6 @@ export function ChatPanel({
           rightRailOpen={rightRailOpen}
         />
       </OpenSubagentIdContext.Provider>
-
-      {permission && (
-        <PermissionBar request={permission} onRespond={onPermission} />
-      )}
 
       {askQuestion && <AskQuestionBar request={askQuestion} onAnswer={onAsk} />}
 

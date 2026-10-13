@@ -1,5 +1,5 @@
 import type { ActiveTabId } from "./activeTabId";
-import type { CursorAskQuestionRequest, PermissionRequest } from "./agentRequests";
+import type { CursorAskQuestionRequest } from "./agentRequests";
 import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { CreateSessionInput } from "./createSessionInput";
@@ -44,10 +44,6 @@ export interface SwitcherooApi {
   listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;
-  respondPermission: (
-    requestId: string,
-    optionId: string | "cancelled",
-  ) => Promise<void>;
   respondAskQuestion: (
     requestId: string,
     outcome:
@@ -116,7 +112,6 @@ export interface SwitcherooApi {
   onTranscriptReset: (
     cb: (payload: { sessionId: string; turns: TranscriptTurn[]; draft?: string }) => void,
   ) => () => void;
-  onPermission: (cb: (req: PermissionRequest) => void) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   onPromptComplete: (cb: (payload: { sessionId: string }) => void) => () => void;

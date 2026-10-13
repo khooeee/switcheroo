@@ -9,6 +9,8 @@ import { confirmCloseSession } from "../sessions/confirmCloseSession";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
+import { ctrlOnlyKey } from "./ctrlOnlyKey";
+import { dialogOpen } from "./dialogOpen";
 import { modKey } from "./modKey";
 import { useEscapeShortcut } from "./useEscapeShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
@@ -100,23 +102,23 @@ export function useAppShortcuts({
       void window.switcheroo.cancelPrompt(id).catch(console.error);
     };
     const newTerminal = () => {
-      if (blockedRef.current || document.querySelector("dialog[open]")) return;
+      if (blockedRef.current || dialogOpen()) return;
       const parentId = sessionIdForTab(activeId.current, sessionsRef.current);
       if (!parentId) return;
       void window.switcheroo.createTerminalTab(parentId);
     };
     const openFind = () => {
-      if (document.querySelector("dialog[open]") || findInSessionsOpen.current) return;
+      if (dialogOpen() || findInSessionsOpen.current) return;
       setFindOpen(true);
     };
     const openFindSessions = () => {
-      if (document.querySelector("dialog[open]")) return;
+      if (dialogOpen()) return;
       setFindOpen(false);
       setFindQuery("");
       setShowFindInSessions(true);
     };
     const openNewSession = () => {
-      if (!document.querySelector("dialog[open]")) setShowNewSession(true);
+      if (!dialogOpen()) setShowNewSession(true);
     };
 
     const onKey = (event: KeyboardEvent) => {
@@ -129,14 +131,8 @@ export function useAppShortcuts({
         return;
       }
 
-      if (
-        event.key.toLowerCase() === "c"
-        && event.ctrlKey
-        && !event.metaKey
-        && !event.altKey
-        && !event.shiftKey
-      ) {
-        if (document.querySelector("dialog[open]") || blockedRef.current) return;
+      if (ctrlOnlyKey(event, "c")) {
+        if (dialogOpen() || blockedRef.current) return;
         if (!runningId.current) return;
         event.preventDefault();
         stopActive();
@@ -144,14 +140,8 @@ export function useAppShortcuts({
       }
 
       // Ctrl+D closes a chat session on empty draft; terminals keep it as shell EOF.
-      if (
-        event.key.toLowerCase() === "d"
-        && event.ctrlKey
-        && !event.metaKey
-        && !event.altKey
-        && !event.shiftKey
-      ) {
-        if (document.querySelector("dialog[open]") || blockedRef.current) return;
+      if (ctrlOnlyKey(event, "d")) {
+        if (dialogOpen() || blockedRef.current) return;
         if (activeId.current === SWITCHBOARD_ID) return;
         if (findChildTab(sessionsRef.current, activeId.current)) return;
         if (!isComposerDraftEmpty(activeId.current)) return;
@@ -160,7 +150,7 @@ export function useAppShortcuts({
         return;
       }
 
-      if (document.querySelector("dialog[open]")) return;
+      if (dialogOpen()) return;
 
       if (modKey(event, "w")) {
         if (event.repeat) return;

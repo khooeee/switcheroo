@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
+import { ctrlOnlyKey } from "../shortcuts/ctrlOnlyKey";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
@@ -121,15 +122,7 @@ export function ChatComposer({
             send();
             return true;
           }
-          if (
-            e.key.toLowerCase() === "c"
-            && e.ctrlKey
-            && !e.metaKey
-            && !e.altKey
-            && !e.shiftKey
-            && session.status !== "running"
-            && draft !== ""
-          ) {
+          if (ctrlOnlyKey(e, "c") && session.status !== "running" && draft !== "") {
             setDraftFromUser("");
             return true;
           }

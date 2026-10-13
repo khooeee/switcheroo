@@ -21,11 +21,16 @@ export function useFindUiState(activeTabId: ActiveTabId) {
     clearPendingFindScope();
   }, []);
 
-  const openFind = useCallback(() => {
+  /** Open (unscoped) or close the find bar; stable so shortcut listeners stay subscribed. */
+  const setFindVisible = useCallback((open: boolean) => {
+    if (!open) {
+      closeFind();
+      return;
+    }
     clearPendingFindScope();
     setFindScope(null);
     setFindOpen(true);
-  }, []);
+  }, [closeFind]);
 
   useEffect(() => {
     const onScoped = () => {
@@ -58,6 +63,6 @@ export function useFindUiState(activeTabId: ActiveTabId) {
     findScope,
     findScopeRef,
     closeFind,
-    openFind,
+    setFindVisible,
   };
 }

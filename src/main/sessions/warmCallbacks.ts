@@ -9,7 +9,6 @@ export const warmCallbacks: SessionCallbacks = {
   onUsage: () => undefined,
   onTurn: () => undefined,
   onStatus: () => undefined,
-  onPermission: () => undefined,
   onAskQuestion: () => undefined,
   getSessionTitle: () => "Warm",
 };

@@ -11,6 +11,7 @@ import { TerminalStack } from "./features/terminal/TerminalStack";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
 import { useTurnDetailsEvent } from "./features/chat/useTurnDetailsEvent";
+import { useChatActions } from "./features/chat/useChatActions";
 import { useSessionScrollPosition } from "./features/sessions/useSessionScrollPosition";
 import { useAppShortcuts } from "./features/shortcuts/useAppShortcuts";
 import { FindBar } from "./features/find/FindBar";
@@ -19,7 +20,6 @@ import { useFindUiState } from "./features/find/useFindUiState";
 import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useSessionRailActions } from "./features/sessions/useSessionRailActions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
-import { PermissionBar } from "./features/permissions/PermissionBar";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
 import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
@@ -39,8 +39,6 @@ export function App() {
     switchboardTurns,
     transcripts,
     setTranscripts,
-    permission,
-    setPermission,
     focusEvent,
     setFocusEvent,
     switchboardNotice,
@@ -60,7 +58,7 @@ export function App() {
     findScope,
     findScopeRef,
     closeFind,
-    openFind,
+    setFindVisible,
   } = useFindUiState(activeTabId);
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
@@ -125,10 +123,7 @@ export function App() {
     findOpen,
     rightRailOpen: !!rightRailView,
     sessionFilter,
-    setFindOpen: (open) => {
-      if (open) openFind();
-      else closeFind();
-    },
+    setFindOpen: setFindVisible,
     setFindQuery,
     setShowNewSession,
     setShowFindInSessions,
@@ -149,14 +144,7 @@ export function App() {
     return Promise.resolve();
   }, [setTranscripts]);
 
-  const sendPrompt = useCallback(
-    async (text: string) => {
-      if (!activeSession || activeTerminalTab) return;
-      pinTranscriptToBottom();
-      await window.switcheroo.sendPrompt(activeSession.id, text);
-    },
-    [activeSession, activeTerminalTab, pinTranscriptToBottom],
-  );
+  const chat = useChatActions(chatSessionId, askQuestion, pinTranscriptToBottom);
 
   const onSwitchboardClick = useCallback((sessionId: string, turnId: string, eventId: string) => {
     void window.switcheroo.navigateToEvent(sessionId, turnId, eventId);
@@ -212,21 +200,10 @@ export function App() {
               onForceOpenRightRail={forceSessionRightRail}
               rightRailOpen={!!rightRailView}
               openSubagentId={rightRailView?.subagent?.id ?? null}
-              onSend={sendPrompt}
-              onInterrupt={() => {
-                void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
-              }}
-              permission={permission?.sessionId === activeSession.id ? permission : null}
-              askQuestion={askQuestion?.sessionId === activeSession.id ? askQuestion : null}
-              onPermission={(optionId) => {
-                if (!permission) return;
-                void window.switcheroo.respondPermission(permission.requestId, optionId);
-                setPermission(null);
-              }}
-              onAsk={(outcome) => {
-                if (!askQuestion) return;
-                void window.switcheroo.respondAskQuestion(askQuestion.requestId, outcome).catch(console.error);
-              }}
+              onSend={chat.send}
+              onInterrupt={chat.interrupt}
+              askQuestion={askQuestion}
+              onAsk={chat.answer}
             />
           ) : (
             <section className="panel">
@@ -250,16 +227,6 @@ export function App() {
             onClose={closeRightRail}
           />
         ) : null}
-
-        {permission && activeTabId === SWITCHBOARD_ID && (
-          <PermissionBar
-            request={permission}
-            onRespond={(optionId) => {
-              void window.switcheroo.respondPermission(permission.requestId, optionId);
-              setPermission(null);
-            }}
-          />
-        )}
 
         {showNewSession && (
           <NewSessionModal

@@ -26,7 +26,6 @@ export class SessionState {
   activeTabId: ActiveTabId = SWITCHBOARD_ID;
   bus = new GlobalEventBus();
   window: BrowserWindow | null = null;
-  permissionOwners = new Map<string, string>(); // requestId -> sessionId
   askOwners = new Map<string, string>();
   warm = new WarmSessionPool<AcpSession>();
   forkSupport = new AgentForkSupport();

@@ -197,7 +197,6 @@ export async function fixture(supported = true, options: FixtureOptions = {}) {
     onForkSupport: (value) => state.forkSupport.push(value),
     onAvailableCommands() {},
     onUsage() {},
-    onPermission() {},
     onAskQuestion: (req) => state.questions.push(req),
     onQuestionSettled: (id) => state.settled.push(id),
     getSessionTitle: () => "Demo session",

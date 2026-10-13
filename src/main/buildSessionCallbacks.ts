@@ -13,7 +13,6 @@ type CallbackDeps = {
   emitSessions: () => void;
   noteForkSupport: (agent: AgentKind, supported: boolean) => void;
   queuePersist: () => void;
-  permissionOwners: Map<string, string>;
   askOwners: Map<string, string>;
 };
 
@@ -41,10 +40,6 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
     onAvailableCommands: (commands) => {
       session.slashCommands = commands;
       deps.emitSessions();
-    },
-    onPermission: (req) => {
-      deps.permissionOwners.set(req.requestId, session.id);
-      deps.send("permission", req);
     },
     onQuestionSettled: (requestId) => {
       deps.askOwners.delete(requestId);

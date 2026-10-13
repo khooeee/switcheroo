@@ -37,7 +37,6 @@ function agentsFor(session: Session) {
     sessions: new Map([[session.id, session]]),
     transcripts: new Map([[session.id, [turn]]]),
     bus: { append: vi.fn() },
-    permissionOwners: new Map(),
     askOwners: new Map(),
     forkSupport: { record: () => false },
     send: vi.fn(),

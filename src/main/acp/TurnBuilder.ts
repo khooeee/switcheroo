@@ -1,24 +1,14 @@
 import { randomUUID } from "node:crypto";
-import type { FileChange } from "../../shared/fileChange";
 import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { aggregateFileChanges } from "./aggregateFileChanges";
+import { cloneTurn } from "./cloneTurn";
 
-function aggregateFileChanges(events: TranscriptItem[]): FileChange[] {
-  const out: FileChange[] = [];
-  for (const event of events) {
-    if (event.fileChanges?.length) out.push(...event.fileChanges);
-  }
-  return out;
-}
-
-function cloneTurn(turn: TranscriptTurn): TranscriptTurn {
-  return {
-    ...turn,
-    user: { ...turn.user },
-    assistant: turn.assistant ? { ...turn.assistant } : null,
-    events: turn.events.map((event) => ({ ...event })),
-    fileChanges: turn.fileChanges.map((change) => ({ ...change })),
-  };
+/** The turn's prompt has been sent, so it is no longer waiting in the queue. */
+function unqueue(turn: TranscriptTurn): void {
+  if (!turn.user.queued) return;
+  const { queued: _queued, ...user } = turn.user;
+  turn.user = user;
 }
 
 /** Builds TranscriptTurn objects from streaming transcript items for one ACP session. */
@@ -62,10 +52,7 @@ export class TurnBuilder {
     if (!turn) return;
     this.activeId = turn.id;
     turn.status = "running";
-    if (turn.user.queued) {
-      const { queued: _q, ...user } = turn.user;
-      turn.user = user;
-    }
+    unqueue(turn);
     this.emit(turn);
   }
 
@@ -73,10 +60,7 @@ export class TurnBuilder {
     const turn = this.turns.find((entry) => entry.user.id === userId);
     if (!turn) return;
     if (queued) turn.user = { ...turn.user, queued: true };
-    else {
-      const { queued: _q, ...user } = turn.user;
-      turn.user = user;
-    }
+    else unqueue(turn);
     this.emit(turn);
   }
 
@@ -163,10 +147,7 @@ export class TurnBuilder {
       const turn = this.turns[i]!;
       if (turn.status !== "running") continue;
       this.activeId = turn.id;
-      if (turn.user.queued) {
-        const { queued: _q, ...user } = turn.user;
-        turn.user = user;
-      }
+      unqueue(turn);
       this.emit(turn);
       return;
     }
@@ -187,45 +168,6 @@ export class TurnBuilder {
     turn.status = "stopped";
     this.activeId = null;
     this.emit(turn);
-  }
-
-  /** Clip turns through eventId for fork. Returns null if eventId is missing. */
-  clipThrough(eventId: string): TranscriptTurn[] | null {
-    const clipped: TranscriptTurn[] = [];
-    for (const turn of this.turns) {
-      if (turn.user.id === eventId) {
-        clipped.push({
-          ...cloneTurn(turn),
-          assistant: null,
-          events: [],
-          fileChanges: [],
-          status: turn.status === "running" ? "complete" : turn.status,
-        });
-        return clipped;
-      }
-      if (turn.assistant?.id === eventId) {
-        const copy = cloneTurn(turn);
-        copy.events = [];
-        copy.fileChanges = [];
-        copy.status = copy.status === "running" ? "complete" : copy.status;
-        clipped.push(copy);
-        return clipped;
-      }
-      const eventIdx = turn.events.findIndex((event) => event.id === eventId);
-      if (eventIdx >= 0) {
-        const copy = cloneTurn(turn);
-        const kept = copy.events.slice(0, eventIdx + 1);
-        const hit = kept[eventIdx]!;
-        copy.events = kept;
-        if (copy.assistant && copy.assistant.at > hit.at) copy.assistant = null;
-        copy.fileChanges = aggregateFileChanges(copy.events);
-        copy.status = copy.status === "running" ? "complete" : copy.status;
-        clipped.push(copy);
-        return clipped;
-      }
-      clipped.push(cloneTurn(turn));
-    }
-    return null;
   }
 
   private activeTurn(): TranscriptTurn | null {

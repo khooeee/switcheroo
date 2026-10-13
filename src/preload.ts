@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ActiveTabId } from "./shared/activeTabId";
-import type { CursorAskQuestionRequest, PermissionRequest } from "./shared/agentRequests";
+import type { CursorAskQuestionRequest } from "./shared/agentRequests";
 import type { AppSettings } from "./shared/appSettings";
 import type { CreateSessionInput } from "./shared/createSessionInput";
 import type { FindInSessionsHit } from "./shared/findInSessionsHit";
@@ -51,8 +51,6 @@ const api: SwitcherooApi = {
   sendPrompt: (sessionId: string, text: string) =>
     ipcRenderer.invoke("session:prompt", sessionId, text),
   cancelPrompt: (sessionId: string) => ipcRenderer.invoke("session:cancel", sessionId),
-  respondPermission: (requestId, optionId) =>
-    ipcRenderer.invoke("session:permission", requestId, optionId),
   respondAskQuestion: (requestId, outcome) =>
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
   pickFolder: (startPath?: string) => ipcRenderer.invoke("fs:pickFolder", startPath),
@@ -85,7 +83,6 @@ const api: SwitcherooApi = {
     subscribe<{ sessionId: string; subagentId: string; turn: TranscriptTurn }>("subagent:turn", cb),
   onTranscriptReset: (cb) =>
     subscribe<{ sessionId: string; turns: TranscriptTurn[]; draft?: string }>("transcript:reset", cb),
-  onPermission: (cb) => subscribe<PermissionRequest>("permission", cb),
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
   onPromptComplete: (cb) => subscribe<{ sessionId: string }>("prompt:complete", cb),

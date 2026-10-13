@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
-import type { PermissionRequest } from "../../../shared/agentRequests";
 import type { Session, SessionTab } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../../shared/transcript";
@@ -13,14 +12,13 @@ import { shareById } from "./shareById";
 import { shareTurn } from "./shareTurn";
 import { upsertTurn } from "./upsertTurn";
 
-/** IPC-backed session list, transcripts, switchboard, and permission state. */
+/** IPC-backed session list, transcripts, and switchboard state. */
 export function useAppSessionState() {
   const [pinnedSessions, setPinnedSessions] = useState<Session[]>([]);
   const [unpinnedSessions, setUnpinnedSessions] = useState<Session[]>([]);
   const [activeTabId, setActiveTabId] = useState<ActiveTabId>(SWITCHBOARD_ID);
   const [switchboardTurns, setSwitchboardTurns] = useState<SwitchboardTurn[]>([]);
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptTurn[]>>({});
-  const [permission, setPermission] = useState<PermissionRequest | null>(null);
   const [focusEvent, setFocusEvent] = useState<{
     id: string;
     turnId: string;
@@ -76,7 +74,6 @@ export function useAppSessionState() {
         if (draft) seedComposerDraft(sessionId, draft);
         setTranscripts((prev) => ({ ...prev, [sessionId]: turns }));
       }),
-      window.switcheroo.onPermission((req) => setPermission(req)),
       window.switcheroo.onNavigateToEvent(({ sessionId, turnId, eventId }) => {
         setFocusEvent((prev) => ({
           id: eventId,
@@ -138,8 +135,6 @@ export function useAppSessionState() {
     switchboardTurns,
     transcripts,
     setTranscripts,
-    permission,
-    setPermission,
     focusEvent,
     setFocusEvent,
     switchboardNotice,

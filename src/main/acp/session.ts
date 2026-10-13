@@ -96,10 +96,6 @@ export class AcpSession extends SharedAgentConnection {
     this.turns.restore(turns);
   }
 
-  clipTurnsThrough(eventId: string): TranscriptTurn[] {
-    return this.turns.clipThrough(eventId) ?? [];
-  }
-
   /** Rebind Switcheroo session id + callbacks after claiming from the warm pool. */
   adopt(id: string, cb: SessionCallbacks): void {
     this.id = id;
@@ -269,11 +265,6 @@ export class AcpSession extends SharedAgentConnection {
 
   cancel(): Promise<void> {
     return this.runner.cancel();
-  }
-
-  respondPermission(_requestId: string, _optionId: string): void {
-    void _requestId;
-    void _optionId;
   }
 
   respondAskQuestion(requestId: string, outcome: unknown): void {

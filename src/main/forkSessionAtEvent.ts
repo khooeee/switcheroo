@@ -5,8 +5,10 @@ import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
-import { TurnBuilder } from "./acp/TurnBuilder";
+import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { airForkPoint, type AirForkPoint } from "./acp/airForkPoint";
+import { clipTurnsThrough } from "./acp/clipTurnsThrough";
+import { cloneTurn } from "./acp/cloneTurn";
 import { agentLabel } from "./acp/presets";
 
 interface ForkSessionHost {
@@ -25,9 +27,7 @@ interface ForkSessionHost {
 }
 
 function clipTurns(turns: TranscriptTurn[], eventId: string): TranscriptTurn[] {
-  const builder = new TurnBuilder(() => undefined);
-  builder.restore(turns);
-  const clipped = builder.clipThrough(eventId);
+  const clipped = clipTurnsThrough(finalizeStalledTurns(turns), eventId);
   if (!clipped) throw new Error("Event not found in this session");
   return clipped;
 }
@@ -58,13 +58,7 @@ export async function forkSessionAtEvent(
     }
     forkPoint = airForkPoint(clipped);
   } else {
-    clipped = turns.map((turn) => ({
-      ...turn,
-      user: { ...turn.user },
-      assistant: turn.assistant ? { ...turn.assistant } : null,
-      events: turn.events.map((event) => ({ ...event })),
-      fileChanges: turn.fileChanges.map((change) => ({ ...change })),
-    }));
+    clipped = turns.map(cloneTurn);
   }
 
   const sourceSession = await host.ensureSession(source);

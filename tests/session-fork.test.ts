@@ -19,7 +19,6 @@ function childCallbacks() {
     onUsage() {},
     onPromptComplete: () => completions.push(true),
     onAskQuestion() {},
-    onPermission() {},
     getSessionTitle: () => "Fork session",
   };
   return { statuses, transcripts, capabilities, completions, cb };

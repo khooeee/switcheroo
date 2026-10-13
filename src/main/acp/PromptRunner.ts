@@ -196,10 +196,8 @@ export class PromptRunner {
     const { host } = this;
     if (!host.connection() || !host.sessionId() || host.isDisposed()) throw new Error("Session not ready");
     this.completion.start();
-    this.turnRunning = true;
-    this.remoteTurnActive = null;
     this.stopping = false;
-    host.callbacks().onStatus("running");
+    this.markRunning();
     host.output.reset();
 
     try {
@@ -213,9 +211,7 @@ export class PromptRunner {
       // Stale agent session after restart: mint a fresh one and retry once.
       await host.renewSession();
       host.showUpdates();
-      this.turnRunning = true;
-      this.remoteTurnActive = null;
-      host.callbacks().onStatus("running");
+      this.markRunning();
       try {
         await this.requestPrompt(text);
       } catch (retryErr) {
@@ -236,10 +232,7 @@ export class PromptRunner {
     });
     if (this.remoteTurnActive !== true) host.finishPending(response.stopReason === "end_turn" ? "status unavailable" : "interrupted");
     this.completion.finish(response.stopReason);
-    if (this.remoteTurnActive !== true && !host.isDisposed()) {
-      this.turnRunning = false;
-      host.callbacks().onStatus("ready");
-    }
+    this.markSettled("ready");
   }
 
   private failPrompt(msg: string): void {
@@ -249,9 +242,20 @@ export class PromptRunner {
     this.completion.finish("error");
     host.noteSystem(msg);
     host.turns.complete();
-    if (this.remoteTurnActive !== true && !host.isDisposed()) {
-      this.turnRunning = false;
-      host.callbacks().onStatus("error", msg);
-    }
+    this.markSettled("error", msg);
+  }
+
+  /** A prompt request is in flight; remote status is unknown until the agent reports it. */
+  private markRunning(): void {
+    this.turnRunning = true;
+    this.remoteTurnActive = null;
+    this.host.callbacks().onStatus("running");
+  }
+
+  /** The prompt request settled; go idle unless the agent still reports an active turn. */
+  private markSettled(status: "ready" | "error", error?: string): void {
+    if (this.remoteTurnActive === true || this.host.isDisposed()) return;
+    this.turnRunning = false;
+    this.host.callbacks().onStatus(status, error);
   }
 }

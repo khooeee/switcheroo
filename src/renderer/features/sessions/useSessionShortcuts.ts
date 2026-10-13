@@ -5,6 +5,8 @@ import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { useEffect } from "react";
+import { ctrlOnlyKey } from "../shortcuts/ctrlOnlyKey";
+import { modKey } from "../shortcuts/modKey";
 
 function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {
   const parentId = sessionIdForTab(activeTabId, [...pinned, ...unpinned]);
@@ -42,14 +44,13 @@ export function useSessionShortcuts(
 
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey && event.key === "0") {
+      if (ctrlOnlyKey(event, "0")) {
         event.preventDefault();
         selectTab(SWITCHBOARD_ID);
         return;
       }
 
-      if ((event.metaKey || event.ctrlKey) && !(event.metaKey && event.ctrlKey)
-        && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "p") {
+      if (modKey(event, "p")) {
         event.preventDefault();
         toggleActivePin(pinned, unpinned, activeTabId);
         return;

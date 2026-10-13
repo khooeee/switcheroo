@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { Session, SessionTab } from "../../../shared/session";
+import { dialogOpen } from "./dialogOpen";
 
 /** Escape closes Find, else stops the running agent, else closes the right rail. */
 export function useEscapeShortcut({
@@ -23,7 +24,7 @@ export function useEscapeShortcut({
 }): void {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
+      if (dialogOpen()) return;
       if (event.key !== "Escape") return;
       if (event.defaultPrevented || event.repeat || event.isComposing || blocked) return;
       if (document.querySelector('[role="menu"]')) return;

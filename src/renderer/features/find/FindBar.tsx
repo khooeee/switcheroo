@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
+import { modKey } from "../shortcuts/modKey";
 import { useFindMatches } from "./useFindMatches";
 import "./findBar.css";
 import "./findHighlights.css";
@@ -39,8 +40,7 @@ export function FindBar({
       inputRef.current?.select();
     };
     const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && !(event.metaKey && event.ctrlKey)
-        && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "f") {
+      if (modKey(event, "f")) {
         event.preventDefault();
         focus();
       }

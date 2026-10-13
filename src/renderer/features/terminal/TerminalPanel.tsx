@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Terminal } from "@xterm/xterm";
+import { Terminal, type FontWeight } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { terminalXtermTheme } from "./terminalTheme";
@@ -32,7 +32,7 @@ export function TerminalPanel({
     const mono =
       rootStyle.getPropertyValue("--font-mono").trim() || "ui-monospace, monospace";
     const fontWeight =
-      rootStyle.getPropertyValue("--font-mono-weight").trim() || "500";
+      (rootStyle.getPropertyValue("--font-mono-weight").trim() || "500") as FontWeight;
     const fontSize = Number.parseFloat(
       rootStyle.getPropertyValue("--font-mono-size").trim(),
     ) || 13;

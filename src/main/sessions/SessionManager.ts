@@ -246,14 +246,6 @@ export class SessionManager {
     await this.persist();
   }
 
-  respondPermission(requestId: string, optionId: string | "cancelled"): void {
-    const { state } = this;
-    const sessionId = state.permissionOwners.get(requestId);
-    if (!sessionId) return;
-    state.permissionOwners.delete(requestId);
-    state.agents.get(sessionId)?.respondPermission(requestId, optionId);
-  }
-
   respondAskQuestion(requestId: string, outcome: unknown): void {
     const { state } = this;
     const sessionId = state.askOwners.get(requestId);
