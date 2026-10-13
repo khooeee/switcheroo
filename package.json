@@ -1,7 +1,7 @@
 {
   "name": "switcheroo",
   "productName": "Switcheroo",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "High productivity agentic development environment",
   "main": ".vite/build/main.cjs",
   "private": true,
