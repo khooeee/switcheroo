@@ -37,23 +37,21 @@ export async function createSession(
 
   try {
     const claimed = await state.warm.claim(input.agent, input.cwd);
+    const acp = claimed ?? agents.openSession(session);
+    state.agents.set(id, acp);
     if (claimed) {
       claimed.adopt(id, agents.callbacksFor(session));
-      state.agents.set(id, claimed);
       session.agentSessionId = claimed.sessionId;
       setSessionStatus(state, id, "ready", null);
-      if (input.switcherooAware) {
-        await claimed.prompt(controlBootstrapText());
-      }
     } else {
-      const acp = agents.openSession(session);
-      state.agents.set(id, acp);
       await acp.start();
       session.agentSessionId = acp.sessionId;
       state.emitSessions();
-      if (input.switcherooAware) {
-        await acp.prompt(controlBootstrapText());
-      }
+    }
+    if (input.switcherooAware) {
+      // Don't hold the caller for the whole bootstrap turn; prompts sent
+      // meanwhile queue behind it as their own turns instead of steering in.
+      await acp.prompt(controlBootstrapText(), { wait: false, exclusive: true });
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

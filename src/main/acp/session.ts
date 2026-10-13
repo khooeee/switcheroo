@@ -263,7 +263,7 @@ export class AcpSession extends SharedAgentConnection {
   }
 
   /** Waits for the turn to finish unless `{ wait: false }`; returns the turn id. */
-  prompt(text: string, options?: { wait?: boolean }): Promise<string> {
+  prompt(text: string, options?: { wait?: boolean; exclusive?: boolean }): Promise<string> {
     return this.runner.prompt(text, options);
   }
 

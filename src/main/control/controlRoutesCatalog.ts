@@ -42,7 +42,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
         agent: "claude | codex | cursor | pi",
         cwd: "absolute workspace path",
         title: "optional string",
-        switcherooAware: "optional boolean — inject control API bootstrap prompt",
+        switcherooAware: "optional boolean — inject control API bootstrap prompt (later prompts queue behind it)",
         pin: "optional boolean — pin the session at the top of the rail",
       },
       example:

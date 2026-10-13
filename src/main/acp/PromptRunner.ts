@@ -32,6 +32,10 @@ export class PromptRunner {
   private turnRunning = false;
   private remoteTurnActive: boolean | null = null;
   private stopping = false;
+  /** User ids of queued exclusive prompts; follow-ups must not steer into their turns. */
+  private exclusiveIds = new Set<string>();
+  /** The running turn is exclusive, so follow-ups queue behind it instead of steering. */
+  private exclusiveRunning = false;
   private completion: PromptCompletion;
   private prompts: PromptQueue;
   private delivery: PromptDelivery;
@@ -46,15 +50,19 @@ export class PromptRunner {
       (text) => this.runPrompt(text),
       {
         onWaiting: (id) => turns.setQueued(id, true),
-        onReleased: (id) => turns.activate(id),
+        onReleased: (id) => {
+          this.exclusiveRunning = this.exclusiveIds.delete(id);
+          turns.activate(id);
+        },
         onDiscarded: (id) => {
+          this.exclusiveIds.delete(id);
           const removed = turns.discard(id);
           if (removed) host.callbacks().onTurnRemoved?.(removed.id);
         },
       },
     );
     this.delivery = new PromptDelivery({
-      isRunning: () => this.turnRunning,
+      isRunning: () => this.turnRunning && !this.exclusiveRunning,
       prompt: (text, id) => this.prompts.send(text, id),
       steer: (text) => {
         const connection = host.connection();
@@ -96,8 +104,9 @@ export class PromptRunner {
   /**
    * Start a prompt. By default waits until the turn finishes.
    * Pass `{ wait: false }` to return the turn id as soon as delivery is accepted.
+   * Pass `{ exclusive: true }` so follow-ups queue as their own turns instead of steering into this one.
    */
-  async prompt(text: string, options?: { wait?: boolean }): Promise<string> {
+  async prompt(text: string, options?: { wait?: boolean; exclusive?: boolean }): Promise<string> {
     const { host } = this;
     if (!host.sessionId() || host.isDisposed()) throw new Error("Session not ready");
     host.showUpdates();
@@ -135,6 +144,7 @@ export class PromptRunner {
     } else {
       const turn = host.turns.open(userItem);
       turnId = turn.id;
+      if (options?.exclusive) this.exclusiveIds.add(userItem.id);
       completion = this.delivery.startPrompt(text, userItem.id);
     }
 
