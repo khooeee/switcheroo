@@ -11,6 +11,11 @@ export abstract class SharedAgentConnection {
   private connectionOwner: SharedAgentConnection | null = null;
   private connectionUsers = 1;
 
+  /** The agent process exited or its ACP pipe closed (e.g. killed outside Switcheroo). */
+  get connectionClosed(): boolean {
+    return this.connection?.signal?.aborted === true;
+  }
+
   /** Fork siblings share one agent process; warm-pool sessions must not steal updates. */
   isSameAgentConnection(other: SharedAgentConnection): boolean {
     const self = this.connectionOwner ?? this;

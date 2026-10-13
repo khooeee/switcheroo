@@ -26,6 +26,11 @@ export class SessionAgents {
     const { state } = this;
     if (!(await this.hydration.ensure(session.id))) throw new Error("No session");
     let acp = state.agents.get(session.id);
+    if (acp?.connectionClosed) {
+      // Dead agent process: drop it so the agent session resumes on a fresh one below.
+      void acp.dispose().catch(() => undefined);
+      acp = undefined;
+    }
     if (!acp) {
       acp = this.openSession(session);
       state.agents.set(session.id, acp);

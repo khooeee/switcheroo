@@ -224,6 +224,11 @@ export async function fixture(supported = true, options: FixtureOptions = {}) {
     setOutcome: (outcome: string) => {
       state.steeringResult = { outcome };
     },
+    /** Give the next connect its own close signal, so earlier connections can close independently. */
+    nextConnection: () => {
+      state.disconnected = new AbortController();
+      return state.disconnected;
+    },
     update: (update: unknown, sessionId = "session-1") =>
       state.notifications.get("update")?.({ params: { sessionId, update } }),
     /** Subagent lifecycle as the connection delivers it after `rewriteSubagentUpdates`. */
