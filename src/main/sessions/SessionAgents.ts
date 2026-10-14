@@ -1,5 +1,6 @@
 import type { AgentKind } from "../../shared/agentKind";
 import type { Session } from "../../shared/session";
+import { availableAgents } from "../acp/availableAgents";
 import { AcpSession } from "../acp/session";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
 import { buildSessionCallbacks } from "../buildSessionCallbacks";
@@ -54,16 +55,15 @@ export class SessionAgents {
     return acp;
   }
 
-  ensureWarm(agent: AgentKind, cwd: string): void {
-    const callbacks: SessionCallbacks = {
-      ...warmCallbacks,
-      onForkSupport: (supported) => this.noteForkSupport(agent, supported),
-    };
-    this.state.warm.ensure(
-      agent,
-      cwd,
-      () => new AcpSession(newSessionId(), agent, cwd, callbacks),
-    );
+  /** Keep a started session ready for every installed agent in `cwd`. */
+  ensureWarm(cwd: string): void {
+    this.state.warm.ensure(availableAgents(), cwd, (agent) => {
+      const callbacks: SessionCallbacks = {
+        ...warmCallbacks,
+        onForkSupport: (supported) => this.noteForkSupport(agent, supported),
+      };
+      return new AcpSession(newSessionId(), agent, cwd, callbacks);
+    });
   }
 
   refreshCommandsIfNeeded(sessionId: string): void {

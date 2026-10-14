@@ -58,7 +58,7 @@ export async function createSession(
     setSessionStatus(state, id, "error", msg);
   }
 
-  agents.ensureWarm(input.agent, input.cwd);
+  agents.ensureWarm(input.cwd);
   void persistence.persist();
   return session;
 }
