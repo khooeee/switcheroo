@@ -1,12 +1,12 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { TranscriptTurn } from "../../../shared/transcript";
-import { RIGHT_RAIL_LATEST } from "./rightRailLatest";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
 import { SubagentChips } from "../subagents/SubagentChips";
 import { subagentRows } from "../subagents/subagentRows";
 import type { MessageSession } from "./useMessageSession";
+import { useTurnRailOpeners } from "./useTurnRailOpeners";
 
 /** Compact session turn: user + steers + subagents + assistant. Other mid-turn events live in the right rail. */
 export const SessionTurn = memo(function SessionTurn({
@@ -19,16 +19,7 @@ export const SessionTurn = memo(function SessionTurn({
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
-  const openRail = useCallback(
-    (eventId: string) => onOpenRightRail(turn.id, eventId),
-    [onOpenRightRail, turn.id],
-  );
-  const handleOpenUser = useCallback(() => openRail(turn.user.id), [openRail, turn.user.id]);
-  const handleOpenLatest = useCallback(() => openRail(RIGHT_RAIL_LATEST), [openRail]);
-  const handleOpenAssistant = useCallback(() => {
-    if (!turn.assistant) return;
-    openRail(turn.assistant.id);
-  }, [openRail, turn.assistant]);
+  const { openUser, openLatest, openAssistant } = useTurnRailOpeners(turn, onOpenRightRail);
   // Steers land as user events; keep them visible in the main feed.
   const steerEvents = useMemo(
     () => turn.events.filter((event) => event.role === "user"),
@@ -41,17 +32,17 @@ export const SessionTurn = memo(function SessionTurn({
       <TranscriptMessage
         session={session}
         item={turn.user}
-        onToggleDetails={handleOpenUser}
+        onToggleDetails={openUser}
         forkable
       />
       <TurnEvents session={session} events={steerEvents} />
       <SubagentChips sessionId={session.id} rows={subagents} />
-      {running ? <ThinkingIndicator onActivate={handleOpenLatest} /> : null}
+      {running ? <ThinkingIndicator onActivate={openLatest} /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}
           item={turn.assistant}
-          onToggleDetails={handleOpenAssistant}
+          onToggleDetails={openAssistant}
           extraFileChanges={turn.fileChanges}
           forkable
         />

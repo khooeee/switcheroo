@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
+import { SessionRailMenuItem } from "./SessionRailMenuItem";
 
 export function SessionRailMenu({
   menuRef,
@@ -38,125 +39,69 @@ export function SessionRailMenu({
   onClose: (id: string) => void;
   onDismiss: () => void;
 }) {
-  const pinDisabled = !pinned && !canPin;
-  const forkDisabled = !session.supportsFork;
-  const stopDisabled = session.status !== "running";
   return (
     <div ref={menuRef} className="context-menu" role="menu" style={{ left: x, top: y }}>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        onClick={() => {
-          onRename(session);
-          onDismiss();
-        }}
-        aria-keyshortcuts="Meta+R Control+R"
-      >
-        Rename...
-        <kbd className="settings-shortcut">⌘R</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
+      <SessionRailMenuItem
+        label="Rename..."
+        shortcut="⌘R"
+        keys="Meta+R Control+R"
+        onSelect={() => onRename(session)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="Open in Cursor"
+        shortcut="⌘E"
+        keys="Meta+E Control+E"
         disabled={!session.cwd.trim()}
-        aria-keyshortcuts="Meta+E Control+E"
-        onClick={() => {
-          if (!session.cwd.trim()) return;
-          void window.switcheroo.openSessionInCursor(session.id).catch(console.error);
-          onDismiss();
-        }}
-      >
-        Open in Cursor
-        <kbd className="settings-shortcut">⌘E</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+U Control+U"
-        onClick={() => {
-          onToggleUnread(session.id);
-          onDismiss();
-        }}
-      >
-        {unread ? "Mark as Read" : "Mark as Unread"}
-        <kbd className="settings-shortcut">⌘U</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+T Control+T"
-        onClick={() => {
-          onNewTerminal(session.id);
-          onDismiss();
-        }}
-      >
-        New Terminal
-        <kbd className="settings-shortcut">⌘T</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        disabled={forkDisabled}
-        aria-keyshortcuts="Meta+Y Control+Y"
-        onClick={() => {
-          if (forkDisabled) return;
-          onFork(session.id);
-          onDismiss();
-        }}
-      >
-        Fork
-        <kbd className="settings-shortcut">⌘Y</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        disabled={pinDisabled}
-        aria-keyshortcuts="Meta+P Control+P"
-        onClick={() => {
-          if (pinDisabled) return;
-          if (pinned) onUnpin(session.id);
-          else onPin(session.id);
-          onDismiss();
-        }}
-      >
-        {pinned ? "Unpin" : "Pin"}
-        <kbd className="settings-shortcut">⌘P</kbd>
-      </button>
+        onSelect={() => void window.switcheroo.openSessionInCursor(session.id).catch(console.error)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label={unread ? "Mark as Read" : "Mark as Unread"}
+        shortcut="⌘U"
+        keys="Meta+U Control+U"
+        onSelect={() => onToggleUnread(session.id)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="New Terminal"
+        shortcut="⌘T"
+        keys="Meta+T Control+T"
+        onSelect={() => onNewTerminal(session.id)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="Fork"
+        shortcut="⌘Y"
+        keys="Meta+Y Control+Y"
+        disabled={!session.supportsFork}
+        onSelect={() => onFork(session.id)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label={pinned ? "Unpin" : "Pin"}
+        shortcut="⌘P"
+        keys="Meta+P Control+P"
+        disabled={!pinned && !canPin}
+        onSelect={() => (pinned ? onUnpin(session.id) : onPin(session.id))}
+        onDismiss={onDismiss}
+      />
       <div className="context-separator" role="separator" />
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        disabled={stopDisabled}
-        aria-keyshortcuts="Control+C"
-        onClick={() => {
-          if (stopDisabled) return;
-          onStop(session.id);
-          onDismiss();
-        }}
-      >
-        Stop
-        <kbd className="settings-shortcut">⌃C</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+W Control+W"
-        onClick={() => {
-          onClose(session.id);
-          onDismiss();
-        }}
-      >
-        Close
-        <kbd className="settings-shortcut">⌘W</kbd>
-      </button>
+      <SessionRailMenuItem
+        label="Stop"
+        shortcut="⌃C"
+        keys="Control+C"
+        disabled={session.status !== "running"}
+        onSelect={() => onStop(session.id)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="Close"
+        shortcut="⌘W"
+        keys="Meta+W Control+W"
+        onSelect={() => onClose(session.id)}
+        onDismiss={onDismiss}
+      />
     </div>
   );
 }

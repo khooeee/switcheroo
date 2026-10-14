@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import type { ActiveSessionId } from "../../../shared/activeTabId";
+import type { ActiveTabId } from "../../../shared/activeTabId";
 import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 
 /** Prompt focus via `switcheroo:focus-prompt` (Cmd+I / menu). */
-export function useSessionFocusShortcuts(activeSessionId: ActiveSessionId, blocked: boolean): number {
+export function useSessionFocusShortcuts(activeSessionId: ActiveTabId, blocked: boolean): number {
   const [promptFocus, setPromptFocus] = useState(0);
   const sessionUi = activeSessionId !== SWITCHBOARD_ID && !blocked;
 

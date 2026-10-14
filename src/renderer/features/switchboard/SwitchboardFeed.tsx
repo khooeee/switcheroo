@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import { useMemo } from "react";
 import type { Session } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
@@ -22,9 +21,6 @@ export function SwitchboardFeed({
     [turns],
   );
 
-  const titleFor = (turn: SwitchboardTurn) =>
-    sessions.find((session) => session.id === turn.sessionId)?.title ?? turn.sessionTitle ?? "Closed session";
-
   if (turns.length === 0) {
     return (
       <div className="empty">
@@ -41,8 +37,7 @@ export function SwitchboardFeed({
           <SwitchboardTurnCard
             key={turn.id}
             turn={turn}
-            title={titleFor(turn)}
-            cwd={session?.cwd}
+            title={session?.title ?? turn.sessionTitle ?? "Closed session"}
             session={session}
             onOpenRightRail={onOpenRightRail}
             onOpen={onClick}

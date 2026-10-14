@@ -7,24 +7,22 @@ import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
-import { RIGHT_RAIL_LATEST } from "../chat/rightRailLatest";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { QueuedStatus } from "../chat/QueuedStatus";
 import { TurnEvents } from "../chat/TurnEvents";
 import { useMessageSession } from "../chat/useMessageSession";
+import { useTurnRailOpeners } from "../chat/useTurnRailOpeners";
 
 /** One Switchboard turn: user + steers + assistant. Mid-turn events live in the right rail. */
 export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
   turn,
   title,
-  cwd,
   session,
   onOpenRightRail,
   onOpen,
 }: {
   turn: SwitchboardTurn;
   title: string;
-  cwd?: string;
   session: Session | undefined;
   onOpenRightRail: (turnId: string, focusEventId?: string) => void;
   onOpen: (sessionId: string, turnId: string, eventId: string) => void;
@@ -42,19 +40,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     () => turn.events.filter((event) => event.role === "user"),
     [turn.events],
   );
-  const openRail = useCallback(
-    (eventId: string) => onOpenRightRail(turn.id, eventId),
-    [onOpenRightRail, turn.id],
-  );
-  const handleOpenUserDetails = useCallback(
-    () => openRail(turn.user.id),
-    [openRail, turn.user.id],
-  );
-  const handleOpenLatestDetails = useCallback(() => openRail(RIGHT_RAIL_LATEST), [openRail]);
-  const handleOpenAssistantDetails = useCallback(() => {
-    if (!turn.assistant) return;
-    openRail(turn.assistant.id);
-  }, [openRail, turn.assistant]);
+  const { openUser, openLatest, openAssistant } = useTurnRailOpeners(turn, onOpenRightRail);
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
     [onOpen, turn.sessionId, turn.id],
@@ -92,7 +78,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />
-          <TurnDetailsButton onToggle={handleOpenUserDetails} />
+          <TurnDetailsButton onToggle={openUser} />
         </div>
       </div>
 
@@ -113,7 +99,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       ) : null}
 
-      {running ? <ThinkingIndicator onActivate={handleOpenLatestDetails} /> : null}
+      {running ? <ThinkingIndicator onActivate={openLatest} /> : null}
 
       {!running && turn.assistant ? (
         <div
@@ -132,14 +118,14 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           {turn.fileChanges.length ? (
             <FileChanges
               changes={turn.fileChanges}
-              cwd={cwd}
+              cwd={session?.cwd}
               sessionId={turn.sessionId}
               compact
             />
           ) : null}
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
-            <TurnDetailsButton onToggle={handleOpenAssistantDetails} />
+            <TurnDetailsButton onToggle={openAssistant} />
           </div>
         </div>
       ) : null}

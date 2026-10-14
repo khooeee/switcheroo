@@ -1,4 +1,4 @@
-import type { ActiveSessionId } from "../../../shared/activeTabId";
+import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
@@ -22,7 +22,7 @@ export function resolveSubagentRailView({
 }: {
   selection: RightRailSelection;
   subagentId: string;
-  activeSessionId: ActiveSessionId;
+  activeSessionId: ActiveTabId;
   activeSession: Session | null;
   openSessions: Session[];
   transcripts: Record<string, TranscriptTurn[]>;

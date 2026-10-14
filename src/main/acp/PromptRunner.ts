@@ -121,7 +121,7 @@ export class PromptRunner {
     // in-flight turn as an event instead of a sibling user-only turn.
     // Prompt mode must NOT start the agent request until the turn exists —
     // otherwise a fast end_turn drops every streamed chunk.
-    const decision = await this.delivery.enqueue(text, userItem.id);
+    const decision = await this.delivery.enqueue(text);
 
     let turnId: string;
     let completion: Promise<void>;

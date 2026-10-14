@@ -25,7 +25,7 @@ export class PromptDelivery {
   }
 
   send(text: string, id: string): Promise<void> {
-    return this.enqueue(text, id).then((decision) => {
+    return this.enqueue(text).then((decision) => {
       if (decision.mode === "prompt") return this.options.prompt(text, id);
       return decision.completion;
     });
@@ -35,9 +35,9 @@ export class PromptDelivery {
    * Resolve once delivery is decided. Prompt mode does not start the agent
    * request — the caller must open a turn first, then call `startPrompt`.
    */
-  enqueue(text: string, id: string): Promise<DeliveryDecision> {
+  enqueue(text: string): Promise<DeliveryDecision> {
     // Serialize delivery decisions, but don't hold this lock for a whole prompt.
-    const delivery = this.dispatch.then(() => this.deliver(text, id));
+    const delivery = this.dispatch.then(() => this.deliver(text));
     this.dispatch = delivery.then(() => undefined, () => undefined);
     return delivery;
   }
@@ -46,7 +46,7 @@ export class PromptDelivery {
     return this.options.prompt(text, id);
   }
 
-  private async deliver(text: string, id: string): Promise<DeliveryDecision> {
+  private async deliver(text: string): Promise<DeliveryDecision> {
     if (this.supported && this.options.isRunning()) {
       let response: unknown;
       try {

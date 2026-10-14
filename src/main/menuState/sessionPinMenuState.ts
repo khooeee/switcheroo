@@ -1,4 +1,4 @@
-import type { ActiveSessionId } from "../../shared/activeTabId";
+import type { ActiveTabId } from "../../shared/activeTabId";
 import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { MAX_PINNED_SESSIONS } from "../../shared/maxPinnedSessions";
 
@@ -9,7 +9,7 @@ export type SessionPinMenuState = {
 
 /** Label/enabled for Session → Pin/Unpin based on the active session. */
 export function sessionPinMenuState(
-  activeSessionId: ActiveSessionId,
+  activeSessionId: ActiveTabId,
   pinnedIds: string[],
   sessionExists: boolean,
 ): SessionPinMenuState {

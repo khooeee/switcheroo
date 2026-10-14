@@ -21,11 +21,6 @@
   align-self: center;
 }
 
-.file-changes.compact .file-change-panel {
-  font-size: var(--font-mono-size);
-  line-height: 1.5;
-}
-
 .file-changes.detailed {
   font-size: var(--font-mono-size);
   line-height: 1.5;

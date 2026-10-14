@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { SessionTab } from "../../../shared/session";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
+import { SessionRailMenuItem } from "./SessionRailMenuItem";
 
 export function SessionRailChildMenu({
   menuRef,
@@ -26,45 +27,27 @@ export function SessionRailChildMenu({
 }) {
   return (
     <div ref={menuRef} className="context-menu" role="menu" style={{ left: x, top: y }}>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        onClick={() => {
-          onRename(tab);
-          onDismiss();
-        }}
-        aria-keyshortcuts="Meta+R Control+R"
-      >
-        Rename...
-        <kbd className="settings-shortcut">⌘R</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+T Control+T"
-        onClick={() => {
-          onNewTerminal(sessionId);
-          onDismiss();
-        }}
-      >
-        New Terminal
-        <kbd className="settings-shortcut">⌘T</kbd>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="context-item"
-        aria-keyshortcuts="Meta+W Control+W"
-        onClick={() => {
-          onClose(tab.tabId);
-          onDismiss();
-        }}
-      >
-        Close
-        <kbd className="settings-shortcut">⌘W</kbd>
-      </button>
+      <SessionRailMenuItem
+        label="Rename..."
+        shortcut="⌘R"
+        keys="Meta+R Control+R"
+        onSelect={() => onRename(tab)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="New Terminal"
+        shortcut="⌘T"
+        keys="Meta+T Control+T"
+        onSelect={() => onNewTerminal(sessionId)}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="Close"
+        shortcut="⌘W"
+        keys="Meta+W Control+W"
+        onSelect={() => onClose(tab.tabId)}
+        onDismiss={onDismiss}
+      />
     </div>
   );
 }
