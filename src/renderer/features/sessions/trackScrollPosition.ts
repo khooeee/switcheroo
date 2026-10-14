@@ -1,4 +1,5 @@
 import { captureScrollAnchor, type ScrollAnchor } from "./captureScrollAnchor";
+import { isScrolledToBottom } from "./isScrolledToBottom";
 import { restoreScrollAnchor } from "./restoreScrollAnchor";
 
 /** Saved scroll intent for one transcript: offset, or stuck to the bottom. */
@@ -43,7 +44,7 @@ export function trackScrollPosition(element: HTMLElement, position: ScrollPositi
     // bottom: leave the saved intent for `restore`.
     if (element.clientWidth !== seenWidth || element.scrollHeight !== seenHeight) return;
     position.top = element.scrollTop;
-    position.pinned = element.scrollHeight - element.clientHeight - element.scrollTop <= 4;
+    position.pinned = isScrolledToBottom(element);
     position.anchor = position.pinned ? undefined : captureScrollAnchor(element);
     appliedTop = element.scrollTop;
     noteLayout();
