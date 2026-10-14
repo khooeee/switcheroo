@@ -4,7 +4,7 @@ import { flashEventElement } from "./flashEventElement";
 /** Focus key each tab's rail last flashed; this app run only. */
 const flashed = new Map<string, number>();
 
-/** Flash (and scroll to) the focus event once per selection, not again when switching back to its tab. */
+/** Flash (and scroll to the top of) the focus event once per selection, not again when switching back to its tab. */
 export function useFlashRightRailFocus(
   tabId: string,
   focusEventId: string | undefined,
@@ -23,7 +23,7 @@ export function useFlashRightRailFocus(
     if (!el) return;
     // Mark on the next frame: StrictMode cancels this run and mounts again, which must still flash.
     const mark = requestAnimationFrame(() => flashed.set(tabId, focusKey));
-    const stop = flashEventElement(el);
+    const stop = flashEventElement(el, "start");
     return () => {
       cancelAnimationFrame(mark);
       stop();

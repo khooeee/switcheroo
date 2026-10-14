@@ -1,11 +1,14 @@
 /** Select-and-flash an event element (find / navigate-to-event). */
-export function flashEventElement(el: HTMLElement, scroll = true): () => void {
+export function flashEventElement(
+  el: HTMLElement,
+  block: ScrollLogicalPosition = "center",
+): () => void {
   let raf1 = 0;
   let raf2 = 0;
   let t = 0;
   raf1 = requestAnimationFrame(() => {
     raf2 = requestAnimationFrame(() => {
-      if (scroll) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.scrollIntoView({ behavior: "smooth", block });
       el.classList.remove("highlight");
       void el.offsetWidth;
       el.classList.add("highlight");
