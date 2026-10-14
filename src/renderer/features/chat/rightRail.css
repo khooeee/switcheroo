@@ -51,4 +51,5 @@
   min-height: 0;
   overflow: auto;
   padding: 12px 14px 24px;
+  scroll-padding-top: 12px;
 }
