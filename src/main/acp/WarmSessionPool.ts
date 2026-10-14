@@ -7,26 +7,30 @@ type WarmAcp = {
 };
 
 type Slot<T extends WarmAcp> = {
-  agent: AgentKind;
   cwd: string;
   acp: T;
   ready: Promise<void>;
 };
 
-/** One invisible, fully-started ACP session for last agent + cwd. */
+/** Invisible, fully-started ACP sessions: one per available agent, all for one cwd. */
 export class WarmSessionPool<T extends WarmAcp = WarmAcp> {
-  private slot: Slot<T> | null = null;
+  private slots = new Map<AgentKind, Slot<T>>();
 
-  ensure(agent: AgentKind, cwd: string, open: () => T): void {
+  /** Keep one warm session per agent for `cwd`; drop slots for other agents or folders. */
+  ensure(agents: AgentKind[], cwd: string, open: (agent: AgentKind) => T): void {
     if (!cwd.trim()) return;
-    if (this.slot && this.slot.agent === agent && this.slot.cwd === cwd) return;
-    this.replace(agent, cwd, open);
+    for (const [agent, slot] of this.slots) {
+      if (slot.cwd !== cwd || !agents.includes(agent)) this.drop(agent);
+    }
+    for (const agent of agents) {
+      if (!this.slots.has(agent)) this.fill(agent, cwd, open(agent));
+    }
   }
 
   async claim(agent: AgentKind, cwd: string): Promise<T | null> {
-    const slot = this.slot;
-    if (!slot || slot.agent !== agent || slot.cwd !== cwd) return null;
-    this.slot = null;
+    const slot = this.slots.get(agent);
+    if (!slot || slot.cwd !== cwd) return null;
+    this.slots.delete(agent);
     try {
       await slot.ready;
       return slot.acp;
@@ -37,23 +41,25 @@ export class WarmSessionPool<T extends WarmAcp = WarmAcp> {
   }
 
   async dispose(): Promise<void> {
-    const slot = this.slot;
-    this.slot = null;
-    if (!slot) return;
-    await slot.acp.dispose().catch(() => undefined);
+    const slots = [...this.slots.values()];
+    this.slots.clear();
+    await Promise.all(slots.map((slot) => slot.acp.dispose().catch(() => undefined)));
   }
 
-  private replace(agent: AgentKind, cwd: string, open: () => T): void {
-    const prev = this.slot;
-    this.slot = null;
-    if (prev) void prev.acp.dispose().catch(() => undefined);
+  private drop(agent: AgentKind): void {
+    const slot = this.slots.get(agent);
+    this.slots.delete(agent);
+    if (slot) void slot.acp.dispose().catch(() => undefined);
+  }
 
-    const acp = open();
+  private fill(agent: AgentKind, cwd: string, acp: T): void {
     const ready = acp.start({ quiet: true }).catch(async (error) => {
-      if (this.slot?.acp === acp) this.slot = null;
+      if (this.slots.get(agent)?.acp === acp) this.slots.delete(agent);
       await acp.dispose().catch(() => undefined);
       throw error;
     });
-    this.slot = { agent, cwd, acp, ready };
+    // Slots nobody claims would otherwise surface as unhandled rejections.
+    ready.catch(() => undefined);
+    this.slots.set(agent, { cwd, acp, ready });
   }
 }

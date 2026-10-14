@@ -123,7 +123,7 @@ export class SessionManager {
     });
     if (await enforceSessionListMax(this.deps)) await this.persistence.persistStateFile();
     await cleanSwitchboardOnStartup(this.state);
-    this.agents.ensureWarm(getAppSettings().lastAgent, getAppSettings().lastCwd);
+    this.agents.ensureWarm(getAppSettings().lastCwd);
   }
 
   persist(): Promise<void> {
