@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from "react";
 import type { TranscriptTurn } from "../../../shared/transcript";
+import { RIGHT_RAIL_LATEST } from "./rightRailLatest";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
@@ -23,6 +24,7 @@ export const SessionTurn = memo(function SessionTurn({
     [onOpenRightRail, turn.id],
   );
   const handleOpenUser = useCallback(() => openRail(turn.user.id), [openRail, turn.user.id]);
+  const handleOpenLatest = useCallback(() => openRail(RIGHT_RAIL_LATEST), [openRail]);
   const handleOpenAssistant = useCallback(() => {
     if (!turn.assistant) return;
     openRail(turn.assistant.id);
@@ -44,7 +46,7 @@ export const SessionTurn = memo(function SessionTurn({
       />
       <TurnEvents session={session} events={steerEvents} />
       <SubagentChips sessionId={session.id} rows={subagents} />
-      {running ? <ThinkingIndicator onActivate={handleOpenUser} /> : null}
+      {running ? <ThinkingIndicator onActivate={handleOpenLatest} /> : null}
       {!running && turn.assistant ? (
         <TranscriptMessage
           session={session}

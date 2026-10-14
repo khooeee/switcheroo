@@ -53,7 +53,7 @@ export const RightRail = memo(function RightRail({
 
   // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
   useShowRightRail(tabId);
-  useRightRailScroll(tabId, focusKey, resolvedScrollRef);
+  useRightRailScroll(tabId, focusEventId, focusKey, resolvedScrollRef);
   useFlashRightRailFocus(tabId, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
 
   return (

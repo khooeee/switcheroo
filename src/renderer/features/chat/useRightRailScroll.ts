@@ -1,6 +1,7 @@
 import { useLayoutEffect, type RefObject } from "react";
 import { isScrolledToBottom } from "../sessions/isScrolledToBottom";
 import { trackScrollPosition, type ScrollPosition } from "../sessions/trackScrollPosition";
+import { RIGHT_RAIL_LATEST } from "./rightRailLatest";
 
 /** Scroll intent of each tab's rail, and the selection it belonged to; this app run only. */
 const saved = new Map<string, ScrollPosition & { focusKey: number }>();
@@ -11,6 +12,7 @@ const saved = new Map<string, ScrollPosition & { focusKey: number }>();
  */
 export function useRightRailScroll(
   tabId: string,
+  focusEventId: string | undefined,
   focusKey: number,
   scrollRef: RefObject<HTMLElement | null>,
 ): void {
@@ -20,9 +22,11 @@ export function useRightRailScroll(
     let position = saved.get(tabId);
     if (position?.focusKey !== focusKey) {
       // A new selection keeps the current offset, as before; flashing its focus event scrolls to it.
-      position = { focusKey, top: element.scrollTop, pinned: isScrolledToBottom(element) };
+      // Opening on the latest output starts stuck to the bottom instead.
+      const pinned = focusEventId === RIGHT_RAIL_LATEST || isScrolledToBottom(element);
+      position = { focusKey, top: element.scrollTop, pinned };
       saved.set(tabId, position);
     }
     return trackScrollPosition(element, position);
-  }, [tabId, focusKey, scrollRef]);
+  }, [tabId, focusEventId, focusKey, scrollRef]);
 }

@@ -7,6 +7,7 @@ import { FileChanges } from "../files/FileChanges";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
+import { RIGHT_RAIL_LATEST } from "../chat/rightRailLatest";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { QueuedStatus } from "../chat/QueuedStatus";
 import { TurnEvents } from "../chat/TurnEvents";
@@ -49,6 +50,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     () => openRail(turn.user.id),
     [openRail, turn.user.id],
   );
+  const handleOpenLatestDetails = useCallback(() => openRail(RIGHT_RAIL_LATEST), [openRail]);
   const handleOpenAssistantDetails = useCallback(() => {
     if (!turn.assistant) return;
     openRail(turn.assistant.id);
@@ -111,7 +113,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       ) : null}
 
-      {running ? <ThinkingIndicator onActivate={handleOpenUserDetails} /> : null}
+      {running ? <ThinkingIndicator onActivate={handleOpenLatestDetails} /> : null}
 
       {!running && turn.assistant ? (
         <div
