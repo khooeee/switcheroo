@@ -86,7 +86,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+I**: Focus prompt
 
-**Cmd+K**: Focus filter tabs
+**Cmd/Ctrl+G**: Focus filter tabs
 
 **Cmd/Ctrl+N**: New session
 

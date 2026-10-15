@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
 import { dialogOpen } from "./dialogOpen";
+import { modKey } from "./modKey";
 
-/** Cmd+K focuses the "Filter tabs" field. Cmd only, so Ctrl+K stays kill-line in terminals and the prompt. */
+/** Cmd/Ctrl+G focuses the "Filter tabs" field. */
 export function useFilterFocusShortcut(blocked: boolean): void {
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() !== "k" || !event.metaKey) return;
-      if (event.ctrlKey || event.altKey || event.shiftKey || event.repeat) return;
+      if (!modKey(event, "g") || event.repeat) return;
       if (event.defaultPrevented || event.isComposing) return;
       if (blockedRef.current) return;
       if (dialogOpen()) return;

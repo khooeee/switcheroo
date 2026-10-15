@@ -96,7 +96,7 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         },
         {
           label: "Go to Filter Tabs",
-          accelerator: "Cmd+K",
+          accelerator: "CmdOrCtrl+G",
           click: () => {
             win()?.webContents.send("filter:focus");
           },
