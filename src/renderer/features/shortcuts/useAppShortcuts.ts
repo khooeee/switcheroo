@@ -13,6 +13,7 @@ import { ctrlOnlyKey } from "./ctrlOnlyKey";
 import { dialogOpen } from "./dialogOpen";
 import { modKey } from "./modKey";
 import { useEscapeShortcut } from "./useEscapeShortcut";
+import { useFilterFocusShortcut } from "./useFilterFocusShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
 
 /** Window-level shortcuts: find, sessions, pin, focus, rename, fork, unread, stop, close, zen, Escape. */
@@ -75,6 +76,7 @@ export function useAppShortcuts({
     hasPrompt: !!activeSession && !activeTerminalTab,
     blocked,
   });
+  useFilterFocusShortcut(blocked);
   useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
 
   useEffect(() => {

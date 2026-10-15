@@ -94,6 +94,13 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             win()?.webContents.send("prompt:focus");
           },
         },
+        {
+          label: "Go to Filter Tabs",
+          accelerator: "Cmd+K",
+          click: () => {
+            win()?.webContents.send("filter:focus");
+          },
+        },
       ],
     },
     {
