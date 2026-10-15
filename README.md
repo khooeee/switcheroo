@@ -59,7 +59,7 @@ On the top left, you'll see **Switchboard** which will show you a live feed of a
 
 ## Crons
 
-Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save; the app never writes to this file.
+Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save.
 
 ```json
 {
