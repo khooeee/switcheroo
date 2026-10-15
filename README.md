@@ -100,19 +100,19 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Escape**: Stop agent (while running)
 
-**Cmd/Ctrl+0**: Switchboard
-
 **Ctrl+Tab**: Go to next visible tab
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
+
+**Cmd/Ctrl+0**: Switchboard
 
 **Cmd/Ctrl+F**: Find in current session
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+I**: Focus prompt
+**Cmd/Ctrl+G**: Focus on filter tabs
 
-**Cmd/Ctrl+G**: Focus filter tabs
+**Cmd/Ctrl+I**: Focus on prompt
 
 **Cmd/Ctrl+N**: New session
 
