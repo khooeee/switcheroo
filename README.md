@@ -57,13 +57,39 @@ npm start
 
 On the top left, you'll see **Switchboard** which will show you a live feed of all events from all sessions.  Click a session title to jump to that session, or use the arrow next to Copy to open turn details.
 
+## Crons
+
+Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save; the app never writes to this file.
+
+```json
+{
+  "crons": [
+    {
+      "title": "Standup YYYY-MM-DD",
+      "agent": "claude",
+      "cron": "0 9 * * 1-5",
+      "cwd": "~/code/my-project",
+      "prompt": "Summarize yesterday's commits.",
+      "enabled": true,
+      "switcherooAware": false
+    }
+  ]
+}
+```
+
+- `cron` is a standard 5-field expression in local time: `minute hour day-of-month month day-of-week` (e.g. `*/15 * * * *` is every 15 minutes, `0 9 * * 1-5` is 9:00 on weekdays). Numbers, `*`, ranges, steps and lists are supported; names like `MON` are not.
+- `agent` is one of `claude`, `codex`, `cursor`, `pi` or `prime`.
+- `enabled` must be `true` to run; a missing `enabled` is off.
+- `title` is optional; `YYYY-MM-DD`, `HH:MM` and `H:MM` in it become the run's local date and 24-hour time.
+- Crons only run while Switcheroo is open. Runs missed while the app was closed or the computer was asleep are skipped.
+
 ## History management
 
 It's likely you don't have to read this section ever, but it's here in case the app gets slow.
 
 - If the session is slow due to a long transcript, you should just start a new session.
 - Switchboard events older than 30 days are cleaned up on app startup.  Sessions will still be on disk.  If the switchboard is slow due to a long event feed, You can edit `settings.cleanSwitchboardTurnsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older turns in your switchboard.
-- The session list is capped to 500 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
+- The session list is capped to 500 on app startup and whenever a session is created (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  Sessions that are running or have open terminals are never closed this way.  You can still find closed sessions through "Find in History".
 - If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list or switchboard until you click them.  Only then will the app check its existence and remove it from the list/switchboard if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
 ## Shortcuts

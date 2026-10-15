@@ -55,6 +55,7 @@ const api: SwitcherooApi = {
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
   pickFolder: (startPath?: string) => ipcRenderer.invoke("fs:pickFolder", startPath),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
+  openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
   openSettingsFile: () => ipcRenderer.invoke("fs:openSettingsFile"),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (patch: Partial<AppSettings>) => ipcRenderer.invoke("settings:update", patch),

@@ -155,16 +155,25 @@ export class SessionManager {
     this.rail.unpin(sessionId);
   }
 
-  /** `focus: false` adds the session to the rail without switching to it (control API). */
-  createSession(
+  /** `focus: false` adds the session to the rail without switching to it (control API, crons). */
+  async createSession(
     input: CreateSessionInput,
     { focus = true }: { focus?: boolean } = {},
   ): Promise<Session> {
-    return createSession(this.deps, input, focus);
+    const session = await createSession(this.deps, input, focus);
+    await this.trimRail(session.id);
+    return session;
   }
 
-  forkSession(sessionId: string, eventId?: string): Promise<Session> {
-    return forkSession(this.deps, sessionId, eventId);
+  async forkSession(sessionId: string, eventId?: string): Promise<Session> {
+    const session = await forkSession(this.deps, sessionId, eventId);
+    await this.trimRail(session.id);
+    return session;
+  }
+
+  /** Keep the rail under sessionListMax after it grows. */
+  private async trimRail(keepId: string): Promise<void> {
+    if (await enforceSessionListMax(this.deps, keepId)) await this.persistence.persistStateFile();
   }
 
   closeSession(sessionId: string): Promise<void> {
