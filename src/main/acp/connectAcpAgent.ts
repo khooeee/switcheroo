@@ -2,6 +2,7 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { Readable, Writable } from "node:stream";
 import * as acp from "@agentclientprotocol/sdk";
 import type { AgentKind } from "../../shared/agentKind";
+import { errorMessage } from "../../shared/errorMessage";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
@@ -51,7 +52,7 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
   try {
     proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, preset.env);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     if (!handlers.isDisposed()) handlers.onStatus("error", message);
     throw new Error(message);
   }

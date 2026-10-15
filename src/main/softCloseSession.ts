@@ -46,11 +46,9 @@ export async function softCloseSession(
     for (const [tabId, cwd] of cwds) tabs = updateTabCwd(tabs, tabId, cwd);
     session.tabs = tabs;
   }
+  await saveSessionMeta(sessionId, metaFromSession(session));
   if (host.hydrated.has(sessionId)) {
-    await saveSessionMeta(sessionId, metaFromSession(session));
     await saveTranscript(sessionId, host.transcripts.get(sessionId) ?? []);
-  } else {
-    await saveSessionMeta(sessionId, metaFromSession(session));
   }
   const acp = host.agents.get(sessionId);
   if (acp) {

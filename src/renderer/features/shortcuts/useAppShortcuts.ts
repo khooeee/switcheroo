@@ -204,22 +204,20 @@ export function useAppShortcuts({
       }
     };
 
-    window.addEventListener("switcheroo:find", openFind);
-    window.addEventListener("switcheroo:find-sessions", openFindSessions);
-    window.addEventListener("switcheroo:new-session", openNewSession);
-    window.addEventListener("switcheroo:new-terminal", newTerminal);
-    window.addEventListener("switcheroo:fork-session", forkActive);
-    window.addEventListener("switcheroo:close-session", closeActive);
-    window.addEventListener("switcheroo:stop-session", stopActive);
+    // Application menu clicks arrive as window events dispatched by preload.
+    const menuCommands: Array<[string, () => void]> = [
+      ["switcheroo:find", openFind],
+      ["switcheroo:find-sessions", openFindSessions],
+      ["switcheroo:new-session", openNewSession],
+      ["switcheroo:new-terminal", newTerminal],
+      ["switcheroo:fork-session", forkActive],
+      ["switcheroo:close-session", closeActive],
+      ["switcheroo:stop-session", stopActive],
+    ];
+    for (const [name, handler] of menuCommands) window.addEventListener(name, handler);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("switcheroo:find", openFind);
-      window.removeEventListener("switcheroo:find-sessions", openFindSessions);
-      window.removeEventListener("switcheroo:new-session", openNewSession);
-      window.removeEventListener("switcheroo:new-terminal", newTerminal);
-      window.removeEventListener("switcheroo:fork-session", forkActive);
-      window.removeEventListener("switcheroo:close-session", closeActive);
-      window.removeEventListener("switcheroo:stop-session", stopActive);
+      for (const [name, handler] of menuCommands) window.removeEventListener(name, handler);
       window.removeEventListener("keydown", onKey);
     };
   }, [setFindOpen, setFindQuery, setShowFindInSessions, setShowNewSession]);

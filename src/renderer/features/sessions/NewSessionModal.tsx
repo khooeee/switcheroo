@@ -1,18 +1,14 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { AgentKind } from "../../../shared/agentKind";
+import { AGENT_LABELS } from "../../../shared/agentLabels";
+import { errorMessage } from "../../../shared/errorMessage";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
 import { useAvailableAgents } from "./useAvailableAgents";
 import "../modals/modal.css";
 
-const AGENT_OPTIONS: Array<{ kind: AgentKind; label: string }> = [
-  { kind: "claude", label: "Claude Code" },
-  { kind: "codex", label: "Codex" },
-  { kind: "cursor", label: "Cursor" },
-  { kind: "pi", label: "Pi" },
-  { kind: "prime", label: "Prime Agent" },
-];
+const AGENT_KINDS = Object.keys(AGENT_LABELS) as AgentKind[];
 
 interface Props {
   onCancel: () => void;
@@ -39,13 +35,10 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const available = useAvailableAgents();
-  const agentOptions = AGENT_OPTIONS.filter(
-    (option) => available === null || available.includes(option.kind),
-  );
+  const agentOptions = AGENT_KINDS.filter((kind) => available === null || available.includes(kind));
   // Fall back when the remembered agent is no longer installed.
-  const selectedAgent = agentOptions.some((option) => option.kind === agent)
-    ? agent
-    : agentOptions[0]?.kind;
+  const selectedAgent = agentOptions.includes(agent) ? agent : agentOptions[0];
+  const canCreate = !!selectedAgent && !!cwd && !!(prefix.trim() || title.trim()) && !busy;
 
   useEffect(() => {
     const input = titleRef.current;
@@ -55,10 +48,8 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   }, []);
 
   const create = async () => {
-    const trimmedPrefix = prefix.trim();
-    const trimmedTitle = title.trim();
-    if (!selectedAgent || !cwd || (!trimmedPrefix && !trimmedTitle) || busy) return;
-    const sessionTitle = [trimmedPrefix, trimmedTitle].filter(Boolean).join(" ");
+    if (!canCreate) return;
+    const sessionTitle = [prefix.trim(), title.trim()].filter(Boolean).join(" ");
     setBusy(true);
     setError(null);
     void patchAppSettings({
@@ -71,7 +62,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
     try {
       await onCreate(selectedAgent, cwd, sessionTitle, switcherooAware, canPin && pin);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errorMessage(err));
       setBusy(false);
     }
   };
@@ -137,9 +128,9 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
             onChange={(e) => setAgent(e.target.value as AgentKind)}
             onKeyDown={createOnEnter}
           >
-            {agentOptions.map((option) => (
-              <option key={option.kind} value={option.kind}>
-                {option.label}
+            {agentOptions.map((kind) => (
+              <option key={kind} value={kind}>
+                {AGENT_LABELS[kind]}
               </option>
             ))}
             {!selectedAgent && <option value="">No ACP agents installed</option>}
@@ -200,7 +191,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
           <button
             type="button"
             className="btn primary"
-            disabled={!selectedAgent || !cwd || (!prefix.trim() && !title.trim()) || busy}
+            disabled={!canCreate}
             onClick={() => void create()}
           >
             {busy ? "Starting…" : "Create"}

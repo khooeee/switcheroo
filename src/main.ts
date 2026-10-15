@@ -14,6 +14,7 @@ import { runCron } from "./main/crons/runCron";
 import { registerIpc } from "./main/registerIpc";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
+import { errorMessage } from "./shared/errorMessage";
 
 installStdioGuards((error) => {
   if (app.isReady()) {
@@ -33,22 +34,13 @@ let mainWindow: BrowserWindow | null = null;
 const crons = new CronScheduler((job, at) => {
   if (!mainWindow) return;
   void runCron(sessions, job, at).catch((error) => {
-    console.warn(`[crons] "${job.cron}" in ${job.cwd} failed:`, error instanceof Error ? error.message : error);
+    console.warn(`[crons] "${job.cron}" in ${job.cwd} failed:`, errorMessage(error));
   });
 });
 let activeSessionUnread = false;
 
 function refreshMenus() {
-  refreshSessionMenuItems(
-    sessions.activePinMenuState(),
-    sessions.activeRenameMenuEnabled(),
-    sessions.activeOpenInCursorEnabled(),
-    sessions.activeUnreadMenuEnabled(),
-    sessions.activeForkMenuEnabled(),
-    sessions.activeStopMenuEnabled(),
-    sessions.activeNewTerminalMenuEnabled(),
-    activeSessionUnread,
-  );
+  refreshSessionMenuItems(sessions.activeMenuState(), activeSessionUnread);
 }
 
 const createWindow = async () => {
@@ -104,21 +96,15 @@ if (installSingleInstanceLock(() => mainWindow)) {
     });
     buildAppMenu({
       getMainWindow: () => mainWindow,
-      getPinMenuState: () => sessions.activePinMenuState(),
-      getRenameEnabled: () => sessions.activeRenameMenuEnabled(),
-      getOpenInCursorEnabled: () => sessions.activeOpenInCursorEnabled(),
+      getMenuState: () => sessions.activeMenuState(),
       openActiveInCursor: () => {
         void sessions.openActiveInCursor().catch((error) => {
           dialog.showErrorBox(
             "Could not open in Cursor",
-            error instanceof Error ? error.message : String(error),
+            errorMessage(error),
           );
         });
       },
-      getUnreadEnabled: () => sessions.activeUnreadMenuEnabled(),
-      getForkEnabled: () => sessions.activeForkMenuEnabled(),
-      getStopEnabled: () => sessions.activeStopMenuEnabled(),
-      getNewTerminalEnabled: () => sessions.activeNewTerminalMenuEnabled(),
       getActiveUnread: () => activeSessionUnread,
     });
     void createWindow().then(() => crons.start());

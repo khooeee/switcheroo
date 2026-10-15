@@ -1,5 +1,6 @@
 import { insertPromptPaths } from "./insertPromptPaths";
 import { pasteImageFiles } from "./pasteImageFiles";
+import { errorMessage } from "../../../shared/errorMessage";
 
 interface Args {
   event: ClipboardEvent;
@@ -44,6 +45,6 @@ export async function applyPromptImagePaste({
       textarea.setSelectionRange(next.cursor, next.cursor);
     });
   } catch (error) {
-    onError(error instanceof Error ? error.message : String(error));
+    onError(errorMessage(error));
   }
 }

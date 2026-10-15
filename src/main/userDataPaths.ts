@@ -18,7 +18,7 @@ export function sessionsDir(): string {
   return path.join(userDataDir(), "sessions");
 }
 
-export function sessionDir(sessionId: string): string {
+function sessionDir(sessionId: string): string {
   return path.join(sessionsDir(), sessionId);
 }
 

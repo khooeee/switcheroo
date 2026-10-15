@@ -13,6 +13,10 @@ export function SettingsMenu() {
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeThen = (action: () => Promise<void>) => () => {
+    setOpen(false);
+    void action();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -54,10 +58,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={() => {
-                setOpen(false);
-                void window.switcheroo.openCronsFile();
-              }}
+              onClick={closeThen(window.switcheroo.openCronsFile)}
             >
               Open Crons
             </button>
@@ -65,10 +66,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={() => {
-                setOpen(false);
-                void window.switcheroo.openSettingsFile();
-              }}
+              onClick={closeThen(window.switcheroo.openSettingsFile)}
             >
               Open Settings
             </button>
@@ -76,10 +74,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={() => {
-                setOpen(false);
-                void window.switcheroo.openTranscriptsFolder();
-              }}
+              onClick={closeThen(window.switcheroo.openTranscriptsFolder)}
             >
               Open Sessions Folder
             </button>

@@ -39,8 +39,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   /** Pill text; defaults to the role. */
   label?: string;
 }) {
-  const text =
-    session.agent === "cursor" ? stripCursorStreamNoise(item.text) : item.text;
+  const text = stripCursorStreamNoise(session.agent, item.text);
   const changes = extraFileChanges?.length ? extraFileChanges : item.fileChanges;
   const clickable = !!onActivate;
   const markdown =

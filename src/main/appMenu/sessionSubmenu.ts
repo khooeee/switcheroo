@@ -2,10 +2,10 @@ import type { MenuItemConstructorOptions } from "electron";
 import type { AppMenuOptions } from "./AppMenuOptions";
 import { SESSION_MENU_IDS } from "./sessionMenuIds";
 
-/** Items under the Session menu; enabled/label state comes from the option getters. */
+/** Items under the Session menu; enabled/label state comes from `getMenuState`. */
 export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions[] {
   const win = () => opts.getMainWindow();
-  const pin = opts.getPinMenuState();
+  const state = opts.getMenuState();
   return [
     {
       label: "New Session",
@@ -17,7 +17,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.newTerminal,
       label: "New Terminal",
-      enabled: opts.getNewTerminalEnabled(),
+      enabled: state.newTerminalEnabled,
       accelerator: "CmdOrCtrl+T",
       click: () => {
         win()?.webContents.send("session:new-terminal");
@@ -26,7 +26,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.rename,
       label: "Rename",
-      enabled: opts.getRenameEnabled(),
+      enabled: state.renameEnabled,
       accelerator: "CmdOrCtrl+R",
       click: () => {
         win()?.webContents.send("session:rename");
@@ -35,7 +35,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.openInCursor,
       label: "Open in Cursor",
-      enabled: opts.getOpenInCursorEnabled(),
+      enabled: state.openInCursorEnabled,
       accelerator: "CmdOrCtrl+E",
       click: () => {
         opts.openActiveInCursor();
@@ -44,7 +44,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.markUnread,
       label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
-      enabled: opts.getUnreadEnabled(),
+      enabled: state.unreadEnabled,
       accelerator: "CmdOrCtrl+U",
       click: () => {
         win()?.webContents.send("session:mark-unread");
@@ -53,7 +53,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.fork,
       label: "Fork",
-      enabled: opts.getForkEnabled(),
+      enabled: state.forkEnabled,
       accelerator: "CmdOrCtrl+Y",
       click: () => {
         win()?.webContents.send("session:fork");
@@ -61,8 +61,8 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     },
     {
       id: SESSION_MENU_IDS.pin,
-      label: pin.label,
-      enabled: pin.enabled,
+      label: state.pin.label,
+      enabled: state.pin.enabled,
       accelerator: "CmdOrCtrl+P",
       click: () => {
         win()?.webContents.send("session:toggle-pin");
@@ -72,7 +72,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.stop,
       label: "Stop",
-      enabled: opts.getStopEnabled(),
+      enabled: state.stopEnabled,
       // Display-only: registering Ctrl+C steals Edit→Copy and can drop this item on macOS.
       accelerator: "Ctrl+C",
       registerAccelerator: false,
@@ -83,7 +83,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.close,
       label: "Close",
-      enabled: opts.getRenameEnabled(),
+      enabled: state.renameEnabled,
       accelerator: "CmdOrCtrl+W",
       click: () => {
         win()?.webContents.send("session:close");

@@ -3,21 +3,15 @@ import type { TranscriptTurn } from "../shared/transcript";
 import { mergeTurnsById } from "../shared/mergeTurnsById";
 import { encodeJsonl } from "./encodeJsonl";
 import { isMissingFile } from "./isMissingFile";
-import { parseJsonl } from "./parseJsonl";
+import { readJsonlFile } from "./readJsonlFile";
 import { subagentTranscriptPath, subagentsDir } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";
 
-export async function loadSubagentTranscript(
+export function loadSubagentTranscript(
   sessionId: string,
   subagentId: string,
 ): Promise<TranscriptTurn[]> {
-  try {
-    const raw = await fs.readFile(subagentTranscriptPath(sessionId, subagentId), "utf8");
-    return raw.trim() ? parseJsonl<TranscriptTurn>(raw) : [];
-  } catch (err) {
-    if (isMissingFile(err)) return [];
-    throw err;
-  }
+  return readJsonlFile<TranscriptTurn>(subagentTranscriptPath(sessionId, subagentId));
 }
 
 /** Merge `turns` into the saved file: memory may hold only turns streamed since launch. */

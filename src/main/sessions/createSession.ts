@@ -1,7 +1,8 @@
 import * as path from "node:path";
+import { AGENT_LABELS } from "../../shared/agentLabels";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
+import { errorMessage } from "../../shared/errorMessage";
 import type { Session } from "../../shared/session";
-import { agentLabel } from "../acp/presets";
 import { controlBootstrapText } from "../acp/controlBootstrapPrompt";
 import { newSessionId } from "../newSessionId";
 import type { SessionDeps } from "./SessionDeps";
@@ -14,9 +15,7 @@ export async function createSession(
   focus: boolean,
 ): Promise<Session> {
   const id = newSessionId();
-  const title =
-    input.title ??
-    `${agentLabel(input.agent)} · ${path.basename(input.cwd)}`;
+  const title = input.title ?? `${AGENT_LABELS[input.agent]} · ${path.basename(input.cwd)}`;
   const session: Session = {
     id,
     title,
@@ -54,8 +53,7 @@ export async function createSession(
       await acp.prompt(controlBootstrapText(), { wait: false, exclusive: true });
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    setSessionStatus(state, id, "error", msg);
+    setSessionStatus(state, id, "error", errorMessage(err));
   }
 
   agents.ensureWarm(input.cwd);

@@ -1,17 +1,10 @@
+import { setImmediate as yieldToEventLoop } from "node:timers/promises";
 import type { FindInSessionsHit } from "../shared/findInSessionsHit";
-import type { TranscriptTurn } from "../shared/transcript";
-import type { AgentKind } from "../shared/agentKind";
-import { findInSessionSources } from "./findInSessionSources";
+import { findInSessionSource } from "./findInSessionSource";
+import type { FindSource } from "./FindSource";
 import { listSessionIdsOnDisk } from "./listSessionIdsOnDisk";
 import { loadSessionMeta } from "./sessionMeta";
 import { loadTranscript } from "./sessionTranscripts";
-
-type FindSource = {
-  sessionId: string;
-  title: string;
-  agent: AgentKind;
-  turns: TranscriptTurn[];
-};
 
 type FindHost = {
   isCurrent: (token: number) => boolean;
@@ -59,7 +52,7 @@ export async function runFindInSessions(
     lastSentAt = now;
   };
   flushProgress(true);
-  await new Promise<void>((resolve) => setImmediate(resolve));
+  await yieldToEventLoop();
   for (const sessionId of ordered) {
     if (!host.isCurrent(token)) {
       flushProgress(true);
@@ -80,22 +73,20 @@ export async function runFindInSessions(
       }
     }
     if (source) {
-      const found = findInSessionSources([source], needle);
-      if (found.length) {
-        hits.push(...found);
-        matchCount += found.length;
-      }
+      const found = findInSessionSource(source, needle);
+      hits.push(...found);
+      matchCount += found.length;
     }
     scanned += 1;
     const before = lastSentAt;
     flushProgress(false);
     if (lastSentAt !== before) {
-      await new Promise<void>((resolve) => setImmediate(resolve));
+      await yieldToEventLoop();
     }
   }
   const stopped = !host.isCurrent(token);
   flushProgress(true);
-  await new Promise<void>((resolve) => setImmediate(resolve));
+  await yieldToEventLoop();
   await deliverFindHits(host, searchId, hits);
   host.send("find:done", { searchId, stopped });
 }
@@ -109,6 +100,6 @@ async function deliverFindHits(
   const chunkSize = 100;
   for (let i = 0; i < hits.length; i += chunkSize) {
     host.send("find:chunk", { searchId, added: hits.slice(i, i + chunkSize) });
-    await new Promise<void>((resolve) => setImmediate(resolve));
+    await yieldToEventLoop();
   }
 }

@@ -12,7 +12,7 @@ import { SessionRailChildMenu } from "./SessionRailChildMenu";
 import { SessionRailFilter } from "./SessionRailFilter";
 import { SessionRailGroup } from "./SessionRailGroup";
 import { SessionRailMenu } from "./SessionRailMenu";
-import { useRailColumnResize } from "./useRailColumnResize";
+import { startRailResize } from "./startRailResize";
 import { useScrollActiveRailSession } from "./useScrollActiveRailSession";
 import { useSessionRailDnD } from "./useSessionRailDnD";
 import { useSessionRailMenus } from "./useSessionRailMenus";
@@ -87,7 +87,6 @@ export function SessionRail({
     toggleUnread,
   );
   const dnd = useSessionRailDnD(allSessions, filter, onReorderTab, onMoveTab);
-  const resize = useRailColumnResize();
   useScrollActiveRailSession(scrollRef, activeTabId);
 
   const openSessionMenu = (e: ReactMouseEvent, s: Session, p: boolean) => {
@@ -131,7 +130,7 @@ export function SessionRail({
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize tabs"
-        onPointerDown={resize}
+        onPointerDown={startRailResize}
       />
       <div className="rail-switchboard-row">
         <button

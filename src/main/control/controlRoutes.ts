@@ -7,6 +7,7 @@ import { applyTranscriptQuery } from "./transcriptQuery";
 import { parseCreateSession } from "./parseCreateSession";
 import { readJson } from "./readJson";
 import { sendJson } from "./sendJson";
+import { errorMessage } from "../../shared/errorMessage";
 
 /** Route one control API HTTP request to SessionManager. */
 export async function handleControlRequest(
@@ -92,7 +93,7 @@ export async function handleControlRequest(
 
     return sendJson(res, 404, { error: "Not found" });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = errorMessage(err);
     const status = /not found|no session/i.test(msg) ? 404 : 400;
     return sendJson(res, status, { error: msg });
   }

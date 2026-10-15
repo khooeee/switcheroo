@@ -1,40 +1,23 @@
 import { Menu } from "electron";
-import type { SessionPinMenuState } from "../menuState/sessionPinMenuState";
+import type { SessionMenuState } from "../menuState/SessionMenuState";
 import { SESSION_MENU_IDS } from "./sessionMenuIds";
 
 /** Update Session menu labels/enabled state in place without rebuilding the menu. */
-export function refreshSessionMenuItems(
-  pin: SessionPinMenuState,
-  renameEnabled: boolean,
-  openInCursorEnabled: boolean,
-  unreadEnabled: boolean,
-  forkEnabled: boolean,
-  stopEnabled: boolean,
-  newTerminalEnabled: boolean,
-  activeUnread: boolean,
-): void {
+export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: boolean): void {
   const menu = Menu.getApplicationMenu();
   if (!menu) return;
-  const pinItem = menu.getMenuItemById(SESSION_MENU_IDS.pin);
-  if (pinItem) {
-    pinItem.label = pin.label;
-    pinItem.enabled = pin.enabled;
-  }
-  const renameItem = menu.getMenuItemById(SESSION_MENU_IDS.rename);
-  if (renameItem) renameItem.enabled = renameEnabled;
-  const openInCursorItem = menu.getMenuItemById(SESSION_MENU_IDS.openInCursor);
-  if (openInCursorItem) openInCursorItem.enabled = openInCursorEnabled;
-  const forkItem = menu.getMenuItemById(SESSION_MENU_IDS.fork);
-  if (forkItem) forkItem.enabled = forkEnabled;
-  const markUnreadItem = menu.getMenuItemById(SESSION_MENU_IDS.markUnread);
-  if (markUnreadItem) {
-    markUnreadItem.label = activeUnread ? "Mark as Read" : "Mark as Unread";
-    markUnreadItem.enabled = unreadEnabled;
-  }
-  const stopItem = menu.getMenuItemById(SESSION_MENU_IDS.stop);
-  if (stopItem) stopItem.enabled = stopEnabled;
-  const closeItem = menu.getMenuItemById(SESSION_MENU_IDS.close);
-  if (closeItem) closeItem.enabled = renameEnabled;
-  const newTerminalItem = menu.getMenuItemById(SESSION_MENU_IDS.newTerminal);
-  if (newTerminalItem) newTerminalItem.enabled = newTerminalEnabled;
+  const set = (id: string, enabled: boolean, label?: string) => {
+    const item = menu.getMenuItemById(id);
+    if (!item) return;
+    item.enabled = enabled;
+    if (label !== undefined) item.label = label;
+  };
+  set(SESSION_MENU_IDS.pin, state.pin.enabled, state.pin.label);
+  set(SESSION_MENU_IDS.rename, state.renameEnabled);
+  set(SESSION_MENU_IDS.openInCursor, state.openInCursorEnabled);
+  set(SESSION_MENU_IDS.fork, state.forkEnabled);
+  set(SESSION_MENU_IDS.markUnread, state.unreadEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
+  set(SESSION_MENU_IDS.stop, state.stopEnabled);
+  set(SESSION_MENU_IDS.close, state.renameEnabled);
+  set(SESSION_MENU_IDS.newTerminal, state.newTerminalEnabled);
 }

@@ -3,6 +3,7 @@ import { isMissingFile } from "../isMissingFile";
 import { cronsPath } from "../userDataPaths";
 import type { CronJob } from "./CronJob";
 import { parseCronsFile } from "./parseCronsFile";
+import { errorMessage } from "../../shared/errorMessage";
 
 /** Read crons.json. A missing file means no crons; problems come back as errors, never thrown. */
 export async function loadCrons(): Promise<{ jobs: CronJob[]; errors: string[] }> {
@@ -17,6 +18,6 @@ export async function loadCrons(): Promise<{ jobs: CronJob[]; errors: string[] }
   try {
     return parseCronsFile(JSON.parse(raw));
   } catch (error) {
-    return { jobs: [], errors: [`invalid JSON: ${error instanceof Error ? error.message : String(error)}`] };
+    return { jobs: [], errors: [`invalid JSON: ${errorMessage(error)}`] };
   }
 }

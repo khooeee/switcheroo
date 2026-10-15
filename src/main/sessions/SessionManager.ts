@@ -7,14 +7,8 @@ import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { loadState } from "../persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
-import type { SessionPinMenuState } from "../menuState/sessionPinMenuState";
-import { activeForkMenuEnabled } from "../menuState/activeForkMenuEnabled";
-import { activeNewTerminalMenuEnabled } from "../menuState/activeNewTerminalMenuEnabled";
-import { activeOpenInCursorEnabled } from "../menuState/activeOpenInCursorEnabled";
-import { activePinMenuState } from "../menuState/activePinMenuState";
-import { activeRenameMenuEnabled } from "../menuState/activeRenameMenuEnabled";
-import { activeStopMenuEnabled } from "../menuState/activeStopMenuEnabled";
-import { activeUnreadMenuEnabled } from "../menuState/activeUnreadMenuEnabled";
+import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
+import type { SessionMenuState } from "../menuState/SessionMenuState";
 import { applySessionTerminalCwd } from "../terminalTabs/applySessionTerminalCwd";
 import { attachSessionTerminal } from "../terminalTabs/attachSessionTerminal";
 import { closeSessionTab } from "../terminalTabs/closeSessionTab";
@@ -74,36 +68,9 @@ export class SessionManager {
     this.state.onSessionsChanged = cb;
   }
 
-  /** Label/enabled for Session → Pin/Unpin based on the active chat parent. */
-  activePinMenuState(): SessionPinMenuState {
-    return activePinMenuState(this.state.menuCtx());
-  }
-
-  /** Rename enabled for parent or child tab. */
-  activeRenameMenuEnabled(): boolean {
-    return activeRenameMenuEnabled(this.state.menuCtx());
-  }
-
-  /** Unread is parent-only. */
-  activeUnreadMenuEnabled(): boolean {
-    return activeUnreadMenuEnabled(this.state.menuCtx());
-  }
-
-  activeForkMenuEnabled(): boolean {
-    return activeForkMenuEnabled(this.state.menuCtx());
-  }
-
-  activeStopMenuEnabled(): boolean {
-    return activeStopMenuEnabled(this.state.menuCtx());
-  }
-
-  activeNewTerminalMenuEnabled(): boolean {
-    return activeNewTerminalMenuEnabled(this.state.menuCtx());
-  }
-
-  /** Open in Cursor uses the active chat group's project folder. */
-  activeOpenInCursorEnabled(): boolean {
-    return activeOpenInCursorEnabled(this.state.menuCtx());
+  /** Session menu labels/enabled state for the active tab. */
+  activeMenuState(): SessionMenuState {
+    return activeSessionMenuState(this.state.menuCtx());
   }
 
   async openActiveInCursor(): Promise<void> {

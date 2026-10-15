@@ -7,7 +7,6 @@ import { resolvePathCommand } from "./resolvePathCommand";
 
 interface AgentPreset {
   kind: AgentKind;
-  label: string;
   command: string;
   args: string[];
   authMethodId?: string;
@@ -43,7 +42,6 @@ function userCli(command: string): string {
 export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   claude: {
     kind: "claude",
-    label: "Claude Code",
     command: "node",
     get args() {
       return [packageBin("@agentclientprotocol/claude-agent-acp")];
@@ -58,7 +56,6 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   },
   codex: {
     kind: "codex",
-    label: "Codex",
     command: "node",
     get args() {
       return [packageBin("@agentclientprotocol/codex-acp")];
@@ -73,7 +70,6 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   },
   cursor: {
     kind: "cursor",
-    label: "Cursor",
     get command() {
       return resolveCursorAgent();
     },
@@ -82,7 +78,6 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   },
   pi: {
     kind: "pi",
-    label: "Pi",
     command: "node",
     get args() {
       return [packageBin("pi-acp")];
@@ -93,14 +88,9 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
   },
   prime: {
     kind: "prime",
-    label: "Prime Agent",
     get command() {
       return resolvePrimeAgent();
     },
     args: ["--mode", "acp"],
   },
 };
-
-export function agentLabel(kind: AgentKind): string {
-  return AGENT_PRESETS[kind].label;
-}

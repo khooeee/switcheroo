@@ -1,6 +1,8 @@
 import type { AgentKind } from "../shared/agentKind";
 import type { Session } from "../shared/session";
 import type { TranscriptTurn } from "../shared/transcript";
+import { AGENT_LABELS } from "../shared/agentLabels";
+import { errorMessage } from "../shared/errorMessage";
 import { nextForkTitle } from "../shared/nextForkTitle";
 import type { AcpSession } from "./acp/session";
 import type { SessionCallbacks } from "./acp/SessionCallbacks";
@@ -9,7 +11,6 @@ import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { airForkPoint, type AirForkPoint } from "./acp/airForkPoint";
 import { clipTurnsThrough } from "./acp/clipTurnsThrough";
 import { cloneTurn } from "./acp/cloneTurn";
-import { agentLabel } from "./acp/presets";
 
 interface ForkSessionHost {
   getSession(sessionId: string): Session | undefined;
@@ -84,9 +85,9 @@ export async function forkSessionAtEvent(
   try {
     // The UI hides fork when unsupported; this catches agents whose support was unknown until now.
     const support = host.forkSupport(source.agent);
-    if (!support.supportsFork) throw new Error(`${agentLabel(source.agent)} does not support forking`);
+    if (!support.supportsFork) throw new Error(`${AGENT_LABELS[source.agent]} does not support forking`);
     if (eventId && !support.supportsForkAtMessage) {
-      throw new Error(`${agentLabel(source.agent)} cannot fork from a message`);
+      throw new Error(`${AGENT_LABELS[source.agent]} cannot fork from a message`);
     }
     // No assistant message before the fork point leaves no agent history to keep.
     const acp = eventId && !forkPoint
@@ -99,9 +100,8 @@ export async function forkSessionAtEvent(
     session.error = null;
     host.emitSessions();
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
     session.status = "error";
-    session.error = msg;
+    session.error = errorMessage(err);
     host.emitSessions();
     // Match createSession: keep the session row and do not reject IPC (Electron
     // replyWithError → console.error can crash the app with write EPIPE).

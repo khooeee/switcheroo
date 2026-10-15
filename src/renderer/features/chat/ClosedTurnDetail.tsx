@@ -21,12 +21,8 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
   cwd?: string;
 }) {
   const running = turn.status === "running" && !turn.user.queued;
-  const userText = agent === "cursor" ? stripCursorStreamNoise(turn.user.text) : turn.user.text;
-  const assistantText = turn.assistant
-    ? agent === "cursor"
-      ? stripCursorStreamNoise(turn.assistant.text)
-      : turn.assistant.text
-    : "";
+  const userText = stripCursorStreamNoise(agent, turn.user.text);
+  const assistantText = stripCursorStreamNoise(agent, turn.assistant?.text ?? "");
   const images = useMemo(() => turnImages(turn.events), [turn.events]);
 
   return (

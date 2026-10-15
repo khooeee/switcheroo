@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
 import type { TranscriptTurn } from "../../../shared/transcript";
+import { steerEvents } from "./steerEvents";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
@@ -21,11 +22,7 @@ export const SessionTurn = memo(function SessionTurn({
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const { openUser, openLatest, openAssistant } = useTurnRailOpeners(turn, onOpenRightRail);
-  // Steers land as user events; keep them visible in the main feed.
-  const steerEvents = useMemo(
-    () => turn.events.filter((event) => event.role === "user"),
-    [turn.events],
-  );
+  const steers = useMemo(() => steerEvents(turn.events), [turn.events]);
   const subagents = useMemo(() => subagentRows(turn.events), [turn.events]);
   // The agent's reply often refers to an image a tool returned; show it with the reply.
   const images = useMemo(() => turnImages(turn.events), [turn.events]);
@@ -38,7 +35,7 @@ export const SessionTurn = memo(function SessionTurn({
         onToggleDetails={openUser}
         forkable
       />
-      <TurnEvents session={session} events={steerEvents} />
+      <TurnEvents session={session} events={steers} />
       <SubagentChips sessionId={session.id} rows={subagents} />
       {running ? <ThinkingIndicator onActivate={openLatest} /> : null}
       {!running && turn.assistant ? (

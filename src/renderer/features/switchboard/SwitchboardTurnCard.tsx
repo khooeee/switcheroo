@@ -11,6 +11,7 @@ import { CopyEventButton } from "../copy/CopyEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { QueuedStatus } from "../chat/QueuedStatus";
+import { steerEvents } from "../chat/steerEvents";
 import { TurnEvents } from "../chat/TurnEvents";
 import { useMessageSession } from "../chat/useMessageSession";
 import { useTurnRailOpeners } from "../chat/useTurnRailOpeners";
@@ -31,17 +32,9 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
 }) {
   const running = turn.status === "running" && !turn.user.queued;
   const messageSession = useMessageSession(session);
-  const userText =
-    turn.agent === "cursor" ? stripCursorStreamNoise(turn.user.text) : turn.user.text;
-  const assistantText = turn.assistant
-    ? turn.agent === "cursor"
-      ? stripCursorStreamNoise(turn.assistant.text)
-      : turn.assistant.text
-    : "";
-  const steerEvents = useMemo(
-    () => turn.events.filter((event) => event.role === "user"),
-    [turn.events],
-  );
+  const userText = stripCursorStreamNoise(turn.agent, turn.user.text);
+  const assistantText = stripCursorStreamNoise(turn.agent, turn.assistant?.text ?? "");
+  const steers = useMemo(() => steerEvents(turn.events), [turn.events]);
   const images = useMemo(() => turnImages(turn.events), [turn.events]);
   const { openUser, openLatest, openAssistant } = useTurnRailOpeners(turn, onOpenRightRail);
   const handleOpenSession = useCallback(
@@ -85,16 +78,16 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         </div>
       </div>
 
-      {messageSession && steerEvents.length > 0 ? (
+      {messageSession && steers.length > 0 ? (
         <TurnEvents
           session={messageSession}
-          events={steerEvents}
+          events={steers}
           onActivate={turn.navigable ? handleOpenSession : undefined}
         />
       ) : null}
-      {!messageSession && steerEvents.length > 0 ? (
+      {!messageSession && steers.length > 0 ? (
         <div className="turn-events">
-          {steerEvents.map((item) => (
+          {steers.map((item) => (
             <div key={item.id} className={`message ${item.role}`} data-event-id={item.id}>
               <div className="body">{item.text}</div>
             </div>

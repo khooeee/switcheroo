@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { errorMessage } from "../../../shared/errorMessage";
 
 /** Launches the file in Cursor; parent owns the surrounding `.file-open` row. */
 export function OpenInCursor({ sessionId, filePath }: { sessionId: string; filePath: string }) {
@@ -15,7 +16,7 @@ export function OpenInCursor({ sessionId, filePath }: { sessionId: string; fileP
           setOpening(true);
           setError(null);
           void window.switcheroo.openInCursor(sessionId, filePath)
-            .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)))
+            .catch((reason: unknown) => setError(errorMessage(reason)))
             .finally(() => setOpening(false));
         }}
       >

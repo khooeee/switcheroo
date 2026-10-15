@@ -32,8 +32,7 @@ export class SessionOutput {
     switch (update.sessionUpdate) {
       case "agent_message_chunk": {
         this.streamingThoughtId = null;
-        const raw = contentText(update.content);
-        const chunk = this.agent === "cursor" ? stripCursorStreamNoise(raw) : raw;
+        const chunk = stripCursorStreamNoise(this.agent, contentText(update.content));
         if (!chunk) return;
         if (update.messageId && this.streamingAssistantId && update.messageId !== this.streamingAssistantId) {
           this.streamingAssistantId = null;

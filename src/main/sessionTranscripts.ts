@@ -1,8 +1,6 @@
-import * as fs from "node:fs/promises";
 import type { TranscriptItem, TranscriptTurn } from "../shared/transcript";
 import { encodeJsonl } from "./encodeJsonl";
-import { isMissingFile } from "./isMissingFile";
-import { parseJsonl } from "./parseJsonl";
+import { readJsonlFile } from "./readJsonlFile";
 import { sessionTranscriptPath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";
 
@@ -21,14 +19,8 @@ function stripTurnQueued(turn: TranscriptTurn): TranscriptTurn {
 }
 
 export async function loadTranscript(sessionId: string): Promise<TranscriptTurn[]> {
-  try {
-    const raw = await fs.readFile(sessionTranscriptPath(sessionId), "utf8");
-    if (!raw.trim()) return [];
-    return parseJsonl<TranscriptTurn>(raw).map(stripTurnQueued);
-  } catch (err) {
-    if (isMissingFile(err)) return [];
-    throw err;
-  }
+  const turns = await readJsonlFile<TranscriptTurn>(sessionTranscriptPath(sessionId));
+  return turns.map(stripTurnQueued);
 }
 
 export async function saveTranscript(sessionId: string, turns: TranscriptTurn[]): Promise<void> {

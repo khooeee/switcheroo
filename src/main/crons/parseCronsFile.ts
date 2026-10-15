@@ -1,6 +1,7 @@
 import * as os from "node:os";
 import * as path from "node:path";
 import { isAgentKind } from "../../shared/agentKind";
+import { errorMessage } from "../../shared/errorMessage";
 import type { CronJob } from "./CronJob";
 import { parseCronExpression } from "./parseCronExpression";
 
@@ -14,7 +15,7 @@ export function parseCronsFile(parsed: unknown): { jobs: CronJob[]; errors: stri
     try {
       jobs.push(parseEntry(entry));
     } catch (error) {
-      errors.push(`crons[${index}]: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(`crons[${index}]: ${errorMessage(error)}`);
     }
   });
   return { jobs, errors };
