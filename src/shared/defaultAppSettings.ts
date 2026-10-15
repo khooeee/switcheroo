@@ -14,6 +14,6 @@ export function defaultAppSettings(): AppSettings {
     lastPin: false,
     lastSwitcherooAware: false,
     cleanSwitchboardTurnsOlderThanDays: 30,
-    sessionListMax: 200,
+    sessionListMax: 500,
   };
 }

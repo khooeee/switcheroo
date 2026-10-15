@@ -63,7 +63,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 - If the session is slow due to a long transcript, you should just start a new session.
 - Switchboard events older than 30 days are cleaned up on app startup.  Sessions will still be on disk.  If the switchboard is slow due to a long event feed, You can edit `settings.cleanSwitchboardTurnsOlderThanDays` in `switcheroo.json` to a lower number and restart the app to cleanup older turns in your switchboard.
-- The session list is capped to 200 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
+- The session list is capped to 500 on app startup (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  You can still find closed sessions through "Find in History".
 - If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list or switchboard until you click them.  Only then will the app check its existence and remove it from the list/switchboard if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
 ## Shortcuts
