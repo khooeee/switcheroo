@@ -36,7 +36,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const titleRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const available = useAvailableAgents();
   const agentOptions = AGENT_OPTIONS.filter(
@@ -77,7 +77,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   };
 
   const createOnEnter = (event: ReactKeyboardEvent) => {
-    if (event.key !== "Enter") return;
+    if (event.key !== "Enter" || event.shiftKey) return;
     event.preventDefault();
     void create();
   };
@@ -108,8 +108,9 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
         <h2>New agent session</h2>
         <label>
           Prefix
-          <input
+          <textarea
             value={prefix}
+            rows={2}
             disabled={busy}
             onChange={(e) => setPrefix(e.target.value)}
             onKeyDown={createOnEnter}
@@ -118,9 +119,10 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
         </label>
         <label>
           Title
-          <input
+          <textarea
             ref={titleRef}
             value={title}
+            rows={2}
             disabled={busy}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={createOnEnter}

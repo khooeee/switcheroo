@@ -50,19 +50,26 @@
 }
 
 .modal select,
-.modal input {
+.modal input,
+.modal textarea {
   border: 1px solid var(--border);
   background: var(--bg-2);
   border-radius: 8px;
   padding: 8px 10px;
 }
 
+.modal textarea {
+  resize: none;
+}
+
 html[data-theme="light"] .modal select,
-html[data-theme="light"] .modal input:not([type="checkbox"]) {
+html[data-theme="light"] .modal input:not([type="checkbox"]),
+html[data-theme="light"] .modal textarea {
   background: #ffffff;
 }
 
-.modal input:disabled {
+.modal input:disabled,
+.modal textarea:disabled {
   opacity: 0.4;
   color: var(--text-dim);
   cursor: default;
