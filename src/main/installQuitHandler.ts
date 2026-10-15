@@ -8,6 +8,15 @@ export function installQuitHandler(
   let quitting = false;
   let saved = false;
 
+  // Closing the window quits the app. Hold it open so the prompt shows over it and Cancel keeps it.
+  app.on("browser-window-created", (_event, win) => {
+    win.on("close", (event) => {
+      if (saved) return;
+      event.preventDefault();
+      app.quit();
+    });
+  });
+
   app.on("before-quit", (event) => {
     if (saved) return;
     event.preventDefault();
