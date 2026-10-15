@@ -34,6 +34,7 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     (
       event,
       opts?: {
+        link?: string;
         code?: string;
         markdown?: string;
         canCopy?: boolean;

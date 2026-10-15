@@ -64,8 +64,9 @@ export interface SwitcherooApi {
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
-  /** Popup native Copy (+ Copy Code / Copy Message / Find / Turn Details) at the cursor. */
+  /** Popup native Copy (+ Copy Link / Copy Code / Copy Message / Find / Turn Details) at the cursor. */
   showEditContextMenu: (opts?: {
+    link?: string;
     code?: string;
     markdown?: string;
     canCopy?: boolean;
