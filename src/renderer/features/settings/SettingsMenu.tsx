@@ -56,6 +56,17 @@ export function SettingsMenu() {
               className="settings-item"
               onClick={() => {
                 setOpen(false);
+                void window.switcheroo.openCronsFile();
+              }}
+            >
+              Open Crons
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
+              onClick={() => {
+                setOpen(false);
                 void window.switcheroo.openSettingsFile();
               }}
             >

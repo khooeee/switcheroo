@@ -2,6 +2,7 @@ import { BrowserWindow, dialog, ipcMain } from "electron";
 import { openInCursor } from "./openInCursor";
 import { openFolderInCursor } from "./openFolderInCursor";
 import { openTranscriptsFolder } from "./openTranscriptsFolder";
+import { openCronsFile } from "./openCronsFile";
 import { openSettingsFile } from "./openSettingsFile";
 import { readClipboardPng } from "./readClipboardPng";
 import { savePastedImage } from "./savePastedImage";
@@ -123,6 +124,7 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
+  ipcMain.handle("fs:openCronsFile", () => openCronsFile());
   ipcMain.handle("fs:openSettingsFile", () => openSettingsFile());
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", (_e, patch: Partial<AppSettings>) =>

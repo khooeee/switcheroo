@@ -9,6 +9,8 @@ import { confirmQuit } from "./main/confirmQuit";
 import { installSingleInstanceLock } from "./main/installSingleInstanceLock";
 import { installStdioGuards } from "./main/installStdioGuards";
 import { ControlServer } from "./main/control/ControlServer";
+import { CronScheduler } from "./main/crons/CronScheduler";
+import { runCron } from "./main/crons/runCron";
 import { registerIpc } from "./main/registerIpc";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
@@ -28,6 +30,12 @@ installImageProtocol();
 const sessions = new SessionManager();
 const control = new ControlServer();
 let mainWindow: BrowserWindow | null = null;
+const crons = new CronScheduler((job, at) => {
+  if (!mainWindow) return;
+  void runCron(sessions, job, at).catch((error) => {
+    console.warn(`[crons] "${job.cron}" in ${job.cwd} failed:`, error instanceof Error ? error.message : error);
+  });
+});
 let activeSessionUnread = false;
 
 function refreshMenus() {
@@ -113,7 +121,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       getNewTerminalEnabled: () => sessions.activeNewTerminalMenuEnabled(),
       getActiveUnread: () => activeSessionUnread,
     });
-    void createWindow();
+    void createWindow().then(() => crons.start());
     void control.start(sessions);
   });
 
@@ -126,6 +134,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
   installQuitHandler(
     () => confirmQuit(mainWindow, sessions.quitBusyCounts()),
     async () => {
+      crons.stop();
       await sessions.disposeAll();
       await control.stop();
     },
