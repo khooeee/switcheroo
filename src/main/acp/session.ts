@@ -101,6 +101,8 @@ export class AcpSession extends SharedAgentConnection {
     this.id = id;
     this.cb = cb;
     this.questions.setSessionId(id);
+    // Steering support was reported to the warm no-op callbacks; replay it to the new owner.
+    this.runner.configureDelivery(this.initializationMeta);
   }
 
   start(options?: { quiet?: boolean }): Promise<void> {
