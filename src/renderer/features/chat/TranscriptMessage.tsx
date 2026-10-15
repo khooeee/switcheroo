@@ -4,6 +4,7 @@ import type { TranscriptItem } from "../../../shared/transcript";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
+import { TranscriptImages } from "../images/TranscriptImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
@@ -19,6 +20,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   onActivate,
   onToggleDetails,
   extraFileChanges,
+  extraImages,
   forkable,
   label,
 }: {
@@ -32,6 +34,8 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   forkable?: boolean;
   /** Extra file changes shown under this message (aggregated turn files). */
   extraFileChanges?: FileChange[];
+  /** Extra images shown under this message (aggregated turn tool images). */
+  extraImages?: string[];
   /** Pill text; defaults to the role. */
   label?: string;
 }) {
@@ -91,6 +95,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       ) : (
         <div className="body">{text}</div>
       )}
+      <TranscriptImages names={extraImages?.length ? extraImages : item.images} />
       {item.subagentId && item.toolTitle ? <div className="subagent-row-task">{item.toolTitle}</div> : null}
       {showActions ? (
         <div className="event-actions">

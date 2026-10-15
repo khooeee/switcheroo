@@ -33,6 +33,11 @@ export function sessionMetaPath(sessionId: string): string {
   return path.join(sessionDir(sessionId), "meta.json");
 }
 
+/** Content-addressed images from tool results, shared by every session. */
+export function imagesDir(): string {
+  return path.join(userDataDir(), "images");
+}
+
 export function switchboardPath(): string {
   return path.join(userDataDir(), "switchboard.jsonl");
 }

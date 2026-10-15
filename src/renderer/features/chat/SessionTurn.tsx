@@ -5,6 +5,7 @@ import { TranscriptMessage } from "./TranscriptMessage";
 import { TurnEvents } from "./TurnEvents";
 import { SubagentChips } from "../subagents/SubagentChips";
 import { subagentRows } from "../subagents/subagentRows";
+import { turnImages } from "../images/turnImages";
 import type { MessageSession } from "./useMessageSession";
 import { useTurnRailOpeners } from "./useTurnRailOpeners";
 
@@ -26,6 +27,8 @@ export const SessionTurn = memo(function SessionTurn({
     [turn.events],
   );
   const subagents = useMemo(() => subagentRows(turn.events), [turn.events]);
+  // The agent's reply often refers to an image a tool returned; show it with the reply.
+  const images = useMemo(() => turnImages(turn.events), [turn.events]);
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
@@ -44,6 +47,7 @@ export const SessionTurn = memo(function SessionTurn({
           item={turn.assistant}
           onToggleDetails={openAssistant}
           extraFileChanges={turn.fileChanges}
+          extraImages={images}
           forkable
         />
       ) : null}

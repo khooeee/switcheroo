@@ -1,8 +1,10 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
+import { TranscriptImages } from "../images/TranscriptImages";
+import { turnImages } from "../images/turnImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ThinkingIndicator } from "./ThinkingIndicator";
@@ -25,6 +27,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
       ? stripCursorStreamNoise(turn.assistant.text)
       : turn.assistant.text
     : "";
+  const images = useMemo(() => turnImages(turn.events), [turn.events]);
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>
@@ -80,6 +83,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
           {turn.fileChanges.length ? (
             <FileChanges changes={turn.fileChanges} cwd={cwd} compact />
           ) : null}
+          <TranscriptImages names={images} />
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
           </div>

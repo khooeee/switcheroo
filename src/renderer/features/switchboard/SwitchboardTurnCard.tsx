@@ -4,6 +4,8 @@ import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { FileChanges } from "../files/FileChanges";
+import { TranscriptImages } from "../images/TranscriptImages";
+import { turnImages } from "../images/turnImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
@@ -40,6 +42,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
     () => turn.events.filter((event) => event.role === "user"),
     [turn.events],
   );
+  const images = useMemo(() => turnImages(turn.events), [turn.events]);
   const { openUser, openLatest, openAssistant } = useTurnRailOpeners(turn, onOpenRightRail);
   const handleOpenSession = useCallback(
     (eventId: string) => onOpen(turn.sessionId, turn.id, eventId),
@@ -123,6 +126,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
               compact
             />
           ) : null}
+          <TranscriptImages names={images} />
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
             <TurnDetailsButton onToggle={openAssistant} />

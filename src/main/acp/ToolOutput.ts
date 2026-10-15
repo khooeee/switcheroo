@@ -2,10 +2,11 @@ import { randomUUID } from "node:crypto";
 import type { ToolCallUpdate } from "@agentclientprotocol/sdk";
 import type { TranscriptItem } from "../../shared/transcript";
 import { toolFileChanges } from "./toolFileChanges";
+import { toolImages } from "./toolImages";
 import { fileChangeLabel } from "../../shared/fileChangeLabel";
 
 export class ToolOutput {
-  private tools = new Map<string, { id: string; at: number; tool: ToolCallUpdate }>();
+  private tools = new Map<string, { id: string; at: number; tool: ToolCallUpdate; images: string[] }>();
 
   private unfinished = new Set<string>();
 
@@ -26,7 +27,9 @@ export class ToolOutput {
     }
     const id = previous?.id ?? randomUUID();
     const at = previous?.at ?? Date.now();
-    this.tools.set(update.toolCallId, { id, at, tool });
+    // Only re-scan when content changed; status-only updates keep the saved images.
+    const images = update.content != null ? toolImages(tool) : previous?.images ?? [];
+    this.tools.set(update.toolCallId, { id, at, tool, images });
     if (tool.status === "completed" || tool.status === "failed") this.unfinished.delete(update.toolCallId);
     else this.unfinished.add(update.toolCallId);
     const status = displayStatus ?? tool.status ?? undefined;
@@ -40,6 +43,7 @@ export class ToolOutput {
       toolTitle: tool.title ?? undefined,
       toolStatus: status,
       fileChanges,
+      images: images.length ? images : undefined,
     };
     this.onTranscript(item, previous ? id : undefined);
   }

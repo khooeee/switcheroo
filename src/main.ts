@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog } from "electron";
 import path from "node:path";
 import { applyAppIcon } from "./main/applyAppIcon";
 import { installExternalLinks } from "./main/installExternalLinks";
+import { installImageProtocol } from "./main/installImageProtocol";
 import { SessionManager } from "./main/sessions/SessionManager";
 import { installQuitHandler } from "./main/installQuitHandler";
 import { confirmQuit } from "./main/confirmQuit";
@@ -22,6 +23,7 @@ installStdioGuards((error) => {
 });
 
 app.setName("Switcheroo");
+installImageProtocol();
 
 const sessions = new SessionManager();
 const control = new ControlServer();

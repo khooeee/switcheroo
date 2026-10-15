@@ -1,0 +1,37 @@
+.transcript-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.transcript-image {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-1);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.transcript-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.transcript-image.expanded {
+  cursor: zoom-out;
+}
+
+.transcript-image.expanded img {
+  max-height: none;
+}
+
+.transcript-image-missing {
+  color: var(--text-dim);
+  font-size: var(--font-mono-small-size);
+}

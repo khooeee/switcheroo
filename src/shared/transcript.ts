@@ -23,6 +23,8 @@ export interface TranscriptItem {
   toolStatus?: string;
   toolTitle?: string;
   fileChanges?: FileChange[];
+  /** `tool` rows: saved image file names the tool returned or viewed (see storeImage). */
+  images?: string[];
   /** `subagent` rows: id of the subagent transcript this row opens. */
   subagentId?: string;
 }
