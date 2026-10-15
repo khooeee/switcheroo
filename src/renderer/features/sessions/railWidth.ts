@@ -6,13 +6,8 @@ import { readCssPx } from "../layout/readCssPx";
 const MIN_WIDTH = 160;
 const DEFAULT_WIDTH = 160;
 
-function viewportWidth(explicit?: number): number {
-  if (Number.isFinite(explicit)) return explicit as number;
-  return typeof window !== "undefined" ? window.innerWidth : 1440;
-}
-
-function clampWidth(width: number, viewport?: number): number {
-  return fitSidePaneWidth(width, readCssPx("--right-rail"), viewportWidth(viewport), MIN_WIDTH);
+function clampWidth(width: number): number {
+  return fitSidePaneWidth(width, readCssPx("--right-rail"), window.innerWidth, MIN_WIDTH);
 }
 
 export function readRailWidth(): number {

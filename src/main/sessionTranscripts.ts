@@ -1,10 +1,10 @@
 import * as fs from "node:fs/promises";
 import type { TranscriptItem, TranscriptTurn } from "../shared/transcript";
 import { encodeJsonl } from "./encodeJsonl";
+import { isMissingFile } from "./isMissingFile";
 import { parseJsonl } from "./parseJsonl";
-import { sessionDir, sessionTranscriptPath } from "./userDataPaths";
-
-let pendingSave: Promise<void> = Promise.resolve();
+import { sessionTranscriptPath } from "./userDataPaths";
+import { writeFileAtomic } from "./writeFileAtomic";
 
 function stripQueued(item: TranscriptItem): TranscriptItem {
   const { queued: _queued, ...rest } = item;
@@ -26,20 +26,11 @@ export async function loadTranscript(sessionId: string): Promise<TranscriptTurn[
     if (!raw.trim()) return [];
     return parseJsonl<TranscriptTurn>(raw).map(stripTurnQueued);
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if (isMissingFile(err)) return [];
     throw err;
   }
 }
 
 export async function saveTranscript(sessionId: string, turns: TranscriptTurn[]): Promise<void> {
-  const target = sessionTranscriptPath(sessionId);
-  const tmp = `${target}.${process.pid}.tmp`;
-  const body = encodeJsonl(turns.map(stripTurnQueued));
-  const save = pendingSave.then(async () => {
-    await fs.mkdir(sessionDir(sessionId), { recursive: true });
-    await fs.writeFile(tmp, body, "utf8");
-    await fs.rename(tmp, target);
-  });
-  pendingSave = save.catch(() => undefined);
-  await save;
+  await writeFileAtomic(sessionTranscriptPath(sessionId), encodeJsonl(turns.map(stripTurnQueued)));
 }

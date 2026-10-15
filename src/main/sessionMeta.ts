@@ -1,7 +1,9 @@
 import * as fs from "node:fs/promises";
 import type { AgentKind } from "../shared/agentKind";
 import type { SessionTab, SessionUsage } from "../shared/session";
-import { sessionDir, sessionMetaPath } from "./userDataPaths";
+import { isMissingFile } from "./isMissingFile";
+import { sessionMetaPath } from "./userDataPaths";
+import { writeFileAtomic } from "./writeFileAtomic";
 
 export interface SessionMeta {
   title: string;
@@ -12,8 +14,6 @@ export interface SessionMeta {
   tabs: SessionTab[];
   tabsExpanded: boolean;
 }
-
-let pendingSave: Promise<void> = Promise.resolve();
 
 function readUsage(value: unknown): SessionUsage | undefined {
   if (!value || typeof value !== "object") return undefined;
@@ -46,20 +46,11 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       tabsExpanded: parsed.tabsExpanded !== false,
     };
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
+    if (isMissingFile(err)) return null;
     throw err;
   }
 }
 
 export async function saveSessionMeta(sessionId: string, meta: SessionMeta): Promise<void> {
-  const target = sessionMetaPath(sessionId);
-  const tmp = `${target}.${process.pid}.tmp`;
-  const snapshot = JSON.stringify(meta, null, 2);
-  const save = pendingSave.then(async () => {
-    await fs.mkdir(sessionDir(sessionId), { recursive: true });
-    await fs.writeFile(tmp, snapshot, "utf8");
-    await fs.rename(tmp, target);
-  });
-  pendingSave = save.catch(() => undefined);
-  await save;
+  await writeFileAtomic(sessionMetaPath(sessionId), JSON.stringify(meta, null, 2));
 }

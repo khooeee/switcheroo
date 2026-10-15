@@ -1,17 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { imageExtension } from "./imageExtension";
+import { MAX_IMAGE_BYTES } from "./maxImageBytes";
 import { imagesDir } from "./userDataPaths";
-
-const MAX_BYTES = 20 * 1024 * 1024;
-
-const EXTENSIONS: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/jpg": "jpg",
-  "image/gif": "gif",
-  "image/webp": "webp",
-};
 
 /**
  * Save image bytes under userData/images by content hash and return the file name,
@@ -19,8 +11,8 @@ const EXTENSIONS: Record<string, string> = {
  * is emitted synchronously and images are rare; repeat images are written once.
  */
 export function storeImage(bytes: Buffer, mimeType: string): string | null {
-  const ext = EXTENSIONS[mimeType.toLowerCase()];
-  if (!ext || !bytes.byteLength || bytes.byteLength > MAX_BYTES) return null;
+  const ext = imageExtension(mimeType);
+  if (!ext || !bytes.byteLength || bytes.byteLength > MAX_IMAGE_BYTES) return null;
   const name = `${createHash("sha256").update(bytes).digest("hex")}.${ext}`;
   const file = path.join(imagesDir(), name);
   try {

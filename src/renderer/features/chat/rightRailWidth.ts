@@ -11,13 +11,8 @@ const tabWidths = new Map<string, number>();
 /** Tab whose rail is on screen; null while hidden. */
 let shownTabId: string | null = null;
 
-function viewportWidth(explicit?: number): number {
-  if (Number.isFinite(explicit)) return explicit as number;
-  return typeof window !== "undefined" ? window.innerWidth : 1440;
-}
-
-function clampWidth(width: number, viewport?: number): number {
-  return fitSidePaneWidth(width, readCssPx("--rail"), viewportWidth(viewport), MIN_WIDTH);
+function clampWidth(width: number): number {
+  return fitSidePaneWidth(width, readCssPx("--rail"), window.innerWidth, MIN_WIDTH);
 }
 
 function setCssWidth(px: number): void {

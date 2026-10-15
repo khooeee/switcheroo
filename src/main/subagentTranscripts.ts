@@ -2,10 +2,10 @@ import * as fs from "node:fs/promises";
 import type { TranscriptTurn } from "../shared/transcript";
 import { mergeTurnsById } from "../shared/mergeTurnsById";
 import { encodeJsonl } from "./encodeJsonl";
+import { isMissingFile } from "./isMissingFile";
 import { parseJsonl } from "./parseJsonl";
 import { subagentTranscriptPath, subagentsDir } from "./userDataPaths";
-
-const isMissing = (err: unknown) => (err as NodeJS.ErrnoException).code === "ENOENT";
+import { writeFileAtomic } from "./writeFileAtomic";
 
 export async function loadSubagentTranscript(
   sessionId: string,
@@ -15,7 +15,7 @@ export async function loadSubagentTranscript(
     const raw = await fs.readFile(subagentTranscriptPath(sessionId, subagentId), "utf8");
     return raw.trim() ? parseJsonl<TranscriptTurn>(raw) : [];
   } catch (err) {
-    if (isMissing(err)) return [];
+    if (isMissingFile(err)) return [];
     throw err;
   }
 }
@@ -26,12 +26,8 @@ export async function saveSubagentTranscript(
   subagentId: string,
   turns: TranscriptTurn[],
 ): Promise<void> {
-  const target = subagentTranscriptPath(sessionId, subagentId);
   const saved = await loadSubagentTranscript(sessionId, subagentId);
-  const tmp = `${target}.${process.pid}.tmp`;
-  await fs.mkdir(subagentsDir(sessionId), { recursive: true });
-  await fs.writeFile(tmp, encodeJsonl(mergeTurnsById(saved, turns)), "utf8");
-  await fs.rename(tmp, target);
+  await writeFileAtomic(subagentTranscriptPath(sessionId, subagentId), encodeJsonl(mergeTurnsById(saved, turns)));
 }
 
 /** A fork keeps the parent's subagent rows, so it gets copies of their transcripts. */
@@ -39,6 +35,6 @@ export async function copySubagentTranscripts(fromSessionId: string, toSessionId
   try {
     await fs.cp(subagentsDir(fromSessionId), subagentsDir(toSessionId), { recursive: true });
   } catch (err) {
-    if (!isMissing(err)) throw err;
+    if (!isMissingFile(err)) throw err;
   }
 }

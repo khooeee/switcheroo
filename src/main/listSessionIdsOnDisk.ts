@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import { isMissingFile } from "./isMissingFile";
 import { sessionsDir } from "./userDataPaths";
 
 /** Session folder names under userData/sessions, newest id first (YYYY-MM-DD-… sorts). */
@@ -11,7 +12,7 @@ export async function listSessionIdsOnDisk(): Promise<string[]> {
       .sort()
       .reverse();
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if (isMissingFile(err)) return [];
     throw err;
   }
 }
