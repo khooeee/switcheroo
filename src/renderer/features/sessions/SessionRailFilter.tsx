@@ -1,7 +1,7 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import "./sessionRailFilter.css";
 
-/** Filter field for the session rail list (title / cwd). */
+/** Filter field for the session rail list (title / cwd). Cmd+K focuses it with the text selected. */
 export function SessionRailFilter({
   value,
   onChange,
@@ -10,6 +10,15 @@ export function SessionRailFilter({
   onChange: (value: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const focus = () => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    window.addEventListener("switcheroo:focus-filter", focus);
+    return () => window.removeEventListener("switcheroo:focus-filter", focus);
+  }, []);
 
   return (
     <div className="rail-filter">

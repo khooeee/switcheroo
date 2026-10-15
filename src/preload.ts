@@ -167,3 +167,7 @@ ipcRenderer.on("session:prev", () => {
 ipcRenderer.on("prompt:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
 });
+
+ipcRenderer.on("filter:focus", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
+});
