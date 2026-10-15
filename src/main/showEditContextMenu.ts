@@ -1,9 +1,10 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 
-/** Native Copy (+ optional Copy Code / Copy Message / Find / Turn Details). */
+/** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Find / Turn Details). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
   opts: {
+    link?: string;
     code?: string;
     markdown?: string;
     canCopy?: boolean;
@@ -12,9 +13,14 @@ export function showEditContextMenu(
   } = {},
 ): void {
   if (!win || win.isDestroyed()) return;
-  const items: Electron.MenuItemConstructorOptions[] = [
-    { role: "copy", enabled: !!opts.canCopy },
-  ];
+  const items: Electron.MenuItemConstructorOptions[] = [];
+  if (opts.link) {
+    items.push(
+      { label: "Copy Link", click: () => void clipboard.writeText(opts.link!) },
+      { type: "separator" },
+    );
+  }
+  items.push({ role: "copy", enabled: !!opts.canCopy });
   if (opts.code) {
     items.push({
       label: "Copy Code",
