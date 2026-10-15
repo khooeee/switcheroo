@@ -6,7 +6,7 @@ An agentic development environment that attempts to spark joy in your everyday c
 - Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session, switchboard or history).
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor, Pi & Prime Agent queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - All agents are started in bypass permissions/YOLO mode.  Use a sandbox if you're worried about
-- Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command + /.
+- Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
 
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
@@ -102,6 +102,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+Y**: Fork selected session
 
-**Cmd+/**: Toggle zen mode
+**Cmd/Ctrl+/**: Toggle zen mode
 
 **/**: shows autocomplete of slash commands in the composer

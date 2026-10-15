@@ -76,7 +76,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              aria-keyshortcuts="Meta+/"
+              aria-keyshortcuts="Meta+/ Control+/"
               onClick={() => toggleDetailsVisible()}
             >
               Toggle Zen Mode

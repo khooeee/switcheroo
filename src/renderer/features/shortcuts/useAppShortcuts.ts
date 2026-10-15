@@ -126,7 +126,7 @@ export function useAppShortcuts({
     const onKey = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing) return;
 
-      if (event.key === "/" && event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (modKey(event, "/")) {
         if (event.repeat) return;
         event.preventDefault();
         toggleDetailsVisible();
