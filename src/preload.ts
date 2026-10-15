@@ -171,3 +171,7 @@ ipcRenderer.on("prompt:focus", () => {
 ipcRenderer.on("filter:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
 });
+
+ipcRenderer.on("switchboard:open", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:open-switchboard"));
+});

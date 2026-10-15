@@ -5,7 +5,6 @@ import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { useEffect } from "react";
-import { ctrlOnlyKey } from "../shortcuts/ctrlOnlyKey";
 import { modKey } from "../shortcuts/modKey";
 
 function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {
@@ -44,7 +43,7 @@ export function useSessionShortcuts(
 
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      if (ctrlOnlyKey(event, "0")) {
+      if (modKey(event, "0")) {
         event.preventDefault();
         selectTab(SWITCHBOARD_ID);
         return;
@@ -62,6 +61,9 @@ export function useSessionShortcuts(
     };
     const onNext = () => step(1);
     const onPrev = () => step(-1);
+    const onSwitchboard = () => {
+      if (!disabled) selectTab(SWITCHBOARD_ID);
+    };
     const onTogglePin = () => {
       if (disabled) return;
       toggleActivePin(pinned, unpinned, activeTabId);
@@ -69,11 +71,13 @@ export function useSessionShortcuts(
     window.addEventListener("keydown", onKey, true);
     window.addEventListener("switcheroo:session-next", onNext);
     window.addEventListener("switcheroo:session-prev", onPrev);
+    window.addEventListener("switcheroo:open-switchboard", onSwitchboard);
     window.addEventListener("switcheroo:toggle-pin", onTogglePin);
     return () => {
       window.removeEventListener("keydown", onKey, true);
       window.removeEventListener("switcheroo:session-next", onNext);
       window.removeEventListener("switcheroo:session-prev", onPrev);
+      window.removeEventListener("switcheroo:open-switchboard", onSwitchboard);
       window.removeEventListener("switcheroo:toggle-pin", onTogglePin);
     };
   }, [pinned, unpinned, activeTabId, selectTab, disabled, filterQuery]);

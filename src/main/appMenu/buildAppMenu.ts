@@ -62,7 +62,7 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "reload", accelerator: "CmdOrCtrl+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },
-        { role: "resetZoom" },
+        { role: "resetZoom", accelerator: "CmdOrCtrl+Shift+0" },
         { role: "zoomIn" },
         { role: "zoomOut" },
         { type: "separator" },
@@ -99,6 +99,13 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           accelerator: "CmdOrCtrl+G",
           click: () => {
             win()?.webContents.send("filter:focus");
+          },
+        },
+        {
+          label: "Go to Switchboard",
+          accelerator: "CmdOrCtrl+0",
+          click: () => {
+            win()?.webContents.send("switchboard:open");
           },
         },
       ],
