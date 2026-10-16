@@ -6,6 +6,7 @@ import { errorMessage } from "../../shared/errorMessage";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
+import { codexInstructionsEnv } from "./codexInstructionsEnv";
 import { parseSubagentNotification } from "./subagents/parseSubagentNotification";
 import { rewriteSubagentUpdates } from "./subagents/rewriteSubagentUpdates";
 import { subagentCapabilityMeta } from "./subagents/subagentCapabilityMeta";
@@ -23,6 +24,8 @@ type ConnectAcpResult = {
 type ConnectHandlers = {
   agent: AgentKind;
   cwd: string;
+  /** Session instructions; Codex reads them from its process environment. */
+  instructions: string | null;
   quiet?: boolean;
   isDisposed: () => boolean;
   onStatus: (status: "connecting" | "error", message?: string) => void;
@@ -50,7 +53,8 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
 
   let proc: ChildProcessWithoutNullStreams;
   try {
-    proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, preset.env);
+    const env = { ...preset.env, ...codexInstructionsEnv(handlers.agent, handlers.instructions) };
+    proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, env);
   } catch (err) {
     const message = errorMessage(err);
     if (!handlers.isDisposed()) handlers.onStatus("error", message);

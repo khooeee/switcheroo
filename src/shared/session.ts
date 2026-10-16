@@ -37,6 +37,8 @@ export interface Session {
   slashCommands?: SlashCommand[];
   /** Context window usage from ACP usage_update (persisted in session meta). */
   usage?: SessionUsage;
+  /** Knows Switcheroo's control API (persisted): instructions for Claude/Codex, else a bootstrap prompt. */
+  switcherooAware?: boolean;
   /** Child tabs (terminals, etc.) under this chat group. */
   tabs: SessionTab[];
   /** Whether child tabs are expanded in the rail. */

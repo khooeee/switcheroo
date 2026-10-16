@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent }
 import type { AgentKind } from "../../../shared/agentKind";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
 import { errorMessage } from "../../../shared/errorMessage";
+import { supportsSwitcherooAware } from "../../../shared/supportsSwitcherooAware";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
@@ -38,6 +39,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
   const agentOptions = AGENT_KINDS.filter((kind) => available === null || available.includes(kind));
   // Fall back when the remembered agent is no longer installed.
   const selectedAgent = agentOptions.includes(agent) ? agent : agentOptions[0];
+  const canBeAware = supportsSwitcherooAware(selectedAgent);
   const canCreate = !!selectedAgent && !!cwd && !!(prefix.trim() || title.trim()) && !busy;
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
       lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(selectedAgent, cwd, sessionTitle, switcherooAware, canPin && pin);
+      await onCreate(selectedAgent, cwd, sessionTitle, canBeAware && switcherooAware, canPin && pin);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -172,11 +174,11 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
             />
             Pin
           </label>
-          <label className="modal-check">
+          <label className="modal-check" data-tooltip={canBeAware ? undefined : "Claude and Codex only"}>
             <input
               type="checkbox"
-              checked={switcherooAware}
-              disabled={busy}
+              checked={canBeAware && switcherooAware}
+              disabled={busy || !canBeAware}
               onChange={(e) => setSwitcherooAware(e.target.checked)}
               onKeyDown={createOnEnter}
             />

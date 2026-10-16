@@ -9,6 +9,8 @@ import { answerPermission } from "./answerPermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
+import { resumeAcpSession } from "./resumeAcpSession";
+import { airSessionMeta } from "./airSessionMeta";
 import type { AirForkPoint } from "./airForkPoint";
 import { sessionRoutes } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
@@ -43,6 +45,8 @@ export class AcpSession extends SharedAgentConnection {
     agent: AgentKind,
     cwd: string,
     cb: SessionCallbacks,
+    /** Standing instructions for the agent (Claude: AIR customInstructions; Codex: CODEX_CONFIG). */
+    private readonly instructions: string | null = null,
   ) {
     super();
     this.id = id;
@@ -135,6 +139,7 @@ export class AcpSession extends SharedAgentConnection {
     const session = await this.connection.agent.request(acp.methods.agent.session.new, {
       cwd: this.cwd,
       mcpServers: [],
+      ...airSessionMeta(this.instructions),
     });
     this.setSessionId(session.sessionId);
     this.runner.markIdle();
@@ -148,6 +153,7 @@ export class AcpSession extends SharedAgentConnection {
       canLoad: this.canLoad,
       canResume: this.canResume,
       cwd: this.cwd,
+      instructions: this.instructions,
       turnCount: () => this.turns.list().length,
       setMirrorUpdates: (value) => { this.mirrorUpdates = value; },
       markIdle: () => this.runner.markIdle(),
@@ -159,11 +165,10 @@ export class AcpSession extends SharedAgentConnection {
     }, sessionId);
   }
 
-  async fork(forkPoint?: AirForkPoint): Promise<string> {
-    if (!this.connection || !this.sessionId || this.disposed) {
-      throw new Error("Session not ready to fork");
-    }
-    return forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint);
+  /** `instructions` are the fork's own: it gets a new Switcheroo session id. */
+  async fork(forkPoint: AirForkPoint | undefined, instructions: string | null): Promise<string> {
+    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready to fork");
+    return forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint, instructions);
   }
 
   /** Fork on this connection and return a sibling session sharing the agent process. */
@@ -171,9 +176,10 @@ export class AcpSession extends SharedAgentConnection {
     id: string,
     cb: SessionCallbacks,
     forkPoint?: AirForkPoint,
+    instructions: string | null = null,
   ): Promise<AcpSession> {
-    const forkedId = await this.fork(forkPoint);
-    const child = new AcpSession(id, this.agent, this.cwd, cb);
+    const forkedId = await this.fork(forkPoint, instructions);
+    const child = new AcpSession(id, this.agent, this.cwd, cb, instructions);
     this.shareConnectionWith(child);
     child.setSessionId(forkedId);
     child.initializationMeta = this.initializationMeta;
@@ -185,11 +191,7 @@ export class AcpSession extends SharedAgentConnection {
         if (!child.connection) throw new Error("Session closed while forking");
         // Resume may replay history after the RPC returns; keep mirroring off until prompt.
         child.mirrorUpdates = false;
-        await child.connection.agent.request(acp.methods.agent.session.resume, {
-          sessionId: forkedId,
-          cwd: this.cwd,
-          mcpServers: [],
-        });
+        await resumeAcpSession(child.connection, forkedId, this.cwd, instructions);
         child.output.reset();
       }
     } catch (error) {
@@ -215,6 +217,7 @@ export class AcpSession extends SharedAgentConnection {
     const result = await connectAcpAgent({
       agent: this.agent,
       cwd: this.cwd,
+      instructions: this.instructions,
       quiet: options?.quiet,
       isDisposed: () => this.disposed,
       onStatus: (status, message) => {

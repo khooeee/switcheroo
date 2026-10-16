@@ -12,6 +12,7 @@ export function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
     error: null,
     createdAt: Date.now(),
     usage: meta?.usage,
+    switcherooAware: meta?.switcherooAware,
     tabs: meta?.tabs ?? [],
     tabsExpanded: meta?.tabsExpanded ?? true,
   };
