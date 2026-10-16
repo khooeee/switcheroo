@@ -6,5 +6,4 @@ export const AGENT_LABELS: Record<AgentKind, string> = {
   codex: "Codex",
   cursor: "Cursor",
   pi: "Pi",
-  prime: "Prime Agent",
 };

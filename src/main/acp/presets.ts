@@ -22,10 +22,6 @@ function resolveCursorAgent(): string {
   return resolvePathCommand("agent");
 }
 
-function resolvePrimeAgent(): string {
-  return resolvePathCommand("prime-agent");
-}
-
 function claudeCommand(): string {
   return process.env.CLAUDE_CODE_EXECUTABLE || "claude";
 }
@@ -85,12 +81,5 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     get requiredCommand() {
       return process.env.PI_ACP_PI_COMMAND || "pi";
     },
-  },
-  prime: {
-    kind: "prime",
-    get command() {
-      return resolvePrimeAgent();
-    },
-    args: ["--mode", "acp"],
   },
 };

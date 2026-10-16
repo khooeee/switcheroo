@@ -13,7 +13,7 @@ export const controlResponseTypes = {
   Session: {
     id: "string — Switcheroo session id used in /sessions/:id routes",
     title: "string",
-    agent: "claude | codex | cursor | pi | prime",
+    agent: "claude | codex | cursor | pi",
     cwd: "string — absolute workspace path",
     agentSessionId: "string | null — ACP agent session id (not the Switcheroo id)",
     status: "idle | connecting | ready | running | error",

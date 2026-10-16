@@ -4,7 +4,7 @@ An agentic development environment that attempts to spark joy in your everyday c
 - The user message & final assistant message are the only messages shown in the main content area.  Most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session, switchboard or history).
-- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor, Pi & Prime Agent queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
+- Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - All agents are started in bypass permissions/YOLO mode.  Use a sandbox if you're worried about
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
 
@@ -41,7 +41,6 @@ At least one agent CLI installed and authenticated. The Claude Code, Codex, and 
 - **Codex**: `codex` on `PATH` (e.g. `brew install --cask codex`) and Codex/ChatGPT login or `OPENAI_API_KEY` / `CODEX_API_KEY`
 - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
 - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
-- **Prime Agent**: `prime-agent` on `PATH` (installer puts it in `~/.local/bin`) and authenticated via `/login` or a provider API key
 
 ## Develop
 
@@ -78,7 +77,7 @@ Click the Settings button on the bottom left and select **Open Crons** to edit `
 ```
 
 - `cron` is a standard 5-field expression in local time: `minute hour day-of-month month day-of-week` (e.g. `*/15 * * * *` is every 15 minutes, `0 9 * * 1-5` is 9:00 on weekdays). Numbers, `*`, ranges, steps and lists are supported; names like `MON` are not.
-- `agent` is one of `claude`, `codex`, `cursor`, `pi` or `prime`.
+- `agent` is one of `claude`, `codex`, `cursor` or `pi`.
 - `enabled` must be `true` to run; a missing `enabled` is off.
 - `title` is optional; `YYYY-MM-DD`, `HH:MM` and `H:MM` in it become the run's local date and 24-hour time.
 - Crons only run while Switcheroo is open. Runs missed while the app was closed or the computer was asleep are skipped.

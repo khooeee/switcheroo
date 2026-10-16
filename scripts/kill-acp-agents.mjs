@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const devElectron = join(projectRoot, "node_modules", "electron", "dist") + "/";
 
-/** Adapter bins (`claude-agent-acp/`, `codex-acp/`, `pi-acp/`) or an `acp` mode arg (Cursor, Prime). */
+/** Adapter bins (`claude-agent-acp/`, `codex-acp/`, `pi-acp/`) or an `acp` arg (Cursor). */
 const ACP_COMMAND = /-acp\/|\sacp(\s|$)/;
 
 function arg(name, fallback) {

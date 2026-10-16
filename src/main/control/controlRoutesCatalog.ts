@@ -40,7 +40,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       auth: true,
       summary: "Create a session",
       body: {
-        agent: "claude | codex | cursor | pi | prime",
+        agent: "claude | codex | cursor | pi",
         cwd: "absolute workspace path",
         title: "optional string",
         switcherooAware: "optional boolean — inject control API bootstrap prompt (later prompts queue behind it)",
