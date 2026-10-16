@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { dialogOpen } from "./dialogOpen";
 import { modKey } from "./modKey";
 
-/** Cmd/Ctrl+G focuses the "Filter tabs" field. */
+/** Cmd+G focuses the "Filter tabs" field. */
 export function useFilterFocusShortcut(blocked: boolean): void {
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;

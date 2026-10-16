@@ -19,7 +19,7 @@ git push origin v1.0.1
 
 ## Find in History test data
 
-To stress-test **Find in History** (Cmd/Ctrl+Shift+F) without a large real archive, seed fake sessions:
+To stress-test **Find in History** (Cmd+Shift+F) without a large real archive, seed fake sessions:
 
 ```bash
 node scripts/seed-find-history.mjs

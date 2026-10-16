@@ -3,7 +3,7 @@ import { dialogOpen } from "./dialogOpen";
 import { modKey } from "./modKey";
 import { requestPromptFocus } from "./paneFocus";
 
-/** Cmd/Ctrl+I focuses the prompt when a session chat is open. */
+/** Cmd+I focuses the prompt when a session chat is open. */
 export function usePromptFocusShortcut({
   hasPrompt,
   blocked,

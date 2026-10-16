@@ -154,8 +154,7 @@ export function useAppShortcuts({
 
       if (dialogOpen()) return;
 
-      // Cmd only: Ctrl+W deletes a word in the composer.
-      if (event.metaKey && modKey(event, "w")) {
+      if (modKey(event, "w")) {
         if (event.repeat) return;
         if (activeId.current === SWITCHBOARD_ID) return;
         event.preventDefault();

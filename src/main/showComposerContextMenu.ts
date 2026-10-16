@@ -15,7 +15,7 @@ export function showComposerContextMenu(
     { role: "paste" },
     {
       label: "Paste Switcheroo Aware Prompt",
-      accelerator: "CmdOrCtrl+Shift+V",
+      accelerator: "Cmd+Shift+V",
       registerAccelerator: false,
       click: () => win.webContents.send("prompt:paste-aware"),
     },

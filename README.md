@@ -110,32 +110,32 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
 
-**Cmd/Ctrl+0**: Switchboard
+**Cmd+0**: Switchboard
 
-**Cmd/Ctrl+F**: Find in current session
+**Cmd+F**: Find in current session
 
-**Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
+**Cmd+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+G**: Focus on filter tabs
+**Cmd+G**: Focus on filter tabs
 
-**Cmd/Ctrl+I**: Focus on prompt
+**Cmd+I**: Focus on prompt
 
-**Cmd/Ctrl+N**: New session
+**Cmd+N**: New session
 
-**Cmd/Ctrl+T**: New terminal
+**Cmd+T**: New terminal
 
-**Cmd/Ctrl+R**: Rename selected tab
+**Cmd+R**: Rename selected tab
 
-**Cmd/Ctrl+P**: Pin/unpin selected session
+**Cmd+P**: Pin/unpin selected session
 
-**Cmd/Ctrl+U**: Mark as Unread
+**Cmd+U**: Mark as Unread
 
-**Cmd/Ctrl+Shift+V**: Paste Switcheroo Aware Prompt (control API bootstrap) into the prompt
+**Cmd+Shift+V**: Paste Switcheroo Aware Prompt (control API bootstrap) into the prompt
 
 **Cmd+W**: Close selected tab
 
-**Cmd/Ctrl+Y**: Fork selected session
+**Cmd+Y**: Fork selected session
 
-**Cmd/Ctrl+/**: Toggle zen mode
+**Cmd+/**: Toggle zen mode
 
 **/**: shows autocomplete of slash commands in the composer

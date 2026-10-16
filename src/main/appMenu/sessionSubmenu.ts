@@ -9,7 +9,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
   return [
     {
       label: "New Session",
-      accelerator: "CmdOrCtrl+N",
+      accelerator: "Cmd+N",
       click: () => {
         win()?.webContents.send("session:new");
       },
@@ -18,7 +18,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.newTerminal,
       label: "New Terminal",
       enabled: state.newTerminalEnabled,
-      accelerator: "CmdOrCtrl+T",
+      accelerator: "Cmd+T",
       click: () => {
         win()?.webContents.send("session:new-terminal");
       },
@@ -27,7 +27,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.rename,
       label: "Rename",
       enabled: state.renameEnabled,
-      accelerator: "CmdOrCtrl+R",
+      accelerator: "Cmd+R",
       click: () => {
         win()?.webContents.send("session:rename");
       },
@@ -36,7 +36,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.openInCursor,
       label: "Open in Cursor",
       enabled: state.openInCursorEnabled,
-      accelerator: "CmdOrCtrl+E",
+      accelerator: "Cmd+E",
       click: () => {
         opts.openActiveInCursor();
       },
@@ -45,7 +45,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.markUnread,
       label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
       enabled: state.unreadEnabled,
-      accelerator: "CmdOrCtrl+U",
+      accelerator: "Cmd+U",
       click: () => {
         win()?.webContents.send("session:mark-unread");
       },
@@ -54,7 +54,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.fork,
       label: "Fork",
       enabled: state.forkEnabled,
-      accelerator: "CmdOrCtrl+Y",
+      accelerator: "Cmd+Y",
       click: () => {
         win()?.webContents.send("session:fork");
       },
@@ -63,7 +63,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.pin,
       label: state.pin.label,
       enabled: state.pin.enabled,
-      accelerator: "CmdOrCtrl+P",
+      accelerator: "Cmd+P",
       click: () => {
         win()?.webContents.send("session:toggle-pin");
       },

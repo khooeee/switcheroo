@@ -40,7 +40,7 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "paste" },
         {
           label: "Paste Switcheroo Aware Prompt",
-          accelerator: "CmdOrCtrl+Shift+V",
+          accelerator: "Cmd+Shift+V",
           click: () => {
             win()?.webContents.send("prompt:paste-aware");
           },
@@ -49,14 +49,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { type: "separator" },
         {
           label: "Find",
-          accelerator: "CmdOrCtrl+F",
+          accelerator: "Cmd+F",
           click: () => {
             win()?.webContents.send("find:open");
           },
         },
         {
           label: "Find in History",
-          accelerator: "CmdOrCtrl+Shift+F",
+          accelerator: "Cmd+Shift+F",
           click: () => {
             win()?.webContents.send("find-sessions:open");
           },
@@ -66,10 +66,10 @@ export function buildAppMenu(opts: AppMenuOptions): void {
     {
       label: "View",
       submenu: [
-        { role: "reload", accelerator: "CmdOrCtrl+Shift+R" },
+        { role: "reload", accelerator: "Cmd+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },
-        { role: "resetZoom", accelerator: "CmdOrCtrl+Shift+0" },
+        { role: "resetZoom", accelerator: "Cmd+Shift+0" },
         { role: "zoomIn" },
         { role: "zoomOut" },
         { type: "separator" },
@@ -96,21 +96,21 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { type: "separator" },
         {
           label: "Go to Prompt",
-          accelerator: "CmdOrCtrl+I",
+          accelerator: "Cmd+I",
           click: () => {
             win()?.webContents.send("prompt:focus");
           },
         },
         {
           label: "Go to Filter Tabs",
-          accelerator: "CmdOrCtrl+G",
+          accelerator: "Cmd+G",
           click: () => {
             win()?.webContents.send("filter:focus");
           },
         },
         {
           label: "Go to Switchboard",
-          accelerator: "CmdOrCtrl+0",
+          accelerator: "Cmd+0",
           click: () => {
             win()?.webContents.send("switchboard:open");
           },

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import "./sessionRailFilter.css";
 
-/** Filter field for the session rail list (title / cwd). Cmd/Ctrl+G focuses it with the text selected. */
+/** Filter field for the session rail list (title / cwd). Cmd+G focuses it with the text selected. */
 export function SessionRailFilter({
   value,
   onChange,
