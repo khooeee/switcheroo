@@ -109,9 +109,14 @@ export class SessionManager {
 
   list() {
     return {
-      ...this.state.sessionListPayload(),
+      ...this.railPayload(),
       switchboardTurns: this.state.bus.list(),
     };
+  }
+
+  /** Rail sessions without the Switchboard feed (control API). */
+  railPayload() {
+    return this.state.sessionListPayload();
   }
 
   pinSession(sessionId: string): boolean {

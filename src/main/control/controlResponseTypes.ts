@@ -1,6 +1,5 @@
 import type { FileChange } from "../../shared/fileChange";
 import type { Session } from "../../shared/session";
-import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 
 /**
@@ -56,11 +55,4 @@ export const controlResponseTypes = {
     oldText: "optional string | null",
     newText: "optional string | null",
   } satisfies Record<keyof FileChange, string>,
-  SwitchboardTurn: {
-    "...": "all TranscriptTurn fields, plus:",
-    sessionId: "string",
-    sessionTitle: "optional string — title at event time",
-    agent: "claude | codex | cursor | pi | prime",
-    navigable: "boolean — false once the session folder is gone",
-  } satisfies Record<Exclude<keyof SwitchboardTurn, keyof TranscriptTurn> | "...", string>,
 };

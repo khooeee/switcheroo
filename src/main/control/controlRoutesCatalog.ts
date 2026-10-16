@@ -31,7 +31,6 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
         pinned: "Session[]",
         unpinned: "Session[]",
         activeTabId: "string — focused session/tab id, or \"switchboard\"",
-        switchboardTurns: "SwitchboardTurn[] — recent turns across sessions",
       },
       example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions`,
     },
