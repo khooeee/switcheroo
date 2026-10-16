@@ -1,5 +1,5 @@
 import { controlResponseTypes } from "./controlResponseTypes";
-import { controlRoutesCatalog } from "./controlRoutesCatalog";
+import { controlRoutesCatalog } from "../../shared/controlRoutesCatalog";
 
 export function controlCatalogJson(baseUrl: string, tokenHint: string) {
   return {
