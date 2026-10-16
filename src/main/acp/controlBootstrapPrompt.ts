@@ -1,7 +1,8 @@
 /** Prompt text injected when a session is created with switcherooAware. */
-export function controlBootstrapText(): string {
+export function controlBootstrapText(sessionId: string): string {
   return [
     "You can drive this Switcheroo app over its localhost control API.",
+    `Your own session id is ${sessionId}. Never prompt or close it.`,
     "",
     "Connect:",
     "1. Read ~/.switcheroo/control.json for { port, token, spec }.",
@@ -19,7 +20,8 @@ export function controlBootstrapText(): string {
     "5. When ready, GET /sessions/:id/transcript?last=1 for the newest turn.",
     "6. POST /sessions/:id/close when finished with a child.",
     "",
-    "Do not hardcode the port; re-read control.json after a Switcheroo restart.",
+    "Do not hardcode the port or token; on a 401 or connection error, re-read",
+    "control.json (Switcheroo issues a new token each launch).",
     "Do not put the bearer token in files you commit.",
   ].join("\n");
 }
