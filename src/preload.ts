@@ -169,6 +169,10 @@ ipcRenderer.on("prompt:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
 });
 
+ipcRenderer.on("prompt:paste-aware", () => {
+  window.dispatchEvent(new CustomEvent("switcheroo:paste-aware-prompt"));
+});
+
 ipcRenderer.on("filter:focus", () => {
   window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
 });

@@ -1,4 +1,4 @@
-/** Prompt text injected when a session is created with switcherooAware. */
+/** Control API bootstrap prompt: sent on create with switcherooAware, or pasted via Edit menu. */
 export function controlBootstrapText(sessionId: string): string {
   return [
     "You can drive this Switcheroo app over its localhost control API.",

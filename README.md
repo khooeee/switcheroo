@@ -124,6 +124,8 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+U**: Mark as Unread
 
+**Cmd/Ctrl+Shift+V**: Paste Switchboard Aware prompt (control API bootstrap) into the prompt
+
 **Cmd/Ctrl+W**: Close selected tab
 
 **Cmd/Ctrl+Y**: Fork selected session

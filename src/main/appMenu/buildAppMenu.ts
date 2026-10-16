@@ -38,6 +38,13 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "cut" },
         { role: "copy" },
         { role: "paste" },
+        {
+          label: "Paste Switchboard Aware prompt",
+          accelerator: "CmdOrCtrl+Shift+V",
+          click: () => {
+            win()?.webContents.send("prompt:paste-aware");
+          },
+        },
         { role: "selectAll" },
         { type: "separator" },
         {
