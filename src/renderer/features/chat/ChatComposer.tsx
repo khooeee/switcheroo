@@ -11,6 +11,7 @@ import { applyComposerHistoryKey } from "./applyComposerHistoryKey";
 import { emptyComposerHistory, type ComposerHistoryState } from "./composerHistoryState";
 import { formatSessionUsage } from "./formatSessionUsage";
 import { useComposerDraft } from "./useComposerDraft";
+import { usePasteAwarePrompt } from "./usePasteAwarePrompt";
 import { userPromptHistory } from "./userPromptHistory";
 import "./composer.css";
 
@@ -43,6 +44,7 @@ export function ChatComposer({
     setHistoryState((state) => applyComposerHistoryEdit(state, text));
     setDraft(text);
   };
+  usePasteAwarePrompt(session.id, promptRef, setDraftFromUser);
 
   const send = () => {
     if (!draft.trim() || session.status === "connecting") return;

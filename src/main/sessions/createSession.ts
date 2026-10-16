@@ -3,7 +3,7 @@ import { AGENT_LABELS } from "../../shared/agentLabels";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import { errorMessage } from "../../shared/errorMessage";
 import type { Session } from "../../shared/session";
-import { controlBootstrapText } from "../acp/controlBootstrapPrompt";
+import { controlBootstrapText } from "../../shared/controlBootstrapText";
 import { newSessionId } from "../newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
