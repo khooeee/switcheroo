@@ -16,7 +16,7 @@ export function controlBootstrapText(sessionId: string): string {
     "1. POST /sessions to create a child (agent + cwd required).",
     "2. POST /sessions/:id/prompt with {\"text\":\"...\"} — returns { turnId } immediately.",
     "3. Continue other work (you may drive several children at once).",
-    "4. Later GET /sessions and check each child's status (running → ready|error).",
+    "4. Later GET /sessions/:id for each child and check its status (running → ready|error).",
     "5. When ready, GET /sessions/:id/transcript?last=1 for the newest turn.",
     "6. POST /sessions/:id/close when finished with a child.",
     "",
