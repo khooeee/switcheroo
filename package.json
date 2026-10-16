@@ -53,9 +53,7 @@
     "remark-gfm": "^4.0.1"
   },
   "allowScripts": {
-    "esbuild@0.21.5": true,
     "fsevents@2.3.3": true,
-    "electron@44.5.1": true,
     "node-pty@1.1.0": true,
     "fs-xattr@0.3.1": true,
     "macos-alias@0.2.12": true
