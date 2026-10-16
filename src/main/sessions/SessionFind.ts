@@ -1,4 +1,4 @@
-import { runFindInSessions } from "../runFindInSessions";
+import { runFindInSessions } from "../find/runFindInSessions";
 import type { SessionState } from "./SessionState";
 
 /** Runs history searches; starting or stopping a search cancels the previous one. */

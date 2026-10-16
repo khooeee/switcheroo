@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
-import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { finalizeStalledTurns } from "../sessions/finalizeStalledTurns";
 import { aggregateFileChanges } from "./aggregateFileChanges";
 import { cloneTurn } from "./cloneTurn";
 

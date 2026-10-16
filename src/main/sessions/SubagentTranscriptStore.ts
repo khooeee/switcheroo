@@ -1,11 +1,11 @@
 import type { TranscriptTurn } from "../../shared/transcript";
 import { mergeTurnsById } from "../../shared/mergeTurnsById";
-import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import {
   copySubagentTranscripts,
   loadSubagentTranscript,
   saveSubagentTranscript,
-} from "../subagentTranscripts";
+} from "../storage/subagentTranscripts";
 
 type Entry = { sessionId: string; subagentId: string; turns: TranscriptTurn[] };
 

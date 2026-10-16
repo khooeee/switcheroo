@@ -1,5 +1,5 @@
 import { openOrCreateFile } from "./openOrCreateFile";
-import { cronsPath } from "./userDataPaths";
+import { cronsPath } from "../storage/userDataPaths";
 
 // A disabled example documents the fields; it never runs until enabled is true.
 const STARTER_CRONS = JSON.stringify(

@@ -1,6 +1,6 @@
 import { pinSessionInLists } from "../railLists/pinSessionInLists";
 import { unpinSessionInLists } from "../railLists/unpinSessionInLists";
-import { softCloseSession } from "../softCloseSession";
+import { softCloseSession } from "./softCloseSession";
 import type { SessionDeps } from "./SessionDeps";
 import { softCloseHost } from "./softCloseHost";
 

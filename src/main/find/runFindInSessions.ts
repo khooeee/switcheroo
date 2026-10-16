@@ -1,10 +1,10 @@
 import { setImmediate as yieldToEventLoop } from "node:timers/promises";
-import type { FindInSessionsHit } from "../shared/findInSessionsHit";
+import type { FindInSessionsHit } from "../../shared/findInSessionsHit";
 import { findInSessionSource } from "./findInSessionSource";
 import type { FindSource } from "./FindSource";
-import { listSessionIdsOnDisk } from "./listSessionIdsOnDisk";
-import { loadSessionMeta } from "./sessionMeta";
-import { loadTranscript } from "./sessionTranscripts";
+import { listSessionIdsOnDisk } from "../storage/listSessionIdsOnDisk";
+import { loadSessionMeta } from "../storage/sessionMeta";
+import { loadTranscript } from "../storage/sessionTranscripts";
 
 type FindHost = {
   isCurrent: (token: number) => boolean;

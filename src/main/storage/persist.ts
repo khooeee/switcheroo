@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { PersistedState } from "../shared/persistedState";
+import type { PersistedState } from "../../shared/persistedState";
 import { isMissingFile } from "./isMissingFile";
 import { statePath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";

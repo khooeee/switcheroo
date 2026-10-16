@@ -11,6 +11,5 @@ export function setSessionStatus(
   if (!session) return;
   session.status = status;
   session.error = error;
-  state.send("session-status", { sessionId, status, error });
   state.emitSessions();
 }

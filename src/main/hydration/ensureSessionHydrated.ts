@@ -1,9 +1,9 @@
 import type { Session } from "../../shared/session";
 import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
-import { loadSessionMeta } from "../sessionMeta";
-import { loadTranscript } from "../sessionTranscripts";
-import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { loadSessionMeta } from "../storage/sessionMeta";
+import { loadTranscript } from "../storage/sessionTranscripts";
+import { finalizeStalledTurns } from "../sessions/finalizeStalledTurns";
 import type { HydrationHost } from "./HydrationHost";
 
 /** Load meta + transcript into memory the first time a session is opened. */

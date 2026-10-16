@@ -1,5 +1,5 @@
 import type { Session } from "../../shared/session";
-import { forkSessionAtEvent } from "../forkSessionAtEvent";
+import { forkSessionAtEvent } from "./forkSessionAtEvent";
 import type { SessionDeps } from "./SessionDeps";
 import { sessionInstructions } from "./sessionInstructions";
 

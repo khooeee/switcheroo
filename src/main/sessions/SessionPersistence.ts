@@ -1,10 +1,10 @@
 import type { PersistedState } from "../../shared/persistedState";
-import { saveState } from "../persist";
+import { saveState } from "../storage/persist";
 import { getAppSettings } from "../appSettings";
-import { metaFromSession } from "../metaFromSession";
-import { saveSessionMeta } from "../sessionMeta";
-import { saveTranscript } from "../sessionTranscripts";
-import { saveSwitchboardTurns } from "../switchboardEvents";
+import { metaFromSession } from "../storage/metaFromSession";
+import { saveSessionMeta } from "../storage/sessionMeta";
+import { saveTranscript } from "../storage/sessionTranscripts";
+import { saveSwitchboardTurns } from "../storage/switchboardEvents";
 import { updateTabCwd } from "../tabs/updateTabCwd";
 import type { SessionState } from "./SessionState";
 

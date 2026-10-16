@@ -1,4 +1,4 @@
-import type { Session } from "../shared/session";
+import type { Session } from "../../shared/session";
 import type { SessionMeta } from "./sessionMeta";
 
 export function sessionFromMeta(id: string, meta: SessionMeta | null): Session {

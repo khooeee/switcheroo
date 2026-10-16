@@ -4,7 +4,7 @@ import type { CreateSessionInput } from "../../shared/createSessionInput";
 import { errorMessage } from "../../shared/errorMessage";
 import type { Session } from "../../shared/session";
 import { controlBootstrapText } from "../../shared/controlBootstrapText";
-import { newSessionId } from "../newSessionId";
+import { newSessionId } from "./newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
 import { sessionInstructions } from "./sessionInstructions";

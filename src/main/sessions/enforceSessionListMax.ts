@@ -1,7 +1,7 @@
 import type { Session } from "../../shared/session";
 import { getAppSettings } from "../appSettings";
-import { overflowSessionIds } from "../overflowSessionIds";
-import { softCloseSession } from "../softCloseSession";
+import { overflowSessionIds } from "./overflowSessionIds";
+import { softCloseSession } from "./softCloseSession";
 import type { SessionDeps } from "./SessionDeps";
 import { softCloseHost } from "./softCloseHost";
 

@@ -12,7 +12,7 @@ import { activeParentSessionId } from "../menuState/activeParentSessionId";
 import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
-import { TerminalHost } from "../terminalHost";
+import { TerminalHost } from "../pty/terminalHost";
 import { SubagentTranscriptStore } from "./SubagentTranscriptStore";
 
 /** In-memory session state shared by SessionManager collaborators, plus renderer IPC. */

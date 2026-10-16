@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
-import { isMissingFile } from "../isMissingFile";
-import { cronsPath } from "../userDataPaths";
+import { isMissingFile } from "../storage/isMissingFile";
+import { cronsPath } from "../storage/userDataPaths";
 import type { CronJob } from "./CronJob";
 import { parseCronsFile } from "./parseCronsFile";
 import { errorMessage } from "../../shared/errorMessage";

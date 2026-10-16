@@ -1,17 +1,17 @@
-import type { Session } from "../shared/session";
-import type { TranscriptTurn } from "../shared/transcript";
-import type { ActiveTabId } from "../shared/activeTabId";
-import { SWITCHBOARD_ID } from "../shared/switchboardId";
-import { nextActiveAfterClose } from "./railLists/nextActiveAfterClose";
-import { removeSessionFromLists } from "./railLists/removeSessionFromLists";
-import type { SessionRailLists } from "./railLists/SessionRailLists";
-import { metaFromSession } from "./metaFromSession";
-import { saveSessionMeta } from "./sessionMeta";
-import { saveTranscript } from "./sessionTranscripts";
-import { updateTabCwd } from "./tabs/updateTabCwd";
-import type { AcpSession } from "./acp/session";
-import type { GlobalEventBus } from "./events";
-import type { TerminalHost } from "./terminalHost";
+import type { Session } from "../../shared/session";
+import type { TranscriptTurn } from "../../shared/transcript";
+import type { ActiveTabId } from "../../shared/activeTabId";
+import { SWITCHBOARD_ID } from "../../shared/switchboardId";
+import { nextActiveAfterClose } from "../railLists/nextActiveAfterClose";
+import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
+import type { SessionRailLists } from "../railLists/SessionRailLists";
+import { metaFromSession } from "../storage/metaFromSession";
+import { saveSessionMeta } from "../storage/sessionMeta";
+import { saveTranscript } from "../storage/sessionTranscripts";
+import { updateTabCwd } from "../tabs/updateTabCwd";
+import type { AcpSession } from "../acp/session";
+import type { GlobalEventBus } from "../events";
+import type { TerminalHost } from "../pty/terminalHost";
 
 type SoftCloseHost = {
   sessions: Map<string, Session>;

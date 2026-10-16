@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ToolCallUpdate } from "@agentclientprotocol/sdk";
-import { storeImage } from "../storeImage";
+import { storeImage } from "../images/storeImage";
 
 const MIME_TYPES: Record<string, string> = {
   ".png": "image/png",

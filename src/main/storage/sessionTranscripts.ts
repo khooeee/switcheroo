@@ -1,4 +1,4 @@
-import type { TranscriptItem, TranscriptTurn } from "../shared/transcript";
+import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 import { encodeJsonl } from "./encodeJsonl";
 import { readJsonlFile } from "./readJsonlFile";
 import { sessionTranscriptPath } from "./userDataPaths";

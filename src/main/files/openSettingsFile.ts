@@ -1,7 +1,7 @@
-import { defaultAppSettings } from "../shared/defaultAppSettings";
-import { SWITCHBOARD_ID } from "../shared/switchboardId";
+import { defaultAppSettings } from "../../shared/defaultAppSettings";
+import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { openOrCreateFile } from "./openOrCreateFile";
-import { statePath } from "./userDataPaths";
+import { statePath } from "../storage/userDataPaths";
 
 const EMPTY_STATE = JSON.stringify(
   {

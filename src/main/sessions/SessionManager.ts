@@ -5,7 +5,7 @@ import type { CreateSessionInput } from "../../shared/createSessionInput";
 import type { Session, SessionTab } from "../../shared/session";
 import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../shared/transcript";
-import { loadState } from "../persist";
+import { loadState } from "../storage/persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
 import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
 import type { SessionMenuState } from "../menuState/SessionMenuState";
@@ -17,7 +17,7 @@ import { moveSessionTab } from "../terminalTabs/moveSessionTab";
 import { renameSessionTab } from "../terminalTabs/renameSessionTab";
 import { reorderSessionTab } from "../terminalTabs/reorderSessionTab";
 import { setSessionTabsExpanded } from "../terminalTabs/setSessionTabsExpanded";
-import { openFolderInCursor } from "../openFolderInCursor";
+import { openFolderInCursor } from "../cursor/openFolderInCursor";
 import { SessionState } from "./SessionState";
 import { SessionPersistence } from "./SessionPersistence";
 import { SessionHydration } from "./SessionHydration";
@@ -54,10 +54,7 @@ export class SessionManager {
     this.state.window = win;
     this.state.terminals.setListeners(
       (tabId, data) => this.state.send("terminal:data", { tabId, data }),
-      (tabId) => {
-        this.state.send("terminal:exit", { tabId });
-        void this.closeTab(tabId);
-      },
+      (tabId) => void this.closeTab(tabId),
       (tabId, cwd) => applySessionTerminalCwd(terminalTabHost(this.deps), tabId, cwd),
     );
     const parentId = this.state.activeParentSessionId();

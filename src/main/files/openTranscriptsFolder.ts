@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { shell } from "electron";
-import { sessionsDir } from "./userDataPaths";
+import { sessionsDir } from "../storage/userDataPaths";
 
 /** Reveal the sessions directory in the file manager. */
 export async function openTranscriptsFolder(): Promise<void> {

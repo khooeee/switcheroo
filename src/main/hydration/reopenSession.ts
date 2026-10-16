@@ -1,8 +1,8 @@
 import type { Session } from "../../shared/session";
-import { loadSessionMeta } from "../sessionMeta";
-import { sessionFromMeta } from "../sessionFromMeta";
-import { loadTranscript } from "../sessionTranscripts";
-import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { loadSessionMeta } from "../storage/sessionMeta";
+import { sessionFromMeta } from "../storage/sessionFromMeta";
+import { loadTranscript } from "../storage/sessionTranscripts";
+import { finalizeStalledTurns } from "../sessions/finalizeStalledTurns";
 import type { HydrationHost } from "./HydrationHost";
 
 /** Re-open a closed-but-on-disk session onto the rail. */

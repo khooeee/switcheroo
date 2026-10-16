@@ -1,5 +1,5 @@
 import type { Session } from "../../shared/session";
-import type { TerminalHost } from "../terminalHost";
+import type { TerminalHost } from "../pty/terminalHost";
 
 /** Session state that tab operations read and mutate. */
 export type TerminalHostApi = {

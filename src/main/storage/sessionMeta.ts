@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
-import { isAgentKind, type AgentKind } from "../shared/agentKind";
-import type { SessionTab, SessionUsage } from "../shared/session";
+import { isAgentKind, type AgentKind } from "../../shared/agentKind";
+import type { SessionTab, SessionUsage } from "../../shared/session";
 import { isMissingFile } from "./isMissingFile";
 import { sessionMetaPath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";

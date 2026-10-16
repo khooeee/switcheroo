@@ -1,7 +1,7 @@
-import type { Session, SessionStatus } from "../shared/session";
-import type { TranscriptTurn } from "../shared/transcript";
-import type { SessionCallbacks } from "./acp/SessionCallbacks";
-import type { AgentKind } from "../shared/agentKind";
+import type { Session, SessionStatus } from "../../shared/session";
+import type { TranscriptTurn } from "../../shared/transcript";
+import type { SessionCallbacks } from "../acp/SessionCallbacks";
+import type { AgentKind } from "../../shared/agentKind";
 
 type CallbackDeps = {
   session: Session;

@@ -1,16 +1,16 @@
-import type { AgentKind } from "../shared/agentKind";
-import type { Session } from "../shared/session";
-import type { TranscriptTurn } from "../shared/transcript";
-import { AGENT_LABELS } from "../shared/agentLabels";
-import { errorMessage } from "../shared/errorMessage";
-import { nextForkTitle } from "../shared/nextForkTitle";
-import type { AcpSession } from "./acp/session";
-import type { SessionCallbacks } from "./acp/SessionCallbacks";
+import type { AgentKind } from "../../shared/agentKind";
+import type { Session } from "../../shared/session";
+import type { TranscriptTurn } from "../../shared/transcript";
+import { AGENT_LABELS } from "../../shared/agentLabels";
+import { errorMessage } from "../../shared/errorMessage";
+import { nextForkTitle } from "../../shared/nextForkTitle";
+import type { AcpSession } from "../acp/session";
+import type { SessionCallbacks } from "../acp/SessionCallbacks";
 import { newSessionId } from "./newSessionId";
 import { finalizeStalledTurns } from "./finalizeStalledTurns";
-import { airForkPoint, type AirForkPoint } from "./acp/airForkPoint";
-import { clipTurnsThrough } from "./acp/clipTurnsThrough";
-import { cloneTurn } from "./acp/cloneTurn";
+import { airForkPoint, type AirForkPoint } from "../acp/airForkPoint";
+import { clipTurnsThrough } from "../acp/clipTurnsThrough";
+import { cloneTurn } from "../acp/cloneTurn";
 
 interface ForkSessionHost {
   getSession(sessionId: string): Session | undefined;

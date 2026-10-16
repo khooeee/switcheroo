@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { imageExtension } from "./imageExtension";
 import { MAX_IMAGE_BYTES } from "./maxImageBytes";
-import { imagesDir } from "./userDataPaths";
+import { imagesDir } from "../storage/userDataPaths";
 
 /**
  * Save image bytes under userData/images by content hash and return the file name,

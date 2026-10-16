@@ -1,8 +1,8 @@
 import { app, net, protocol } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { TRANSCRIPT_IMAGE_SCHEME } from "../shared/transcriptImageScheme";
-import { imagesDir } from "./userDataPaths";
+import { TRANSCRIPT_IMAGE_SCHEME } from "../../shared/transcriptImageScheme";
+import { imagesDir } from "../storage/userDataPaths";
 
 /** Only names storeImage writes, so a URL can never reach outside the images dir. */
 const IMAGE_NAME = /^[a-f0-9]{64}\.(png|jpg|gif|webp)$/;

@@ -1,6 +1,6 @@
 import { getAppSettings } from "../appSettings";
-import { saveSwitchboardTurns } from "../switchboardEvents";
-import { switchboardCleanupCutoff } from "../switchboardCleanup";
+import { saveSwitchboardTurns } from "../storage/switchboardEvents";
+import { switchboardCleanupCutoff } from "./switchboardCleanup";
 import type { SessionState } from "./SessionState";
 
 /** Age-out old Switchboard turns on startup. */

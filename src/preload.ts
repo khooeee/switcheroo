@@ -4,7 +4,7 @@ import type { CursorAskQuestionRequest } from "./shared/agentRequests";
 import type { AppSettings } from "./shared/appSettings";
 import type { CreateSessionInput } from "./shared/createSessionInput";
 import type { FindInSessionsHit } from "./shared/findInSessionsHit";
-import type { SessionTab, SessionStatus } from "./shared/session";
+import type { SessionTab } from "./shared/session";
 import type { SwitchboardTurn } from "./shared/switchboardTurn";
 import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
 import type { TranscriptTurn } from "./shared/transcript";
@@ -46,7 +46,6 @@ const api: SwitcherooApi = {
   resizeTerminal: (tabId: string, cols: number, rows: number) =>
     ipcRenderer.invoke("terminal:resize", tabId, cols, rows),
   onTerminalData: (cb) => subscribe<{ tabId: string; data: string }>("terminal:data", cb),
-  onTerminalExit: (cb) => subscribe<{ tabId: string }>("terminal:exit", cb),
   listSessions: () => ipcRenderer.invoke("sessions:list"),
   sendPrompt: (sessionId: string, text: string) =>
     ipcRenderer.invoke("session:prompt", sessionId, text),
@@ -87,11 +86,6 @@ const api: SwitcherooApi = {
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
   onPromptComplete: (cb) => subscribe<{ sessionId: string }>("prompt:complete", cb),
-  onSessionStatus: (cb) =>
-    subscribe<{ sessionId: string; status: SessionStatus; error: string | null }>(
-      "session-status",
-      cb,
-    ),
   onNavigateToEvent: (cb) =>
     subscribe<{ sessionId: string; turnId: string; eventId: string }>("navigate-event", cb),
   onFindProgress: (cb) =>
@@ -109,74 +103,30 @@ const api: SwitcherooApi = {
 
 contextBridge.exposeInMainWorld("switcheroo", api);
 
-ipcRenderer.on("find:open", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:find"));
-});
+/** Menu IPC channel → window event the renderer listens for (payload, if any, becomes `detail`). */
+const MENU_EVENTS: Record<string, string> = {
+  "find:open": "switcheroo:find",
+  "find:open-scoped": "switcheroo:find-scoped",
+  "turn:details": "switcheroo:turn-details",
+  "find-sessions:open": "switcheroo:find-sessions",
+  "session:new": "switcheroo:new-session",
+  "session:new-terminal": "switcheroo:new-terminal",
+  "session:toggle-pin": "switcheroo:toggle-pin",
+  "session:rename": "switcheroo:rename-session",
+  "session:fork": "switcheroo:fork-session",
+  "session:mark-unread": "switcheroo:mark-unread",
+  "session:close": "switcheroo:close-session",
+  "session:stop": "switcheroo:stop-session",
+  "session:next": "switcheroo:session-next",
+  "session:prev": "switcheroo:session-prev",
+  "prompt:focus": "switcheroo:focus-prompt",
+  "prompt:paste-aware": "switcheroo:paste-aware-prompt",
+  "filter:focus": "switcheroo:focus-filter",
+  "switchboard:open": "switcheroo:open-switchboard",
+};
 
-ipcRenderer.on("find:open-scoped", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:find-scoped"));
-});
-
-ipcRenderer.on("turn:details", (_event, payload: { turnId: string; eventId: string }) => {
-  window.dispatchEvent(new CustomEvent("switcheroo:turn-details", { detail: payload }));
-});
-
-ipcRenderer.on("find-sessions:open", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:find-sessions"));
-});
-
-ipcRenderer.on("session:new", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:new-session"));
-});
-
-ipcRenderer.on("session:new-terminal", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:new-terminal"));
-});
-
-ipcRenderer.on("session:toggle-pin", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:toggle-pin"));
-});
-
-ipcRenderer.on("session:rename", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:rename-session"));
-});
-
-ipcRenderer.on("session:fork", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:fork-session"));
-});
-
-ipcRenderer.on("session:mark-unread", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:mark-unread"));
-});
-
-ipcRenderer.on("session:close", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:close-session"));
-});
-
-ipcRenderer.on("session:stop", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:stop-session"));
-});
-
-ipcRenderer.on("session:next", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:session-next"));
-});
-
-ipcRenderer.on("session:prev", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:session-prev"));
-});
-
-ipcRenderer.on("prompt:focus", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:focus-prompt"));
-});
-
-ipcRenderer.on("prompt:paste-aware", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:paste-aware-prompt"));
-});
-
-ipcRenderer.on("filter:focus", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
-});
-
-ipcRenderer.on("switchboard:open", () => {
-  window.dispatchEvent(new CustomEvent("switcheroo:open-switchboard"));
-});
+for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {
+  ipcRenderer.on(channel, (_event, detail?: unknown) => {
+    window.dispatchEvent(new CustomEvent(eventName, { detail }));
+  });
+}

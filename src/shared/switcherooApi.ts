@@ -4,7 +4,7 @@ import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
-import type { Session, SessionStatus, SessionTab } from "./session";
+import type { Session, SessionTab } from "./session";
 import type { SwitchboardTurn } from "./switchboardTurn";
 import type { TranscriptTurn } from "./transcript";
 
@@ -40,7 +40,6 @@ export interface SwitcherooApi {
   writeTerminal: (tabId: string, data: string) => Promise<void>;
   resizeTerminal: (tabId: string, cols: number, rows: number) => Promise<void>;
   onTerminalData: (cb: (payload: { tabId: string; data: string }) => void) => () => void;
-  onTerminalExit: (cb: (payload: { tabId: string }) => void) => () => void;
   listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;
@@ -117,7 +116,6 @@ export interface SwitcherooApi {
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   onPromptComplete: (cb: (payload: { sessionId: string }) => void) => () => void;
-  onSessionStatus: (cb: (payload: { sessionId: string; status: SessionStatus; error: string | null }) => void) => () => void;
   onNavigateToEvent: (cb: (payload: { sessionId: string; turnId: string; eventId: string }) => void) => () => void;
   navigateToEvent: (sessionId: string, turnId: string, eventId: string) => Promise<void>;
 }

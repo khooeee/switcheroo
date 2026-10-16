@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import { powerMonitor } from "electron";
-import { cronsPath } from "../userDataPaths";
+import { cronsPath } from "../storage/userDataPaths";
 import type { CronJob } from "./CronJob";
 import { cronMatches } from "./cronMatches";
 import { loadCrons } from "./loadCrons";

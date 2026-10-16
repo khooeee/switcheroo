@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
-import type { TranscriptTurn } from "../shared/transcript";
-import { mergeTurnsById } from "../shared/mergeTurnsById";
+import type { TranscriptTurn } from "../../shared/transcript";
+import { mergeTurnsById } from "../../shared/mergeTurnsById";
 import { encodeJsonl } from "./encodeJsonl";
 import { isMissingFile } from "./isMissingFile";
 import { readJsonlFile } from "./readJsonlFile";

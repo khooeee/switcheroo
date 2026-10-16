@@ -1,4 +1,4 @@
-import type { SwitchboardTurn } from "../shared/switchboardTurn";
+import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import { encodeJsonl } from "./encodeJsonl";
 import { readJsonlFile } from "./readJsonlFile";
 import { switchboardPath } from "./userDataPaths";

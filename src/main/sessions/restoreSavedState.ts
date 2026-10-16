@@ -1,10 +1,10 @@
 import type { ActiveTabId } from "../../shared/activeTabId";
 import type { PersistedState } from "../../shared/persistedState";
 import { SWITCHBOARD_ID } from "../../shared/switchboardId";
-import { loadSessionMeta } from "../sessionMeta";
-import { sessionFromMeta } from "../sessionFromMeta";
-import { loadSwitchboardTurns, saveSwitchboardTurns } from "../switchboardEvents";
-import { finalizeStalledTurns } from "../finalizeStalledTurns";
+import { loadSessionMeta } from "../storage/sessionMeta";
+import { sessionFromMeta } from "../storage/sessionFromMeta";
+import { loadSwitchboardTurns, saveSwitchboardTurns } from "../storage/switchboardEvents";
+import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { loadListsFromPersisted } from "../railLists/loadListsFromPersisted";
 import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
 import type { SessionDeps } from "./SessionDeps";

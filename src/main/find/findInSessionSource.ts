@@ -1,5 +1,5 @@
-import type { FindInSessionsHit } from "../shared/findInSessionsHit";
-import type { TranscriptItem, TranscriptTurn } from "../shared/transcript";
+import type { FindInSessionsHit } from "../../shared/findInSessionsHit";
+import type { TranscriptItem, TranscriptTurn } from "../../shared/transcript";
 import type { FindSource } from "./FindSource";
 import { matchSnippet } from "./matchSnippet";
 
