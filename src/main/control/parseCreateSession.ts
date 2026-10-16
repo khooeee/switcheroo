@@ -5,7 +5,7 @@ import type { CreateSessionInput } from "../../shared/createSessionInput";
 export function parseCreateSession(body: Record<string, unknown>): CreateSessionInput {
   const agent = body.agent;
   if (!isAgentKind(agent)) {
-    throw new Error("agent must be claude, codex, cursor, or pi");
+    throw new Error("agent must be claude, codex, cursor, pi, or prime");
   }
   const cwd = body.cwd;
   if (typeof cwd !== "string" || !cwd.trim()) throw new Error("cwd is required");

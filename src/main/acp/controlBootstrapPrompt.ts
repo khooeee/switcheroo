@@ -6,6 +6,7 @@ export function controlBootstrapText(): string {
     "Connect:",
     "1. Read ~/.switcheroo/control.json for { port, token, spec }.",
     "2. Discover routes with: curl -s \"$spec\"  (GET /, no auth).",
+    "   Each route lists its `response`; named shapes (Session, TranscriptTurn, …) are under `types`.",
     "3. For all other routes send Authorization: Bearer <token>",
     "   and Content-Type: application/json when there is a body.",
     "",
