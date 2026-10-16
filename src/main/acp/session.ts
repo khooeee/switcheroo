@@ -79,6 +79,7 @@ export class AcpSession extends SharedAgentConnection {
       },
       finishPending: (status) => this.finishPending(status),
       noteSystem: (text) => this.noteSystem(text),
+      worksUnprompted: agent === "claude",
     });
     this.updates = new SessionUpdateRouter({
       agent,

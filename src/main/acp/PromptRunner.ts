@@ -25,6 +25,8 @@ type PromptHost = {
   renewSession: () => Promise<void>;
   finishPending: (status: string) => void;
   noteSystem: (text: string) => void;
+  /** The agent can work with no prompt in flight and report no turn for it (Claude Code on ACP v1). */
+  worksUnprompted: boolean;
 };
 
 /** Sends prompts (or steers), tracks whether a turn is running, and cancels it. */
@@ -174,7 +176,14 @@ export class PromptRunner {
     this.prompts.clearPending();
     const connection = host.connection();
     const sessionId = host.sessionId();
-    if (!connection || !sessionId || !this.turnRunning || this.stopping || host.isDisposed()) return;
+    if (!connection || !sessionId || this.stopping || host.isDisposed()) return;
+    if (!this.turnRunning) {
+      // Claude Code answers a finished background command on its own; cancel that unreported work too.
+      if (!host.worksUnprompted) return;
+      host.questions.cancel();
+      await connection.agent.notify(acp.methods.agent.session.cancel, { sessionId });
+      return;
+    }
     this.stopping = true;
     host.questions.cancel();
     this.completion.cancel();
@@ -255,6 +264,8 @@ export class PromptRunner {
   /** The prompt request settled; go idle unless the agent still reports an active turn. */
   private markSettled(status: "ready" | "error", error?: string): void {
     if (this.remoteTurnActive === true || this.host.isDisposed()) return;
+    // A stopped turn is over; questions from later work (a background command's follow-up) must reach the user.
+    this.stopping = false;
     this.turnRunning = false;
     this.host.callbacks().onStatus(status, error);
   }
