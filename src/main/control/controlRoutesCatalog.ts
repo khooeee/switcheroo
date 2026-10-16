@@ -8,7 +8,7 @@ interface CatalogRoute {
   example: string;
 }
 
-/** Single source for GET / and OpenAPI path list. */
+/** Single source for the GET / route catalog. */
 export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
   const b = baseUrl.replace(/\/$/, "");
   return [
@@ -18,13 +18,6 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       auth: false,
       summary: "JSON catalog of routes",
       example: `curl -s ${b}/`,
-    },
-    {
-      method: "GET",
-      path: "/openapi.json",
-      auth: false,
-      summary: "OpenAPI 3 document for the same routes",
-      example: `curl -s ${b}/openapi.json`,
     },
     {
       method: "GET",

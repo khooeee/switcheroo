@@ -2,7 +2,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { SessionManager } from "../sessions/SessionManager";
 import { bearerAuthorized } from "./bearerAuthorized";
 import { controlCatalogJson } from "./controlCatalogJson";
-import { controlOpenApi } from "./controlOpenApi";
 import { applyTranscriptQuery } from "./transcriptQuery";
 import { parseCreateSession } from "./parseCreateSession";
 import { readJson } from "./readJson";
@@ -24,9 +23,6 @@ export async function handleControlRequest(
 
     if (method === "GET" && pathname === "/") {
       return sendJson(res, 200, controlCatalogJson(baseUrl, "Use token from control.json; never commit it."));
-    }
-    if (method === "GET" && pathname === "/openapi.json") {
-      return sendJson(res, 200, controlOpenApi(baseUrl));
     }
 
     if (!bearerAuthorized(req.headers.authorization, token)) {
