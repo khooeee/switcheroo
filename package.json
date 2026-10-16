@@ -14,7 +14,8 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish"
+    "publish": "electron-forge publish",
+    "upgrade": "npx npm-check-updates -u && npm install"
   },
   "keywords": [],
   "author": {
