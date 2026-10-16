@@ -98,7 +98,7 @@ export function SessionRailMenu({
       <SessionRailMenuItem
         label="Close"
         shortcut="⌘W"
-        keys="Meta+W Control+W"
+        keys="Meta+W"
         onSelect={() => onClose(session.id)}
         onDismiss={onDismiss}
       />

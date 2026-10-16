@@ -84,7 +84,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.close,
       label: "Close",
       enabled: state.renameEnabled,
-      accelerator: "CmdOrCtrl+W",
+      accelerator: "Cmd+W",
       click: () => {
         win()?.webContents.send("session:close");
       },

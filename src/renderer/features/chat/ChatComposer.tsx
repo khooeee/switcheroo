@@ -5,6 +5,7 @@ import { formatAgentError } from "../../../shared/formatAgentError";
 import { ctrlOnlyKey } from "../shortcuts/ctrlOnlyKey";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
+import { applyComposerCtrlKey } from "./applyComposerCtrlKey";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
 import { applyComposerHistoryEdit } from "./applyComposerHistoryEdit";
 import { applyComposerHistoryKey } from "./applyComposerHistoryKey";
@@ -128,7 +129,7 @@ export function ChatComposer({
             setDraftFromUser("");
             return true;
           }
-          return false;
+          return applyComposerCtrlKey(e, draft, setDraftFromUser);
         }}
       />
       {(session.error || sendError?.sessionId === session.id) && (

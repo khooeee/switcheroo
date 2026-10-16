@@ -44,7 +44,7 @@ export function SessionRailChildMenu({
       <SessionRailMenuItem
         label="Close"
         shortcut="⌘W"
-        keys="Meta+W Control+W"
+        keys="Meta+W"
         onSelect={() => onClose(tab.tabId)}
         onDismiss={onDismiss}
       />

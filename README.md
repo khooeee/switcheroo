@@ -98,6 +98,12 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+D**: Close session on empty prompt
 
+**Ctrl+A**: Go to beginning of prompt
+
+**Ctrl+E**: Go to end of prompt
+
+**Ctrl+W**: Delete last word in prompt
+
 **Escape**: Stop agent (while running)
 
 **Ctrl+Tab**: Go to next visible tab
@@ -126,7 +132,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd/Ctrl+Shift+V**: Paste Switcheroo Aware Prompt (control API bootstrap) into the prompt
 
-**Cmd/Ctrl+W**: Close selected tab
+**Cmd+W**: Close selected tab
 
 **Cmd/Ctrl+Y**: Fork selected session
 
