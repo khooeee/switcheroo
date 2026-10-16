@@ -50,7 +50,7 @@ export async function createSession(
     if (input.switcherooAware) {
       // Don't hold the caller for the whole bootstrap turn; prompts sent
       // meanwhile queue behind it as their own turns instead of steering in.
-      await acp.prompt(controlBootstrapText(), { wait: false, exclusive: true });
+      await acp.prompt(controlBootstrapText(id), { wait: false, exclusive: true });
     }
   } catch (err) {
     setSessionStatus(state, id, "error", errorMessage(err));
