@@ -47,6 +47,11 @@ export async function handleControlRequest(
     const sessionId = decodeURIComponent(sessionMatch[1]!);
     const action = sessionMatch[2];
 
+    if (method === "GET" && !action) {
+      const session = sessions.getSessionPayload(sessionId);
+      if (!session) return sendJson(res, 404, { error: "Session not found" });
+      return sendJson(res, 200, session);
+    }
     if (method === "GET" && action === "transcript") {
       const turns = await sessions.getTranscript(sessionId);
       return sendJson(res, 200, { sessionId, turns: applyTranscriptQuery(turns, url.searchParams) });

@@ -155,6 +155,12 @@ export class SessionManager {
     return this.state.sessions.get(sessionId);
   }
 
+  /** One session in the same shape `list()` reports it. */
+  getSessionPayload(sessionId: string): Session | undefined {
+    const session = this.state.sessions.get(sessionId);
+    return session && this.state.sessionPayload(session);
+  }
+
   createTerminalTab(sessionId: string): Promise<SessionTab> {
     return createSessionTerminalTab(terminalTabHost(this.deps), sessionId);
   }

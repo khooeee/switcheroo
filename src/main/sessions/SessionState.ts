@@ -66,12 +66,17 @@ export class SessionState {
       : prependUnpinnedInLists(this.railLists, sessionId);
   }
 
+  /** A session with its agent's current fork flags, as lists and the control API report it. */
+  sessionPayload(session: Session): Session {
+    return { ...session, ...this.forkSupport.flags(session.agent) };
+  }
+
   sessionListPayload() {
     const map = (ids: string[]) =>
       ids
         .map((id) => this.sessions.get(id))
         .filter((session): session is Session => !!session)
-        .map((session) => ({ ...session, ...this.forkSupport.flags(session.agent) }));
+        .map((session) => this.sessionPayload(session));
     return {
       pinned: map(this.railLists.pinnedIds),
       unpinned: map(this.railLists.unpinnedIds),
