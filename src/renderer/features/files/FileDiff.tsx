@@ -34,7 +34,9 @@ export function FileDiff({
   if (!hasText) {
     return (
       <FileDiffFrame {...frame}>
-        <div className="file-diff-note">Diff not provided</div>
+        <div className="file-diff-note">
+          {change.fromPath ? `Moved from ${change.fromPath}` : "Diff not provided"}
+        </div>
       </FileDiffFrame>
     );
   }

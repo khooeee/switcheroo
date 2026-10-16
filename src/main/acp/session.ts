@@ -64,7 +64,7 @@ export class AcpSession extends SharedAgentConnection {
     this.turns = new TurnBuilder((turn) => {
       this.cb.onTurn(turn);
     });
-    this.output = new SessionOutput(agent, (item, replaceId) => {
+    this.output = new SessionOutput(agent, cwd, (item, replaceId) => {
       if (!this.mirrorUpdates) return;
       this.turns.apply(item, replaceId);
     });
@@ -87,6 +87,7 @@ export class AcpSession extends SharedAgentConnection {
     });
     this.updates = new SessionUpdateRouter({
       agent,
+      cwd,
       turns: this.turns,
       output: this.output,
       callbacks: () => this.cb,

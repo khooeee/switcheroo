@@ -55,5 +55,6 @@ export const controlResponseTypes = {
     kind: "created | updated | deleted | moved",
     oldText: "optional string | null",
     newText: "optional string | null",
+    fromPath: "optional string — previous path of a moved file",
   } satisfies Record<keyof FileChange, string>,
 };

@@ -9,7 +9,8 @@ const verbs = {
 
 export function fileChangeLabel(change: FileChange, status?: string): string {
   const [action, completed] = verbs[change.kind];
-  if (status === "completed") return `${completed} ${change.path}`;
+  const target = change.fromPath ? `${change.fromPath} → ${change.path}` : change.path;
+  if (status === "completed") return `${completed} ${target}`;
   const suffix = status === "in_progress" ? "in progress" : status ?? "reported";
-  return `${action} ${change.path} (${suffix})`;
+  return `${action} ${target} (${suffix})`;
 }

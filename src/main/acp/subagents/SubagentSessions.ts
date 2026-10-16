@@ -36,6 +36,7 @@ export class SubagentSessions {
 
   constructor(
     private readonly agent: AgentKind,
+    private readonly cwd: string,
     private readonly rootTurns: TurnBuilder,
     private readonly onTurn: (subagentId: string, turn: TranscriptTurn) => void,
     private readonly onSession: (subagentSessionId: string) => void,
@@ -104,7 +105,7 @@ export class SubagentSessions {
     const subagent: Subagent = {
       id,
       turns,
-      output: new SessionOutput(this.agent, (item, replaceId) => turns.apply(item, replaceId)),
+      output: new SessionOutput(this.agent, this.cwd, (item, replaceId) => turns.apply(item, replaceId)),
       live: false,
       row: null,
       rowParent: null,

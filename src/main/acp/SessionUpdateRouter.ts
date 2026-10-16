@@ -11,6 +11,7 @@ import { SubagentSessions } from "./subagents/SubagentSessions";
 
 type RouterDeps = {
   agent: AgentKind;
+  cwd: string;
   turns: TurnBuilder;
   output: SessionOutput;
   callbacks: () => SessionCallbacks;
@@ -28,6 +29,7 @@ export class SessionUpdateRouter {
   constructor(private readonly deps: RouterDeps) {
     this.subagents = new SubagentSessions(
       deps.agent,
+      deps.cwd,
       deps.turns,
       (subagentId, turn) => deps.callbacks().onSubagentTurn?.(subagentId, turn),
       (subagentSessionId) => sessionRoutes.register(subagentSessionId, deps.owner),

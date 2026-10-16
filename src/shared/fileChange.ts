@@ -6,4 +6,6 @@ interface DiffPayload {
 
 export interface FileChange extends DiffPayload {
   kind: "created" | "updated" | "deleted" | "moved";
+  /** Where a moved file came from; `path` is where it went. */
+  fromPath?: string;
 }

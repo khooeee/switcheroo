@@ -105,7 +105,7 @@ function FileChip({
       <button
         type="button"
         className="file-change-name"
-        data-tooltip={change.path}
+        data-tooltip={change.fromPath ? `${change.fromPath} → ${change.path}` : change.path}
         aria-expanded={expanded}
         onClick={() => onToggle(index)}
       >

@@ -44,7 +44,8 @@ function DetailedFileEntry({
 }) {
   const [open, setOpen] = useState(false);
   const path = relativeChangePath(change.path, cwd);
-  const label = fileChangeLabel({ ...change, path }, status);
+  const fromPath = change.fromPath && relativeChangePath(change.fromPath, cwd);
+  const label = fileChangeLabel({ ...change, path, fromPath }, status);
   const hasText = typeof change.oldText === "string" || typeof change.newText === "string";
   return (
     <div className="file-entry">
@@ -55,7 +56,8 @@ function DetailedFileEntry({
         </details>
       ) : (
         <div className="file-change-label" data-tooltip={change.path}>
-          {label}<span className="file-diff-note"> · Diff not provided</span>
+          {label}
+          {fromPath ? null : <span className="file-diff-note"> · Diff not provided</span>}
         </div>
       )}
     </div>

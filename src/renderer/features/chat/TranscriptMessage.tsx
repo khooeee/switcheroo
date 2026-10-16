@@ -80,7 +80,10 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       {changes?.length ? (
         <>
           {markdown && text ? <MarkdownBody text={text} /> : null}
-          {!markdown && text && !item.fileChanges?.length ? <div className="body">{text}</div> : null}
+          {/* Edit tools' text is the file labels below; a shell command's text is the command. */}
+          {!markdown && text && (!item.fileChanges?.length || text === item.toolTitle) ? (
+            <div className="body">{text}</div>
+          ) : null}
           <FileChanges
             changes={changes}
             cwd={session.cwd}

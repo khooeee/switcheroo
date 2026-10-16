@@ -12,6 +12,7 @@ export function coalesceFileChanges(changes: FileChange[]): FileChange[] {
     byPath.set(change.path, {
       path: change.path,
       kind: change.kind,
+      fromPath: existing.fromPath ?? change.fromPath,
       oldText: existing.oldText !== undefined ? existing.oldText : change.oldText,
       newText: change.newText !== undefined ? change.newText : existing.newText,
     });

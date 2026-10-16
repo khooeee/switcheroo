@@ -15,13 +15,16 @@ export class ToolOutput {
     this.unfinished.clear();
   }
 
-  constructor(private onTranscript: (item: TranscriptItem, replaceId?: string) => void) {}
+  constructor(
+    private cwd: string,
+    private onTranscript: (item: TranscriptItem, replaceId?: string) => void,
+  ) {}
 
   handle(update: ToolCallUpdate, displayStatus?: string): void {
     const previous = this.tools.get(update.toolCallId);
     const tool: ToolCallUpdate = { ...previous?.tool, toolCallId: update.toolCallId };
     // ACP updates are partial: omitted and null fields retain their old values.
-    for (const key of ["title", "kind", "status", "content", "locations"] as const) {
+    for (const key of ["title", "kind", "status", "content", "locations", "rawInput"] as const) {
       const value = update[key];
       if (value != null) Object.assign(tool, { [key]: value });
     }
@@ -33,8 +36,9 @@ export class ToolOutput {
     if (tool.status === "completed" || tool.status === "failed") this.unfinished.delete(update.toolCallId);
     else this.unfinished.add(update.toolCallId);
     const status = displayStatus ?? tool.status ?? undefined;
-    const fileChanges = toolFileChanges(tool);
-    const text = fileChanges.length
+    const fileChanges = toolFileChanges(tool, this.cwd);
+    // A shell command keeps its command as text; its renames show below it.
+    const text = fileChanges.length && tool.kind !== "execute"
       ? fileChanges.map((file) => fileChangeLabel(file, status)).join("\n")
       : tool.title ?? update.toolCallId;
     const item: TranscriptItem = {

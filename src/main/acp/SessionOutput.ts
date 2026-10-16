@@ -13,9 +13,10 @@ export class SessionOutput {
 
   constructor(
     private agent: AgentKind,
+    cwd: string,
     private onTranscript: (item: TranscriptItem, replaceId?: string) => void,
   ) {
-    this.tools = new ToolOutput(onTranscript);
+    this.tools = new ToolOutput(cwd, onTranscript);
   }
 
   finish(status: string): void {
