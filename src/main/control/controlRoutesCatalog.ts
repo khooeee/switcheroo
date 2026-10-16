@@ -53,6 +53,14 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
         `-d '{"agent":"cursor","cwd":"/path","title":"A"}' ${b}/sessions`,
     },
     {
+      method: "GET",
+      path: "/sessions/:id",
+      auth: true,
+      summary: "Get one session (check a child's status without listing all sessions)",
+      response: "Session",
+      example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions/<id>`,
+    },
+    {
       method: "POST",
       path: "/sessions/:id/prompt",
       auth: true,
