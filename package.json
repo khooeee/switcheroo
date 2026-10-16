@@ -7,7 +7,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.12.0 <23"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "prestart": "node scripts/brand-dev-electron.mjs",
