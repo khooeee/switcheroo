@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { AgentKind } from "../shared/agentKind";
+import { isAgentKind, type AgentKind } from "../shared/agentKind";
 import type { SessionTab, SessionUsage } from "../shared/session";
 import { isMissingFile } from "./isMissingFile";
 import { sessionMetaPath } from "./userDataPaths";
@@ -11,6 +11,7 @@ export interface SessionMeta {
   cwd: string;
   agentSessionId: string | null;
   usage?: SessionUsage;
+  switcherooAware?: boolean;
   tabs: SessionTab[];
   tabsExpanded: boolean;
 }
@@ -36,12 +37,15 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
     const raw = await fs.readFile(sessionMetaPath(sessionId), "utf8");
     if (!raw.trim()) return null;
     const parsed = JSON.parse(raw) as SessionMeta;
+    // A session of an agent Switcheroo no longer runs (e.g. Prime Agent) cannot reopen.
+    if (!isAgentKind(parsed.agent)) return null;
     return {
       title: parsed.title,
       agent: parsed.agent,
       cwd: parsed.cwd,
       agentSessionId: parsed.agentSessionId ?? null,
       usage: readUsage(parsed.usage),
+      switcherooAware: parsed.switcherooAware === true || undefined,
       tabs: Array.isArray(parsed.tabs) ? parsed.tabs : [],
       tabsExpanded: parsed.tabsExpanded !== false,
     };

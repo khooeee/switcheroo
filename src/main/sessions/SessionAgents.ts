@@ -11,6 +11,7 @@ import type { SessionHydration } from "./SessionHydration";
 import { recordTurn } from "./recordTurn";
 import { recordSubagentTurn } from "./recordSubagentTurn";
 import { removeTurn } from "./removeTurn";
+import { sessionInstructions } from "./sessionInstructions";
 import { setSessionStatus } from "./setSessionStatus";
 import { warmCallbacks } from "./warmCallbacks";
 
@@ -49,7 +50,8 @@ export class SessionAgents {
   }
 
   openSession(session: Session): AcpSession {
-    const acp = new AcpSession(session.id, session.agent, session.cwd, this.callbacksFor(session));
+    const callbacks = this.callbacksFor(session);
+    const acp = new AcpSession(session.id, session.agent, session.cwd, callbacks, sessionInstructions(session));
     const turns = this.state.transcripts.get(session.id);
     if (turns?.length) acp.restoreTurns(turns);
     return acp;

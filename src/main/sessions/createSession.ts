@@ -7,6 +7,7 @@ import { controlBootstrapText } from "../../shared/controlBootstrapText";
 import { newSessionId } from "../newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
+import { sessionInstructions } from "./sessionInstructions";
 
 /** Add a new session to the rail and connect it, preferring a warm agent. */
 export async function createSession(
@@ -25,6 +26,7 @@ export async function createSession(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
+    switcherooAware: input.switcherooAware || undefined,
     tabs: [],
     tabsExpanded: true,
   };
@@ -35,7 +37,9 @@ export async function createSession(
   state.emitSessions();
 
   try {
-    const claimed = await state.warm.claim(input.agent, input.cwd);
+    const instructed = sessionInstructions(session) !== null;
+    // Warm agents already started their session without instructions, which Claude and Codex take at start.
+    const claimed = instructed ? null : await state.warm.claim(input.agent, input.cwd);
     const acp = claimed ?? agents.openSession(session);
     state.agents.set(id, acp);
     if (claimed) {
@@ -47,7 +51,8 @@ export async function createSession(
       session.agentSessionId = acp.sessionId;
       state.emitSessions();
     }
-    if (input.switcherooAware) {
+    if (input.switcherooAware && !instructed) {
+      // Agents without session instructions get the control API as a first prompt.
       // Don't hold the caller for the whole bootstrap turn; prompts sent
       // meanwhile queue behind it as their own turns instead of steering in.
       await acp.prompt(controlBootstrapText(id), { wait: false, exclusive: true });

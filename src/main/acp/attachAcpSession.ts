@@ -1,11 +1,14 @@
 import * as acp from "@agentclientprotocol/sdk";
 import { formatAgentError } from "../../shared/formatAgentError";
+import { airSessionMeta } from "./airSessionMeta";
 
 type AttachHost = {
   connection: acp.ClientConnection | null;
   canLoad: boolean;
   canResume: boolean;
   cwd: string;
+  /** Claude rebuilds its system prompt on load/resume, so the instructions go with every attach. */
+  instructions: string | null;
   turnCount: () => number;
   setMirrorUpdates: (value: boolean) => void;
   /** No turn running; remote turn status unknown. */
@@ -31,7 +34,7 @@ export async function attachAcpSession(
     await host.createAgentSession();
     return;
   }
-  const params = { sessionId, cwd: host.cwd, mcpServers: [] as [] };
+  const params = { sessionId, cwd: host.cwd, mcpServers: [] as [], ...airSessionMeta(host.instructions) };
   // Prefer load: older agents (incl. Cursor) advertise loadSession, not session/resume.
   const methods: Array<typeof acp.methods.agent.session.load | typeof acp.methods.agent.session.resume> = [];
   if (host.canLoad) methods.push(acp.methods.agent.session.load);

@@ -19,6 +19,8 @@ interface ForkSessionHost {
   ensureSession(session: Session): Promise<AcpSession>;
   forkSupport(agent: AgentKind): Pick<Session, "supportsFork" | "supportsForkAtMessage">;
   callbacksFor(session: Session): SessionCallbacks;
+  /** The fork's own instructions: it has a new Switcheroo session id. */
+  instructionsFor(session: Session): string | null;
   setSession(sessionId: string, session: AcpSession): void;
   addSession(session: Session, transcript: TranscriptTurn[]): void;
   setActiveSession(sessionId: string): void;
@@ -74,6 +76,7 @@ export async function forkSessionAtEvent(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
+    switcherooAware: source.switcherooAware,
     tabs: [],
     tabsExpanded: true,
   };
@@ -92,7 +95,7 @@ export async function forkSessionAtEvent(
     // No assistant message before the fork point leaves no agent history to keep.
     const acp = eventId && !forkPoint
       ? await host.ensureSession(session)
-      : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint);
+      : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint, host.instructionsFor(session));
     acp.restoreTurns(clipped);
     host.setSession(id, acp);
     session.agentSessionId = acp.sessionId;

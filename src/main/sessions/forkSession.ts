@@ -1,6 +1,7 @@
 import type { Session } from "../../shared/session";
 import { forkSessionAtEvent } from "../forkSessionAtEvent";
 import type { SessionDeps } from "./SessionDeps";
+import { sessionInstructions } from "./sessionInstructions";
 
 /** Fork a session (optionally at an event) into a new rail entry next to it. */
 export async function forkSession(
@@ -16,6 +17,7 @@ export async function forkSession(
     ensureSession: async (session) => agents.ensureSession(session),
     forkSupport: (agent) => state.forkSupport.flags(agent),
     callbacksFor: (session) => agents.callbacksFor(session),
+    instructionsFor: sessionInstructions,
     setSession: (id, session) => { state.agents.set(id, session); },
     addSession: (session, transcript) => {
       const pin = state.railLists.pinnedIds.includes(sessionId);

@@ -6,6 +6,7 @@ import { sessionFromMeta } from "../sessionFromMeta";
 import { loadSwitchboardTurns, saveSwitchboardTurns } from "../switchboardEvents";
 import { finalizeStalledTurns } from "../finalizeStalledTurns";
 import { loadListsFromPersisted } from "../railLists/loadListsFromPersisted";
+import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
 import type { SessionDeps } from "./SessionDeps";
 
 /** Rebuild rail sessions, active tab and Switchboard history from the saved state file. */
@@ -13,14 +14,18 @@ export async function restoreSavedState(
   { state, hydration }: SessionDeps,
   saved: PersistedState,
 ): Promise<void> {
-  const { lists, openIds } = loadListsFromPersisted(saved.pinned, saved.unpinned);
-  state.railLists = lists;
-  await Promise.all(
-    openIds.map(async (id) => {
-      const meta = await loadSessionMeta(id);
-      state.sessions.set(id, sessionFromMeta(id, meta));
-    }),
+  const { lists, openIds: savedIds } = loadListsFromPersisted(saved.pinned, saved.unpinned);
+  const metas = await Promise.all(savedIds.map((id) => loadSessionMeta(id)));
+  // No meta (missing, or an agent Switcheroo no longer runs): hydration would drop it on open, so drop it now.
+  const openIds = savedIds.filter((_, i) => metas[i]);
+  state.railLists = savedIds.reduce(
+    (next, id, i) => (metas[i] ? next : removeSessionFromLists(next, id)),
+    lists,
   );
+  savedIds.forEach((id, i) => {
+    const meta = metas[i];
+    if (meta) state.sessions.set(id, sessionFromMeta(id, meta));
+  });
   state.activeTabId = resolveActiveTabId(state.sessions, saved.activeTabId, openIds);
   const openSessionIds = new Set(openIds);
   const loadedSwitchboard = await loadSwitchboardTurns();
