@@ -1,7 +1,7 @@
-import type { AgentKind } from "../../shared/agentKind";
-
 /** Minimal surface WarmSessionPool needs from an ACP session. */
 type WarmAcp = {
+  /** Switcheroo session id; a claimed session keeps it (its instructions may name it). */
+  id: string;
   start(options?: { quiet?: boolean }): Promise<void>;
   dispose(): Promise<void>;
 };
@@ -12,32 +12,37 @@ type Slot<T extends WarmAcp> = {
   ready: Promise<void>;
 };
 
-/** Invisible, fully-started ACP sessions: one per available agent, all for one cwd. */
+/** Invisible, fully-started ACP sessions for one cwd: one per key (agent, or agent + Switcheroo aware). */
 export class WarmSessionPool<T extends WarmAcp = WarmAcp> {
-  private slots = new Map<AgentKind, Slot<T>>();
+  private slots = new Map<string, Slot<T>>();
 
-  /** Keep one warm session per agent for `cwd`; drop slots for other agents or folders. */
-  ensure(agents: AgentKind[], cwd: string, open: (agent: AgentKind) => T): void {
+  /** Keep one warm session per key in `openers` for `cwd`; drop other keys and folders. */
+  ensure(cwd: string, openers: ReadonlyMap<string, () => T>): void {
     if (!cwd.trim()) return;
-    for (const [agent, slot] of this.slots) {
-      if (slot.cwd !== cwd || !agents.includes(agent)) this.drop(agent);
+    for (const [key, slot] of this.slots) {
+      if (slot.cwd !== cwd || !openers.has(key)) this.drop(key);
     }
-    for (const agent of agents) {
-      if (!this.slots.has(agent)) this.fill(agent, cwd, open(agent));
+    for (const [key, open] of openers) {
+      if (!this.slots.has(key)) this.fill(key, cwd, open());
     }
   }
 
-  async claim(agent: AgentKind, cwd: string): Promise<T | null> {
-    const slot = this.slots.get(agent);
+  /**
+   * Hand over the warm session for `key` in `cwd`, or null. Synchronous so the caller can reuse its id
+   * before it finishes starting; `started` is false (and the session disposed) if starting failed.
+   */
+  take(key: string, cwd: string): { acp: T; started: Promise<boolean> } | null {
+    const slot = this.slots.get(key);
     if (!slot || slot.cwd !== cwd) return null;
-    this.slots.delete(agent);
-    try {
-      await slot.ready;
-      return slot.acp;
-    } catch {
-      await slot.acp.dispose().catch(() => undefined);
-      return null;
-    }
+    this.slots.delete(key);
+    const started = slot.ready.then(
+      () => true,
+      async () => {
+        await slot.acp.dispose().catch(() => undefined);
+        return false;
+      },
+    );
+    return { acp: slot.acp, started };
   }
 
   async dispose(): Promise<void> {
@@ -46,20 +51,20 @@ export class WarmSessionPool<T extends WarmAcp = WarmAcp> {
     await Promise.all(slots.map((slot) => slot.acp.dispose().catch(() => undefined)));
   }
 
-  private drop(agent: AgentKind): void {
-    const slot = this.slots.get(agent);
-    this.slots.delete(agent);
+  private drop(key: string): void {
+    const slot = this.slots.get(key);
+    this.slots.delete(key);
     if (slot) void slot.acp.dispose().catch(() => undefined);
   }
 
-  private fill(agent: AgentKind, cwd: string, acp: T): void {
+  private fill(key: string, cwd: string, acp: T): void {
     const ready = acp.start({ quiet: true }).catch(async (error) => {
-      if (this.slots.get(agent)?.acp === acp) this.slots.delete(agent);
+      if (this.slots.get(key)?.acp === acp) this.slots.delete(key);
       await acp.dispose().catch(() => undefined);
       throw error;
     });
     // Slots nobody claims would otherwise surface as unhandled rejections.
     ready.catch(() => undefined);
-    this.slots.set(agent, { cwd, acp, ready });
+    this.slots.set(key, { cwd, acp, ready });
   }
 }

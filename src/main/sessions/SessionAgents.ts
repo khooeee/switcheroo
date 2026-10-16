@@ -1,5 +1,6 @@
 import type { AgentKind } from "../../shared/agentKind";
 import type { Session } from "../../shared/session";
+import { supportsSwitcherooAware } from "../../shared/supportsSwitcherooAware";
 import { availableAgents } from "../acp/availableAgents";
 import { AcpSession } from "../acp/session";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
@@ -14,6 +15,7 @@ import { removeTurn } from "./removeTurn";
 import { sessionInstructions } from "./sessionInstructions";
 import { setSessionStatus } from "./setSessionStatus";
 import { warmCallbacks } from "./warmCallbacks";
+import { warmKey } from "./warmKey";
 
 /** Starts, attaches and pre-warms ACP agent connections for sessions. */
 export class SessionAgents {
@@ -57,15 +59,24 @@ export class SessionAgents {
     return acp;
   }
 
-  /** Keep a started session ready for every installed agent in `cwd`. */
+  /** Keep a started session ready for every installed agent in `cwd`, plus a Switcheroo aware one where supported. */
   ensureWarm(cwd: string): void {
-    this.state.warm.ensure(availableAgents(), cwd, (agent) => {
-      const callbacks: SessionCallbacks = {
-        ...warmCallbacks,
-        onForkSupport: (supported) => this.noteForkSupport(agent, supported),
-      };
-      return new AcpSession(newSessionId(), agent, cwd, callbacks);
-    });
+    const openers = new Map<string, () => AcpSession>();
+    for (const agent of availableAgents()) {
+      openers.set(warmKey(agent, false), () => this.openWarm(agent, cwd, false));
+      if (supportsSwitcherooAware(agent)) openers.set(warmKey(agent, true), () => this.openWarm(agent, cwd, true));
+    }
+    this.state.warm.ensure(cwd, openers);
+  }
+
+  /** The warm session's id becomes the new session's, so aware instructions can name it up front. */
+  private openWarm(agent: AgentKind, cwd: string, aware: boolean): AcpSession {
+    const callbacks: SessionCallbacks = {
+      ...warmCallbacks,
+      onForkSupport: (supported) => this.noteForkSupport(agent, supported),
+    };
+    const id = newSessionId();
+    return new AcpSession(id, agent, cwd, callbacks, sessionInstructions({ id, agent, switcherooAware: aware }));
   }
 
   refreshCommandsIfNeeded(sessionId: string): void {

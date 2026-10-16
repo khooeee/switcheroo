@@ -8,6 +8,7 @@ import { newSessionId } from "../newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
 import { sessionInstructions } from "./sessionInstructions";
+import { warmKey } from "./warmKey";
 
 /** Add a new session to the rail and connect it, preferring a warm agent. */
 export async function createSession(
@@ -15,7 +16,9 @@ export async function createSession(
   input: CreateSessionInput,
   focus: boolean,
 ): Promise<Session> {
-  const id = newSessionId();
+  const warm = state.warm.take(warmKey(input.agent, input.switcherooAware === true), input.cwd);
+  // Keep the warm session's id: an aware one's instructions already name it.
+  const id = warm?.acp.id ?? newSessionId();
   const title = input.title ?? `${AGENT_LABELS[input.agent]} · ${path.basename(input.cwd)}`;
   const session: Session = {
     id,
@@ -38,8 +41,7 @@ export async function createSession(
 
   try {
     const instructed = sessionInstructions(session) !== null;
-    // Warm agents already started their session without instructions, which Claude and Codex take at start.
-    const claimed = instructed ? null : await state.warm.claim(input.agent, input.cwd);
+    const claimed = warm && (await warm.started) ? warm.acp : null;
     const acp = claimed ?? agents.openSession(session);
     state.agents.set(id, acp);
     if (claimed) {
