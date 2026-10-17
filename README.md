@@ -109,8 +109,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
 
-**Cmd+0**: Switchboard
-
 **Cmd+F**: Find in current session
 
 **Cmd+Shift+F**: Find in History (searches all sessions on disk)

@@ -69,7 +69,7 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "reload", accelerator: "Cmd+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },
-        { role: "resetZoom", accelerator: "Cmd+Shift+0" },
+        { role: "resetZoom" },
         { role: "zoomIn" },
         { role: "zoomOut" },
         { type: "separator" },
@@ -110,7 +110,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         },
         {
           label: "Go to Switchboard",
-          accelerator: "Cmd+0",
           click: () => {
             win()?.webContents.send("switchboard:open");
           },

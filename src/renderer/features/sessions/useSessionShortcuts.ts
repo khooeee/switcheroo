@@ -43,12 +43,6 @@ export function useSessionShortcuts(
 
     const onKey = (event: KeyboardEvent) => {
       if (disabled || event.defaultPrevented || event.isComposing) return;
-      if (modKey(event, "0")) {
-        event.preventDefault();
-        selectTab(SWITCHBOARD_ID);
-        return;
-      }
-
       if (modKey(event, "p")) {
         event.preventDefault();
         toggleActivePin(pinned, unpinned, activeTabId);
