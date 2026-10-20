@@ -28,6 +28,8 @@
   min-width: 0;
   min-height: 0;
   padding: 8px;
+  /* FitAddon reads the host's computed height; keep padding out of it. */
+  box-sizing: content-box;
 }
 
 .terminal-host .xterm {
@@ -36,4 +38,6 @@
 
 .terminal-host .xterm-viewport {
   overflow-y: auto !important;
+  /* xterm.css hardcodes #000; it shows in the leftover space below the last row. */
+  background-color: var(--bg-1);
 }
