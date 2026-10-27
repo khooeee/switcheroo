@@ -3,6 +3,7 @@ import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
+import { firstLine } from "../sessions/firstLine";
 import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
@@ -46,7 +47,7 @@ export function ChatPanel({
     <section className="panel relative">
       <div className="panel-header">
         <div>
-          <h2>{session.title}</h2>
+          <h2 title={session.title}>{firstLine(session.title)}</h2>
           <div className="meta">{session.cwd}</div>
         </div>
       </div>

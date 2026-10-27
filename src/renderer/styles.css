@@ -84,8 +84,14 @@ button {
   background: var(--header-bg);
 }
 
+.panel-header > div {
+  min-width: 0;
+}
+
 .panel-header h2 {
-  white-space: pre-line;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel-header .meta {

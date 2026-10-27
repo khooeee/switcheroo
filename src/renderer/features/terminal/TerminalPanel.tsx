@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Terminal, type FontWeight } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
+import { firstLine } from "../sessions/firstLine";
 import { terminalXtermTheme } from "./terminalTheme";
 import { installTerminalLinks } from "./terminalLinks";
 import "./terminalPanel.css";
@@ -124,7 +125,7 @@ export function TerminalPanel({
     >
       <div className="panel-header">
         <div>
-          <h2>{`${parentTitle} > ${title}`}</h2>
+          <h2 title={`${parentTitle} > ${title}`}>{`${firstLine(parentTitle)} > ${title}`}</h2>
           <div className="meta">{cwd}</div>
         </div>
       </div>
