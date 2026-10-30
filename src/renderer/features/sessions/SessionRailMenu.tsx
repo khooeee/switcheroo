@@ -88,7 +88,7 @@ export function SessionRailMenu({
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem
-        label="Save Session as Markdown"
+        label="Save Session as Markdown..."
         onSelect={() => void saveSessionMarkdown(session).catch(console.error)}
         onDismiss={onDismiss}
       />

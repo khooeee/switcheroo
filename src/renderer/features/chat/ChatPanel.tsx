@@ -4,6 +4,7 @@ import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { turnsMarkdown } from "../copy/turnsMarkdown";
+import { useSaveViewMarkdownEvent } from "../copy/useSaveViewMarkdownEvent";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
 import { firstLine } from "../sessions/firstLine";
 import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
@@ -50,9 +51,10 @@ export function ChatPanel({
     () => turnsMarkdown(turns, { agent: session.agent, title }),
     [turns, session.agent, title],
   );
+  useSaveViewMarkdownEvent("session", sessionMarkdown, title);
 
   return (
-    <section className="panel relative">
+    <section className="panel relative" data-save-view={turns.length ? "session" : undefined}>
       <div className="panel-header">
         <div>
           <h2 title={session.title}>{title}</h2>

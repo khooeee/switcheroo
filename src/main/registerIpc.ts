@@ -15,6 +15,7 @@ import type { SessionManager } from "./sessions/SessionManager";
 import type { ActiveTabId } from "../shared/activeTabId";
 import type { AppSettings } from "../shared/appSettings";
 import type { CreateSessionInput } from "../shared/createSessionInput";
+import type { SaveMarkdownView } from "../shared/saveMarkdownView";
 
 type IpcContext = {
   sessions: SessionManager;
@@ -42,6 +43,7 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
         canCopy?: boolean;
         canFind?: boolean;
         turnDetails?: { turnId: string; eventId: string };
+        saveView?: SaveMarkdownView;
       },
     ) => {
       showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);

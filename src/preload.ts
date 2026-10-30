@@ -110,6 +110,7 @@ const MENU_EVENTS: Record<string, string> = {
   "find:open": "switcheroo:find",
   "find:open-scoped": "switcheroo:find-scoped",
   "turn:details": "switcheroo:turn-details",
+  "markdown:save-view": "switcheroo:save-view-markdown",
   "find-sessions:open": "switcheroo:find-sessions",
   "session:new": "switcheroo:new-session",
   "session:new-terminal": "switcheroo:new-terminal",

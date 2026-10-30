@@ -1,5 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { setPendingFindScope } from "../find/pendingFindScope";
+import type { SaveMarkdownView } from "../../../shared/saveMarkdownView";
 import { codeBlockText } from "../markdown/codeBlockText";
 
 /** Right-click handler for transcript / turn-details: native edit context menu. */
@@ -19,6 +20,10 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
   const detailsMsg = target?.closest(".message[data-turn-details]") as HTMLElement | null;
   const turnId = detailsMsg?.closest("[data-turn-id]")?.getAttribute("data-turn-id") || undefined;
   const detailsEventId = detailsMsg?.getAttribute("data-event-id") || undefined;
+  // Only our own panels set data-save-view, always to a SaveMarkdownView.
+  const saveView = target?.closest("[data-save-view]")?.getAttribute("data-save-view") as
+    | SaveMarkdownView
+    | undefined;
   void window.switcheroo.showEditContextMenu({
     link,
     code,
@@ -26,5 +31,6 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
     canCopy,
     canFind: !!message,
     turnDetails: turnId && detailsEventId ? { turnId, eventId: detailsEventId } : undefined,
+    saveView: saveView || undefined,
   });
 }

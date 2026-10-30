@@ -1,7 +1,15 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 import { saveMarkdownFile } from "../files/saveMarkdownFile";
+import type { SaveMarkdownView } from "../../shared/saveMarkdownView";
 
-/** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details). */
+const SAVE_VIEW_LABELS: Record<SaveMarkdownView, string> = {
+  session: "Save Session as Markdown…",
+  switchboard: "Save Switchboard as Markdown…",
+  "turn-details": "Save Turn Details as Markdown…",
+  subagent: "Save Subagent as Markdown…",
+};
+
+/** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details / Save <view> as Markdown). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
   opts: {
@@ -11,6 +19,7 @@ export function showEditContextMenu(
     canCopy?: boolean;
     canFind?: boolean;
     turnDetails?: { turnId: string; eventId: string };
+    saveView?: SaveMarkdownView;
   } = {},
 ): void {
   if (!win || win.isDestroyed()) return;
@@ -35,6 +44,13 @@ export function showEditContextMenu(
     }, {
       label: "Save Message as Markdown…",
       click: () => void saveMarkdownFile(win, opts.markdown!).catch(console.error),
+    });
+  }
+  if (opts.saveView) {
+    const view = opts.saveView;
+    items.push({
+      label: SAVE_VIEW_LABELS[view],
+      click: () => win.webContents.send("markdown:save-view", view),
     });
   }
   if (opts.canFind || opts.turnDetails) {

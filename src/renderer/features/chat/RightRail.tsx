@@ -4,6 +4,7 @@ import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { turnsMarkdown } from "../copy/turnsMarkdown";
+import { useSaveViewMarkdownEvent } from "../copy/useSaveViewMarkdownEvent";
 import { SubagentRailHeading } from "../subagents/SubagentRailHeading";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import type { RightRailView } from "./RightRailView";
@@ -59,6 +60,9 @@ export const RightRail = memo(function RightRail({
     () => turnsMarkdown(turns, { agent: agentKind, title: subagentTitle, userLabel }),
     [turns, agentKind, subagentTitle, userLabel],
   );
+  const saveView = subagent ? "subagent" : "turn-details";
+  const nameHint = subagentTitle ?? turns[0]?.user.text ?? "";
+  useSaveViewMarkdownEvent(saveView, railMarkdown, nameHint);
 
   // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
   useShowRightRail(tabId);
@@ -66,7 +70,7 @@ export const RightRail = memo(function RightRail({
   useFlashRightRailFocus(tabId, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
 
   return (
-    <aside className="right-rail" aria-label={label}>
+    <aside className="right-rail" aria-label={label} data-save-view={turns.length ? saveView : undefined}>
       <div
         className="right-rail-resize"
         role="separator"
@@ -80,7 +84,7 @@ export const RightRail = memo(function RightRail({
           {turns.length ? (
             <SaveMarkdownButton
               text={railMarkdown}
-              nameHint={subagentTitle ?? turns[0].user.text}
+              nameHint={nameHint}
               label={subagent ? "Save Subagent as Markdown" : "Save Turn Details as Markdown"}
             />
           ) : null}
