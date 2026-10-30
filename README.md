@@ -16,6 +16,7 @@ There are also speed optimizations to eliminate unnecessary waiting:
 
 There's also some niceties:
 - Copy message or copy individual code blocks
+- Save message or session as Markdown
 - Preview Markdown files like how they would appear in GitHub
 
 There's also orchestration features:

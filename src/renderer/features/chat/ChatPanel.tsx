@@ -58,7 +58,7 @@ export function ChatPanel({
           <h2 title={session.title}>{title}</h2>
           <div className="meta">{session.cwd}</div>
         </div>
-        {turns.length ? <SaveMarkdownButton text={sessionMarkdown} nameHint={title} /> : null}
+        {turns.length ? <SaveMarkdownButton text={sessionMarkdown} nameHint={title} label="Save Session as Markdown" /> : null}
       </div>
 
       <OpenSubagentIdContext.Provider value={openSubagentId}>

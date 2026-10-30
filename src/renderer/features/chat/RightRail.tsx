@@ -78,7 +78,11 @@ export const RightRail = memo(function RightRail({
         {subagent ? <SubagentRailHeading subagent={subagent} /> : <h2>Turn Details</h2>}
         <div className="right-rail-header-actions">
           {turns.length ? (
-            <SaveMarkdownButton text={railMarkdown} nameHint={subagentTitle ?? turns[0].user.text} />
+            <SaveMarkdownButton
+              text={railMarkdown}
+              nameHint={subagentTitle ?? turns[0].user.text}
+              label={subagent ? "Save Subagent as Markdown" : "Save Turn Details as Markdown"}
+            />
           ) : null}
           <button
             type="button"

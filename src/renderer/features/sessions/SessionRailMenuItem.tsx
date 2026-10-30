@@ -9,9 +9,9 @@ export function SessionRailMenuItem({
 }: {
   label: string;
   /** Glyph shown at the right edge, e.g. "⌘R". */
-  shortcut: string;
+  shortcut?: string;
   /** `aria-keyshortcuts` value, e.g. "Meta+R Control+R". */
-  keys: string;
+  keys?: string;
   disabled?: boolean;
   onSelect: () => void;
   onDismiss: () => void;
@@ -30,7 +30,7 @@ export function SessionRailMenuItem({
       }}
     >
       {label}
-      <kbd className="settings-shortcut">{shortcut}</kbd>
+      {shortcut ? <kbd className="settings-shortcut">{shortcut}</kbd> : null}
     </button>
   );
 }

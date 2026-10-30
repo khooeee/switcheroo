@@ -34,7 +34,7 @@ export function SwitchboardPanel({
     <section className="panel">
       <div className="panel-header">
         <h2>Switchboard</h2>
-        {turns.length ? <SaveMarkdownButton text={feedMarkdown} nameHint="Switchboard" /> : null}
+        {turns.length ? <SaveMarkdownButton text={feedMarkdown} nameHint="Switchboard" label="Save Switchboard as Markdown" /> : null}
       </div>
       {notice && <SwitchboardNotice message={notice} onDismiss={onNoticeDismiss} />}
       <div className="scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>

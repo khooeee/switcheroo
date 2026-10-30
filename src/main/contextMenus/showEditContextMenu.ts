@@ -1,7 +1,7 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 import { saveMarkdownFile } from "../files/saveMarkdownFile";
 
-/** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Save as Markdown / Find / Turn Details). */
+/** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
   opts: {
@@ -33,7 +33,7 @@ export function showEditContextMenu(
       label: "Copy Message",
       click: () => void clipboard.writeText(opts.markdown!),
     }, {
-      label: "Save as Markdown…",
+      label: "Save Message as Markdown…",
       click: () => void saveMarkdownFile(win, opts.markdown!).catch(console.error),
     });
   }

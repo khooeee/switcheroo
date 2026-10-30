@@ -4,8 +4,7 @@ import "./eventActionButton.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-const LABELS: Record<SaveState, string> = {
-  idle: "Save as Markdown",
+const LABELS: Record<Exclude<SaveState, "idle">, string> = {
   saving: "Saving…",
   saved: "Saved",
   error: "Save failed",
@@ -15,14 +14,17 @@ const LABELS: Record<SaveState, string> = {
 export function SaveMarkdownButton({
   text,
   nameHint,
+  label: idleLabel = "Save Message as Markdown",
 }: {
   text: string | (() => string);
   /** Default file name source; the text's first line when omitted. */
   nameHint?: string;
+  /** Tooltip at rest; headers that save a whole transcript pass their own. */
+  label?: string;
 }) {
   const [state, setState] = useState<SaveState>("idle");
   const resetTimer = useRef<number | null>(null);
-  const label = LABELS[state];
+  const label = state === "idle" ? idleLabel : LABELS[state];
 
   useEffect(() => () => {
     if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);

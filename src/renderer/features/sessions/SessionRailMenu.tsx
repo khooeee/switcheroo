@@ -3,6 +3,7 @@ import type { Session } from "../../../shared/session";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
 import { SessionRailMenuItem } from "./SessionRailMenuItem";
+import { saveSessionMarkdown } from "./saveSessionMarkdown";
 
 export function SessionRailMenu({
   menuRef,
@@ -84,6 +85,11 @@ export function SessionRailMenu({
         keys="Meta+P Control+P"
         disabled={!pinned && !canPin}
         onSelect={() => (pinned ? onUnpin(session.id) : onPin(session.id))}
+        onDismiss={onDismiss}
+      />
+      <SessionRailMenuItem
+        label="Save Session as Markdown"
+        onSelect={() => void saveSessionMarkdown(session).catch(console.error)}
         onDismiss={onDismiss}
       />
       <div className="context-separator" role="separator" />
