@@ -53,6 +53,8 @@ const api: SwitcherooApi = {
   respondAskQuestion: (requestId, outcome) =>
     ipcRenderer.invoke("session:askQuestion", requestId, outcome),
   pickFolder: (startPath?: string) => ipcRenderer.invoke("fs:pickFolder", startPath),
+  saveMarkdown: (text: string, nameHint?: string) =>
+    ipcRenderer.invoke("fs:saveMarkdown", text, nameHint),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
   openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
   openSettingsFile: () => ipcRenderer.invoke("fs:openSettingsFile"),

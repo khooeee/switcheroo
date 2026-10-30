@@ -1,7 +1,9 @@
-import { memo, useMemo, useRef, type RefObject } from "react";
+import { memo, useCallback, useMemo, useRef, type RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
+import { turnsMarkdown } from "../copy/turnsMarkdown";
 import { SubagentRailHeading } from "../subagents/SubagentRailHeading";
 import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import type { RightRailView } from "./RightRailView";
@@ -50,6 +52,13 @@ export const RightRail = memo(function RightRail({
   );
   const firstTurnId = turns[0]?.id;
   const label = subagent ? "Subagent" : "Turn Details";
+  const agentKind = session?.agent ?? agent;
+  const subagentTitle = subagent ? `Subagent · ${subagent.name}` : undefined;
+  const userLabel = subagent ? "prompt" : undefined;
+  const railMarkdown = useCallback(
+    () => turnsMarkdown(turns, { agent: agentKind, title: subagentTitle, userLabel }),
+    [turns, agentKind, subagentTitle, userLabel],
+  );
 
   // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
   useShowRightRail(tabId);
@@ -67,15 +76,20 @@ export const RightRail = memo(function RightRail({
       />
       <div className="right-rail-header">
         {subagent ? <SubagentRailHeading subagent={subagent} /> : <h2>Turn Details</h2>}
-        <button
-          type="button"
-          className="btn"
-          aria-label="Close right rail"
-          data-tooltip="Close"
-          onClick={onClose}
-        >
-          ✕
-        </button>
+        <div className="right-rail-header-actions">
+          {turns.length ? (
+            <SaveMarkdownButton text={railMarkdown} nameHint={subagentTitle ?? turns[0].user.text} />
+          ) : null}
+          <button
+            type="button"
+            className="btn"
+            aria-label="Close right rail"
+            data-tooltip="Close"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <div className="right-rail-scroll" ref={resolvedScrollRef} onContextMenu={onEditContextMenu}>
         {subagent && turns.length === 0 ? (
@@ -89,7 +103,7 @@ export const RightRail = memo(function RightRail({
               key={entry.id}
               session={messageSession}
               turn={entry}
-              userLabel={subagent ? "prompt" : undefined}
+              userLabel={userLabel}
               forkable={!subagent}
             />
           ) : (

@@ -7,6 +7,7 @@ import { TranscriptImages } from "../images/TranscriptImages";
 import { turnImages } from "../images/turnImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { QueuedStatus } from "./QueuedStatus";
 
@@ -42,6 +43,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />
+          <SaveMarkdownButton text={userText} />
         </div>
       </div>
 
@@ -82,6 +84,7 @@ export const ClosedTurnDetail = memo(function ClosedTurnDetail({
           <TranscriptImages names={images} />
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
+          <SaveMarkdownButton text={assistantText} />
           </div>
         </div>
       ) : null}

@@ -10,6 +10,7 @@ import { availableAgents } from "./acp/availableAgents";
 import { showEditContextMenu } from "./contextMenus/showEditContextMenu";
 import { showComposerContextMenu } from "./contextMenus/showComposerContextMenu";
 import { resolveFolderPickerStart } from "./files/resolveFolderPickerStart";
+import { saveMarkdownFile } from "./files/saveMarkdownFile";
 import type { SessionManager } from "./sessions/SessionManager";
 import type { ActiveTabId } from "../shared/activeTabId";
 import type { AppSettings } from "../shared/appSettings";
@@ -123,6 +124,9 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     });
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
+  ipcMain.handle("fs:saveMarkdown", (event, text: string, nameHint?: string) =>
+    saveMarkdownFile(BrowserWindow.fromWebContents(event.sender), text, nameHint),
+  );
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
   ipcMain.handle("fs:openSettingsFile", () => openSettingsFile());

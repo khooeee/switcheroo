@@ -8,6 +8,7 @@ import { TranscriptImages } from "../images/TranscriptImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
 import { ForkEventButton } from "../copy/ForkEventButton";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { OpenSubagentButton } from "../subagents/OpenSubagentButton";
 import { QueuedStatus } from "./QueuedStatus";
@@ -105,6 +106,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
             <ForkEventButton sessionId={session.id} eventId={item.id} />
           ) : null}
           {text ? <CopyEventButton text={text} /> : null}
+          {markdown && text ? <SaveMarkdownButton text={text} /> : null}
           {item.subagentId ? (
             <OpenSubagentButton sessionId={session.id} subagentId={item.subagentId} />
           ) : null}

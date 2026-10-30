@@ -8,6 +8,7 @@ import { TranscriptImages } from "../images/TranscriptImages";
 import { turnImages } from "../images/turnImages";
 import { formatDetailTimestamp } from "../settings/formatDetailTimestamp";
 import { CopyEventButton } from "../copy/CopyEventButton";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { ThinkingIndicator } from "../chat/ThinkingIndicator";
 import { QueuedStatus } from "../chat/QueuedStatus";
@@ -74,6 +75,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
         <MarkdownBody text={userText} />
         <div className="event-actions">
           <CopyEventButton text={userText} />
+          <SaveMarkdownButton text={userText} />
           <TurnDetailsButton onToggle={openUser} />
         </div>
       </div>
@@ -122,6 +124,7 @@ export const SwitchboardTurnCard = memo(function SwitchboardTurnCard({
           <TranscriptImages names={images} />
           <div className="event-actions">
             <CopyEventButton text={assistantText} />
+          <SaveMarkdownButton text={assistantText} />
             <TurnDetailsButton onToggle={openAssistant} />
           </div>
         </div>

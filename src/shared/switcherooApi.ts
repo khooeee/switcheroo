@@ -54,6 +54,8 @@ export interface SwitcherooApi {
       | { outcome: "cancelled" },
   ) => Promise<void>;
   pickFolder: (startPath?: string) => Promise<string | null>;
+  /** Save-as dialog that writes `text` to a `.md` file named from `nameHint` (else `text`); false when cancelled. */
+  saveMarkdown: (text: string, nameHint?: string) => Promise<boolean>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
   openSettingsFile: () => Promise<void>;
@@ -64,7 +66,7 @@ export interface SwitcherooApi {
     image: { mimeType: string; bytes: Uint8Array },
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
-  /** Popup native Copy (+ Copy Link / Copy Code / Copy Message / Find / Turn Details) at the cursor. */
+  /** Popup native Copy (+ Copy Link / Copy Code / Copy Message / Save as Markdown / Find / Turn Details) at the cursor. */
   showEditContextMenu: (opts?: {
     link?: string;
     code?: string;

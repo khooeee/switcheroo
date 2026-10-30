@@ -46,6 +46,13 @@
   flex-shrink: 0;
 }
 
+.right-rail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .right-rail-scroll {
   flex: 1;
   min-height: 0;
