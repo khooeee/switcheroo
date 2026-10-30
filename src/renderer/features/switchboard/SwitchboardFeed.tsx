@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { Session } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { SwitchboardTurnCard } from "./SwitchboardTurnCard";
+import { switchboardTurnTitle } from "./switchboardTurnTitle";
 
 interface Props {
   turns: SwitchboardTurn[];
@@ -37,7 +38,7 @@ export function SwitchboardFeed({
           <SwitchboardTurnCard
             key={turn.id}
             turn={turn}
-            title={session?.title ?? turn.sessionTitle ?? "Closed session"}
+            title={switchboardTurnTitle(turn, session)}
             session={session}
             onOpenRightRail={onOpenRightRail}
             onOpen={onClick}

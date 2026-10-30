@@ -1,9 +1,8 @@
-import { useCallback, type RefObject } from "react";
+import type { RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
-import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
-import { useSaveViewMarkdownEvent } from "../copy/useSaveViewMarkdownEvent";
+import { SaveViewMarkdownButton } from "../copy/SaveViewMarkdownButton";
 import { SwitchboardFeed } from "./SwitchboardFeed";
 import { switchboardMarkdown } from "./switchboardMarkdown";
 import { SwitchboardNotice } from "./SwitchboardNotice";
@@ -29,14 +28,17 @@ export function SwitchboardPanel({
   onTurnClick,
   onOpenRightRail,
 }: Props) {
-  const feedMarkdown = useCallback(() => switchboardMarkdown(turns, sessions), [turns, sessions]);
-  useSaveViewMarkdownEvent("switchboard", feedMarkdown, "Switchboard");
-
   return (
     <section className="panel" data-save-view={turns.length ? "switchboard" : undefined}>
       <div className="panel-header">
         <h2>Switchboard</h2>
-        {turns.length ? <SaveMarkdownButton text={feedMarkdown} nameHint="Switchboard" label="Save Switchboard as Markdown" /> : null}
+        {turns.length ? (
+          <SaveViewMarkdownButton
+            view="switchboard"
+            getMarkdown={() => switchboardMarkdown(turns, sessions)}
+            nameHint="Switchboard"
+          />
+        ) : null}
       </div>
       {notice && <SwitchboardNotice message={notice} onDismiss={onNoticeDismiss} />}
       <div className="scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>

@@ -1,26 +1,12 @@
 import { BrowserWindow, clipboard, Menu } from "electron";
 import { saveMarkdownFile } from "../files/saveMarkdownFile";
-import type { SaveMarkdownView } from "../../shared/saveMarkdownView";
-
-const SAVE_VIEW_LABELS: Record<SaveMarkdownView, string> = {
-  session: "Save Session as Markdown…",
-  switchboard: "Save Switchboard as Markdown…",
-  "turn-details": "Save Turn Details as Markdown…",
-  subagent: "Save Subagent as Markdown…",
-};
+import type { EditContextMenuOptions } from "../../shared/editContextMenuOptions";
+import { SAVE_MARKDOWN_VIEW_LABELS } from "../../shared/saveMarkdownViewLabels";
 
 /** Native Copy (+ optional Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details / Save <view> as Markdown). */
 export function showEditContextMenu(
   win: BrowserWindow | null,
-  opts: {
-    link?: string;
-    code?: string;
-    markdown?: string;
-    canCopy?: boolean;
-    canFind?: boolean;
-    turnDetails?: { turnId: string; eventId: string };
-    saveView?: SaveMarkdownView;
-  } = {},
+  opts: EditContextMenuOptions = {},
 ): void {
   if (!win || win.isDestroyed()) return;
   const items: Electron.MenuItemConstructorOptions[] = [];
@@ -47,10 +33,9 @@ export function showEditContextMenu(
     });
   }
   if (opts.saveView) {
-    const view = opts.saveView;
     items.push({
-      label: SAVE_VIEW_LABELS[view],
-      click: () => win.webContents.send("markdown:save-view", view),
+      label: `${SAVE_MARKDOWN_VIEW_LABELS[opts.saveView]}…`,
+      click: () => win.webContents.send("markdown:save-view", opts.saveView),
     });
   }
   if (opts.canFind || opts.turnDetails) {

@@ -4,7 +4,7 @@ import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
-import type { SaveMarkdownView } from "./saveMarkdownView";
+import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { Session, SessionTab } from "./session";
 import type { SwitchboardTurn } from "./switchboardTurn";
 import type { TranscriptTurn } from "./transcript";
@@ -68,16 +68,7 @@ export interface SwitcherooApi {
   ) => Promise<string>;
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
   /** Popup native Copy (+ Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details / Save <view> as Markdown) at the cursor. */
-  showEditContextMenu: (opts?: {
-    link?: string;
-    code?: string;
-    markdown?: string;
-    canCopy?: boolean;
-    canFind?: boolean;
-    turnDetails?: { turnId: string; eventId: string };
-    /** Panel under the cursor that can be saved whole as markdown. */
-    saveView?: SaveMarkdownView;
-  }) => Promise<void>;
+  showEditContextMenu: (opts?: EditContextMenuOptions) => Promise<void>;
   /** Popup Cut / Copy / Paste for the composer. */
   showComposerContextMenu: (opts?: {
     canCut?: boolean;

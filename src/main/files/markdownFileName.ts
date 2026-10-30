@@ -4,12 +4,10 @@ const MAX_STEM = 60;
 export function markdownFileName(text: string): string {
   const firstLine = text.split("\n").find((line) => line.trim()) ?? "";
   const stem = firstLine
-    .replace(/[#*_`>[\]()!~|]/g, "")
-    .replace(/[\\/:"<>?\x00-\x1f]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[#*_`<>[\]()!~|]/g, "")
+    .replace(/[\\/:"?\x00-\x1f\s]+/g, " ")
     .trim()
     .slice(0, MAX_STEM)
-    .trim()
     .replace(/[. ]+$/, "");
   return `${stem || "message"}.md`;
 }

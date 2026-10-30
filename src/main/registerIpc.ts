@@ -15,7 +15,7 @@ import type { SessionManager } from "./sessions/SessionManager";
 import type { ActiveTabId } from "../shared/activeTabId";
 import type { AppSettings } from "../shared/appSettings";
 import type { CreateSessionInput } from "../shared/createSessionInput";
-import type { SaveMarkdownView } from "../shared/saveMarkdownView";
+import type { EditContextMenuOptions } from "../shared/editContextMenuOptions";
 
 type IpcContext = {
   sessions: SessionManager;
@@ -32,23 +32,9 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
     await openFolderInCursor(requireSession(sessionId).cwd);
   });
   ipcMain.handle("agents:available", () => availableAgents());
-  ipcMain.handle(
-    "edit:contextMenu",
-    (
-      event,
-      opts?: {
-        link?: string;
-        code?: string;
-        markdown?: string;
-        canCopy?: boolean;
-        canFind?: boolean;
-        turnDetails?: { turnId: string; eventId: string };
-        saveView?: SaveMarkdownView;
-      },
-    ) => {
-      showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
-    },
-  );
+  ipcMain.handle("edit:contextMenu", (event, opts?: EditContextMenuOptions) => {
+    showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
+  });
   ipcMain.handle(
     "composer:contextMenu",
     (

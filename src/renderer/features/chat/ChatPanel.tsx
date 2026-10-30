@@ -1,12 +1,11 @@
-import { useCallback, type RefObject } from "react";
+import type { RefObject } from "react";
 import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
-import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
-import { turnsMarkdown } from "../copy/turnsMarkdown";
-import { useSaveViewMarkdownEvent } from "../copy/useSaveViewMarkdownEvent";
+import { SaveViewMarkdownButton } from "../copy/SaveViewMarkdownButton";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
 import { firstLine } from "../sessions/firstLine";
+import { sessionMarkdown } from "../sessions/sessionMarkdown";
 import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
 import { SessionTranscript } from "./SessionTranscript";
 import { ChatComposer } from "./ChatComposer";
@@ -47,11 +46,6 @@ export function ChatPanel({
   onAsk,
 }: Props) {
   const title = firstLine(session.title);
-  const sessionMarkdown = useCallback(
-    () => turnsMarkdown(turns, { agent: session.agent, title }),
-    [turns, session.agent, title],
-  );
-  useSaveViewMarkdownEvent("session", sessionMarkdown, title);
 
   return (
     <section className="panel relative" data-save-view={turns.length ? "session" : undefined}>
@@ -60,7 +54,13 @@ export function ChatPanel({
           <h2 title={session.title}>{title}</h2>
           <div className="meta">{session.cwd}</div>
         </div>
-        {turns.length ? <SaveMarkdownButton text={sessionMarkdown} nameHint={title} label="Save Session as Markdown" /> : null}
+        {turns.length ? (
+          <SaveViewMarkdownButton
+            view="session"
+            getMarkdown={() => sessionMarkdown(session, turns)}
+            nameHint={title}
+          />
+        ) : null}
       </div>
 
       <OpenSubagentIdContext.Provider value={openSubagentId}>

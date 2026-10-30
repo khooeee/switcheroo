@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type { Session } from "../../../shared/session";
+import { SAVE_MARKDOWN_VIEW_LABELS } from "../../../shared/saveMarkdownViewLabels";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
 import { SessionRailMenuItem } from "./SessionRailMenuItem";
@@ -88,7 +89,7 @@ export function SessionRailMenu({
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem
-        label="Save Session as Markdown..."
+        label={`${SAVE_MARKDOWN_VIEW_LABELS.session}...`}
         onSelect={() => void saveSessionMarkdown(session).catch(console.error)}
         onDismiss={onDismiss}
       />

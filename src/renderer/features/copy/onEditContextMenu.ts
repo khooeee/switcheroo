@@ -21,7 +21,7 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
   const turnId = detailsMsg?.closest("[data-turn-id]")?.getAttribute("data-turn-id") || undefined;
   const detailsEventId = detailsMsg?.getAttribute("data-event-id") || undefined;
   // Only our own panels set data-save-view, always to a SaveMarkdownView.
-  const saveView = target?.closest("[data-save-view]")?.getAttribute("data-save-view") as
+  const saveView = (target?.closest("[data-save-view]")?.getAttribute("data-save-view") || undefined) as
     | SaveMarkdownView
     | undefined;
   void window.switcheroo.showEditContextMenu({
@@ -31,6 +31,6 @@ export function onEditContextMenu(event: ReactMouseEvent | MouseEvent): void {
     canCopy,
     canFind: !!message,
     turnDetails: turnId && detailsEventId ? { turnId, eventId: detailsEventId } : undefined,
-    saveView: saveView || undefined,
+    saveView,
   });
 }

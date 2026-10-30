@@ -45,6 +45,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
   const clickable = !!onActivate;
   const markdown =
     item.role === "assistant" || item.role === "user" || item.role === "thought";
+  const copyMarkdown = markdown && text ? text : undefined;
   const showActions = forkable || !!text || !!onToggleDetails || !!item.subagentId;
 
   const canFork = !!(forkable && session.supportsForkAtMessage);
@@ -54,7 +55,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
       className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
-      data-copy-markdown={markdown && text ? text : undefined}
+      data-copy-markdown={copyMarkdown}
       data-turn-details={onToggleDetails ? "" : undefined}
       onClick={
         clickable
@@ -106,7 +107,7 @@ export const TranscriptMessage = memo(function TranscriptMessage({
             <ForkEventButton sessionId={session.id} eventId={item.id} />
           ) : null}
           {text ? <CopyEventButton text={text} /> : null}
-          {markdown && text ? <SaveMarkdownButton text={text} /> : null}
+          {copyMarkdown ? <SaveMarkdownButton text={copyMarkdown} /> : null}
           {item.subagentId ? (
             <OpenSubagentButton sessionId={session.id} subagentId={item.subagentId} />
           ) : null}
