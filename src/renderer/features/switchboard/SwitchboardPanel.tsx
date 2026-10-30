@@ -1,8 +1,10 @@
-import type { RefObject } from "react";
+import { useCallback, type RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
 import { SwitchboardFeed } from "./SwitchboardFeed";
+import { switchboardMarkdown } from "./switchboardMarkdown";
 import { SwitchboardNotice } from "./SwitchboardNotice";
 import "../chat/transcript.css";
 
@@ -26,10 +28,13 @@ export function SwitchboardPanel({
   onTurnClick,
   onOpenRightRail,
 }: Props) {
+  const feedMarkdown = useCallback(() => switchboardMarkdown(turns, sessions), [turns, sessions]);
+
   return (
     <section className="panel">
       <div className="panel-header">
         <h2>Switchboard</h2>
+        {turns.length ? <SaveMarkdownButton text={feedMarkdown} nameHint="Switchboard" /> : null}
       </div>
       {notice && <SwitchboardNotice message={notice} onDismiss={onNoticeDismiss} />}
       <div className="scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>

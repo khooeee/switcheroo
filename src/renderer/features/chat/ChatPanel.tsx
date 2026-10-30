@@ -1,7 +1,9 @@
-import type { RefObject } from "react";
+import { useCallback, type RefObject } from "react";
 import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
+import { SaveMarkdownButton } from "../copy/SaveMarkdownButton";
+import { turnsMarkdown } from "../copy/turnsMarkdown";
 import { AskQuestionBar, type AskQuestionOutcome } from "../permissions/AskQuestionBar";
 import { firstLine } from "../sessions/firstLine";
 import { OpenSubagentIdContext } from "../subagents/OpenSubagentIdContext";
@@ -43,13 +45,20 @@ export function ChatPanel({
   askQuestion,
   onAsk,
 }: Props) {
+  const title = firstLine(session.title);
+  const sessionMarkdown = useCallback(
+    () => turnsMarkdown(turns, { agent: session.agent, title }),
+    [turns, session.agent, title],
+  );
+
   return (
     <section className="panel relative">
       <div className="panel-header">
         <div>
-          <h2 title={session.title}>{firstLine(session.title)}</h2>
+          <h2 title={session.title}>{title}</h2>
           <div className="meta">{session.cwd}</div>
         </div>
+        {turns.length ? <SaveMarkdownButton text={sessionMarkdown} nameHint={title} /> : null}
       </div>
 
       <OpenSubagentIdContext.Provider value={openSubagentId}>
