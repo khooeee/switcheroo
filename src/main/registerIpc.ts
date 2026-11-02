@@ -14,6 +14,7 @@ import { saveMarkdownFile } from "./files/saveMarkdownFile";
 import type { SessionManager } from "./sessions/SessionManager";
 import type { ActiveTabId } from "../shared/activeTabId";
 import type { AppSettings } from "../shared/appSettings";
+import type { ConfigMenuCategory } from "../shared/configMenuCategory";
 import type { CreateSessionInput } from "../shared/createSessionInput";
 import type { EditContextMenuOptions } from "../shared/editContextMenuOptions";
 
@@ -99,6 +100,9 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   });
   ipcMain.handle("session:prompt", (_e, sessionId: string, text: string) =>
     sessions.sendPrompt(sessionId, text),
+  );
+  ipcMain.handle("session:configMenu", (event, sessionId: string, category: ConfigMenuCategory) =>
+    sessions.showConfigMenu(BrowserWindow.fromWebContents(event.sender), sessionId, category),
   );
   ipcMain.handle("session:cancel", (_e, sessionId: string) => sessions.cancelPrompt(sessionId));
   ipcMain.handle("session:askQuestion", (_e, requestId: string, outcome: unknown) => {

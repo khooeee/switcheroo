@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ConfigMenuCategory } from "../../../shared/configMenuCategory";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
@@ -47,6 +48,12 @@ export function ChatComposer({
     setDraft(text);
   };
   usePasteAwarePrompt(session.id, promptRef, setDraftFromUser);
+
+  const openConfigMenu = (category: ConfigMenuCategory) => {
+    void window.switcheroo.showConfigMenu(session.id, category).catch((error: unknown) => {
+      setSendError({ sessionId: session.id, message: `Could not load options: ${formatAgentError(error)}` });
+    });
+  };
 
   const send = () => {
     if (!draft.trim() || session.status === "connecting") return;
@@ -143,8 +150,22 @@ export function ChatComposer({
       <div className="composer-actions">
         <div className="composer-meta">
           {session.agent}
-          {model ? ` · ${model}` : ""}
-          {effort ? ` · ${effort.toLowerCase()} effort` : ""}
+          {model ? (
+            <>
+              {" · "}
+              <button type="button" className="composer-meta-pick" onClick={() => openConfigMenu("model")}>
+                {model}
+              </button>
+            </>
+          ) : null}
+          {effort ? (
+            <>
+              {" · "}
+              <button type="button" className="composer-meta-pick" onClick={() => openConfigMenu("thought_level")}>
+                {effort.toLowerCase()} effort
+              </button>
+            </>
+          ) : null}
           {" · "}{session.status === "connecting" ? "Creating" : session.status}
           {usageLabel ? (
             <>

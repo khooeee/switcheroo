@@ -58,6 +58,16 @@
   cursor: default;
 }
 
+.composer-meta-pick {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.composer-meta-pick:hover {
+  color: var(--text);
+}
+
 .btn.composer-send {
   background: var(--user-bg);
   color: var(--text);

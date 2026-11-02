@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import * as acp from "@agentclientprotocol/sdk";
 import type { AgentKind } from "../../shared/agentKind";
-import type { SessionModelConfig } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
@@ -19,13 +18,15 @@ import { connectAcpAgent } from "./connectAcpAgent";
 import { attachAcpSession } from "./attachAcpSession";
 import { SharedAgentConnection } from "./SharedAgentConnection";
 import { SessionUpdateRouter } from "./SessionUpdateRouter";
-import { modelConfigFromOptions } from "./modelConfigFromOptions";
+import { SessionConfigOptions } from "./SessionConfigOptions";
 
 export class AcpSession extends SharedAgentConnection {
   id: string;
   readonly agent: AgentKind;
   readonly cwd: string;
   sessionId: string | null = null;
+  /** Model, effort and other agent config options. */
+  readonly config: SessionConfigOptions;
 
   private canLoad = false;
   private canResume = false;
@@ -41,8 +42,6 @@ export class AcpSession extends SharedAgentConnection {
   /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
   private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
-  /** Last reported model/effort, replayed on adopt (warm sessions report to no-op callbacks). */
-  private modelConfig: SessionModelConfig | null = null;
 
   constructor(
     id: string,
@@ -89,6 +88,12 @@ export class AcpSession extends SharedAgentConnection {
       noteSystem: (text) => this.noteSystem(text),
       worksUnprompted: agent === "claude",
     });
+    this.config = new SessionConfigOptions({
+      connection: () => this.connection,
+      sessionId: () => this.sessionId,
+      onModelConfig: (config) => this.cb.onModelConfig(config),
+      noteSystem: (text) => this.noteSystem(text),
+    });
     this.updates = new SessionUpdateRouter({
       agent,
       cwd,
@@ -97,7 +102,7 @@ export class AcpSession extends SharedAgentConnection {
       callbacks: () => this.cb,
       mirroring: () => this.mirrorUpdates,
       applyThreadStatus: (status) => this.runner.applyThreadStatus(status),
-      onConfigOptions: (options) => this.noteConfigOptions(options),
+      onConfigOptions: (options) => this.config.note(options),
       owner: this,
     });
   }
@@ -114,7 +119,8 @@ export class AcpSession extends SharedAgentConnection {
     this.questions.setSessionId(id);
     // Steering support was reported to the warm no-op callbacks; replay it to the new owner.
     this.runner.configureDelivery(this.initializationMeta);
-    if (this.modelConfig) cb.onModelConfig(this.modelConfig);
+    const modelConfig = this.config.current();
+    if (modelConfig) cb.onModelConfig(modelConfig);
   }
 
   start(options?: { quiet?: boolean }): Promise<void> {
@@ -149,7 +155,7 @@ export class AcpSession extends SharedAgentConnection {
       ...airSessionMeta(this.instructions),
     });
     this.setSessionId(session.sessionId);
-    this.noteConfigOptions(session.configOptions);
+    this.config.note(session.configOptions);
     this.runner.markIdle();
     this.cb.onStatus("ready");
   }
@@ -169,7 +175,7 @@ export class AcpSession extends SharedAgentConnection {
       clearSessionId: () => this.clearSessionId(),
       resetOutput: () => this.output.reset(),
       onReady: () => this.cb.onStatus("ready"),
-      onConfigOptions: (options) => this.noteConfigOptions(options),
+      onConfigOptions: (options) => this.config.note(options),
       createAgentSession: () => this.createAgentSession(),
     }, sessionId);
   }
@@ -193,6 +199,8 @@ export class AcpSession extends SharedAgentConnection {
     child.setSessionId(forkedId);
     child.initializationMeta = this.initializationMeta;
     child.runner.configureDelivery(this.initializationMeta);
+    // Agents without resume report no options for the fork; start from the parent's.
+    child.config.note(this.config.list());
     try {
       // Fork only allocates a session id. Codex and Claude need resume before
       // prompts/updates work on the forked id.
@@ -201,7 +209,7 @@ export class AcpSession extends SharedAgentConnection {
         // Resume may replay history after the RPC returns; keep mirroring off until prompt.
         child.mirrorUpdates = false;
         const resumed = await resumeAcpSession(child.connection, forkedId, this.cwd, instructions);
-        child.noteConfigOptions(resumed.configOptions);
+        child.config.note(resumed.configOptions);
         child.output.reset();
       }
     } catch (error) {
@@ -210,13 +218,6 @@ export class AcpSession extends SharedAgentConnection {
     }
     child.cb.onStatus("ready");
     return child;
-  }
-
-  private noteConfigOptions(options: acp.SessionConfigOption[] | null | undefined): void {
-    const config = modelConfigFromOptions(options);
-    if (!config) return;
-    this.modelConfig = config;
-    this.cb.onModelConfig(config);
   }
 
   private setSessionId(sessionId: string): void {

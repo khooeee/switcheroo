@@ -110,6 +110,8 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
       ...(handlers.agent === "claude" || handlers.agent === "codex"
         ? { _meta: subagentCapabilityMeta() }
         : {}),
+      // Cursor reports effort as its own config option only when asked; otherwise it is baked into model variants.
+      ...(handlers.agent === "cursor" ? { _meta: { parameterizedModelPicker: true } } : {}),
     },
     clientInfo: { name: "switcheroo", version: "1.0.0" },
   });

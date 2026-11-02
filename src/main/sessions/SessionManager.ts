@@ -1,6 +1,7 @@
 import type { BrowserWindow } from "electron";
 import type { ActiveTabId } from "../../shared/activeTabId";
 import type { AppSettings } from "../../shared/appSettings";
+import type { ConfigMenuCategory } from "../../shared/configMenuCategory";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import type { Session, SessionTab } from "../../shared/session";
 import type { SwitchboardTurn } from "../../shared/switchboardTurn";
@@ -33,6 +34,7 @@ import { forkSession } from "./forkSession";
 import { setActiveTab } from "./setActiveTab";
 import { navigateToEvent } from "./navigateToEvent";
 import { promptSession } from "./promptSession";
+import { showSessionConfigMenu } from "./showSessionConfigMenu";
 import { terminalTabHost } from "./terminalTabHost";
 
 /** Main-process API for sessions, tabs, prompts and Switchboard; delegates to collaborators. */
@@ -228,6 +230,11 @@ export class SessionManager {
   async cancelPrompt(sessionId: string): Promise<void> {
     await this.state.agents.get(sessionId)?.cancel();
     await this.persist();
+  }
+
+  /** Model or effort picker; choosing a value sets it on the agent. */
+  showConfigMenu(win: BrowserWindow | null, sessionId: string, category: ConfigMenuCategory): Promise<void> {
+    return showSessionConfigMenu(this.deps, win, sessionId, category);
   }
 
   respondAskQuestion(requestId: string, outcome: unknown): void {

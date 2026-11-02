@@ -2,6 +2,7 @@ import type { ActiveTabId } from "./activeTabId";
 import type { CursorAskQuestionRequest } from "./agentRequests";
 import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
+import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
@@ -75,6 +76,8 @@ export interface SwitcherooApi {
     canCopy?: boolean;
     canSelectAll?: boolean;
   }) => Promise<void>;
+  /** Popup the session's model or effort picker; choosing a value sets it on the agent. */
+  showConfigMenu: (sessionId: string, category: ConfigMenuCategory) => Promise<void>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

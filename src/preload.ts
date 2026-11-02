@@ -65,6 +65,7 @@ const api: SwitcherooApi = {
   saveClipboardImage: (sessionId) => ipcRenderer.invoke("images:saveClipboard", sessionId),
   showEditContextMenu: (opts) => ipcRenderer.invoke("edit:contextMenu", opts),
   showComposerContextMenu: (opts) => ipcRenderer.invoke("composer:contextMenu", opts),
+  showConfigMenu: (sessionId, category) => ipcRenderer.invoke("session:configMenu", sessionId, category),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   getSubagentTranscript: (sessionId: string, subagentId: string) =>
     ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),
