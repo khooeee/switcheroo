@@ -49,10 +49,20 @@ export function ChatComposer({
   };
   usePasteAwarePrompt(session.id, promptRef, setDraftFromUser);
 
-  const openConfigMenu = (category: ConfigMenuCategory) => {
-    void window.switcheroo.showConfigMenu(session.id, category).catch((error: unknown) => {
-      setSendError({ sessionId: session.id, message: `Could not load options: ${formatAgentError(error)}` });
-    });
+  /** Clickable model/effort label that opens the agent's picker. */
+  const configPick = (category: ConfigMenuCategory, label: string | undefined) => {
+    if (!label) return null;
+    const openMenu = () => {
+      void window.switcheroo.showConfigMenu(session.id, category).catch((error: unknown) => {
+        setSendError({ sessionId: session.id, message: `Could not change ${label}: ${formatAgentError(error)}` });
+      });
+    };
+    return (
+      <>
+        {" · "}
+        <button type="button" className="composer-meta-pick" onClick={openMenu}>{label}</button>
+      </>
+    );
   };
 
   const send = () => {
@@ -150,22 +160,8 @@ export function ChatComposer({
       <div className="composer-actions">
         <div className="composer-meta">
           {session.agent}
-          {model ? (
-            <>
-              {" · "}
-              <button type="button" className="composer-meta-pick" onClick={() => openConfigMenu("model")}>
-                {model}
-              </button>
-            </>
-          ) : null}
-          {effort ? (
-            <>
-              {" · "}
-              <button type="button" className="composer-meta-pick" onClick={() => openConfigMenu("thought_level")}>
-                {effort.toLowerCase()} effort
-              </button>
-            </>
-          ) : null}
+          {configPick("model", model)}
+          {configPick("thought_level", effort && `${effort.toLowerCase()} effort`)}
           {" · "}{session.status === "connecting" ? "Creating" : session.status}
           {usageLabel ? (
             <>

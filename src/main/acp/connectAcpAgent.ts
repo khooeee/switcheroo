@@ -9,7 +9,6 @@ import { drainAgentStream } from "./drainAgentStream";
 import { codexInstructionsEnv } from "./codexInstructionsEnv";
 import { parseSubagentNotification } from "./subagents/parseSubagentNotification";
 import { rewriteSubagentUpdates } from "./subagents/rewriteSubagentUpdates";
-import { subagentCapabilityMeta } from "./subagents/subagentCapabilityMeta";
 import type { SubagentUpdate } from "./subagents/SubagentUpdate";
 import { SUBAGENT_UPDATE_METHOD } from "./subagents/subagentUpdateMethod";
 
@@ -106,12 +105,7 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
     clientCapabilities: {
       fs: { readTextFile: true, writeTextFile: true },
       terminal: false,
-      // Claude and Codex both expose native subagent sessions through this AIR capability.
-      ...(handlers.agent === "claude" || handlers.agent === "codex"
-        ? { _meta: subagentCapabilityMeta() }
-        : {}),
-      // Cursor reports effort as its own config option only when asked; otherwise it is baked into model variants.
-      ...(handlers.agent === "cursor" ? { _meta: { parameterizedModelPicker: true } } : {}),
+      ...(preset.clientCapabilityMeta ? { _meta: preset.clientCapabilityMeta } : {}),
     },
     clientInfo: { name: "switcheroo", version: "1.0.0" },
   });

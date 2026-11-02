@@ -92,7 +92,6 @@ export class AcpSession extends SharedAgentConnection {
       connection: () => this.connection,
       sessionId: () => this.sessionId,
       onModelConfig: (config) => this.cb.onModelConfig(config),
-      noteSystem: (text) => this.noteSystem(text),
     });
     this.updates = new SessionUpdateRouter({
       agent,
@@ -119,8 +118,7 @@ export class AcpSession extends SharedAgentConnection {
     this.questions.setSessionId(id);
     // Steering support was reported to the warm no-op callbacks; replay it to the new owner.
     this.runner.configureDelivery(this.initializationMeta);
-    const modelConfig = this.config.current();
-    if (modelConfig) cb.onModelConfig(modelConfig);
+    this.config.replay();
   }
 
   start(options?: { quiet?: boolean }): Promise<void> {
@@ -181,7 +179,7 @@ export class AcpSession extends SharedAgentConnection {
   }
 
   /** `instructions` are the fork's own: it gets a new Switcheroo session id. */
-  async fork(forkPoint: AirForkPoint | undefined, instructions: string | null): Promise<string> {
+  async fork(forkPoint: AirForkPoint | undefined, instructions: string | null): Promise<acp.ForkSessionResponse> {
     if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready to fork");
     return forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint, instructions);
   }
@@ -193,14 +191,16 @@ export class AcpSession extends SharedAgentConnection {
     forkPoint?: AirForkPoint,
     instructions: string | null = null,
   ): Promise<AcpSession> {
-    const forkedId = await this.fork(forkPoint, instructions);
+    const forked = await this.fork(forkPoint, instructions);
+    const forkedId = forked.sessionId;
     const child = new AcpSession(id, this.agent, this.cwd, cb, instructions);
     this.shareConnectionWith(child);
     child.setSessionId(forkedId);
     child.initializationMeta = this.initializationMeta;
     child.runner.configureDelivery(this.initializationMeta);
-    // Agents without resume report no options for the fork; start from the parent's.
-    child.config.note(this.config.list());
+    // The fork's session record already copies the parent's model/effort; only report what differs.
+    child.config.inherit(this.config);
+    child.config.note(forked.configOptions);
     try {
       // Fork only allocates a session id. Codex and Claude need resume before
       // prompts/updates work on the forked id.

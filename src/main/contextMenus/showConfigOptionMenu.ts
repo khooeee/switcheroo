@@ -3,7 +3,8 @@ import type * as acp from "@agentclientprotocol/sdk";
 import type { ConfigMenuCategory } from "../../shared/configMenuCategory";
 
 type SelectOption = Extract<acp.SessionConfigOption, { type: "select" }>;
-type OnSelect = (configId: string, value: string) => void;
+type ConfigChoice = { configId: string; value: string };
+type OnSelect = (choice: ConfigChoice) => void;
 
 function choiceItem(
   option: SelectOption,
@@ -16,7 +17,7 @@ function choiceItem(
     checked: choice.value === option.currentValue,
     toolTip: choice.description ?? undefined,
     click: () => {
-      if (choice.value !== option.currentValue) onSelect(option.id, choice.value);
+      if (choice.value !== option.currentValue) onSelect({ configId: option.id, value: choice.value });
     },
   };
 }
@@ -33,23 +34,29 @@ function choiceItems(option: SelectOption, onSelect: OnSelect): MenuItemConstruc
   });
 }
 
-/** Model or effort picker. The model menu also lists per-model settings (`model_config`) as submenus. */
+/**
+ * Model or effort picker; resolves with the new value, or null when dismissed or unchanged.
+ * The model menu also lists per-model settings (`model_config`) as submenus.
+ */
 export function showConfigOptionMenu(
   win: BrowserWindow | null,
   options: acp.SessionConfigOption[],
   category: ConfigMenuCategory,
-  onSelect: OnSelect,
-): void {
-  if (!win || win.isDestroyed()) return;
+): Promise<ConfigChoice | null> {
+  if (!win || win.isDestroyed()) return Promise.resolve(null);
+  let resolve: (choice: ConfigChoice | null) => void = () => undefined;
+  const picked = new Promise<ConfigChoice | null>((done) => { resolve = done; });
   const selects = options.filter((option): option is SelectOption => option.type === "select");
   const items = selects
     .filter((option) => option.category === category)
-    .flatMap((option) => choiceItems(option, onSelect));
+    .flatMap((option) => choiceItems(option, resolve));
   if (category === "model") {
     const settings = selects.filter((option) => option.category === "model_config");
     if (settings.length && items.length) items.push({ type: "separator" });
-    for (const option of settings) items.push({ label: option.name, submenu: choiceItems(option, onSelect) });
+    for (const option of settings) items.push({ label: option.name, submenu: choiceItems(option, resolve) });
   }
-  if (!items.length) return;
-  Menu.buildFromTemplate(items).popup({ window: win });
+  if (!items.length) return Promise.resolve(null);
+  // Electron runs a picked item's click before the close callback, so a pick is never resolved as null.
+  Menu.buildFromTemplate(items).popup({ window: win, callback: () => resolve(null) });
+  return picked;
 }

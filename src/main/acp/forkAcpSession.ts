@@ -19,7 +19,7 @@ export async function forkAcpSession(
   forkPoint: AirForkPoint | undefined,
   /** The fork's own instructions (it has a new Switcheroo session id). */
   instructions: string | null,
-): Promise<string> {
+): Promise<acp.ForkSessionResponse> {
   const response = await connection.agent.request(acp.methods.agent.session.fork, {
     sessionId,
     cwd,
@@ -27,5 +27,5 @@ export async function forkAcpSession(
     ...airSessionMeta(instructions, forkPoint),
   });
   if (!response.sessionId) throw new Error("Agent did not return a forked session id");
-  return response.sessionId;
+  return response;
 }

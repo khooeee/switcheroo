@@ -4,6 +4,7 @@ import { agentSearchPath } from "./agentSearchPath";
 import { findOnPath } from "./findOnPath";
 import { packageBin } from "./packageBin";
 import { resolvePathCommand } from "./resolvePathCommand";
+import { subagentCapabilityMeta } from "./subagents/subagentCapabilityMeta";
 
 interface AgentPreset {
   kind: AgentKind;
@@ -16,6 +17,8 @@ interface AgentPreset {
   requiredCommand?: string;
   /** Extra environment for the adapter process. */
   env?: Record<string, string>;
+  /** `clientCapabilities._meta` sent on initialize to opt into adapter-specific behavior. */
+  clientCapabilityMeta?: Record<string, unknown>;
 }
 
 function resolveCursorAgent(): string {
@@ -43,6 +46,7 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
       return [packageBin("@agentclientprotocol/claude-agent-acp")];
     },
     forksAtMessage: true,
+    clientCapabilityMeta: subagentCapabilityMeta(),
     get requiredCommand() {
       return claudeCommand();
     },
@@ -57,6 +61,7 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
       return [packageBin("@agentclientprotocol/codex-acp")];
     },
     forksAtMessage: true,
+    clientCapabilityMeta: subagentCapabilityMeta(),
     get requiredCommand() {
       return codexCommand();
     },
@@ -71,6 +76,8 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
     },
     args: ["acp"],
     authMethodId: "cursor_login",
+    // Model and effort as separate config options instead of combined model variants.
+    clientCapabilityMeta: { parameterizedModelPicker: true },
   },
   pi: {
     kind: "pi",
