@@ -12,6 +12,12 @@ export interface SessionUsage {
   cost?: { amount: number; currency: string };
 }
 
+/** Display names of the agent's current model and reasoning effort (ACP session config options). */
+export interface SessionModelConfig {
+  model?: string;
+  effort?: string;
+}
+
 export interface SlashCommand {
   name: string;
   description: string;
@@ -37,6 +43,8 @@ export interface Session {
   slashCommands?: SlashCommand[];
   /** Context window usage from ACP usage_update (persisted in session meta). */
   usage?: SessionUsage;
+  /** Current model and effort from ACP config options (persisted in session meta). */
+  modelConfig?: SessionModelConfig;
   /** Knows Switcheroo's control API (persisted): instructions for Claude/Codex, else a bootstrap prompt. */
   switcherooAware?: boolean;
   /** Child tabs (terminals, etc.) under this chat group. */

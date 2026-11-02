@@ -7,8 +7,8 @@ export async function resumeAcpSession(
   sessionId: string,
   cwd: string,
   instructions: string | null,
-): Promise<void> {
-  await connection.agent.request(acp.methods.agent.session.resume, {
+): Promise<acp.ResumeSessionResponse> {
+  return connection.agent.request(acp.methods.agent.session.resume, {
     sessionId,
     cwd,
     mcpServers: [],

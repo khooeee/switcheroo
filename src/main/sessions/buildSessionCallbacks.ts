@@ -37,6 +37,11 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
       deps.emitSessions();
       deps.queuePersist();
     },
+    onModelConfig: (config) => {
+      session.modelConfig = config;
+      deps.emitSessions();
+      deps.queuePersist();
+    },
     onAvailableCommands: (commands) => {
       session.slashCommands = commands;
       deps.emitSessions();

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import * as acp from "@agentclientprotocol/sdk";
 import type { AgentKind } from "../../shared/agentKind";
+import type { SessionModelConfig } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
@@ -18,6 +19,7 @@ import { connectAcpAgent } from "./connectAcpAgent";
 import { attachAcpSession } from "./attachAcpSession";
 import { SharedAgentConnection } from "./SharedAgentConnection";
 import { SessionUpdateRouter } from "./SessionUpdateRouter";
+import { modelConfigFromOptions } from "./modelConfigFromOptions";
 
 export class AcpSession extends SharedAgentConnection {
   id: string;
@@ -39,6 +41,8 @@ export class AcpSession extends SharedAgentConnection {
   /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
   private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
+  /** Last reported model/effort, replayed on adopt (warm sessions report to no-op callbacks). */
+  private modelConfig: SessionModelConfig | null = null;
 
   constructor(
     id: string,
@@ -93,6 +97,7 @@ export class AcpSession extends SharedAgentConnection {
       callbacks: () => this.cb,
       mirroring: () => this.mirrorUpdates,
       applyThreadStatus: (status) => this.runner.applyThreadStatus(status),
+      onConfigOptions: (options) => this.noteConfigOptions(options),
       owner: this,
     });
   }
@@ -109,6 +114,7 @@ export class AcpSession extends SharedAgentConnection {
     this.questions.setSessionId(id);
     // Steering support was reported to the warm no-op callbacks; replay it to the new owner.
     this.runner.configureDelivery(this.initializationMeta);
+    if (this.modelConfig) cb.onModelConfig(this.modelConfig);
   }
 
   start(options?: { quiet?: boolean }): Promise<void> {
@@ -143,6 +149,7 @@ export class AcpSession extends SharedAgentConnection {
       ...airSessionMeta(this.instructions),
     });
     this.setSessionId(session.sessionId);
+    this.noteConfigOptions(session.configOptions);
     this.runner.markIdle();
     this.cb.onStatus("ready");
   }
@@ -162,6 +169,7 @@ export class AcpSession extends SharedAgentConnection {
       clearSessionId: () => this.clearSessionId(),
       resetOutput: () => this.output.reset(),
       onReady: () => this.cb.onStatus("ready"),
+      onConfigOptions: (options) => this.noteConfigOptions(options),
       createAgentSession: () => this.createAgentSession(),
     }, sessionId);
   }
@@ -192,7 +200,8 @@ export class AcpSession extends SharedAgentConnection {
         if (!child.connection) throw new Error("Session closed while forking");
         // Resume may replay history after the RPC returns; keep mirroring off until prompt.
         child.mirrorUpdates = false;
-        await resumeAcpSession(child.connection, forkedId, this.cwd, instructions);
+        const resumed = await resumeAcpSession(child.connection, forkedId, this.cwd, instructions);
+        child.noteConfigOptions(resumed.configOptions);
         child.output.reset();
       }
     } catch (error) {
@@ -201,6 +210,13 @@ export class AcpSession extends SharedAgentConnection {
     }
     child.cb.onStatus("ready");
     return child;
+  }
+
+  private noteConfigOptions(options: acp.SessionConfigOption[] | null | undefined): void {
+    const config = modelConfigFromOptions(options);
+    if (!config) return;
+    this.modelConfig = config;
+    this.cb.onModelConfig(config);
   }
 
   private setSessionId(sessionId: string): void {

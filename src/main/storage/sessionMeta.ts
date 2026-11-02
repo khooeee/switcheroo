@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { isAgentKind, type AgentKind } from "../../shared/agentKind";
-import type { SessionTab, SessionUsage } from "../../shared/session";
+import type { SessionModelConfig, SessionTab, SessionUsage } from "../../shared/session";
 import { isMissingFile } from "./isMissingFile";
 import { sessionMetaPath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";
@@ -11,6 +11,7 @@ export interface SessionMeta {
   cwd: string;
   agentSessionId: string | null;
   usage?: SessionUsage;
+  modelConfig?: SessionModelConfig;
   switcherooAware?: boolean;
   tabs: SessionTab[];
   tabsExpanded: boolean;
@@ -32,6 +33,15 @@ function readUsage(value: unknown): SessionUsage | undefined {
   };
 }
 
+function readModelConfig(value: unknown): SessionModelConfig | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const { model, effort } = value as SessionModelConfig;
+  return {
+    model: typeof model === "string" ? model : undefined,
+    effort: typeof effort === "string" ? effort : undefined,
+  };
+}
+
 export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | null> {
   try {
     const raw = await fs.readFile(sessionMetaPath(sessionId), "utf8");
@@ -45,6 +55,7 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       cwd: parsed.cwd,
       agentSessionId: parsed.agentSessionId ?? null,
       usage: readUsage(parsed.usage),
+      modelConfig: readModelConfig(parsed.modelConfig),
       switcherooAware: parsed.switcherooAware === true || undefined,
       tabs: Array.isArray(parsed.tabs) ? parsed.tabs : [],
       tabsExpanded: parsed.tabsExpanded !== false,

@@ -8,6 +8,7 @@ export function metaFromSession(session: Session): SessionMeta {
     cwd: session.cwd,
     agentSessionId: session.agentSessionId,
     usage: session.usage,
+    modelConfig: session.modelConfig,
     switcherooAware: session.switcherooAware,
     tabs: session.tabs,
     tabsExpanded: session.tabsExpanded,

@@ -76,6 +76,7 @@ export async function forkSessionAtEvent(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
+    modelConfig: source.modelConfig,
     switcherooAware: source.switcherooAware,
     tabs: [],
     tabsExpanded: true,

@@ -7,6 +7,7 @@ export const warmCallbacks: SessionCallbacks = {
   onForkSupport: () => undefined,
   onAvailableCommands: () => undefined,
   onUsage: () => undefined,
+  onModelConfig: () => undefined,
   onTurn: () => undefined,
   onStatus: () => undefined,
   onAskQuestion: () => undefined,

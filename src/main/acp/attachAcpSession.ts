@@ -17,6 +17,7 @@ type AttachHost = {
   clearSessionId: () => void;
   resetOutput: () => void;
   onReady: () => void;
+  onConfigOptions: (options: acp.SessionConfigOption[] | null | undefined) => void;
   createAgentSession: () => Promise<void>;
 };
 
@@ -52,6 +53,7 @@ export async function attachAcpSession(
       host.markIdle();
       const response = await host.connection.agent.request(method, params) as {
         sessionId?: string;
+        configOptions?: acp.SessionConfigOption[] | null;
       } | void;
       const resumedId =
         response && typeof response === "object" && typeof response.sessionId === "string"
@@ -61,6 +63,7 @@ export async function attachAcpSession(
       // Replay may have flipped turnRunning via status updates; we are idle until the next prompt.
       host.markIdle();
       host.resetOutput();
+      host.onConfigOptions(response?.configOptions);
       host.onReady();
       return;
     } catch (err) {

@@ -31,6 +31,7 @@ export async function ensureSessionHydrated(
   session.cwd = meta.cwd;
   session.agentSessionId = meta.agentSessionId;
   session.usage = meta.usage;
+  session.modelConfig = meta.modelConfig;
   session.switcherooAware = meta.switcherooAware;
   session.tabs = meta.tabs;
   session.tabsExpanded = meta.tabsExpanded;

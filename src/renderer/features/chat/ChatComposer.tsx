@@ -40,6 +40,7 @@ export function ChatComposer({
     ? (session.supportsSteering ? "Steer agent" : "Queue message")
     : "Send message";
   const usageLabel = session.usage ? formatSessionUsage(session.usage) : null;
+  const { model, effort } = session.modelConfig ?? {};
 
   const setDraftFromUser = (text: string) => {
     setHistoryState((state) => applyComposerHistoryEdit(state, text));
@@ -141,7 +142,10 @@ export function ChatComposer({
       )}
       <div className="composer-actions">
         <div className="composer-meta">
-          {session.agent} · {session.status === "connecting" ? "Creating" : session.status}
+          {session.agent}
+          {model ? ` · ${model}` : ""}
+          {effort ? ` · ${effort.toLowerCase()} effort` : ""}
+          {" · "}{session.status === "connecting" ? "Creating" : session.status}
           {usageLabel ? (
             <>
               {" · "}

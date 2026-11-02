@@ -6,6 +6,7 @@ type ThreadStatus = "active" | "idle" | "systemError";
 type UpdateHandlers = {
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
+  onConfigOptions: (options: acp.SessionConfigOption[]) => void;
   /** Transcript output (messages, thoughts, tool calls, ...). */
   onOutput: (update: acp.SessionUpdate) => void;
   onThreadStatus: (status: ThreadStatus) => void;
@@ -43,6 +44,10 @@ export function dispatchSessionUpdate(update: acp.SessionUpdate, handlers: Updat
         ? { amount: update.cost.amount, currency: update.cost.currency }
         : undefined,
     });
+    return;
+  }
+  if (update.sessionUpdate === "config_option_update") {
+    handlers.onConfigOptions(update.configOptions);
     return;
   }
   handlers.onOutput(update);

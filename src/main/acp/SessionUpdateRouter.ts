@@ -18,6 +18,8 @@ type RouterDeps = {
   /** False during load/resume replay, which re-sends history the transcript already has. */
   mirroring: () => boolean;
   applyThreadStatus: PromptRunner["applyThreadStatus"];
+  /** Model/effort and other config options changed (e.g. `/model`). */
+  onConfigOptions: (options: acp.SessionConfigOption[]) => void;
   /** The AcpSession that owns these updates, so subagent session ids route back to it. */
   owner: Parameters<typeof sessionRoutes.register>[1];
 };
@@ -45,6 +47,7 @@ export class SessionUpdateRouter {
     dispatchSessionUpdate(update, {
       onAvailableCommands: (commands) => deps.callbacks().onAvailableCommands(commands),
       onUsage: (usage) => deps.callbacks().onUsage(usage),
+      onConfigOptions: (options) => deps.onConfigOptions(options),
       onOutput: (output) => deps.output.handleUpdate(output),
       onThreadStatus: (status) => {
         // Ignore live-status during load/resume replay — it would leave turnRunning

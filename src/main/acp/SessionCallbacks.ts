@@ -1,5 +1,5 @@
 import type { CursorAskQuestionRequest } from "../../shared/agentRequests";
-import type { SessionUsage, SlashCommand } from "../../shared/session";
+import type { SessionModelConfig, SessionUsage, SlashCommand } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 
 export interface SessionCallbacks {
@@ -10,6 +10,7 @@ export interface SessionCallbacks {
   onForkSupport: (supported: boolean) => void;
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
+  onModelConfig: (config: SessionModelConfig) => void;
   onTurn: (turn: TranscriptTurn) => void;
   onTurnRemoved?: (turnId: string) => void;
   /** A turn in one of this session's subagent transcripts started or changed. */
