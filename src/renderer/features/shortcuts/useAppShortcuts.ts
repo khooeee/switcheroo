@@ -3,6 +3,7 @@ import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
+import { useTabHistory } from "../sessions/useTabHistory";
 import { toggleDetailsVisible } from "../settings/details";
 import { ctrlOnlyKey } from "./ctrlOnlyKey";
 import { dialogOpen } from "./dialogOpen";
@@ -64,6 +65,7 @@ export function useAppShortcuts({
   useFocusShortcut("i", !!activeSession && !blocked, requestPromptFocus);
   useFocusShortcut("g", !blocked, focusFilter);
   useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
+  useTabHistory(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
 
   useEffect(() => {
     const closeActive = () => {

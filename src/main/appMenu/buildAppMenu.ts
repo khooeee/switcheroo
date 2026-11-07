@@ -92,6 +92,20 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             win()?.webContents.send("session:prev");
           },
         },
+        {
+          label: "Go Back",
+          accelerator: isMac ? "Cmd+[" : "Alt+Left",
+          click: () => {
+            win()?.webContents.send("session:back");
+          },
+        },
+        {
+          label: "Go Forward",
+          accelerator: isMac ? "Cmd+]" : "Alt+Right",
+          click: () => {
+            win()?.webContents.send("session:forward");
+          },
+        },
         { type: "separator" },
         {
           label: "Go to Prompt",

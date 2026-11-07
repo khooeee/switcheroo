@@ -99,6 +99,8 @@ const MENU_EVENTS: Record<string, string> = {
   "session:stop": "switcheroo:stop-session",
   "session:next": "switcheroo:session-next",
   "session:prev": "switcheroo:session-prev",
+  "session:back": "switcheroo:session-back",
+  "session:forward": "switcheroo:session-forward",
   "prompt:focus": "switcheroo:focus-prompt",
   "prompt:paste-aware": "switcheroo:paste-aware-prompt",
   "filter:focus": "switcheroo:focus-filter",

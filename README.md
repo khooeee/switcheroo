@@ -5,7 +5,7 @@ An agentic development environment that attempts to spark joy in your everyday c
 - Each session on the left sidebar shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
 - Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session or history).
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
-- All agents are started in bypass permissions/YOLO mode.  Use a sandbox if you're worried about
+- All agents are started in bypass permissions/YOLO mode.
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
 
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
@@ -14,13 +14,13 @@ There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session pool so time to first prompt is very fast
 - Find in history is a streaming search and has been load tested on a large history.
 
-There's also some niceties:
+There are also some niceties:
 - Copy message or copy individual code blocks
 - Save message or session as Markdown
 - Preview Markdown files like how they would appear in GitHub
 
-There's also orchestration features:
-- "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization (e.g. reading GitHub issues & implementing them in parallel).
+There are also orchestration features:
+- "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization strategies (e.g. reading GitHub issues & implementing them in parallel).
 
 ## Install (macOS)
 
@@ -57,7 +57,7 @@ npm start
 
 ## Crons
 
-Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save.
+Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save `crons.json`.
 
 ```json
 {
@@ -116,6 +116,10 @@ It's likely you don't have to read this section ever, but it's here in case the 
 **Ctrl+Tab**: Go to next visible tab
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
+
+**Cmd+[** (Alt+Left on Linux): Go back to the previously selected tab. Cmd+Left also works on Mac, unless the focused text box has text.
+
+**Cmd+]** (Alt+Right on Linux): Go forward through selected tabs. Cmd+Right also works on Mac, unless the focused text box has text.
 
 **Escape**: Stop agent (while running)
 
