@@ -91,8 +91,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 ## Shortcuts
 
-**Ctrl+A**: Go to beginning of prompt
-
 **Ctrl+D**: Close session on empty prompt
 
 **Cmd+F**: Find in current session
@@ -111,7 +109,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd+U**: Mark as Unread
 
-**Cmd+W**: Close selected tab
+**Cmd/Ctrl+W**: Close selected tab
 
 **Cmd+Y**: Fork selected session
 

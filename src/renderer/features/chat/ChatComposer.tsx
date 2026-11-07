@@ -5,7 +5,6 @@ import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
-import { applyComposerCtrlKey } from "./applyComposerCtrlKey";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
 import { applyComposerHistoryEdit } from "./applyComposerHistoryEdit";
 import { applyComposerHistoryKey } from "./applyComposerHistoryKey";
@@ -142,7 +141,7 @@ export function ChatComposer({
             send();
             return true;
           }
-          return applyComposerCtrlKey(e);
+          return false;
         }}
       />
       {(session.error || sendError?.sessionId === session.id) && (

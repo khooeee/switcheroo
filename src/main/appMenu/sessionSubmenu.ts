@@ -72,7 +72,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.close,
       label: "Close",
       enabled: state.chatItemsEnabled,
-      accelerator: "Cmd+W",
+      accelerator: "CmdOrCtrl+W",
       click: () => {
         win()?.webContents.send("session:close");
       },
