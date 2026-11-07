@@ -116,9 +116,9 @@ export function useAppShortcuts({
       if (dialogOpen()) return;
 
       if (modKey(event, "w")) {
-        if (event.repeat) return;
         if (!activeId.current) return;
         event.preventDefault();
+        if (event.repeat) return;
         closeActive();
         return;
       }
@@ -140,20 +140,20 @@ export function useAppShortcuts({
         return;
       }
       if (modKey(event, "y")) {
-        if (event.repeat) return;
         event.preventDefault();
+        if (event.repeat) return;
         forkActive();
         return;
       }
       if (modKey(event, "u")) {
-        if (event.repeat) return;
         event.preventDefault();
+        if (event.repeat) return;
         window.dispatchEvent(new CustomEvent("switcheroo:mark-unread"));
         return;
       }
       if (modKey(event, "r")) {
-        if (event.repeat) return;
         event.preventDefault();
+        if (event.repeat) return;
         window.dispatchEvent(new CustomEvent("switcheroo:rename-session"));
       }
     };

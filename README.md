@@ -93,25 +93,25 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+D**: Close session on empty prompt
 
-**Cmd+F**: Find in current session
+**Cmd/Ctrl+F**: Find in current session
 
-**Cmd+Shift+F**: Find in History (searches all sessions on disk)
+**Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd+G**: Focus on filter tabs
+**Cmd/Ctrl+G**: Focus on filter tabs
 
-**Cmd+I**: Focus on prompt
+**Cmd/Ctrl+I**: Focus on prompt
 
-**Cmd+N**: New session
+**Cmd/Ctrl+N**: New session
 
-**Cmd+P**: Pin/unpin selected session
+**Cmd/Ctrl+P**: Pin/unpin selected session
 
-**Cmd+R**: Rename selected tab
+**Cmd/Ctrl+R**: Rename selected tab
 
-**Cmd+U**: Mark as Unread
+**Cmd/Ctrl+U**: Mark as Unread
 
 **Cmd/Ctrl+W**: Close selected tab
 
-**Cmd+Y**: Fork selected session
+**Cmd/Ctrl+Y**: Fork selected session
 
 **Ctrl+Tab**: Go to next visible tab
 
@@ -119,6 +119,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Escape**: Stop agent (while running)
 
-**Cmd+/**: Toggle zen mode
+**Cmd/Ctrl+/**: Toggle zen mode
 
 **/**: shows autocomplete of slash commands in the composer

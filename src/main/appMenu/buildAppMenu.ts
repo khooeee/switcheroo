@@ -48,14 +48,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { type: "separator" },
         {
           label: "Find",
-          accelerator: "Cmd+F",
+          accelerator: "CmdOrCtrl+F",
           click: () => {
             win()?.webContents.send("find:open");
           },
         },
         {
           label: "Find in History",
-          accelerator: "Cmd+Shift+F",
+          accelerator: "CmdOrCtrl+Shift+F",
           click: () => {
             win()?.webContents.send("find-sessions:open");
           },
@@ -65,7 +65,7 @@ export function buildAppMenu(opts: AppMenuOptions): void {
     {
       label: "View",
       submenu: [
-        { role: "reload", accelerator: "Cmd+Shift+R" },
+        { role: "reload", accelerator: "CmdOrCtrl+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },
         { role: "resetZoom" },
@@ -95,14 +95,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { type: "separator" },
         {
           label: "Go to Prompt",
-          accelerator: "Cmd+I",
+          accelerator: "CmdOrCtrl+I",
           click: () => {
             win()?.webContents.send("prompt:focus");
           },
         },
         {
           label: "Go to Filter Tabs",
-          accelerator: "Cmd+G",
+          accelerator: "CmdOrCtrl+G",
           click: () => {
             win()?.webContents.send("filter:focus");
           },

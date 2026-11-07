@@ -3,6 +3,7 @@ import type { Session } from "../../../shared/session";
 import { SAVE_MARKDOWN_VIEW_LABELS } from "../../../shared/saveMarkdownViewLabels";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
+import { modLabel } from "../shortcuts/modLabel";
 import { SessionRailMenuItem } from "./SessionRailMenuItem";
 import { saveSessionMarkdown } from "./saveSessionMarkdown";
 
@@ -43,14 +44,14 @@ export function SessionRailMenu({
     <div ref={menuRef} className="context-menu" role="menu" style={{ left: x, top: y }}>
       <SessionRailMenuItem
         label="Rename..."
-        shortcut="⌘R"
+        shortcut={modLabel("R")}
         keys="Meta+R Control+R"
         onSelect={() => onRename(session)}
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem
         label="Open in Cursor"
-        shortcut="⌘E"
+        shortcut={modLabel("E")}
         keys="Meta+E Control+E"
         disabled={!session.cwd.trim()}
         onSelect={() => void window.switcheroo.openSessionInCursor(session.id).catch(console.error)}
@@ -58,14 +59,14 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label={unread ? "Mark as Read" : "Mark as Unread"}
-        shortcut="⌘U"
+        shortcut={modLabel("U")}
         keys="Meta+U Control+U"
         onSelect={() => onToggleUnread(session.id)}
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem
         label="Fork"
-        shortcut="⌘Y"
+        shortcut={modLabel("Y")}
         keys="Meta+Y Control+Y"
         disabled={!session.supportsFork}
         onSelect={() => onFork(session.id)}
@@ -73,7 +74,7 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label={pinned ? "Unpin" : "Pin"}
-        shortcut="⌘P"
+        shortcut={modLabel("P")}
         keys="Meta+P Control+P"
         disabled={!pinned && !canPin}
         onSelect={() => (pinned ? onUnpin(session.id) : onPin(session.id))}
@@ -95,7 +96,7 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label="Close"
-        shortcut="⌘W"
+        shortcut={modLabel("W")}
         keys="Meta+W"
         onSelect={() => onClose(session.id)}
         onDismiss={onDismiss}

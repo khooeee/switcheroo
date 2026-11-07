@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { toggleStoredTheme } from "../theme/theme";
 import { toggleDetailsVisible } from "./details";
+import { modLabel } from "../shortcuts/modLabel";
 import { soundPreference } from "../sound/soundPreference";
 import { GearIcon } from "./GearIcon";
 import "./menus.css";
@@ -86,7 +87,7 @@ export function SettingsMenu() {
               onClick={() => toggleDetailsVisible()}
             >
               Toggle Zen Mode
-              <kbd className="settings-shortcut">⌘/</kbd>
+              <kbd className="settings-shortcut">{modLabel("/")}</kbd>
             </button>
             <button
               type="button"

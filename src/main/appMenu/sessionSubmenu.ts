@@ -9,7 +9,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
   return [
     {
       label: "New Session",
-      accelerator: "Cmd+N",
+      accelerator: "CmdOrCtrl+N",
       click: () => {
         win()?.webContents.send("session:new");
       },
@@ -18,7 +18,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.rename,
       label: "Rename",
       enabled: state.chatItemsEnabled,
-      accelerator: "Cmd+R",
+      accelerator: "CmdOrCtrl+R",
       click: () => {
         win()?.webContents.send("session:rename");
       },
@@ -27,7 +27,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.openInCursor,
       label: "Open in Cursor",
       enabled: state.openInCursorEnabled,
-      accelerator: "Cmd+E",
+      accelerator: "CmdOrCtrl+E",
       click: () => {
         opts.openActiveInCursor();
       },
@@ -36,7 +36,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.markUnread,
       label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
       enabled: state.chatItemsEnabled,
-      accelerator: "Cmd+U",
+      accelerator: "CmdOrCtrl+U",
       click: () => {
         win()?.webContents.send("session:mark-unread");
       },
@@ -45,7 +45,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.fork,
       label: "Fork",
       enabled: state.forkEnabled,
-      accelerator: "Cmd+Y",
+      accelerator: "CmdOrCtrl+Y",
       click: () => {
         win()?.webContents.send("session:fork");
       },
@@ -54,7 +54,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.pin,
       label: state.pin.label,
       enabled: state.pin.enabled,
-      accelerator: "Cmd+P",
+      accelerator: "CmdOrCtrl+P",
       click: () => {
         win()?.webContents.send("session:toggle-pin");
       },
