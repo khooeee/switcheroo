@@ -14,8 +14,8 @@ export function CompactFileChanges({
   sessionId,
 }: {
   changes: FileChange[];
-  cwd?: string;
-  sessionId?: string;
+  cwd: string;
+  sessionId: string;
 }) {
   const unique = useMemo(() => coalesceFileChanges(changes), [changes]);
   const names = useMemo(
@@ -70,8 +70,8 @@ function OpenDiff({
   onCollapse,
 }: {
   change: FileChange;
-  cwd?: string;
-  sessionId?: string;
+  cwd: string;
+  sessionId: string;
   index: number;
   onCollapse: (index: number) => void;
 }) {

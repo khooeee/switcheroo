@@ -57,15 +57,14 @@ export function App() {
   } = useFindUiState(activeTabId);
   const chatRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
-  const chatSessionId = activeSession?.id ?? null;
-  const askQuestion = useAgentQuestions(chatSessionId);
-  const pinTranscriptToBottom = useSessionScrollPosition(chatSessionId, chatRef);
+  const askQuestion = useAgentQuestions(activeTabId);
+  const pinTranscriptToBottom = useSessionScrollPosition(activeTabId, chatRef);
 
   const {
     rightRailView,
     closeRightRail,
-    toggleSessionRightRail,
-    forceSessionRightRail,
+    toggleRightRail,
+    forceRightRail,
     toggleSubagentRightRail,
   } = useRightRail({
     activeSession,
@@ -76,7 +75,7 @@ export function App() {
 
   const openSubagent = useCallback((sessionId: string, subagentId: string) => {
     loadSubagentTranscript(sessionId, subagentId);
-    toggleSubagentRightRail(sessionId, subagentId);
+    toggleSubagentRightRail(subagentId);
   }, [loadSubagentTranscript, toggleSubagentRightRail]);
 
   const findRootRefs = useMemo(() => {
@@ -85,7 +84,7 @@ export function App() {
     return [chatRef];
   }, [findScope, rightRailView]);
 
-  useTurnDetailsEvent(toggleSessionRightRail);
+  useTurnDetailsEvent(toggleRightRail);
 
   // Each tab keeps its right rail open (or closed) across tab switches.
   const selectTab = useCallback((id: string) => {
@@ -125,7 +124,7 @@ export function App() {
     return Promise.resolve();
   }, [setTranscripts]);
 
-  const chat = useChatActions(chatSessionId, askQuestion, pinTranscriptToBottom);
+  const chat = useChatActions(activeTabId, askQuestion, pinTranscriptToBottom);
 
   return (
     <SubagentOpenContext.Provider value={openSubagent}>
@@ -167,8 +166,8 @@ export function App() {
               focusEventKey={focusEvent?.key ?? 0}
               promptFocus={promptFocus}
               chatRef={chatRef}
-              onOpenRightRail={toggleSessionRightRail}
-              onForceOpenRightRail={forceSessionRightRail}
+              onOpenRightRail={toggleRightRail}
+              onForceOpenRightRail={forceRightRail}
               openSubagentId={rightRailView?.subagent?.id ?? null}
               onSend={chat.send}
               onInterrupt={chat.interrupt}

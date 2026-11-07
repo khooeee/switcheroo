@@ -2,7 +2,7 @@ import type { KeyboardEvent, ReactNode } from "react";
 import { OpenInCursor } from "./OpenInCursor";
 import { OpenMarkdownPreview } from "./OpenMarkdownPreview";
 
-/** Bordered diff shell: clickable header and optional (Open in Cursor) / (Preview). */
+/** Bordered diff shell: clickable header, (Open in Cursor) and optional (Preview). */
 export function FileDiffFrame({
   title,
   path,
@@ -13,7 +13,7 @@ export function FileDiffFrame({
 }: {
   title: string;
   path: string;
-  sessionId?: string;
+  sessionId: string;
   previewText?: string;
   onTitleClick?: () => void;
   children?: ReactNode;
@@ -45,11 +45,9 @@ export function FileDiffFrame({
         onKeyDown={onKeyDown}
       >
         <span className="file-diff-title">{title}</span>
-        {sessionId ? (
-          <span className="file-diff-header-action">
-            (<OpenInCursor sessionId={sessionId} filePath={path} />)
-          </span>
-        ) : null}
+        <span className="file-diff-header-action">
+          (<OpenInCursor sessionId={sessionId} filePath={path} />)
+        </span>
         {previewText != null ? (
           <span className="file-diff-header-action">
             (<OpenMarkdownPreview path={path} text={previewText} />)

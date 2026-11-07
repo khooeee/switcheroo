@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, type RefObject } from "react";
+import { memo, useMemo, type RefObject } from "react";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
@@ -24,21 +24,19 @@ export const RightRail = memo(function RightRail({
   subagent,
   scrollRef,
   focusEventId,
-  focusKey = 0,
+  focusKey,
   onClose,
 }: {
   /** The chat this rail belongs to; it keeps its own width and scroll. */
   session: Session;
   turn: TranscriptTurn | null;
   subagent: RightRailView["subagent"];
-  scrollRef?: RefObject<HTMLDivElement | null>;
+  scrollRef: RefObject<HTMLDivElement | null>;
   focusEventId?: string;
-  focusKey?: number;
+  focusKey: number;
   onClose: () => void;
 }) {
   const messageSession = useMessageSession(session);
-  const localScrollRef = useRef<HTMLDivElement>(null);
-  const resolvedScrollRef = scrollRef ?? localScrollRef;
   const turns = useMemo(
     () => subagent?.turns ?? (turn ? [turn] : NO_TURNS),
     [subagent?.turns, turn],
@@ -51,8 +49,8 @@ export const RightRail = memo(function RightRail({
 
   // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
   useShowRightRail(session.id);
-  useRightRailScroll(session.id, focusEventId, focusKey, resolvedScrollRef);
-  useFlashRightRailFocus(session.id, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
+  useRightRailScroll(session.id, focusEventId, focusKey, scrollRef);
+  useFlashRightRailFocus(session.id, focusEventId, focusKey, firstTurnId, scrollRef);
 
   return (
     <aside className="right-rail" aria-label={label} data-save-view={turns.length ? saveView : undefined}>
@@ -85,7 +83,7 @@ export const RightRail = memo(function RightRail({
           </button>
         </div>
       </div>
-      <div className="right-rail-scroll" ref={resolvedScrollRef} onContextMenu={onEditContextMenu}>
+      <div className="right-rail-scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>
         {subagent && turns.length === 0 ? (
           <div className="subagent-rail-empty">
             {subagent.loading ? "Loading…" : "No transcript was saved for this subagent."}

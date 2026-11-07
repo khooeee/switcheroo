@@ -12,7 +12,7 @@ export function FileDiff({
 }: {
   change: FileChange;
   title?: string;
-  sessionId?: string;
+  sessionId: string;
   onTitleClick?: () => void;
 }) {
   const [showAll, setShowAll] = useState(false);

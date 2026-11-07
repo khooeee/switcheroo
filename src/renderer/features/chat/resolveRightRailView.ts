@@ -18,7 +18,7 @@ export function resolveRightRailView({
   subagentTranscripts: Record<string, TranscriptTurn[]>;
   loadingSubagents: ReadonlySet<string>;
 }): RightRailView | null {
-  if (!selection || !activeSession || selection.sessionId !== activeSession.id) return null;
+  if (!selection || !activeSession) return null;
   if (selection.subagentId) {
     return resolveSubagentRailView({
       selection,

@@ -5,8 +5,8 @@ import "./fileChanges.css";
 
 interface Props {
   changes: FileChange[];
-  cwd?: string;
-  sessionId?: string;
+  cwd: string;
+  sessionId: string;
   status?: string;
   /** Filename chips (final assistant). Off = verbose tool-call labels in turn details. */
   compact?: boolean;

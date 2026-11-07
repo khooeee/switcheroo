@@ -51,8 +51,6 @@ export function useAppShortcuts({
   findInSessionsOpen.current = showFindInSessions;
   const activeId = useRef(activeTabId);
   activeId.current = activeTabId;
-  const sessionsRef = useRef([...pinned, ...unpinned]);
-  sessionsRef.current = [...pinned, ...unpinned];
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
   const runningId = useRef<string | null>(null);
@@ -67,9 +65,9 @@ export function useAppShortcuts({
 
   useEffect(() => {
     const closeActive = () => {
-      if (blockedRef.current) return;
-      const session = sessionsRef.current.find((item) => item.id === activeId.current);
-      if (session) void window.switcheroo.closeSession(session.id);
+      const id = activeId.current;
+      if (!id || blockedRef.current) return;
+      void window.switcheroo.closeSession(id);
     };
     const forkActive = () => {
       const id = forkableId.current;

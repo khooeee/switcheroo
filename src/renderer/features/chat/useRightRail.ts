@@ -9,15 +9,10 @@ type UpdateSelection = (prev: RightRailSelection | null) => RightRailSelection |
 
 function isSameSelection(
   prev: RightRailSelection | null,
-  sessionId: string,
   turnId: string,
   focusEventId?: string,
 ): boolean {
-  return (
-    prev?.sessionId === sessionId &&
-    prev.turnId === turnId &&
-    prev.focusEventId === focusEventId
-  );
+  return prev?.turnId === turnId && prev.focusEventId === focusEventId;
 }
 
 /** `all` with one tab's selection replaced (null closes that tab's rail); unchanged tabs keep identity. */
@@ -63,34 +58,30 @@ export function useRightRail({
   }, [updateTab]);
 
   /** Toggle closed when activating the same message again; otherwise open / switch highlight. */
-  const toggleSessionRightRail = useCallback(
+  const toggleRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
       if (!sessionId) return;
-      const next = nextRightRailSelection(sessionId, turnId, focusEventId);
-      updateTab(sessionId, (prev) =>
-        isSameSelection(prev, sessionId, turnId, focusEventId) ? null : next,
-      );
+      const next = nextRightRailSelection(turnId, focusEventId);
+      updateTab(sessionId, (prev) => (isSameSelection(prev, turnId, focusEventId) ? null : next));
     },
     [sessionId, updateTab],
   );
 
-  const forceSessionRightRail = useCallback(
+  const forceRightRail = useCallback(
     (turnId: string, focusEventId?: string) => {
       if (!sessionId) return;
-      const next = nextRightRailSelection(sessionId, turnId, focusEventId);
+      const next = nextRightRailSelection(turnId, focusEventId);
       updateTab(sessionId, () => next);
     },
     [sessionId, updateTab],
   );
 
   /** Show a subagent's transcript; selecting the open subagent again closes the rail. */
-  const toggleSubagentRightRail = useCallback((subagentSessionId: string, subagentId: string) => {
+  const toggleSubagentRightRail = useCallback((subagentId: string) => {
     const key = sessionIdRef.current;
     if (!key) return;
-    const next = { ...nextRightRailSelection(subagentSessionId, ""), subagentId };
-    updateTab(key, (prev) =>
-      prev?.sessionId === subagentSessionId && prev.subagentId === subagentId ? null : next,
-    );
+    const next = { ...nextRightRailSelection(""), subagentId };
+    updateTab(key, (prev) => (prev?.subagentId === subagentId ? null : next));
   }, [updateTab]);
 
   const rightRailView = useMemo(
@@ -121,8 +112,8 @@ export function useRightRail({
   return {
     rightRailView,
     closeRightRail,
-    toggleSessionRightRail,
-    forceSessionRightRail,
+    toggleRightRail,
+    forceRightRail,
     toggleSubagentRightRail,
   };
 }

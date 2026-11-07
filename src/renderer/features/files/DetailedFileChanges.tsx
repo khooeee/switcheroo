@@ -12,8 +12,8 @@ export function DetailedFileChanges({
   status,
 }: {
   changes: FileChange[];
-  cwd?: string;
-  sessionId?: string;
+  cwd: string;
+  sessionId: string;
   status?: string;
 }) {
   return (
@@ -39,8 +39,8 @@ function DetailedFileEntry({
 }: {
   change: FileChange;
   status?: string;
-  cwd?: string;
-  sessionId?: string;
+  cwd: string;
+  sessionId: string;
 }) {
   const [open, setOpen] = useState(false);
   const path = relativeChangePath(change.path, cwd);

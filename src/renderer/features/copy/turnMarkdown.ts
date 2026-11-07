@@ -1,3 +1,4 @@
+import type { AgentKind } from "../../../shared/agentKind";
 import type { TranscriptItem, TranscriptTurn } from "../../../shared/transcript";
 import { stripCursorStreamNoise } from "../../../shared/cursorStreamNoise";
 
@@ -7,7 +8,7 @@ const UNFENCED_ROLES = new Set(["user", "assistant", "thought", "subagent"]);
 /** One turn as markdown: each message under a `## Role · time` heading. */
 export function turnMarkdown(
   turn: TranscriptTurn,
-  { agent, userLabel = "user" }: { agent?: string; userLabel?: string },
+  { agent, userLabel = "user" }: { agent: AgentKind; userLabel?: string },
 ): string {
   const sections = [itemSection(turn.user, agent, userLabel)];
   for (const item of turn.events) sections.push(itemSection(item, agent, item.role));
@@ -16,7 +17,7 @@ export function turnMarkdown(
   return sections.filter(Boolean).join("\n\n");
 }
 
-function itemSection(item: TranscriptItem, agent: string | undefined, label: string): string {
+function itemSection(item: TranscriptItem, agent: AgentKind, label: string): string {
   const text = stripCursorStreamNoise(agent, item.text).trim();
   const task = item.subagentId ? item.toolTitle?.trim() : undefined;
   if (!text && !task) return "";
