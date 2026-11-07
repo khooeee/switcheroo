@@ -26,8 +26,8 @@ export function SessionRailFilter({
         ref={inputRef}
         type="text"
         value={value}
-        placeholder="Filter tabs"
-        aria-label="Filter tabs"
+        placeholder="Filter sessions"
+        aria-label="Filter sessions"
         spellCheck={false}
         autoComplete="off"
         onChange={(event) => onChange(event.target.value)}
