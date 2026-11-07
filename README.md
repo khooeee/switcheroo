@@ -8,6 +8,7 @@ An agentic development environment that sparks joy in my everyday coding:
 - All agents are started in bypass permissions/YOLO mode.
 - You can go back and forward through the sessions you selected.  As an example of how I use this, I do something similar to `/btw` by forking a session, sending a prompt and jumping back to my original session to keep on working.
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
+- Standup notes can be generated for your daily work by going to **Edit** → **Paste Standup Prompt**.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 There are also speed optimizations to eliminate unnecessary waiting:
@@ -94,8 +95,6 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 Each finished turn adds one line to `activity/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Activity Folder** to see them.
 
 To generate standup notes, select **Edit** → **Paste Standup Prompt**. It pastes a prompt for yesterday into the composer, so change the date if you need another day, then send it. If that day has no log, the agent uses the newest earlier one.
-
-Each line has `at`, `sessionId`, `turnId`, `title`, `cwd`, `agent`, `status`, `prompt`, `reply`, `files` and `cron`. `prompt` and `reply` are cut to 4,000 characters, and `files` is paths only; the full turn stays in the session transcript. `cron` is `true` for sessions a cron started, so a standup can skip them.
 
 ## History management
 
