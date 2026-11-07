@@ -117,9 +117,9 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
 
-**Cmd+[** (Alt+Left on Linux): Go back to the previously selected tab. Cmd+Left also works on Mac, unless the focused text box has text.
+**Alt+Left or Cmd+[**: Go back to the previously selected tab
 
-**Cmd+]** (Alt+Right on Linux): Go forward through selected tabs. Cmd+Right also works on Mac, unless the focused text box has text.
+**Alt+Right or Cmd+]**: Go forward through selected tabs
 
 **Escape**: Stop agent (while running)
 
