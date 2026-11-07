@@ -2,7 +2,7 @@ import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCa
 import { fitSidePaneWidth } from "../layout/fitSidePaneWidth";
 import { readCssPx } from "../layout/readCssPx";
 
-/** Sora 12px "Switchboard", session padding and border, row padding, gap, and the add button. */
+/** Narrowest the rail can be dragged. */
 const MIN_WIDTH = 160;
 const DEFAULT_WIDTH = 160;
 

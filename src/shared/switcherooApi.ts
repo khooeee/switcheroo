@@ -7,7 +7,6 @@ import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { Session } from "./session";
-import type { SwitchboardTurn } from "./switchboardTurn";
 import type { TranscriptTurn } from "./transcript";
 
 export interface SessionListPayload {
@@ -30,8 +29,8 @@ export interface SwitcherooApi {
   unpinSession: (sessionId: string) => Promise<void>;
   /** Sync Session menu Mark as Read/Unread for the active session. */
   setActiveSessionUnread: (unread: boolean) => Promise<void>;
-  setActiveTab: (tabId: ActiveTabId) => Promise<void>;
-  listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
+  setActiveTab: (tabId: string) => Promise<void>;
+  listSessions: () => Promise<SessionListPayload>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;
   respondAskQuestion: (
@@ -86,11 +85,7 @@ export interface SwitcherooApi {
     cb: (payload: { searchId: number; stopped: boolean }) => void,
   ) => () => void;
   onSessionsChanged: (cb: (payload: SessionListPayload) => void) => () => void;
-  onSwitchboardTurn: (cb: (turn: SwitchboardTurn) => void) => () => void;
-  onSwitchboardTurns: (cb: (turns: SwitchboardTurn[]) => void) => () => void;
-  onSwitchboardSessionRemoved: (
-    cb: (payload: { sessionId: string; message: string }) => void,
-  ) => () => void;
+  onSessionRemoved: (cb: (payload: { message: string }) => void) => () => void;
   onTranscript: (
     cb: (payload: { sessionId: string; turn: TranscriptTurn }) => void,
   ) => () => void;

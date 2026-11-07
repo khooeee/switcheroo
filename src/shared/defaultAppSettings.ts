@@ -13,7 +13,6 @@ export function defaultAppSettings(): AppSettings {
     lastPrefix: "",
     lastPin: false,
     lastSwitcherooAware: false,
-    cleanSwitchboardTurnsOlderThanDays: 30,
     sessionListMax: 500,
   };
 }

@@ -9,12 +9,10 @@ export function softCloseHost({ state, agents }: SessionDeps) {
     agents: state.agents,
     transcripts: state.transcripts,
     hydrated: state.hydrated,
-    bus: state.bus,
     get railLists() { return state.railLists; },
     get activeTabId() { return state.activeTabId; },
     setActiveTabId: (id: ActiveTabId) => state.setActiveTabId(id),
     setRailLists: (lists: SessionRailLists) => state.setRailLists(lists),
-    send: (channel: string, payload: unknown) => state.send(channel, payload),
     refreshCommandsIfNeeded: (sessionId: string) => agents.refreshCommandsIfNeeded(sessionId),
   };
 }

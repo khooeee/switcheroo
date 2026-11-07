@@ -30,7 +30,7 @@ export async function handleControlRequest(
     }
 
     if (method === "GET" && pathname === "/sessions") {
-      return sendJson(res, 200, sessions.railPayload());
+      return sendJson(res, 200, sessions.list());
     }
 
     if (method === "POST" && pathname === "/sessions") {

@@ -18,7 +18,6 @@ import type { MessageSession } from "./useMessageSession";
 export const TranscriptMessage = memo(function TranscriptMessage({
   session,
   item,
-  onActivate,
   onToggleDetails,
   extraFileChanges,
   extraImages,
@@ -27,8 +26,6 @@ export const TranscriptMessage = memo(function TranscriptMessage({
 }: {
   session: MessageSession;
   item: TranscriptItem;
-  /** Whole-message click (e.g. Switchboard navigate). */
-  onActivate?: () => void;
   /** Arrow control to the right of copy — toggles the turn-details rail. */
   onToggleDetails?: () => void;
   /** Turn boundaries only (user message, final reply); mid-turn events cannot be forked. */
@@ -42,7 +39,6 @@ export const TranscriptMessage = memo(function TranscriptMessage({
 }) {
   const text = stripCursorStreamNoise(session.agent, item.text);
   const changes = extraFileChanges?.length ? extraFileChanges : item.fileChanges;
-  const clickable = !!onActivate;
   const markdown =
     item.role === "assistant" || item.role === "user" || item.role === "thought";
   const copyMarkdown = markdown && text ? text : undefined;
@@ -52,22 +48,11 @@ export const TranscriptMessage = memo(function TranscriptMessage({
 
   return (
     <div
-      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}${clickable ? " turn-toggle" : ""}`}
+      className={`message ${item.role}${changes?.length ? " has-file-changes" : ""}${item.queued ? " queued" : ""}`}
       data-event-id={item.id}
       data-find-text={text}
       data-copy-markdown={copyMarkdown}
       data-turn-details={onToggleDetails ? "" : undefined}
-      onClick={
-        clickable
-          ? (event) => {
-              const target = event.target as HTMLElement;
-              if (target.closest("button, a, summary, details, input, textarea")) return;
-              onActivate?.();
-            }
-          : undefined
-      }
-      role={clickable ? "button" : undefined}
-      tabIndex={clickable ? 0 : undefined}
     >
       {item.role !== "stopped" && (
         <div className="row">

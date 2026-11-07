@@ -14,7 +14,6 @@ export async function navigateToEvent(
       return;
     }
   } else if (!(await hydration.ensure(sessionId))) {
-    hydration.forgetMissing(sessionId);
     return;
   }
   state.activeTabId = sessionId;

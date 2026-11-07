@@ -1,28 +1,25 @@
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
-import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
-import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { useEffect } from "react";
 import { modKey } from "../shortcuts/modKey";
 
-function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {
-  const sessionId = sessionIdForTab(activeTabId, [...pinned, ...unpinned]);
-  if (!sessionId) return;
-  if (pinned.some((session) => session.id === sessionId)) {
-    void window.switcheroo.unpinSession(sessionId);
+function toggleActivePin(pinned: Session[], activeTabId: ActiveTabId) {
+  if (!activeTabId) return;
+  if (pinned.some((session) => session.id === activeTabId)) {
+    void window.switcheroo.unpinSession(activeTabId);
     return;
   }
   if (pinned.length >= MAX_PINNED_SESSIONS) return;
-  void window.switcheroo.pinSession(sessionId);
+  void window.switcheroo.pinSession(activeTabId);
 }
 
 export function useSessionShortcuts(
   pinned: Session[],
   unpinned: Session[],
   activeTabId: ActiveTabId,
-  selectTab: (id: ActiveTabId) => void,
+  selectTab: (id: string) => void,
   disabled: boolean,
   filterQuery = "",
 ) {
@@ -30,7 +27,7 @@ export function useSessionShortcuts(
     const order = visibleTabOrder(pinned, unpinned, filterQuery);
     const step = (delta: number) => {
       if (disabled || order.length === 0) return;
-      const index = order.indexOf(activeTabId);
+      const index = activeTabId ? order.indexOf(activeTabId) : -1;
       if (index < 0) {
         const fallback = delta > 0 ? order[0] : order[order.length - 1];
         if (fallback !== undefined) selectTab(fallback);
@@ -44,7 +41,7 @@ export function useSessionShortcuts(
       if (disabled || event.defaultPrevented || event.isComposing) return;
       if (modKey(event, "p")) {
         event.preventDefault();
-        toggleActivePin(pinned, unpinned, activeTabId);
+        toggleActivePin(pinned, activeTabId);
         return;
       }
 
@@ -54,23 +51,18 @@ export function useSessionShortcuts(
     };
     const onNext = () => step(1);
     const onPrev = () => step(-1);
-    const onSwitchboard = () => {
-      if (!disabled) selectTab(SWITCHBOARD_ID);
-    };
     const onTogglePin = () => {
       if (disabled) return;
-      toggleActivePin(pinned, unpinned, activeTabId);
+      toggleActivePin(pinned, activeTabId);
     };
     window.addEventListener("keydown", onKey, true);
     window.addEventListener("switcheroo:session-next", onNext);
     window.addEventListener("switcheroo:session-prev", onPrev);
-    window.addEventListener("switcheroo:open-switchboard", onSwitchboard);
     window.addEventListener("switcheroo:toggle-pin", onTogglePin);
     return () => {
       window.removeEventListener("keydown", onKey, true);
       window.removeEventListener("switcheroo:session-next", onNext);
       window.removeEventListener("switcheroo:session-prev", onPrev);
-      window.removeEventListener("switcheroo:open-switchboard", onSwitchboard);
       window.removeEventListener("switcheroo:toggle-pin", onTogglePin);
     };
   }, [pinned, unpinned, activeTabId, selectTab, disabled, filterQuery]);

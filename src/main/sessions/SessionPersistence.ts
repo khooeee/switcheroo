@@ -4,10 +4,9 @@ import { getAppSettings } from "../appSettings";
 import { metaFromSession } from "../storage/metaFromSession";
 import { saveSessionMeta } from "../storage/sessionMeta";
 import { saveTranscript } from "../storage/sessionTranscripts";
-import { saveSwitchboardTurns } from "../storage/switchboardEvents";
 import type { SessionState } from "./SessionState";
 
-/** Writes app state, Switchboard turns, session meta and transcripts to disk. */
+/** Writes app state, session meta and transcripts to disk. */
 export class SessionPersistence {
   private timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -20,7 +19,6 @@ export class SessionPersistence {
     }
     const { state } = this;
     await this.persistStateFile();
-    await saveSwitchboardTurns(state.bus.list());
     await state.subagentTranscripts.flush();
     await Promise.all(
       [...state.sessions.values()].map(async (session) => {
@@ -43,7 +41,7 @@ export class SessionPersistence {
   async persistStateFile(): Promise<void> {
     const state: PersistedState = {
       version: 1,
-      activeTabId: this.state.activeTabId,
+      activeTabId: this.state.activeTabId ?? "",
       settings: getAppSettings(),
       pinned: [...this.state.railLists.pinnedIds],
       unpinned: [...this.state.railLists.unpinnedIds],

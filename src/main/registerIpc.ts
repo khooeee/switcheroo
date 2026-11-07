@@ -12,7 +12,6 @@ import { showComposerContextMenu } from "./contextMenus/showComposerContextMenu"
 import { resolveFolderPickerStart } from "./files/resolveFolderPickerStart";
 import { saveMarkdownFile } from "./files/saveMarkdownFile";
 import type { SessionManager } from "./sessions/SessionManager";
-import type { ActiveTabId } from "../shared/activeTabId";
 import type { AppSettings } from "../shared/appSettings";
 import type { ConfigMenuCategory } from "../shared/configMenuCategory";
 import type { CreateSessionInput } from "../shared/createSessionInput";
@@ -61,7 +60,7 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   ipcMain.handle("sessions:setActiveUnread", (_e, unread: boolean) => {
     setActiveSessionUnread(!!unread);
   });
-  ipcMain.handle("sessions:setActive", (_e, tabId: ActiveTabId) =>
+  ipcMain.handle("sessions:setActive", (_e, tabId: string) =>
     sessions.setActiveTab(tabId),
   );
   ipcMain.handle("sessions:navigateEvent", (_e, sessionId: string, turnId: string, eventId: string) =>

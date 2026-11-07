@@ -6,7 +6,6 @@ import { SaveViewMarkdownButton } from "../copy/SaveViewMarkdownButton";
 import { turnsMarkdown } from "../copy/turnsMarkdown";
 import { SubagentRailHeading } from "../subagents/SubagentRailHeading";
 import { subagentRailTitle } from "../subagents/subagentRailTitle";
-import { ClosedTurnDetail } from "./ClosedTurnDetail";
 import type { RightRailView } from "./RightRailView";
 import { TurnDetail } from "./TurnDetail";
 import { useMessageSession } from "./useMessageSession";
@@ -20,25 +19,18 @@ const NO_TURNS: TranscriptTurn[] = [];
 
 /** Scrollable right rail: one turn in full (Turn Details), or a subagent's whole transcript. */
 export const RightRail = memo(function RightRail({
-  tabId,
   session,
   turn,
   subagent,
-  agent,
-  cwd,
   scrollRef,
   focusEventId,
   focusKey = 0,
   onClose,
 }: {
-  /** Tab (Switchboard or a chat) this rail belongs to; it keeps its own width and scroll. */
-  tabId: string;
-  session: Session | undefined;
+  /** The chat this rail belongs to; it keeps its own width and scroll. */
+  session: Session;
   turn: TranscriptTurn | null;
   subagent: RightRailView["subagent"];
-  /** When session is missing (closed Switchboard turn). */
-  agent?: string;
-  cwd?: string;
   scrollRef?: RefObject<HTMLDivElement | null>;
   focusEventId?: string;
   focusKey?: number;
@@ -58,9 +50,9 @@ export const RightRail = memo(function RightRail({
   const saveView = subagent ? "subagent" : "turn-details";
 
   // Width first: restoring the scroll offset needs the tab's own width (and so its line wrapping).
-  useShowRightRail(tabId);
-  useRightRailScroll(tabId, focusEventId, focusKey, resolvedScrollRef);
-  useFlashRightRailFocus(tabId, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
+  useShowRightRail(session.id);
+  useRightRailScroll(session.id, focusEventId, focusKey, resolvedScrollRef);
+  useFlashRightRailFocus(session.id, focusEventId, focusKey, firstTurnId, resolvedScrollRef);
 
   return (
     <aside className="right-rail" aria-label={label} data-save-view={turns.length ? saveView : undefined}>
@@ -78,7 +70,7 @@ export const RightRail = memo(function RightRail({
             <SaveViewMarkdownButton
               view={saveView}
               getMarkdown={() =>
-                turnsMarkdown(turns, { agent: session?.agent ?? agent, title: subagentTitle, userLabel })}
+                turnsMarkdown(turns, { agent: session.agent, title: subagentTitle, userLabel })}
               nameHint={subagentTitle ?? turns[0].user.text}
             />
           ) : null}
@@ -99,19 +91,15 @@ export const RightRail = memo(function RightRail({
             {subagent.loading ? "Loading…" : "No transcript was saved for this subagent."}
           </div>
         ) : null}
-        {turns.map((entry) =>
-          messageSession ? (
-            <TurnDetail
-              key={entry.id}
-              session={messageSession}
-              turn={entry}
-              userLabel={userLabel}
-              forkable={!subagent}
-            />
-          ) : (
-            <ClosedTurnDetail key={entry.id} turn={entry} agent={agent} cwd={cwd} />
-          ),
-        )}
+        {turns.map((entry) => (
+          <TurnDetail
+            key={entry.id}
+            session={messageSession}
+            turn={entry}
+            userLabel={userLabel}
+            forkable={!subagent}
+          />
+        ))}
       </div>
     </aside>
   );

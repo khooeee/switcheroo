@@ -6,20 +6,12 @@ export type MessageSession = Pick<Session, "id" | "agent" | "cwd" | "supportsFor
 
 /**
  * Narrow `session` to what transcript rows need, stable across unrelated session updates
- * (status, usage, tabs) so memoized rows do not re-render.
+ * (status, usage) so memoized rows do not re-render.
  */
-export function useMessageSession(session: Session): MessageSession;
-export function useMessageSession(session: Session | undefined): MessageSession | undefined;
-export function useMessageSession(session: Session | undefined): MessageSession | undefined {
-  const id = session?.id;
-  const agent = session?.agent;
-  const cwd = session?.cwd;
-  const supportsForkAtMessage = session?.supportsForkAtMessage;
+export function useMessageSession(session: Session): MessageSession {
+  const { id, agent, cwd, supportsForkAtMessage } = session;
   return useMemo(
-    () =>
-      id === undefined || agent === undefined || cwd === undefined
-        ? undefined
-        : { id, agent, cwd, supportsForkAtMessage },
+    () => ({ id, agent, cwd, supportsForkAtMessage }),
     [id, agent, cwd, supportsForkAtMessage],
   );
 }

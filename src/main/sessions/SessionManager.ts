@@ -1,10 +1,8 @@
 import type { BrowserWindow } from "electron";
-import type { ActiveTabId } from "../../shared/activeTabId";
 import type { AppSettings } from "../../shared/appSettings";
 import type { ConfigMenuCategory } from "../../shared/configMenuCategory";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import type { Session } from "../../shared/session";
-import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { loadState } from "../storage/persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
@@ -20,7 +18,6 @@ import { SessionRail } from "./SessionRail";
 import type { SessionDeps } from "./SessionDeps";
 import { restoreSavedState } from "./restoreSavedState";
 import { enforceSessionListMax } from "./enforceSessionListMax";
-import { cleanSwitchboardOnStartup } from "./cleanSwitchboardOnStartup";
 import { createSession } from "./createSession";
 import { forkSession } from "./forkSession";
 import { setActiveTab } from "./setActiveTab";
@@ -28,7 +25,7 @@ import { navigateToEvent } from "./navigateToEvent";
 import { promptSession } from "./promptSession";
 import { showSessionConfigMenu } from "./showSessionConfigMenu";
 
-/** Main-process API for sessions, tabs, prompts and Switchboard; delegates to collaborators. */
+/** Main-process API for sessions, tabs and prompts; delegates to collaborators. */
 export class SessionManager {
   private state = new SessionState();
   private persistence = new SessionPersistence(this.state);
@@ -45,7 +42,7 @@ export class SessionManager {
 
   setWindow(win: BrowserWindow): void {
     this.state.window = win;
-    const sessionId = this.state.activeSessionId();
+    const sessionId = this.state.activeTabId;
     if (sessionId) this.agents.refreshCommandsIfNeeded(sessionId);
   }
 
@@ -59,9 +56,7 @@ export class SessionManager {
   }
 
   async openActiveInCursor(): Promise<void> {
-    const sessionId = this.state.activeSessionId();
-    if (!sessionId) return;
-    const session = this.state.sessions.get(sessionId);
+    const session = this.state.activeSession();
     if (!session?.cwd.trim()) return;
     await openFolderInCursor(session.cwd);
   }
@@ -70,11 +65,7 @@ export class SessionManager {
     const saved = await loadState();
     hydrateAppSettings(saved?.settings);
     if (saved) await restoreSavedState(this.deps, saved);
-    this.state.bus.on("turn", (turn: SwitchboardTurn) => {
-      this.state.send("switchboard:turn", turn);
-    });
     if (await enforceSessionListMax(this.deps)) await this.persistence.persistStateFile();
-    await cleanSwitchboardOnStartup(this.state);
     this.agents.ensureWarm(getAppSettings().lastCwd);
   }
 
@@ -93,14 +84,6 @@ export class SessionManager {
   }
 
   list() {
-    return {
-      ...this.railPayload(),
-      switchboardTurns: this.state.bus.list(),
-    };
-  }
-
-  /** Rail sessions without the Switchboard feed (control API). */
-  railPayload() {
     return this.state.sessionListPayload();
   }
 
@@ -151,7 +134,7 @@ export class SessionManager {
     return session && this.state.sessionPayload(session);
   }
 
-  setActiveTab(tabId: ActiveTabId): Promise<void> {
+  setActiveTab(tabId: string): Promise<void> {
     return setActiveTab(this.deps, tabId);
   }
 

@@ -14,8 +14,7 @@ export async function enforceSessionListMax(deps: SessionDeps, keepId?: string):
   const isBusy = (session: Session) =>
     session.status === "running" || session.status === "connecting";
   const protect = new Set<string>();
-  const activeId = state.activeSessionId();
-  if (activeId) protect.add(activeId);
+  if (state.activeTabId) protect.add(state.activeTabId);
   if (keepId) protect.add(keepId);
   for (const session of state.sessions.values()) {
     if (isBusy(session)) protect.add(session.id);

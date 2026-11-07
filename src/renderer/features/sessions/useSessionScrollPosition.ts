@@ -3,7 +3,7 @@ import { pinScrollToBottom } from "./pinScrollToBottom";
 import { trackScrollPosition } from "./trackScrollPosition";
 
 export function useSessionScrollPosition(
-  sessionId: string,
+  sessionId: string | null,
   scrollRef: RefObject<HTMLElement | null>,
   pinByDefault = true,
 ): () => void {

@@ -1,10 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { ActiveTabId } from "./shared/activeTabId";
 import type { CursorAskQuestionRequest } from "./shared/agentRequests";
 import type { AppSettings } from "./shared/appSettings";
 import type { CreateSessionInput } from "./shared/createSessionInput";
 import type { FindInSessionsHit } from "./shared/findInSessionsHit";
-import type { SwitchboardTurn } from "./shared/switchboardTurn";
 import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
 import type { TranscriptTurn } from "./shared/transcript";
 
@@ -27,7 +25,7 @@ const api: SwitcherooApi = {
   pinSession: (sessionId: string) => ipcRenderer.invoke("sessions:pin", sessionId),
   unpinSession: (sessionId: string) => ipcRenderer.invoke("sessions:unpin", sessionId),
   setActiveSessionUnread: (unread) => ipcRenderer.invoke("sessions:setActiveUnread", unread),
-  setActiveTab: (tabId: ActiveTabId) => ipcRenderer.invoke("sessions:setActive", tabId),
+  setActiveTab: (tabId: string) => ipcRenderer.invoke("sessions:setActive", tabId),
   listSessions: () => ipcRenderer.invoke("sessions:list"),
   sendPrompt: (sessionId: string, text: string) =>
     ipcRenderer.invoke("session:prompt", sessionId, text),
@@ -58,10 +56,7 @@ const api: SwitcherooApi = {
     ipcRenderer.invoke("sessions:navigateEvent", sessionId, turnId, eventId),
   onSessionsChanged: (cb) =>
     subscribe<SessionListPayload>("sessions:changed", cb),
-  onSwitchboardTurn: (cb) => subscribe<SwitchboardTurn>("switchboard:turn", cb),
-  onSwitchboardTurns: (cb) => subscribe<SwitchboardTurn[]>("switchboard:turns", cb),
-  onSwitchboardSessionRemoved: (cb) =>
-    subscribe<{ sessionId: string; message: string }>("switchboard:session-removed", cb),
+  onSessionRemoved: (cb) => subscribe<{ message: string }>("session:removed", cb),
   onTranscript: (cb) =>
     subscribe<{ sessionId: string; turn: TranscriptTurn }>("transcript", cb),
   onSubagentTurn: (cb) =>
@@ -107,7 +102,6 @@ const MENU_EVENTS: Record<string, string> = {
   "prompt:focus": "switcheroo:focus-prompt",
   "prompt:paste-aware": "switcheroo:paste-aware-prompt",
   "filter:focus": "switcheroo:focus-filter",
-  "switchboard:open": "switcheroo:open-switchboard",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

@@ -1,25 +1,19 @@
-import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
 import type { HydrationHost } from "./HydrationHost";
 
-/** Session folder missing: drop open entry + Switchboard events and tell the UI. */
+/** Session folder missing: drop the open entry and tell the UI. */
 export function forgetMissingSession(host: HydrationHost, sessionId: string): void {
-  const title =
-    host.sessions.get(sessionId)?.title ??
-    host.bus.list().find((event) => event.sessionId === sessionId)?.sessionTitle ??
-    "Session";
+  const title = host.sessions.get(sessionId)?.title;
   if (host.sessions.has(sessionId)) {
     host.sessions.delete(sessionId);
     host.transcripts.delete(sessionId);
     host.hydrated.delete(sessionId);
     host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
-    if (host.activeTabId === sessionId) host.setActiveTabId(SWITCHBOARD_ID);
+    if (host.activeTabId === sessionId) host.setActiveTabId(null);
     host.emitSessions();
   }
-  host.bus.removeSession(sessionId);
-  host.send("switchboard:session-removed", {
-    sessionId,
-    message: `Session “${title}” is no longer on disk and was removed from Switchboard.`,
+  host.send("session:removed", {
+    message: `${title ? `Session “${title}”` : "That session"} is no longer on disk and was removed.`,
   });
   host.persist();
 }

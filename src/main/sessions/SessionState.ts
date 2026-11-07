@@ -3,12 +3,9 @@ import type { ActiveTabId } from "../../shared/activeTabId";
 import type { AgentKind } from "../../shared/agentKind";
 import type { Session } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
-import { SWITCHBOARD_ID } from "../../shared/switchboardId";
-import { GlobalEventBus } from "../events";
 import type { AcpSession } from "../acp/session";
 import { WarmSessionPool } from "../acp/WarmSessionPool";
 import { AgentForkSupport } from "../acp/AgentForkSupport";
-import { activeSessionId } from "../menuState/activeSessionId";
 import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
@@ -22,8 +19,7 @@ export class SessionState {
   transcripts = new Map<string, TranscriptTurn[]>();
   subagentTranscripts = new SubagentTranscriptStore();
   hydrated = new Set<string>();
-  activeTabId: ActiveTabId = SWITCHBOARD_ID;
-  bus = new GlobalEventBus();
+  activeTabId: ActiveTabId = null;
   window: BrowserWindow | null = null;
   askOwners = new Map<string, string>();
   warm = new WarmSessionPool<AcpSession>();
@@ -38,17 +34,17 @@ export class SessionState {
     this.railLists = lists;
   }
 
+  /** The session in the main panel, if any. */
+  activeSession(): Session | null {
+    return this.activeTabId ? this.sessions.get(this.activeTabId) ?? null : null;
+  }
+
   menuCtx() {
     return {
-      activeTabId: this.activeTabId,
-      sessions: this.sessions,
+      activeSession: this.activeSession(),
       pinnedIds: this.railLists.pinnedIds,
       supportsFork: (agent: AgentKind) => this.forkSupport.flags(agent).supportsFork,
     };
-  }
-
-  activeSessionId(): string | null {
-    return activeSessionId(this.menuCtx());
   }
 
   prependSession(session: Session, pin = false): void {

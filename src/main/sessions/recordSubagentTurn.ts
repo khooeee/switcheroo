@@ -1,7 +1,7 @@
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { SessionState } from "./SessionState";
 
-/** Store a streamed subagent turn and push it to the renderer (subagents stay out of Switchboard). */
+/** Store a streamed subagent turn and push it to the renderer. */
 export function recordSubagentTurn(
   state: SessionState,
   sessionId: string,

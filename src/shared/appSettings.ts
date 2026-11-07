@@ -15,8 +15,6 @@ export interface AppSettings {
   lastPrefix: string;
   lastPin: boolean;
   lastSwitcherooAware: boolean;
-  /** Drop Switchboard turns older than this many days on startup. */
-  cleanSwitchboardTurnsOlderThanDays: number;
   /** Soft-close oldest rail sessions on startup when over this (0 = unlimited). */
   sessionListMax: number;
 }

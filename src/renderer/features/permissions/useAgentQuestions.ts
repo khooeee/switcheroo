@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CursorAskQuestionRequest } from "../../../shared/agentRequests";
 
-export function useAgentQuestions(sessionId: string): CursorAskQuestionRequest | null {
+export function useAgentQuestions(sessionId: string | null): CursorAskQuestionRequest | null {
   const [questions, setQuestions] = useState<CursorAskQuestionRequest[]>([]);
   useEffect(() => {
     const unsubscribe = window.switcheroo.onAskQuestion((request) => {

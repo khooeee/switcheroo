@@ -39,7 +39,7 @@ export class AcpSession extends SharedAgentConnection {
   private updates: SessionUpdateRouter;
   private runner: PromptRunner;
   private disposed = false;
-  /** When false, session updates are not mirrored to transcript/Switchboard (load/resume replay). */
+  /** When false, session updates are not mirrored to the transcript (load/resume replay). */
   private mirrorUpdates = true;
   private starting: Promise<void> | null = null;
 

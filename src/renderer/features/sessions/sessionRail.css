@@ -39,25 +39,8 @@
   background: color-mix(in srgb, var(--codex) 35%, var(--bg-2));
 }
 
-.rail-switchboard-row {
+.rail-new-session {
   flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 6px;
-}
-
-.rail-switchboard-row .rail-session {
-  flex: 1 0 auto;
-  width: auto;
-  min-width: max-content;
-}
-
-.rail-switchboard-row .rail-label {
-  min-width: max-content;
-  overflow: visible;
-  text-overflow: unset;
 }
 
 .rail-sessions {
@@ -114,22 +97,6 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-
-.rail-add {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px dashed var(--border);
-  background: transparent;
-  color: var(--text-dim);
-  font-size: 20px;
-  line-height: 1;
-}
-
-.rail-add:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 .rail-settings {

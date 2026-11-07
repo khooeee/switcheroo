@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
-import type { Session } from "../../../shared/session";
-import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 
 /** Session ids with an unread completed turn; cleared when that chat is active. */
-export function useSessionUnreadDots(activeTabId: ActiveTabId, sessions: Session[]) {
+export function useSessionUnreadDots(activeTabId: ActiveTabId) {
   const [unread, setUnread] = useState(() => new Set<string>());
-  const activeId = sessionIdForTab(activeTabId, sessions);
-  const activeRef = useRef(activeId);
-  activeRef.current = activeId;
+  const activeRef = useRef(activeTabId);
+  activeRef.current = activeTabId;
 
   useEffect(() => {
     return window.switcheroo.onPromptComplete(({ sessionId }) => {
@@ -23,14 +20,14 @@ export function useSessionUnreadDots(activeTabId: ActiveTabId, sessions: Session
   }, []);
 
   useEffect(() => {
-    if (!activeId) return;
+    if (!activeTabId) return;
     setUnread((prev) => {
-      if (!prev.has(activeId)) return prev;
+      if (!prev.has(activeTabId)) return prev;
       const next = new Set(prev);
-      next.delete(activeId);
+      next.delete(activeTabId);
       return next;
     });
-  }, [activeId]);
+  }, [activeTabId]);
 
   const toggleUnread = useCallback((sessionId: string) => {
     setUnread((prev) => {
@@ -42,8 +39,8 @@ export function useSessionUnreadDots(activeTabId: ActiveTabId, sessions: Session
   }, []);
 
   useEffect(() => {
-    void window.switcheroo.setActiveSessionUnread(!!activeId && unread.has(activeId));
-  }, [activeId, unread]);
+    void window.switcheroo.setActiveSessionUnread(!!activeTabId && unread.has(activeTabId));
+  }, [activeTabId, unread]);
 
   return { unread, toggleUnread };
 }

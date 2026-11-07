@@ -1,9 +1,8 @@
 import type { Session } from "../../shared/session";
-import { SWITCHBOARD_ID } from "../../shared/switchboardId";
-import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
 import { loadSessionMeta } from "../storage/sessionMeta";
 import { loadTranscript } from "../storage/sessionTranscripts";
 import { finalizeStalledTurns } from "../sessions/finalizeStalledTurns";
+import { forgetMissingSession } from "./forgetMissingSession";
 import type { HydrationHost } from "./HydrationHost";
 
 /** Load meta + transcript into memory the first time a session is opened. */
@@ -16,12 +15,7 @@ export async function ensureSessionHydrated(
   if (host.hydrated.has(sessionId)) return session;
   const meta = await loadSessionMeta(sessionId);
   if (!meta) {
-    host.sessions.delete(sessionId);
-    host.transcripts.delete(sessionId);
-    host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
-    if (host.activeTabId === sessionId) host.setActiveTabId(SWITCHBOARD_ID);
-    host.emitSessions();
-    host.persist();
+    forgetMissingSession(host, sessionId);
     return null;
   }
   session.title = meta.title;

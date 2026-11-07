@@ -1,14 +1,11 @@
 import type { PersistedState } from "../../shared/persistedState";
-import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { loadSessionMeta } from "../storage/sessionMeta";
 import { sessionFromMeta } from "../storage/sessionFromMeta";
-import { loadSwitchboardTurns, saveSwitchboardTurns } from "../storage/switchboardEvents";
-import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { loadListsFromPersisted } from "../railLists/loadListsFromPersisted";
 import { removeSessionFromLists } from "../railLists/removeSessionFromLists";
 import type { SessionDeps } from "./SessionDeps";
 
-/** Rebuild rail sessions, active tab and Switchboard history from the saved state file. */
+/** Rebuild rail sessions and the active tab from the saved state file. */
 export async function restoreSavedState(
   { state, hydration }: SessionDeps,
   saved: PersistedState,
@@ -25,33 +22,7 @@ export async function restoreSavedState(
     const meta = metas[i];
     if (meta) state.sessions.set(id, sessionFromMeta(id, meta));
   });
-  state.activeTabId = openIds.includes(saved.activeTabId) ? saved.activeTabId : SWITCHBOARD_ID;
-  const openSessionIds = new Set(openIds);
-  const loadedSwitchboard = await loadSwitchboardTurns();
-  const switchboardTurns = finalizeStalledTurns(loadedSwitchboard);
-  const navigableIds = new Set(openSessionIds);
-  const titles = new Map<string, string>(
-    [...state.sessions.entries()].map(([id, session]) => [id, session.title]),
-  );
-  const closedIds = [
-    ...new Set(switchboardTurns.map((e) => e.sessionId)),
-  ].filter((id) => id && !openSessionIds.has(id));
-  await Promise.all(
-    closedIds.map(async (sessionId) => {
-      const meta = await loadSessionMeta(sessionId);
-      if (!meta) return;
-      navigableIds.add(sessionId);
-      titles.set(sessionId, meta.title);
-    }),
-  );
-  state.bus.restore(
-    switchboardTurns.map((e) => ({
-      ...e,
-      sessionTitle: titles.get(e.sessionId) ?? e.sessionTitle,
-      navigable: navigableIds.has(e.sessionId),
-    })),
-  );
-  const activeId = state.activeSessionId();
-  if (activeId) await hydration.ensure(activeId);
-  if (switchboardTurns !== loadedSwitchboard) await saveSwitchboardTurns(state.bus.list());
+  // Anything else (none saved, a closed session, older builds' "switchboard") opens the top of the rail.
+  state.activeTabId = openIds.includes(saved.activeTabId) ? saved.activeTabId : openIds[0] ?? null;
+  if (state.activeTabId) await hydration.ensure(state.activeTabId);
 }

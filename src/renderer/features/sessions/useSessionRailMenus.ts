@@ -43,12 +43,11 @@ export function useSessionRailMenus(
 
   useEffect(() => {
     const onToggleUnread = () => {
-      if (!sessions.some((session) => session.id === activeTabId)) return;
-      toggleUnread(activeTabId);
+      if (activeTabId) toggleUnread(activeTabId);
     };
     window.addEventListener("switcheroo:mark-unread", onToggleUnread);
     return () => window.removeEventListener("switcheroo:mark-unread", onToggleUnread);
-  }, [activeTabId, sessions, toggleUnread]);
+  }, [activeTabId, toggleUnread]);
 
   return { menu, setMenu, rename, setRename, menuRef };
 }

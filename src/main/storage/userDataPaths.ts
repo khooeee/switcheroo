@@ -43,6 +43,3 @@ export function imagesDir(): string {
   return path.join(userDataDir(), "images");
 }
 
-export function switchboardPath(): string {
-  return path.join(userDataDir(), "switchboard.jsonl");
-}

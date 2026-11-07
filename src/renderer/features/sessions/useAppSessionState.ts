@@ -1,22 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
-import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../../shared/transcript";
-import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
-import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { seedComposerDraft } from "../chat/seedComposerDraft";
 import { flatRailSessions } from "./flatRailSessions";
 import { shareById } from "./shareById";
 import { shareTurn } from "./shareTurn";
 import { upsertTurn } from "./upsertTurn";
 
-/** IPC-backed session list, transcripts, and switchboard state. */
+/** IPC-backed session list and transcripts. */
 export function useAppSessionState() {
   const [pinnedSessions, setPinnedSessions] = useState<Session[]>([]);
   const [unpinnedSessions, setUnpinnedSessions] = useState<Session[]>([]);
-  const [activeTabId, setActiveTabId] = useState<ActiveTabId>(SWITCHBOARD_ID);
-  const [switchboardTurns, setSwitchboardTurns] = useState<SwitchboardTurn[]>([]);
+  const [activeTabId, setActiveTabId] = useState<ActiveTabId>(null);
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptTurn[]>>({});
   const [focusEvent, setFocusEvent] = useState<{
     id: string;
@@ -24,16 +20,15 @@ export function useAppSessionState() {
     sessionId: string;
     key: number;
   } | null>(null);
-  const [switchboardNotice, setSwitchboardNotice] = useState<string | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void window.switcheroo.listSessions().then(async (data) => {
       setPinnedSessions(data.pinned);
       setUnpinnedSessions(data.unpinned);
       setActiveTabId(data.activeTabId);
-      setSwitchboardTurns(data.switchboardTurns);
       setTranscripts({});
-      const sessionId = sessionIdForTab(data.activeTabId, [...data.pinned, ...data.unpinned]);
+      const sessionId = data.activeTabId;
       if (sessionId) {
         const turns = await window.switcheroo.getTranscript(sessionId);
         setTranscripts({ [sessionId]: turns });
@@ -49,19 +44,7 @@ export function useAppSessionState() {
         // that session's right rail (which each tab keeps) back onto the old event.
         setFocusEvent((prev) => (prev && prev.sessionId !== a ? null : prev));
       }),
-      window.switcheroo.onSwitchboardTurn((turn) => {
-        setSwitchboardTurns((prev) => {
-          const next = upsertTurn(prev, turn);
-          return next.length > prev.length ? next.slice(-2000) : next;
-        });
-      }),
-      window.switcheroo.onSwitchboardTurns((turns) => setSwitchboardTurns(turns)),
-      window.switcheroo.onSwitchboardSessionRemoved(({ sessionId, message }) => {
-        setSwitchboardTurns((prev) => prev.filter((turn) => turn.sessionId !== sessionId));
-        setSwitchboardNotice(message);
-        setActiveTabId(SWITCHBOARD_ID);
-        setFocusEvent(null);
-      }),
+      window.switcheroo.onSessionRemoved(({ message }) => setSessionNotice(message)),
       window.switcheroo.onTranscript(({ sessionId, turn }) => {
         setTranscripts((prev) => {
           const list = prev[sessionId] ?? [];
@@ -120,13 +103,11 @@ export function useAppSessionState() {
     unpinnedSessions,
     activeTabId,
     activeSession,
-    openSessions,
-    switchboardTurns,
     transcripts,
     setTranscripts,
     focusEvent,
     setFocusEvent,
-    switchboardNotice,
-    setSwitchboardNotice,
+    sessionNotice,
+    setSessionNotice,
   };
 }

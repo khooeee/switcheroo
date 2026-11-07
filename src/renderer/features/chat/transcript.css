@@ -21,7 +21,6 @@
   );
 }
 
-.feed,
 .transcript {
   flex: 1;
   padding: 16px;
@@ -57,39 +56,6 @@
   border-left: 2px solid var(--bg-3);
 }
 
-.message.turn-toggle {
-  cursor: pointer;
-}
-
-.message.turn-toggle:focus {
-  outline: none;
-}
-
-.message.turn-toggle:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.event-title.openable {
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-}
-
-.event-title.openable:hover {
-  text-decoration-color: currentColor;
-}
-
-.event-title {
-  color: var(--codex);
-  font: inherit;
-  white-space: pre-line;
-}
-
-.switchboard-turn:not(.navigable) .event-title {
-  opacity: 0.55;
-}
-
 .event-timestamp {
   margin-left: auto;
 }
@@ -104,8 +70,8 @@ html[data-details="hidden"] .message.assistant .kind-pill {
 }
 
 /* Drop the header row when zen hid everything in it (user/assistant only had pill + timestamp). */
-html[data-details="hidden"] .message.user .row:not(:has(.event-title)):not(:has(.tool-status)):not(:has(.queued-status)),
-html[data-details="hidden"] .message.assistant .row:not(:has(.event-title)):not(:has(.tool-status)):not(:has(.queued-status)) {
+html[data-details="hidden"] .message.user .row:not(:has(.tool-status)):not(:has(.queued-status)),
+html[data-details="hidden"] .message.assistant .row:not(:has(.tool-status)):not(:has(.queued-status)) {
   display: none;
 }
 

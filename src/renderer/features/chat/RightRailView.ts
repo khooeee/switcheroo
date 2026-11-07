@@ -6,10 +6,7 @@ import type { SubagentRailInfo } from "../subagents/SubagentRailInfo";
 export type RightRailView = {
   turn: TranscriptTurn | null;
   subagent: (SubagentRailInfo & { turns: TranscriptTurn[]; loading: boolean }) | null;
-  sessionId: string;
-  session: Session | undefined;
-  agent: string;
-  cwd?: string;
+  session: Session;
   focusEventId?: string;
   focusKey: number;
 };

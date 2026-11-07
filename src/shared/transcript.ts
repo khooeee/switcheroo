@@ -32,7 +32,7 @@ export interface TranscriptItem {
 /** One user prompt and the session updates that followed it. */
 export interface TranscriptTurn {
   id: string;
-  /** User message time — used for Switchboard / find sort order. */
+  /** User message time — used for find sort order. */
   at: number;
   user: TranscriptItem;
   /** Latest assistant message; prior assistants live in `events`. */

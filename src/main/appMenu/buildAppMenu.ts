@@ -108,12 +108,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             win()?.webContents.send("filter:focus");
           },
         },
-        {
-          label: "Go to Switchboard",
-          click: () => {
-            win()?.webContents.send("switchboard:open");
-          },
-        },
       ],
     },
     {

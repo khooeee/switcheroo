@@ -1,6 +1,6 @@
 import type { SessionRailLists } from "./SessionRailLists";
 
-/** Rail order: next after `sessionId`, else previous, else null (caller uses Switchboard). */
+/** Rail order: next after `sessionId`, else previous, else null (no session left). */
 export function nextActiveAfterClose(lists: SessionRailLists, sessionId: string): string | null {
   const order = [...lists.pinnedIds, ...lists.unpinnedIds];
   const index = order.indexOf(sessionId);

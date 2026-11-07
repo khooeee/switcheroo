@@ -10,7 +10,7 @@ Prefer one export per file.
 
 ## React.memo stability
 
-Transcript and Switchboard lists rely on `React.memo` so streaming a turn does not re-render every prior node. Keep that working:
+Transcript lists rely on `React.memo` so streaming a turn does not re-render every prior node. Keep that working:
 
 - Never pass inline lambdas into memoized list children (`onToggle={() => ...}`, `onOpen={(id) => ...}`). Pass a stable callback and an id, or bind the id inside the memoized child with `useCallback`.
 - When updating a turn, replace only what changed. Preserve object identity for unchanged turns, events, and transcript items (structural sharing). Do not deep-clone an entire turn/events array on every stream chunk.

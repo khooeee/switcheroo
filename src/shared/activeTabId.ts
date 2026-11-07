@@ -1,4 +1,2 @@
-import type { SWITCHBOARD_ID } from "./switchboardId";
-
-/** Active rail selection: Switchboard or a chat session id. */
-export type ActiveTabId = typeof SWITCHBOARD_ID | string;
+/** Active rail selection: a chat session id, or null when none is open. */
+export type ActiveTabId = string | null;

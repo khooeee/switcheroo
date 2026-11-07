@@ -1,11 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { AgentKind } from "../shared/agentKind";
 import type { TranscriptTurn } from "../shared/transcript";
-import { SWITCHBOARD_ID } from "../shared/switchboardId";
 import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
 import { SessionRail } from "./features/sessions/SessionRail";
+import { SessionNotice } from "./features/sessions/SessionNotice";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
-import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
@@ -33,14 +32,12 @@ export function App() {
     unpinnedSessions,
     activeTabId,
     activeSession,
-    openSessions,
-    switchboardTurns,
     transcripts,
     setTranscripts,
     focusEvent,
     setFocusEvent,
-    switchboardNotice,
-    setSwitchboardNotice,
+    sessionNotice,
+    setSessionNotice,
   } = useAppSessionState();
   const railActions = useSessionRailActions();
   const { subagentTranscripts, loadingSubagents, loadSubagentTranscript } = useSubagentTranscripts();
@@ -59,28 +56,20 @@ export function App() {
     setFindVisible,
   } = useFindUiState(activeTabId);
   const chatRef = useRef<HTMLDivElement>(null);
-  const switchboardRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
   const chatSessionId = activeSession?.id ?? null;
-  const askQuestion = useAgentQuestions(chatSessionId ?? SWITCHBOARD_ID);
-  const pinTranscriptToBottom = useSessionScrollPosition(
-    chatSessionId ?? SWITCHBOARD_ID,
-    activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef,
-  );
+  const askQuestion = useAgentQuestions(chatSessionId);
+  const pinTranscriptToBottom = useSessionScrollPosition(chatSessionId, chatRef);
 
   const {
     rightRailView,
     closeRightRail,
     toggleSessionRightRail,
     forceSessionRightRail,
-    toggleSwitchboardRightRail,
     toggleSubagentRightRail,
   } = useRightRail({
-    tabId: activeTabId,
     activeSession,
     transcripts,
-    switchboardTurns,
-    openSessions,
     subagentTranscripts,
     loadingSubagents,
   });
@@ -93,13 +82,13 @@ export function App() {
   const findRootRefs = useMemo(() => {
     if (findScope) return [findScopeRef];
     if (rightRailView) return [rightRailScrollRef];
-    return [activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef];
-  }, [activeTabId, findScope, rightRailView]);
+    return [chatRef];
+  }, [findScope, rightRailView]);
 
-  useTurnDetailsEvent(activeTabId, toggleSessionRightRail, toggleSwitchboardRightRail);
+  useTurnDetailsEvent(toggleSessionRightRail);
 
   // Each tab keeps its right rail open (or closed) across tab switches.
-  const selectTab = useCallback((id: typeof activeTabId) => {
+  const selectTab = useCallback((id: string) => {
     void window.switcheroo.setActiveTab(id);
     setFocusEvent(null);
   }, [setFocusEvent]);
@@ -138,10 +127,6 @@ export function App() {
 
   const chat = useChatActions(chatSessionId, askQuestion, pinTranscriptToBottom);
 
-  const onSwitchboardClick = useCallback((sessionId: string, turnId: string, eventId: string) => {
-    void window.switcheroo.navigateToEvent(sessionId, turnId, eventId);
-  }, []);
-
   return (
     <SubagentOpenContext.Provider value={openSubagent}>
       <div className="app">
@@ -157,7 +142,11 @@ export function App() {
         />
 
         <div className="main relative">
-          {findOpen && (
+          {sessionNotice && (
+            <SessionNotice message={sessionNotice} onDismiss={() => setSessionNotice(null)} />
+          )}
+
+          {findOpen && activeSession && (
             <FindBar
               key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
               query={findQuery}
@@ -169,17 +158,7 @@ export function App() {
             />
           )}
 
-          {activeTabId === SWITCHBOARD_ID ? (
-            <SwitchboardPanel
-              turns={switchboardTurns}
-              sessions={openSessions}
-              notice={switchboardNotice}
-              scrollRef={switchboardRef}
-              onNoticeDismiss={() => setSwitchboardNotice(null)}
-              onTurnClick={onSwitchboardClick}
-              onOpenRightRail={toggleSwitchboardRightRail}
-            />
-          ) : activeSession ? (
+          {activeSession ? (
             <ChatPanel
               session={activeSession}
               turns={transcripts[activeSession.id] ?? NO_TURNS}
@@ -205,12 +184,9 @@ export function App() {
 
         {rightRailView ? (
           <RightRail
-            tabId={activeTabId}
             session={rightRailView.session}
             turn={rightRailView.turn}
             subagent={rightRailView.subagent}
-            agent={rightRailView.agent}
-            cwd={rightRailView.cwd}
             scrollRef={rightRailScrollRef}
             focusEventId={rightRailView.focusEventId}
             focusKey={rightRailView.focusKey}

@@ -1,9 +1,9 @@
-import type { ActiveTabId } from "./activeTabId";
 import type { AppSettings } from "./appSettings";
 
 export interface PersistedState {
   version: 1;
-  activeTabId: ActiveTabId;
+  /** Active session id, or "" for none (a string so older builds can still read this file). */
+  activeTabId: string;
   settings?: AppSettings;
   /** Pinned session ids in rail order (top section). */
   pinned: string[];

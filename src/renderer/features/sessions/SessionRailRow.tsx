@@ -1,5 +1,4 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
-import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import { SessionRailLabel } from "./SessionRailLabel";
 import { SessionRailPinButton } from "./SessionRailPinButton";
@@ -14,7 +13,7 @@ type Props = {
   unread: boolean;
   renaming: boolean;
   setRename: (session: Session | null) => void;
-  onSelect: (id: ActiveTabId) => void;
+  onSelect: (id: string) => void;
   onRenameSession: (id: string, title: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;

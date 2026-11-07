@@ -30,9 +30,6 @@ export class SessionRail {
     const session = state.sessions.get(sessionId);
     if (!session) return;
     session.title = title;
-    for (const turn of state.bus.setSessionTitle(sessionId, title)) {
-      state.send("switchboard:turn", turn);
-    }
     state.emitSessions();
     void persistence.persist();
   }

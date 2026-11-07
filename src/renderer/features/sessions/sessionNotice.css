@@ -1,4 +1,4 @@
-.switchboard-notice {
+.session-notice {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -9,7 +9,7 @@
   font-size: var(--font-ui-size);
 }
 
-.switchboard-notice .btn {
+.session-notice .btn {
   margin-left: auto;
   flex-shrink: 0;
 }

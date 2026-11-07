@@ -1,12 +1,11 @@
 import { defaultAppSettings } from "../../shared/defaultAppSettings";
-import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { openOrCreateFile } from "./openOrCreateFile";
 import { statePath } from "../storage/userDataPaths";
 
 const EMPTY_STATE = JSON.stringify(
   {
     version: 1,
-    activeTabId: SWITCHBOARD_ID,
+    activeTabId: "",
     settings: defaultAppSettings(),
     pinned: [],
     unpinned: [],

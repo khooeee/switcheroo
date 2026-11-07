@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
-import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
@@ -35,7 +34,7 @@ export function useAppShortcuts({
   unpinned: Session[];
   activeTabId: ActiveTabId;
   activeSession: Session | null;
-  selectTab: (id: ActiveTabId) => void;
+  selectTab: (id: string) => void;
   showNewSession: boolean;
   showFindInSessions: boolean;
   findOpen: boolean;
@@ -117,7 +116,7 @@ export function useAppShortcuts({
       // Ctrl+D closes a chat session on empty draft.
       if (ctrlOnlyKey(event, "d")) {
         if (dialogOpen() || blockedRef.current) return;
-        if (activeId.current === SWITCHBOARD_ID) return;
+        if (!activeId.current) return;
         if (!isComposerDraftEmpty(activeId.current)) return;
         event.preventDefault();
         closeActive();
@@ -128,7 +127,7 @@ export function useAppShortcuts({
 
       if (modKey(event, "w")) {
         if (event.repeat) return;
-        if (activeId.current === SWITCHBOARD_ID) return;
+        if (!activeId.current) return;
         event.preventDefault();
         closeActive();
         return;

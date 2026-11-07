@@ -32,7 +32,6 @@ export class SessionHydration {
       sessions: state.sessions,
       transcripts: state.transcripts,
       hydrated: state.hydrated,
-      bus: state.bus,
       get railLists() { return state.railLists; },
       get activeTabId() { return state.activeTabId; },
       setActiveTabId: (id: ActiveTabId) => state.setActiveTabId(id),

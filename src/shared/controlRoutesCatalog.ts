@@ -30,7 +30,7 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
       response: {
         pinned: "Session[]",
         unpinned: "Session[]",
-        activeTabId: "string — focused session id, or \"switchboard\"",
+        activeTabId: "string | null — focused session id",
       },
       example: `curl -s -H "Authorization: Bearer $TOKEN" ${b}/sessions`,
     },
