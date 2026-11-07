@@ -52,8 +52,6 @@ export async function softCloseSession(
   host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
   if (wasActive) {
     host.setActiveTabId(nextActive ?? SWITCHBOARD_ID);
-    if (host.activeTabId !== SWITCHBOARD_ID && host.sessions.has(host.activeTabId)) {
-      host.refreshCommandsIfNeeded(host.activeTabId);
-    }
+    if (nextActive) host.refreshCommandsIfNeeded(nextActive);
   }
 }

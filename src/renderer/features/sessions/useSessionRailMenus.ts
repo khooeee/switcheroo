@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
-import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
 import type { MenuState } from "./railMenuState";
 
 /** Context menus, rename target, and window-event wiring for the session rail. */
@@ -33,7 +32,6 @@ export function useSessionRailMenus(
 
   useEffect(() => {
     const startRename = () => {
-      if (activeTabId === SWITCHBOARD_ID) return;
       const session = sessions.find((item) => item.id === activeTabId);
       if (!session) return;
       setMenu(null);
@@ -45,7 +43,6 @@ export function useSessionRailMenus(
 
   useEffect(() => {
     const onToggleUnread = () => {
-      if (activeTabId === SWITCHBOARD_ID) return;
       if (!sessions.some((session) => session.id === activeTabId)) return;
       toggleUnread(activeTabId);
     };

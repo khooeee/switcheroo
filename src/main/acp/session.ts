@@ -5,7 +5,6 @@ import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
 import { PromptRunner } from "./PromptRunner";
-import { answerPermission } from "./answerPermission";
 import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
@@ -19,6 +18,7 @@ import { attachAcpSession } from "./attachAcpSession";
 import { SharedAgentConnection } from "./SharedAgentConnection";
 import { SessionUpdateRouter } from "./SessionUpdateRouter";
 import { SessionConfigOptions } from "./SessionConfigOptions";
+import { sessionConnectionHandlers } from "./sessionConnectionHandlers";
 
 export class AcpSession extends SharedAgentConnection {
   id: string;
@@ -237,37 +237,17 @@ export class AcpSession extends SharedAgentConnection {
       cwd: this.cwd,
       instructions: this.instructions,
       quiet: options?.quiet,
-      isDisposed: () => this.disposed,
-      onStatus: (status, message) => {
-        if (status === "connecting") this.cb.onStatus("connecting");
-        else this.cb.onStatus("error", message);
-      },
-      onPermission: async (params) => {
-        const { note, response } = answerPermission(params);
-        this.noteSystem(note);
-        return response;
-      },
-      onReadFile: (params) => this.files.read(params),
-      onWriteFile: (params) => this.files.write(params),
-      onAskQuestion: async (params, signal) => {
-        if (this.disposed || this.runner.stopRequested) return { outcome: "cancelled" };
-        this.noteSystem("Question from agent");
-        return this.questions.request(params, signal);
-      },
-      onTodosUpdated: () => this.noteSystem("Todos updated"),
-      onSessionUpdate: (sessionId, update) => this.routerFor(sessionId)?.update(sessionId, update),
-      onSubagentUpdate: (sessionId, update) => this.routerFor(sessionId)?.lifecycle(sessionId, update),
-      onProcessExit: (code) => {
-        this.finishPending("interrupted");
-        this.connection?.close();
-        this.cb.onStatus("error", `Agent exited (code ${code ?? "?"})`);
-      },
-      onConnectionAbort: () => {
-        this.finishPending("interrupted");
-        if (!this.disposed) this.cb.onStatus("error", "Agent connection closed");
-      },
-      onForkSupport: (supported) => this.cb.onForkSupport(supported),
-      configureDelivery: (meta) => this.runner.configureDelivery(meta),
+      ...sessionConnectionHandlers({
+        callbacks: () => this.cb,
+        files: this.files,
+        questions: this.questions,
+        runner: this.runner,
+        isDisposed: () => this.disposed,
+        noteSystem: (text) => this.noteSystem(text),
+        finishPending: (status) => this.finishPending(status),
+        closeConnection: () => this.connection?.close(),
+        routerFor: (sessionId) => this.routerFor(sessionId),
+      }),
     });
     this.proc = result.proc;
     this.connection = result.connection;

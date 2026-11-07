@@ -68,7 +68,7 @@ export function useAppShortcuts({
 
   useEffect(() => {
     const closeActive = () => {
-      if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
+      if (blockedRef.current) return;
       const session = sessionsRef.current.find((item) => item.id === activeId.current);
       if (session) void window.switcheroo.closeSession(session.id);
     };

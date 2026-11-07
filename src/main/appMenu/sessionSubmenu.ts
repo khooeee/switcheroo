@@ -17,7 +17,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.rename,
       label: "Rename",
-      enabled: state.renameEnabled,
+      enabled: state.chatItemsEnabled,
       accelerator: "Cmd+R",
       click: () => {
         win()?.webContents.send("session:rename");
@@ -35,7 +35,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.markUnread,
       label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
-      enabled: state.unreadEnabled,
+      enabled: state.chatItemsEnabled,
       accelerator: "Cmd+U",
       click: () => {
         win()?.webContents.send("session:mark-unread");
@@ -74,7 +74,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
     {
       id: SESSION_MENU_IDS.close,
       label: "Close",
-      enabled: state.renameEnabled,
+      enabled: state.chatItemsEnabled,
       accelerator: "Cmd+W",
       click: () => {
         win()?.webContents.send("session:close");

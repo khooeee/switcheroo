@@ -20,7 +20,7 @@ type ConnectAcpResult = {
   initializationMeta: unknown;
 };
 
-type ConnectHandlers = {
+export type ConnectHandlers = {
   agent: AgentKind;
   cwd: string;
   /** Session instructions; Codex reads them from its process environment. */

@@ -1,9 +1,8 @@
 import { activeForkMenuEnabled } from "./activeForkMenuEnabled";
 import { activeOpenInCursorEnabled } from "./activeOpenInCursorEnabled";
 import { activePinMenuState } from "./activePinMenuState";
-import { activeRenameMenuEnabled } from "./activeRenameMenuEnabled";
+import { activeSessionId } from "./activeSessionId";
 import { activeStopMenuEnabled } from "./activeStopMenuEnabled";
-import { activeUnreadMenuEnabled } from "./activeUnreadMenuEnabled";
 import type { MenuCtx } from "./MenuCtx";
 import type { SessionMenuState } from "./SessionMenuState";
 
@@ -11,9 +10,8 @@ import type { SessionMenuState } from "./SessionMenuState";
 export function activeSessionMenuState(ctx: MenuCtx): SessionMenuState {
   return {
     pin: activePinMenuState(ctx),
-    renameEnabled: activeRenameMenuEnabled(ctx),
+    chatItemsEnabled: activeSessionId(ctx) !== null,
     openInCursorEnabled: activeOpenInCursorEnabled(ctx),
-    unreadEnabled: activeUnreadMenuEnabled(ctx),
     forkEnabled: activeForkMenuEnabled(ctx),
     stopEnabled: activeStopMenuEnabled(ctx),
   };

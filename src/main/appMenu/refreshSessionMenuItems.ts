@@ -13,10 +13,10 @@ export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: b
     if (label !== undefined) item.label = label;
   };
   set(SESSION_MENU_IDS.pin, state.pin.enabled, state.pin.label);
-  set(SESSION_MENU_IDS.rename, state.renameEnabled);
+  set(SESSION_MENU_IDS.rename, state.chatItemsEnabled);
   set(SESSION_MENU_IDS.openInCursor, state.openInCursorEnabled);
   set(SESSION_MENU_IDS.fork, state.forkEnabled);
-  set(SESSION_MENU_IDS.markUnread, state.unreadEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
+  set(SESSION_MENU_IDS.markUnread, state.chatItemsEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
   set(SESSION_MENU_IDS.stop, state.stopEnabled);
-  set(SESSION_MENU_IDS.close, state.renameEnabled);
+  set(SESSION_MENU_IDS.close, state.chatItemsEnabled);
 }

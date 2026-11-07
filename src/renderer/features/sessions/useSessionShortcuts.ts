@@ -15,7 +15,6 @@ function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: Ac
     return;
   }
   if (pinned.length >= MAX_PINNED_SESSIONS) return;
-  if (!unpinned.some((session) => session.id === sessionId)) return;
   void window.switcheroo.pinSession(sessionId);
 }
 
