@@ -10,5 +10,6 @@ export function metaFromSession(session: Session): SessionMeta {
     usage: session.usage,
     modelConfig: session.modelConfig,
     switcherooAware: session.switcherooAware,
+    cron: session.cron,
   };
 }

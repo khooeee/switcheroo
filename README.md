@@ -89,6 +89,12 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 - `title` is optional; `YYYY-MM-DD`, `HH:MM` and `H:MM` in it become the run's local date and 24-hour time.
 - Crons only run while Switcheroo is open. Runs missed while the app was closed or the computer was asleep are skipped.
 
+## Activity log
+
+Each finished turn adds one line to `activity/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Activity Folder** to see them. Point a cron at that file to generate standup notes.
+
+Each line has `at`, `sessionId`, `turnId`, `title`, `cwd`, `agent`, `status`, `prompt`, `reply`, `files` and `cron`. `prompt` and `reply` are cut to 4,000 characters, and `files` is paths only; the full turn stays in the session transcript. `cron` is `true` for sessions a cron started, so a standup can skip them.
+
 ## History management
 
 It's likely you don't have to read this section ever, but it's here in case your app gets slow.

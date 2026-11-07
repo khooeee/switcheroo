@@ -8,4 +8,6 @@ export interface CreateSessionInput {
   switcherooAware?: boolean;
   /** When true, add the session to the top of the pinned rail section. */
   pin?: boolean;
+  /** Started by a cron run, not the user. */
+  cron?: boolean;
 }

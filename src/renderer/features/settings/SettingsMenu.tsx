@@ -75,6 +75,14 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
+              onClick={closeThen(window.switcheroo.openActivityFolder)}
+            >
+              Open Activity Folder
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
               onClick={closeThen(window.switcheroo.openTranscriptsFolder)}
             >
               Open Sessions Folder

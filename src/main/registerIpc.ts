@@ -1,6 +1,7 @@
 import { BrowserWindow, dialog, ipcMain } from "electron";
 import { openInCursor } from "./cursor/openInCursor";
 import { openFolderInCursor } from "./cursor/openFolderInCursor";
+import { openActivityFolder } from "./files/openActivityFolder";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
 import { openSettingsFile } from "./files/openSettingsFile";
@@ -97,6 +98,7 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   ipcMain.handle("fs:saveMarkdown", (event, text: string, nameHint?: string) =>
     saveMarkdownFile(BrowserWindow.fromWebContents(event.sender), text, nameHint),
   );
+  ipcMain.handle("fs:openActivityFolder", () => openActivityFolder());
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
   ipcMain.handle("fs:openSettingsFile", () => openSettingsFile());

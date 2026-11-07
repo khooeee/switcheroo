@@ -18,6 +18,7 @@ export async function runCron(
       title: job.title === undefined ? undefined : formatCronTitle(job.title, at),
       switcherooAware: job.switcherooAware,
       pin: false,
+      cron: true,
     },
     { focus: false },
   );

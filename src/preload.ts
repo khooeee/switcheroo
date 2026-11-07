@@ -35,6 +35,7 @@ const api: SwitcherooApi = {
   pickFolder: (startPath?: string) => ipcRenderer.invoke("fs:pickFolder", startPath),
   saveMarkdown: (text: string, nameHint?: string) =>
     ipcRenderer.invoke("fs:saveMarkdown", text, nameHint),
+  openActivityFolder: () => ipcRenderer.invoke("fs:openActivityFolder"),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
   openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
   openSettingsFile: () => ipcRenderer.invoke("fs:openSettingsFile"),

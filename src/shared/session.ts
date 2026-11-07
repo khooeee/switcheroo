@@ -43,4 +43,6 @@ export interface Session {
   modelConfig?: SessionModelConfig;
   /** Knows Switcheroo's control API (persisted): instructions for Claude/Codex, else a bootstrap prompt. */
   switcherooAware?: boolean;
+  /** Started by a cron run (persisted); forks of it are the user's own. */
+  cron?: boolean;
 }
