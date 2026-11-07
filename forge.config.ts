@@ -1,4 +1,5 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
+import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
@@ -83,6 +84,13 @@ const config: ForgeConfig = {
     new MakerDMG({
       icon: './assets/icon.icns',
     }, ['darwin']),
+    new MakerDeb({
+      options: {
+        // Matches `packagerConfig.name`; the maker defaults to the lowercase package name.
+        bin: 'Switcheroo',
+        icon: './assets/icon.png',
+      },
+    }, ['linux']),
   ],
   plugins: [
     new VitePlugin({

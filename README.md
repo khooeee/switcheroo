@@ -3,16 +3,16 @@
 An agentic development environment that sparks joy in my everyday coding:
 - The user message & final assistant message are the only messages shown in the main content area.  Most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
-- Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will slowly float down.  There are multiple ways to find them later on (find in turn details, session or history).
+- Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will eventually float down.  You can find them later on through find in history.
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - All agents are started in bypass permissions/YOLO mode.
+- You can go back and forward through the sessions you selected.  As an example of how I use this, I do something similar to `/btw` by forking a session, sending a prompt and jumping back to my original session to keep on working.
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
-
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 There are also speed optimizations to eliminate unnecessary waiting:
 - Pre-warmed session pool so time to first prompt is very fast
-- Find in history is a streaming search and has been load tested on a large history.
+- Find in history is a streaming search that is performant even with a large history.
 
 There are also some niceties:
 - Copy message or copy individual code blocks
@@ -32,6 +32,14 @@ Builds are not notarized. On first open, macOS says it can't verify the app. Go 
 
 ```bash
 xattr -cr /Applications/Switcheroo.app
+```
+
+## Install (Ubuntu)
+
+Download `switcheroo_*_amd64.deb` from the latest [GitHub Release](https://github.com/khooeee/switcheroo/releases), then install it:
+
+```bash
+sudo apt install ./switcheroo_*_amd64.deb
 ```
 
 ## Prerequisites
@@ -57,7 +65,7 @@ npm start
 
 ## Crons
 
-Click the Settings button on the bottom left and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save `crons.json`.
+Click the Settings button on the bottom and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save `crons.json`.
 
 ```json
 {
@@ -83,11 +91,11 @@ Click the Settings button on the bottom left and select **Open Crons** to edit `
 
 ## History management
 
-It's likely you don't have to read this section ever, but it's here in case the app gets slow.
+It's likely you don't have to read this section ever, but it's here in case your app gets slow.
 
 - If the session is slow due to a long transcript, you should just start a new session.
-- The session list is capped to 500 on app startup and whenever a session is created (can be edited via `settings.sessionListMax`).  Overflow unpinned sessions are closed first (still on disk; pinned sessions count toward the cap).  Sessions that are running are never closed this way.  You can still find closed sessions through "Find in History".
-- If you're running out of disk space, click on Settings button on bottom left, select "Open Sessions Folder" and then archive/delete as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list until you click them.  Only then will the app check its existence and remove it from the list if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
+- The session list is capped to 500 on app startup and whenever a session is created (can be edited via `settings.sessionListMax`).  The oldest sessions are removed from the list but are still on disk.  You can still find these sessions through "Find in History".
+- If you're running out of disk space, click on Settings button on the bottom, select "Open Sessions Folder" and then archive/delete folders as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list until you click them.  Only then will the app check its existence and remove it from the list if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
 ## Shortcuts
 

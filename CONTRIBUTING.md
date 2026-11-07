@@ -1,8 +1,8 @@
 # Contributing
 
-## Releasing (macOS)
+## Releasing
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds an Apple Silicon DMG and publishes a GitHub Release.
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds an Apple Silicon DMG and an x64 Ubuntu `.deb`, then publishes both to a GitHub Release.
 
 ```bash
 # Keep package.json version in sync with the tag when you can

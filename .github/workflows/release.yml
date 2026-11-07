@@ -9,8 +9,17 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: macos-14
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,16 +33,37 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           npm version "$VERSION" --no-git-tag-version --allow-same-version
 
+      - name: Install deb tooling
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+
       - run: npm ci
 
-      - name: Make macOS arm64
-        run: npm run make -- --platform=darwin --arch=arm64
+      - name: Make ${{ matrix.platform }} ${{ matrix.arch }}
+        run: npm run make -- --platform=${{ matrix.platform }} --arch=${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            out/make/**/*.dmg
+            out/make/**/*.deb
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: out/make/**/*.dmg
+          files: release/**/*
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
