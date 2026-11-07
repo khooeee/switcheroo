@@ -103,14 +103,6 @@ export function useAppShortcuts({
         return;
       }
 
-      if (ctrlOnlyKey(event, "c")) {
-        if (dialogOpen() || blockedRef.current) return;
-        if (!runningId.current) return;
-        event.preventDefault();
-        stopActive();
-        return;
-      }
-
       // Ctrl+D closes a chat session on empty draft.
       if (ctrlOnlyKey(event, "d")) {
         if (dialogOpen() || blockedRef.current) return;

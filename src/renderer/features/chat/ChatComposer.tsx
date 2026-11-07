@@ -3,7 +3,6 @@ import type { ConfigMenuCategory } from "../../../shared/configMenuCategory";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
-import { ctrlOnlyKey } from "../shortcuts/ctrlOnlyKey";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
 import { applyComposerCtrlKey } from "./applyComposerCtrlKey";
@@ -37,7 +36,7 @@ export function ChatComposer({
   const previousSession = useRef({ id: session.id, status: session.status });
   const history = useMemo(() => userPromptHistory(turns), [turns]);
   const showStop = session.status === "running" && !draft.trim();
-  const sendLabel = showStop ? "Stop agent (Escape / Ctrl+C)" : session.status === "running"
+  const sendLabel = showStop ? "Stop agent (Escape)" : session.status === "running"
     ? (session.supportsSteering ? "Steer agent" : "Queue message")
     : "Send message";
   const usageLabel = session.usage ? formatSessionUsage(session.usage) : null;
@@ -143,11 +142,7 @@ export function ChatComposer({
             send();
             return true;
           }
-          if (ctrlOnlyKey(e, "c") && session.status !== "running" && draft !== "") {
-            setDraftFromUser("");
-            return true;
-          }
-          return applyComposerCtrlKey(e, draft, setDraftFromUser);
+          return applyComposerCtrlKey(e);
         }}
       />
       {(session.error || sendError?.sessionId === session.id) && (

@@ -93,11 +93,7 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Ctrl+A**: Go to beginning of prompt
 
-**Ctrl+C**: Stop agent (while running); clear prompt when idle with text
-
 **Ctrl+D**: Close session on empty prompt
-
-**Ctrl+E**: Go to end of prompt
 
 **Cmd+F**: Find in current session
 
@@ -114,8 +110,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 **Cmd+R**: Rename selected tab
 
 **Cmd+U**: Mark as Unread
-
-**Ctrl+W**: Delete last word in prompt
 
 **Cmd+W**: Close selected tab
 

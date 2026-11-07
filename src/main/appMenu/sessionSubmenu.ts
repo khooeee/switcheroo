@@ -64,9 +64,6 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.stop,
       label: "Stop",
       enabled: state.stopEnabled,
-      // Display-only: registering Ctrl+C steals Edit→Copy and can drop this item on macOS.
-      accelerator: "Ctrl+C",
-      registerAccelerator: false,
       click: () => {
         win()?.webContents.send("session:stop");
       },
