@@ -3,7 +3,7 @@ import { forkSessionAtEvent } from "./forkSessionAtEvent";
 import type { SessionDeps } from "./SessionDeps";
 import { sessionInstructions } from "./sessionInstructions";
 
-/** Fork a session (optionally at an event) into a new rail entry next to it. */
+/** Fork a session (optionally at an event) into a new unpinned rail entry. */
 export async function forkSession(
   { state, persistence, hydration, agents }: SessionDeps,
   sessionId: string,
@@ -20,8 +20,7 @@ export async function forkSession(
     instructionsFor: sessionInstructions,
     setSession: (id, session) => { state.agents.set(id, session); },
     addSession: (session, transcript) => {
-      const pin = state.railLists.pinnedIds.includes(sessionId);
-      state.prependSession(session, pin);
+      state.prependSession(session);
       state.transcripts.set(session.id, transcript);
       state.hydrated.add(session.id);
       void state.subagentTranscripts.copySession(sessionId, session.id).catch(() => undefined);
