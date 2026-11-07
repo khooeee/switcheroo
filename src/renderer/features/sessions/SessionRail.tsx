@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import { SettingsMenu } from "../settings/SettingsMenu";
-import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { sessionMatchesFilter } from "../../../shared/tabNav/sessionMatchesFilter";
 import { flatRailSessions } from "./flatRailSessions";
 import { PlusIcon } from "./PlusIcon";
@@ -60,7 +59,6 @@ export function SessionRail({
     () => unpinned.filter((session) => sessionMatchesFilter(session, filter)),
     [unpinned, filter],
   );
-  const canPin = pinned.length < MAX_PINNED_SESSIONS;
   const { unread: unreadDots, toggleUnread } = useSessionUnreadDots(activeTabId);
   const filterActive = filter.trim().length > 0;
   const noMatches = filterActive && filteredPinned.length === 0 && filteredUnpinned.length === 0;
@@ -81,7 +79,6 @@ export function SessionRail({
     session,
     isPinned,
     active: activeTabId === session.id,
-    canPin,
     unread: unreadDots.has(session.id),
     renaming: rename?.id === session.id,
     setRename,
@@ -130,7 +127,6 @@ export function SessionRail({
             menuRef={menuRef}
             session={menu.session}
             pinned={menu.pinned}
-            canPin={canPin}
             unread={unreadDots.has(menu.session.id)}
             x={menu.x}
             y={menu.y}

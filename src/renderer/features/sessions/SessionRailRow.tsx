@@ -9,7 +9,6 @@ type Props = {
   session: Session;
   isPinned: boolean;
   active: boolean;
-  canPin: boolean;
   unread: boolean;
   renaming: boolean;
   setRename: (session: Session | null) => void;
@@ -25,7 +24,6 @@ export function SessionRailRow({
   session,
   isPinned,
   active,
-  canPin,
   unread,
   renaming,
   setRename,
@@ -72,21 +70,17 @@ export function SessionRailRow({
       onContextMenu={(e) => onOpenSessionMenu(e, session, isPinned)}
     >
       <SessionRailLabel title={session.title} />
-      {(session.status === "running" || unread || isPinned || canPin) && (
-        <span className="rail-session-end">
-          {session.status === "running" ? (
-            <span className="rail-spinner" role="status" aria-label="Agent thinking" />
-          ) : unread ? (
-            <span className="rail-unread" role="status" aria-label="Unread" />
-          ) : null}
-          {(isPinned || canPin) && (
-            <SessionRailPinButton
-              pinned={isPinned}
-              onToggle={() => (isPinned ? onUnpin(session.id) : onPin(session.id))}
-            />
-          )}
-        </span>
-      )}
+      <span className="rail-session-end">
+        {session.status === "running" ? (
+          <span className="rail-spinner" role="status" aria-label="Agent thinking" />
+        ) : unread ? (
+          <span className="rail-unread" role="status" aria-label="Unread" />
+        ) : null}
+        <SessionRailPinButton
+          pinned={isPinned}
+          onToggle={() => (isPinned ? onUnpin(session.id) : onPin(session.id))}
+        />
+      </span>
     </div>
   );
 }

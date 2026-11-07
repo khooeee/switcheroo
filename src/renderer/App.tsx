@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { AgentKind } from "../shared/agentKind";
 import type { TranscriptTurn } from "../shared/transcript";
-import { MAX_PINNED_SESSIONS } from "../shared/maxPinnedSessions";
 import { SessionRail } from "./features/sessions/SessionRail";
 import { SessionNotice } from "./features/sessions/SessionNotice";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
@@ -195,7 +194,6 @@ export function App() {
 
         {showNewSession && (
           <NewSessionModal
-            canPin={pinnedSessions.length < MAX_PINNED_SESSIONS}
             onCancel={() => setShowNewSession(false)}
             onCreate={createSession}
           />

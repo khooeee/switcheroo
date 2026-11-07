@@ -11,7 +11,6 @@ export function SessionRailMenu({
   menuRef,
   session,
   pinned,
-  canPin,
   unread,
   x,
   y,
@@ -27,7 +26,6 @@ export function SessionRailMenu({
   menuRef: RefObject<HTMLDivElement | null>;
   session: Session;
   pinned: boolean;
-  canPin: boolean;
   unread: boolean;
   x: number;
   y: number;
@@ -76,7 +74,6 @@ export function SessionRailMenu({
         label={pinned ? "Unpin" : "Pin"}
         shortcut={modLabel("P")}
         keys="Meta+P Control+P"
-        disabled={!pinned && !canPin}
         onSelect={() => (pinned ? onUnpin(session.id) : onPin(session.id))}
         onDismiss={onDismiss}
       />

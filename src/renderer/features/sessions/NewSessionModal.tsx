@@ -13,7 +13,6 @@ const AGENT_KINDS = Object.keys(AGENT_LABELS) as AgentKind[];
 
 interface Props {
   onCancel: () => void;
-  canPin: boolean;
   onCreate: (
     agent: AgentKind,
     cwd: string,
@@ -23,7 +22,7 @@ interface Props {
   ) => Promise<void>;
 }
 
-export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
+export function NewSessionModal({ onCancel, onCreate }: Props) {
   const prefs = getAppSettingsCache();
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
@@ -62,7 +61,7 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
       lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(selectedAgent, cwd, sessionTitle, canBeAware && switcherooAware, canPin && pin);
+      await onCreate(selectedAgent, cwd, sessionTitle, canBeAware && switcherooAware, pin);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -167,8 +166,8 @@ export function NewSessionModal({ onCancel, canPin, onCreate }: Props) {
           <label className="modal-check">
             <input
               type="checkbox"
-              checked={canPin && pin}
-              disabled={busy || !canPin}
+              checked={pin}
+              disabled={busy}
               onChange={(e) => setPin(e.target.checked)}
               onKeyDown={createOnEnter}
             />

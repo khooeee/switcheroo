@@ -1,4 +1,3 @@
-import { MAX_PINNED_SESSIONS } from "../../shared/maxPinnedSessions";
 import type { MenuCtx } from "./MenuCtx";
 
 export type SessionPinMenuState = {
@@ -10,5 +9,5 @@ export type SessionPinMenuState = {
 export function activePinMenuState({ activeSession, pinnedIds }: MenuCtx): SessionPinMenuState {
   if (!activeSession) return { label: "Pin", enabled: false };
   if (pinnedIds.includes(activeSession.id)) return { label: "Unpin", enabled: true };
-  return { label: "Pin", enabled: pinnedIds.length < MAX_PINNED_SESSIONS };
+  return { label: "Pin", enabled: true };
 }

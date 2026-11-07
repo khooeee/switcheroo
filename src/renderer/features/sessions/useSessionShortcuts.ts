@@ -1,6 +1,5 @@
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
-import { MAX_PINNED_SESSIONS } from "../../../shared/maxPinnedSessions";
 import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { useEffect } from "react";
 import { modKey } from "../shortcuts/modKey";
@@ -11,7 +10,6 @@ function toggleActivePin(pinned: Session[], activeTabId: ActiveTabId) {
     void window.switcheroo.unpinSession(activeTabId);
     return;
   }
-  if (pinned.length >= MAX_PINNED_SESSIONS) return;
   void window.switcheroo.pinSession(activeTabId);
 }
 

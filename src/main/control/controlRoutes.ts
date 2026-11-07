@@ -73,9 +73,7 @@ export async function handleControlRequest(
     }
     if (method === "POST" && action === "pin") {
       if (!sessions.getSession(sessionId)) return sendJson(res, 404, { error: "Session not found" });
-      if (!sessions.pinSession(sessionId)) {
-        return sendJson(res, 400, { error: "pinned session limit reached" });
-      }
+      sessions.pinSession(sessionId);
       return sendJson(res, 200, { sessionId, pinned: true, ok: true });
     }
     if (method === "POST" && action === "unpin") {
