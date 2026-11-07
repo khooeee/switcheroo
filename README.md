@@ -91,21 +91,13 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 ## Shortcuts
 
+**Ctrl+A**: Go to beginning of prompt
+
 **Ctrl+C**: Stop agent (while running); clear prompt when idle with text
 
 **Ctrl+D**: Close session on empty prompt
 
-**Ctrl+A**: Go to beginning of prompt
-
 **Ctrl+E**: Go to end of prompt
-
-**Ctrl+W**: Delete last word in prompt
-
-**Escape**: Stop agent (while running)
-
-**Ctrl+Tab**: Go to next visible tab
-
-**Ctrl+Shift+Tab**: Go to previous visible tab
 
 **Cmd+F**: Find in current session
 
@@ -117,17 +109,25 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd+N**: New session
 
-**Cmd+R**: Rename selected tab
-
 **Cmd+P**: Pin/unpin selected session
+
+**Cmd+R**: Rename selected tab
 
 **Cmd+U**: Mark as Unread
 
 **Cmd+Shift+V**: Paste Switcheroo Aware Prompt (control API bootstrap) into the prompt
 
+**Ctrl+W**: Delete last word in prompt
+
 **Cmd+W**: Close selected tab
 
 **Cmd+Y**: Fork selected session
+
+**Ctrl+Tab**: Go to next visible tab
+
+**Ctrl+Shift+Tab**: Go to previous visible tab
+
+**Escape**: Stop agent (while running)
 
 **Cmd+/**: Toggle zen mode
 
