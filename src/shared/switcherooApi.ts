@@ -58,6 +58,8 @@ export interface SwitcherooApi {
   saveClipboardImage: (sessionId: string) => Promise<string | null>;
   /** Popup native Copy (+ Copy Link / Copy Code / Copy Message / Save Message as Markdown / Find / Turn Details / Save <view> as Markdown) at the cursor. */
   showEditContextMenu: (opts?: EditContextMenuOptions) => Promise<void>;
+  /** Native Save Image menu for a stored transcript image. */
+  showImageContextMenu: (name: string) => Promise<void>;
   /** Popup Cut / Copy / Paste for the composer. */
   showComposerContextMenu: (opts?: {
     canCut?: boolean;

@@ -9,6 +9,7 @@ import { savePastedImage } from "./images/savePastedImage";
 import { availableAgents } from "./acp/availableAgents";
 import { showEditContextMenu } from "./contextMenus/showEditContextMenu";
 import { showComposerContextMenu } from "./contextMenus/showComposerContextMenu";
+import { showImageContextMenu } from "./contextMenus/showImageContextMenu";
 import { resolveFolderPickerStart } from "./files/resolveFolderPickerStart";
 import { saveMarkdownFile } from "./files/saveMarkdownFile";
 import type { SessionManager } from "./sessions/SessionManager";
@@ -34,6 +35,9 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle("edit:contextMenu", (event, opts?: EditContextMenuOptions) => {
     showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
+  });
+  ipcMain.handle("image:contextMenu", (event, name: string) => {
+    showImageContextMenu(BrowserWindow.fromWebContents(event.sender), name);
   });
   ipcMain.handle(
     "composer:contextMenu",
