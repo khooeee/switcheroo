@@ -128,6 +128,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
       // The close role binds Ctrl+W on Linux, which belongs to Session → Close.
       submenu: [{ role: "minimize" }, ...(isMac ? [{ role: "close" as const }] : [])],
     },
+    ...(isMac
+      ? []
+      : [
+          {
+            label: "Help",
+            submenu: [{ label: `About ${app.name}`, click: () => app.showAboutPanel() }],
+          },
+        ]),
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

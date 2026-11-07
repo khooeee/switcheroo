@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog } from "electron";
 import path from "node:path";
 import { applyAppIcon } from "./main/lifecycle/applyAppIcon";
+import { installAboutPanel } from "./main/lifecycle/installAboutPanel";
 import { installExternalLinks } from "./main/lifecycle/installExternalLinks";
 import { installImageProtocol } from "./main/images/installImageProtocol";
 import { SessionManager } from "./main/sessions/SessionManager";
@@ -83,6 +84,7 @@ const createWindow = async () => {
 if (installSingleInstanceLock(() => mainWindow)) {
   app.on("ready", () => {
     applyAppIcon();
+    installAboutPanel();
     registerIpc({
       sessions,
       getMainWindow: () => mainWindow,
