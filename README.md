@@ -115,8 +115,6 @@ It's likely you don't have to read this section ever, but it's here in case the 
 
 **Cmd+U**: Mark as Unread
 
-**Cmd+Shift+V**: Paste Switcheroo Aware Prompt (control API bootstrap) into the prompt
-
 **Ctrl+W**: Delete last word in prompt
 
 **Cmd+W**: Close selected tab

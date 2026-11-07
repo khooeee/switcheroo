@@ -40,7 +40,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "paste" },
         {
           label: "Paste Switcheroo Aware Prompt",
-          accelerator: "Cmd+Shift+V",
           click: () => {
             win()?.webContents.send("prompt:paste-aware");
           },

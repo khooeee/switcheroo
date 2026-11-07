@@ -2,7 +2,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { controlBootstrapText } from "../../../shared/controlBootstrapText";
 import { dialogOpen } from "../shortcuts/dialogOpen";
 
-/** Insert the control API bootstrap prompt at the composer cursor on `switcheroo:paste-aware-prompt` (Cmd+Shift+V / menu). */
+/** Insert the control API bootstrap prompt at the composer cursor on `switcheroo:paste-aware-prompt` (menu). */
 export function usePasteAwarePrompt(
   sessionId: string,
   promptRef: RefObject<HTMLTextAreaElement | null>,
