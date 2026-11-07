@@ -5,7 +5,6 @@ import { metaFromSession } from "../storage/metaFromSession";
 import { saveSessionMeta } from "../storage/sessionMeta";
 import { saveTranscript } from "../storage/sessionTranscripts";
 import { saveSwitchboardTurns } from "../storage/switchboardEvents";
-import { updateTabCwd } from "../tabs/updateTabCwd";
 import type { SessionState } from "./SessionState";
 
 /** Writes app state, Switchboard turns, session meta and transcripts to disk. */
@@ -20,7 +19,6 @@ export class SessionPersistence {
       this.timer = null;
     }
     const { state } = this;
-    await this.persistTerminalCwds();
     await this.persistStateFile();
     await saveSwitchboardTurns(state.bus.list());
     await state.subagentTranscripts.flush();
@@ -51,21 +49,5 @@ export class SessionPersistence {
       unpinned: [...this.state.railLists.unpinnedIds],
     };
     await saveState(state);
-  }
-
-  private async persistTerminalCwds(): Promise<void> {
-    const { terminals } = this.state;
-    for (const session of this.state.sessions.values()) {
-      let changed = false;
-      let tabs = session.tabs;
-      for (const tab of session.tabs) {
-        if (tab.kind !== "terminal" || !terminals.has(tab.tabId)) continue;
-        const cwd = await terminals.refreshCwd(tab.tabId);
-        if (!cwd || cwd === tab.cwd) continue;
-        tabs = updateTabCwd(tabs, tab.tabId, cwd);
-        changed = true;
-      }
-      if (changed) session.tabs = tabs;
-    }
   }
 }

@@ -4,9 +4,9 @@
  * recover when an agent dies outside the app.
  *
  * Only agents whose parent is a running Switcheroo (the packaged app, or
- * `npm start` from this checkout) are touched. Other apps' ACP agents, the
- * standalone Codex app-server daemon and Switcheroo's terminal shells are left
- * alone. Each agent's own child processes (e.g. codex app-server) go with it.
+ * `npm start` from this checkout) are touched. Other apps' ACP agents and the
+ * standalone Codex app-server daemon are left alone. Each agent's own child
+ * processes (e.g. codex app-server) go with it.
  *
  * Usage:
  *   node scripts/kill-acp-agents.mjs                 # SIGTERM every Switcheroo agent

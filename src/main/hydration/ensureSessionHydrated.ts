@@ -19,9 +19,7 @@ export async function ensureSessionHydrated(
     host.sessions.delete(sessionId);
     host.transcripts.delete(sessionId);
     host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
-    if (host.activeParentSessionId() === sessionId || host.activeTabId === sessionId) {
-      host.setActiveTabId(SWITCHBOARD_ID);
-    }
+    if (host.activeTabId === sessionId) host.setActiveTabId(SWITCHBOARD_ID);
     host.emitSessions();
     host.persist();
     return null;
@@ -33,8 +31,6 @@ export async function ensureSessionHydrated(
   session.usage = meta.usage;
   session.modelConfig = meta.modelConfig;
   session.switcherooAware = meta.switcherooAware;
-  session.tabs = meta.tabs;
-  session.tabsExpanded = meta.tabsExpanded;
   const loaded = await loadTranscript(sessionId);
   const items = finalizeStalledTurns(loaded);
   host.transcripts.set(sessionId, items);

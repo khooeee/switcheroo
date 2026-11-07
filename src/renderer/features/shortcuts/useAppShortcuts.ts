@@ -1,11 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
-import type { Session, SessionTab } from "../../../shared/session";
+import type { Session } from "../../../shared/session";
 import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
-import { findChildTab } from "../../../shared/tabNav/findChildTab";
-import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
-import { confirmCloseSession } from "../sessions/confirmCloseSession";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
 import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
@@ -22,7 +19,6 @@ export function useAppShortcuts({
   unpinned,
   activeTabId,
   activeSession,
-  activeTerminalTab,
   selectTab,
   showNewSession,
   showFindInSessions,
@@ -39,7 +35,6 @@ export function useAppShortcuts({
   unpinned: Session[];
   activeTabId: ActiveTabId;
   activeSession: Session | null;
-  activeTerminalTab: SessionTab | null;
   selectTab: (id: ActiveTabId) => void;
   showNewSession: boolean;
   showFindInSessions: boolean;
@@ -62,36 +57,20 @@ export function useAppShortcuts({
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
   const runningId = useRef<string | null>(null);
-  runningId.current =
-    activeTerminalTab ? null : activeSession?.status === "running" ? activeSession.id : null;
+  runningId.current = activeSession?.status === "running" ? activeSession.id : null;
   const forkableId = useRef<string | null>(null);
-  forkableId.current =
-    activeTerminalTab ? null : activeSession?.supportsFork ? activeSession.id : null;
+  forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
 
-  const promptFocus = useSessionFocusShortcuts(
-    activeTerminalTab ? SWITCHBOARD_ID : activeTabId,
-    blocked,
-  );
-  usePromptFocusShortcut({
-    hasPrompt: !!activeSession && !activeTerminalTab,
-    blocked,
-  });
+  const promptFocus = useSessionFocusShortcuts(activeTabId, blocked);
+  usePromptFocusShortcut({ hasPrompt: !!activeSession, blocked });
   useFilterFocusShortcut(blocked);
   useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
 
   useEffect(() => {
     const closeActive = () => {
       if (blockedRef.current || activeId.current === SWITCHBOARD_ID) return;
-      const child = findChildTab(sessionsRef.current, activeId.current);
-      if (child) {
-        void window.switcheroo.closeTab(child.tab.tabId);
-        return;
-      }
       const session = sessionsRef.current.find((item) => item.id === activeId.current);
-      if (!session) return;
-      confirmCloseSession(session, (id) => {
-        void window.switcheroo.closeSession(id);
-      });
+      if (session) void window.switcheroo.closeSession(session.id);
     };
     const forkActive = () => {
       const id = forkableId.current;
@@ -102,12 +81,6 @@ export function useAppShortcuts({
       const id = runningId.current;
       if (!id || blockedRef.current) return;
       void window.switcheroo.cancelPrompt(id).catch(console.error);
-    };
-    const newTerminal = () => {
-      if (blockedRef.current || dialogOpen()) return;
-      const parentId = sessionIdForTab(activeId.current, sessionsRef.current);
-      if (!parentId) return;
-      void window.switcheroo.createTerminalTab(parentId);
     };
     const openFind = () => {
       if (dialogOpen() || findInSessionsOpen.current) return;
@@ -141,11 +114,10 @@ export function useAppShortcuts({
         return;
       }
 
-      // Ctrl+D closes a chat session on empty draft; terminals keep it as shell EOF.
+      // Ctrl+D closes a chat session on empty draft.
       if (ctrlOnlyKey(event, "d")) {
         if (dialogOpen() || blockedRef.current) return;
         if (activeId.current === SWITCHBOARD_ID) return;
-        if (findChildTab(sessionsRef.current, activeId.current)) return;
         if (!isComposerDraftEmpty(activeId.current)) return;
         event.preventDefault();
         closeActive();
@@ -159,13 +131,6 @@ export function useAppShortcuts({
         if (activeId.current === SWITCHBOARD_ID) return;
         event.preventDefault();
         closeActive();
-        return;
-      }
-
-      if (modKey(event, "t")) {
-        if (event.repeat) return;
-        event.preventDefault();
-        newTerminal();
         return;
       }
 
@@ -209,7 +174,6 @@ export function useAppShortcuts({
       ["switcheroo:find", openFind],
       ["switcheroo:find-sessions", openFindSessions],
       ["switcheroo:new-session", openNewSession],
-      ["switcheroo:new-terminal", newTerminal],
       ["switcheroo:fork-session", forkActive],
       ["switcheroo:close-session", closeActive],
       ["switcheroo:stop-session", stopActive],
@@ -224,7 +188,6 @@ export function useAppShortcuts({
 
   useEscapeShortcut({
     activeSession,
-    activeTerminalTab,
     blocked,
     findOpen,
     rightRailOpen,

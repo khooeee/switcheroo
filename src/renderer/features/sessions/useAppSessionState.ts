@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
-import type { Session, SessionTab } from "../../../shared/session";
+import type { Session } from "../../../shared/session";
 import type { SwitchboardTurn } from "../../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { SWITCHBOARD_ID } from "../../../shared/switchboardId";
-import { findChildTab } from "../../../shared/tabNav/findChildTab";
 import { sessionIdForTab } from "../../../shared/tabNav/sessionIdForTab";
 import { seedComposerDraft } from "../chat/seedComposerDraft";
 import { flatRailSessions } from "./flatRailSessions";
@@ -34,10 +33,10 @@ export function useAppSessionState() {
       setActiveTabId(data.activeTabId);
       setSwitchboardTurns(data.switchboardTurns);
       setTranscripts({});
-      const parentId = sessionIdForTab(data.activeTabId, [...data.pinned, ...data.unpinned]);
-      if (parentId) {
-        const turns = await window.switcheroo.getTranscript(parentId);
-        setTranscripts({ [parentId]: turns });
+      const sessionId = sessionIdForTab(data.activeTabId, [...data.pinned, ...data.unpinned]);
+      if (sessionId) {
+        const turns = await window.switcheroo.getTranscript(sessionId);
+        setTranscripts({ [sessionId]: turns });
       }
     });
 
@@ -94,43 +93,33 @@ export function useAppSessionState() {
     [pinnedSessions, unpinnedSessions],
   );
 
-  const activeChild = useMemo(
-    () => findChildTab(openSessions, activeTabId),
+  const activeSession = useMemo(
+    () => openSessions.find((t) => t.id === activeTabId) ?? null,
     [openSessions, activeTabId],
   );
 
-  const activeSession = useMemo(() => {
-    if (activeChild) return activeChild.session;
-    return openSessions.find((t) => t.id === activeTabId) ?? null;
-  }, [openSessions, activeTabId, activeChild]);
-
-  const activeTerminalTab: SessionTab | null = activeChild?.tab.kind === "terminal"
-    ? activeChild.tab
-    : null;
-
   useEffect(() => {
-    const parentId = activeSession?.id;
-    if (!parentId || activeTerminalTab) return;
+    const sessionId = activeSession?.id;
+    if (!sessionId) return;
     let cancelled = false;
-    void window.switcheroo.getTranscript(parentId).then((turns) => {
+    void window.switcheroo.getTranscript(sessionId).then((turns) => {
       if (cancelled) return;
       setTranscripts((prev) => {
-        const list = prev[parentId];
+        const list = prev[sessionId];
         const next = list ? shareById(list, turns, shareTurn) : turns;
-        return next === list ? prev : { ...prev, [parentId]: next };
+        return next === list ? prev : { ...prev, [sessionId]: next };
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [activeSession?.id, activeTerminalTab]);
+  }, [activeSession?.id]);
 
   return {
     pinnedSessions,
     unpinnedSessions,
     activeTabId,
     activeSession,
-    activeTerminalTab,
     openSessions,
     switchboardTurns,
     transcripts,

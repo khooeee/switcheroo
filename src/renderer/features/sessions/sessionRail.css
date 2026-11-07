@@ -11,13 +11,8 @@
   backdrop-filter: blur(8px);
   min-height: 0;
   overflow: hidden;
-  --rail-chevron: 12px;
   --rail-session-pad: 8px;
   --rail-session-gap: 8px;
-  /* Parent text starts after padding + chevron + gap. */
-  --rail-child-indent: calc(
-    var(--rail-session-pad) + var(--rail-chevron) + var(--rail-session-gap)
-  );
 }
 
 .rail-resize {

@@ -8,11 +8,10 @@ import { GlobalEventBus } from "../events";
 import type { AcpSession } from "../acp/session";
 import { WarmSessionPool } from "../acp/WarmSessionPool";
 import { AgentForkSupport } from "../acp/AgentForkSupport";
-import { activeParentSessionId } from "../menuState/activeParentSessionId";
+import { activeSessionId } from "../menuState/activeSessionId";
 import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
-import { TerminalHost } from "../pty/terminalHost";
 import { SubagentTranscriptStore } from "./SubagentTranscriptStore";
 
 /** In-memory session state shared by SessionManager collaborators, plus renderer IPC. */
@@ -29,7 +28,6 @@ export class SessionState {
   askOwners = new Map<string, string>();
   warm = new WarmSessionPool<AcpSession>();
   forkSupport = new AgentForkSupport();
-  terminals = new TerminalHost();
   onSessionsChanged: (() => void) | null = null;
 
   setActiveTabId(id: ActiveTabId): void {
@@ -49,8 +47,8 @@ export class SessionState {
     };
   }
 
-  activeParentSessionId(): string | null {
-    return activeParentSessionId(this.menuCtx());
+  activeSessionId(): string | null {
+    return activeSessionId(this.menuCtx());
   }
 
   prependSession(session: Session, pin = false): void {

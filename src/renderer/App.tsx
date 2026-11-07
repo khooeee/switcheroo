@@ -7,7 +7,6 @@ import { SessionRail } from "./features/sessions/SessionRail";
 import { useAppSessionState } from "./features/sessions/useAppSessionState";
 import { SwitchboardPanel } from "./features/switchboard/SwitchboardPanel";
 import { ChatPanel } from "./features/chat/ChatPanel";
-import { TerminalStack } from "./features/terminal/TerminalStack";
 import { RightRail } from "./features/chat/RightRail";
 import { useRightRail } from "./features/chat/useRightRail";
 import { useTurnDetailsEvent } from "./features/chat/useTurnDetailsEvent";
@@ -34,7 +33,6 @@ export function App() {
     unpinnedSessions,
     activeTabId,
     activeSession,
-    activeTerminalTab,
     openSessions,
     switchboardTurns,
     transcripts,
@@ -63,7 +61,7 @@ export function App() {
   const chatRef = useRef<HTMLDivElement>(null);
   const switchboardRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
-  const chatSessionId = activeTerminalTab ? null : activeSession?.id ?? null;
+  const chatSessionId = activeSession?.id ?? null;
   const askQuestion = useAgentQuestions(chatSessionId ?? SWITCHBOARD_ID);
   const pinTranscriptToBottom = useSessionScrollPosition(
     chatSessionId ?? SWITCHBOARD_ID,
@@ -78,8 +76,8 @@ export function App() {
     toggleSwitchboardRightRail,
     toggleSubagentRightRail,
   } = useRightRail({
-    tabId: activeTerminalTab ? null : activeTabId,
-    activeSession: activeTerminalTab ? null : activeSession,
+    tabId: activeTabId,
+    activeSession,
     transcripts,
     switchboardTurns,
     openSessions,
@@ -98,12 +96,7 @@ export function App() {
     return [activeTabId === SWITCHBOARD_ID ? switchboardRef : chatRef];
   }, [activeTabId, findScope, rightRailView]);
 
-  useTurnDetailsEvent(
-    activeTabId,
-    activeTerminalTab,
-    toggleSessionRightRail,
-    toggleSwitchboardRightRail,
-  );
+  useTurnDetailsEvent(activeTabId, toggleSessionRightRail, toggleSwitchboardRightRail);
 
   // Each tab keeps its right rail open (or closed) across tab switches.
   const selectTab = useCallback((id: typeof activeTabId) => {
@@ -116,7 +109,6 @@ export function App() {
     unpinned: unpinnedSessions,
     activeTabId,
     activeSession,
-    activeTerminalTab,
     selectTab,
     showNewSession,
     showFindInSessions,
@@ -165,7 +157,7 @@ export function App() {
         />
 
         <div className="main relative">
-          {findOpen && !activeTerminalTab && (
+          {findOpen && (
             <FindBar
               key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
               query={findQuery}
@@ -187,7 +179,7 @@ export function App() {
               onTurnClick={onSwitchboardClick}
               onOpenRightRail={toggleSwitchboardRightRail}
             />
-          ) : activeTerminalTab ? null : activeSession ? (
+          ) : activeSession ? (
             <ChatPanel
               session={activeSession}
               turns={transcripts[activeSession.id] ?? NO_TURNS}
@@ -209,10 +201,9 @@ export function App() {
               <div className="empty">Select or create a session to begin.</div>
             </section>
           )}
-          <TerminalStack sessions={openSessions} activeTab={activeTerminalTab} />
         </div>
 
-        {rightRailView && !activeTerminalTab ? (
+        {rightRailView ? (
           <RightRail
             tabId={activeTabId}
             session={rightRailView.session}

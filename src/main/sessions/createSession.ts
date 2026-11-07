@@ -30,8 +30,6 @@ export async function createSession(
     error: null,
     createdAt: Date.now(),
     switcherooAware: input.switcherooAware || undefined,
-    tabs: [],
-    tabsExpanded: true,
   };
   state.prependSession(session, input.pin === true);
   state.transcripts.set(id, []);

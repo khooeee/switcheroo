@@ -2,10 +2,6 @@ import type { AgentKind } from "./agentKind";
 
 export type SessionStatus = "idle" | "connecting" | "ready" | "running" | "error";
 
-/** Child tab under a chat group (terminals now; browser/emulator later). */
-export type SessionTab =
-  | { tabId: string; kind: "terminal"; title: string; cwd: string };
-
 export interface SessionUsage {
   used: number;
   size: number;
@@ -47,8 +43,4 @@ export interface Session {
   modelConfig?: SessionModelConfig;
   /** Knows Switcheroo's control API (persisted): instructions for Claude/Codex, else a bootstrap prompt. */
   switcherooAware?: boolean;
-  /** Child tabs (terminals, etc.) under this chat group. */
-  tabs: SessionTab[];
-  /** Whether child tabs are expanded in the rail. */
-  tabsExpanded: boolean;
 }

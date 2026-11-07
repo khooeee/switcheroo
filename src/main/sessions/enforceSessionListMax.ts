@@ -7,17 +7,15 @@ import { softCloseHost } from "./softCloseHost";
 
 /**
  * Soft-close oldest rail sessions when over sessionListMax. Spares the active
- * session, `keepId`, and busy ones (mid-turn, connecting, or with live terminals).
+ * session, `keepId`, and busy ones (mid-turn or connecting).
  */
 export async function enforceSessionListMax(deps: SessionDeps, keepId?: string): Promise<boolean> {
   const { state } = deps;
   const isBusy = (session: Session) =>
-    session.status === "running" ||
-    session.status === "connecting" ||
-    session.tabs.some((tab) => state.terminals.has(tab.tabId));
+    session.status === "running" || session.status === "connecting";
   const protect = new Set<string>();
-  const parentId = state.activeParentSessionId();
-  if (parentId) protect.add(parentId);
+  const activeId = state.activeSessionId();
+  if (activeId) protect.add(activeId);
   if (keepId) protect.add(keepId);
   for (const session of state.sessions.values()) {
     if (isBusy(session)) protect.add(session.id);

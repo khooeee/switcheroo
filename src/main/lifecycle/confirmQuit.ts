@@ -1,12 +1,12 @@
 import { dialog, type BrowserWindow } from "electron";
 import { quitWarningDetail } from "./quitWarningDetail";
 
-/** Ask before quitting over running chats or live terminals; resolves true to go ahead. */
+/** Ask before quitting over running chats; resolves true to go ahead. */
 export async function confirmQuit(
   win: BrowserWindow | null,
-  counts: { runningChats: number; openTerminals: number },
+  runningChats: number,
 ): Promise<boolean> {
-  const detail = quitWarningDetail(counts);
+  const detail = quitWarningDetail(runningChats);
   if (!detail) return true;
   const options: Electron.MessageBoxOptions = {
     type: "warning",

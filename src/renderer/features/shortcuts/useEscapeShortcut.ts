@@ -1,11 +1,10 @@
 import { useEffect } from "react";
-import type { Session, SessionTab } from "../../../shared/session";
+import type { Session } from "../../../shared/session";
 import { dialogOpen } from "./dialogOpen";
 
 /** Escape closes Find, else stops the running agent, else closes the right rail, else stops an idle agent. */
 export function useEscapeShortcut({
   activeSession,
-  activeTerminalTab,
   blocked,
   findOpen,
   rightRailOpen,
@@ -14,7 +13,6 @@ export function useEscapeShortcut({
   onCloseRightRail,
 }: {
   activeSession: Session | null;
-  activeTerminalTab: SessionTab | null;
   blocked: boolean;
   findOpen: boolean;
   rightRailOpen: boolean;
@@ -33,7 +31,7 @@ export function useEscapeShortcut({
         setFindQuery("");
         return;
       }
-      if (!activeTerminalTab && activeSession?.status === "running") {
+      if (activeSession?.status === "running") {
         event.preventDefault();
         void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
         return;
@@ -44,7 +42,7 @@ export function useEscapeShortcut({
         return;
       }
       // Like Claude Code's Esc: also stops work the agent started on its own, which ACP v1 does not report as running.
-      if (!activeTerminalTab && activeSession?.status === "ready") {
+      if (activeSession?.status === "ready") {
         event.preventDefault();
         void window.switcheroo.cancelPrompt(activeSession.id).catch(console.error);
       }
@@ -53,7 +51,6 @@ export function useEscapeShortcut({
     return () => window.removeEventListener("keydown", onKey);
   }, [
     activeSession,
-    activeTerminalTab,
     blocked,
     findOpen,
     rightRailOpen,

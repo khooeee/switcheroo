@@ -64,31 +64,6 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   ipcMain.handle("sessions:setActive", (_e, tabId: ActiveTabId) =>
     sessions.setActiveTab(tabId),
   );
-  ipcMain.handle("sessions:createTerminal", (_e, sessionId: string) =>
-    sessions.createTerminalTab(sessionId),
-  );
-  ipcMain.handle("sessions:renameTab", (_e, tabId: string, title: string) => {
-    sessions.renameTab(tabId, title);
-  });
-  ipcMain.handle("sessions:closeTab", (_e, tabId: string) => sessions.closeTab(tabId));
-  ipcMain.handle("sessions:setTabsExpanded", (_e, sessionId: string, expanded: boolean) => {
-    sessions.setTabsExpanded(sessionId, expanded);
-  });
-  ipcMain.handle("sessions:reorderTab", (_e, sessionId: string, tabId: string, toIndex: number) => {
-    sessions.reorderTab(sessionId, tabId, toIndex);
-  });
-  ipcMain.handle("sessions:moveTab", (_e, tabId: string, toSessionId: string, toIndex: number) => {
-    sessions.moveTab(tabId, toSessionId, toIndex);
-  });
-  ipcMain.handle("terminal:attach", (_e, tabId: string) => {
-    sessions.attachTerminal(tabId);
-  });
-  ipcMain.handle("terminal:write", (_e, tabId: string, data: string) => {
-    sessions.writeTerminal(tabId, data);
-  });
-  ipcMain.handle("terminal:resize", (_e, tabId: string, cols: number, rows: number) => {
-    sessions.resizeTerminal(tabId, cols, rows);
-  });
   ipcMain.handle("sessions:navigateEvent", (_e, sessionId: string, turnId: string, eventId: string) =>
     sessions.navigateToEvent(sessionId, turnId, eventId),
   );

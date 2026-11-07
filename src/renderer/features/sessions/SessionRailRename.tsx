@@ -1,18 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./sessionRailRename.css";
 
 export function SessionRailRename({
   title,
-  child = false,
-  leading,
   onSave,
   onCancel,
 }: {
   title: string;
-  /** Match indented child tab geometry. */
-  child?: boolean;
-  /** e.g. parent chevron — stays visible while renaming. */
-  leading?: ReactNode;
   onSave: (title: string) => void;
   onCancel: () => void;
 }) {
@@ -29,8 +23,7 @@ export function SessionRailRename({
   }, []);
 
   return (
-    <div className={`rail-session rail-renaming${child ? " rail-child" : ""}`}>
-      {leading}
+    <div className="rail-session rail-renaming">
       <textarea
         ref={inputRef}
         className="rail-rename-input"

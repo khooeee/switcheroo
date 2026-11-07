@@ -9,7 +9,6 @@ export function softCloseHost({ state, agents }: SessionDeps) {
     agents: state.agents,
     transcripts: state.transcripts,
     hydrated: state.hydrated,
-    terminals: state.terminals,
     bus: state.bus,
     get railLists() { return state.railLists; },
     get activeTabId() { return state.activeTabId; },
@@ -17,6 +16,5 @@ export function softCloseHost({ state, agents }: SessionDeps) {
     setRailLists: (lists: SessionRailLists) => state.setRailLists(lists),
     send: (channel: string, payload: unknown) => state.send(channel, payload),
     refreshCommandsIfNeeded: (sessionId: string) => agents.refreshCommandsIfNeeded(sessionId),
-    activeParentSessionId: () => state.activeParentSessionId(),
   };
 }

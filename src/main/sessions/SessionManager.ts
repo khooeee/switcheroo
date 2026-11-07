@@ -3,21 +3,13 @@ import type { ActiveTabId } from "../../shared/activeTabId";
 import type { AppSettings } from "../../shared/appSettings";
 import type { ConfigMenuCategory } from "../../shared/configMenuCategory";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
-import type { Session, SessionTab } from "../../shared/session";
+import type { Session } from "../../shared/session";
 import type { SwitchboardTurn } from "../../shared/switchboardTurn";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { loadState } from "../storage/persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
 import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
 import type { SessionMenuState } from "../menuState/SessionMenuState";
-import { applySessionTerminalCwd } from "../terminalTabs/applySessionTerminalCwd";
-import { attachSessionTerminal } from "../terminalTabs/attachSessionTerminal";
-import { closeSessionTab } from "../terminalTabs/closeSessionTab";
-import { createSessionTerminalTab } from "../terminalTabs/createSessionTerminalTab";
-import { moveSessionTab } from "../terminalTabs/moveSessionTab";
-import { renameSessionTab } from "../terminalTabs/renameSessionTab";
-import { reorderSessionTab } from "../terminalTabs/reorderSessionTab";
-import { setSessionTabsExpanded } from "../terminalTabs/setSessionTabsExpanded";
 import { openFolderInCursor } from "../cursor/openFolderInCursor";
 import { SessionState } from "./SessionState";
 import { SessionPersistence } from "./SessionPersistence";
@@ -35,7 +27,6 @@ import { setActiveTab } from "./setActiveTab";
 import { navigateToEvent } from "./navigateToEvent";
 import { promptSession } from "./promptSession";
 import { showSessionConfigMenu } from "./showSessionConfigMenu";
-import { terminalTabHost } from "./terminalTabHost";
 
 /** Main-process API for sessions, tabs, prompts and Switchboard; delegates to collaborators. */
 export class SessionManager {
@@ -54,13 +45,8 @@ export class SessionManager {
 
   setWindow(win: BrowserWindow): void {
     this.state.window = win;
-    this.state.terminals.setListeners(
-      (tabId, data) => this.state.send("terminal:data", { tabId, data }),
-      (tabId) => void this.closeTab(tabId),
-      (tabId, cwd) => applySessionTerminalCwd(terminalTabHost(this.deps), tabId, cwd),
-    );
-    const parentId = this.state.activeParentSessionId();
-    if (parentId) this.agents.refreshCommandsIfNeeded(parentId);
+    const sessionId = this.state.activeSessionId();
+    if (sessionId) this.agents.refreshCommandsIfNeeded(sessionId);
   }
 
   setOnSessionsChanged(cb: (() => void) | null): void {
@@ -73,9 +59,9 @@ export class SessionManager {
   }
 
   async openActiveInCursor(): Promise<void> {
-    const parentId = this.state.activeParentSessionId();
-    if (!parentId) return;
-    const session = this.state.sessions.get(parentId);
+    const sessionId = this.state.activeSessionId();
+    if (!sessionId) return;
+    const session = this.state.sessions.get(sessionId);
     if (!session?.cwd.trim()) return;
     await openFolderInCursor(session.cwd);
   }
@@ -165,42 +151,6 @@ export class SessionManager {
     return session && this.state.sessionPayload(session);
   }
 
-  createTerminalTab(sessionId: string): Promise<SessionTab> {
-    return createSessionTerminalTab(terminalTabHost(this.deps), sessionId);
-  }
-
-  renameTab(tabId: string, title: string): void {
-    renameSessionTab(terminalTabHost(this.deps), tabId, title);
-  }
-
-  closeTab(tabId: string): Promise<void> {
-    return closeSessionTab(terminalTabHost(this.deps), tabId);
-  }
-
-  setTabsExpanded(sessionId: string, expanded: boolean): void {
-    setSessionTabsExpanded(terminalTabHost(this.deps), sessionId, expanded);
-  }
-
-  reorderTab(sessionId: string, tabId: string, toIndex: number): void {
-    reorderSessionTab(terminalTabHost(this.deps), sessionId, tabId, toIndex);
-  }
-
-  moveTab(tabId: string, toSessionId: string, toIndex: number): void {
-    moveSessionTab(terminalTabHost(this.deps), tabId, toSessionId, toIndex);
-  }
-
-  attachTerminal(tabId: string): void {
-    attachSessionTerminal(terminalTabHost(this.deps), tabId);
-  }
-
-  writeTerminal(tabId: string, data: string): void {
-    this.state.terminals.write(tabId, data);
-  }
-
-  resizeTerminal(tabId: string, cols: number, rows: number): void {
-    this.state.terminals.resize(tabId, cols, rows);
-  }
-
   setActiveTab(tabId: ActiveTabId): Promise<void> {
     return setActiveTab(this.deps, tabId);
   }
@@ -250,13 +200,9 @@ export class SessionManager {
     return this.state.transcripts.get(sessionId) ?? [];
   }
 
-  /** Work a quit would interrupt: chats mid-turn and live terminal shells. */
-  quitBusyCounts(): { runningChats: number; openTerminals: number } {
-    const sessions = [...this.state.sessions.values()];
-    return {
-      runningChats: sessions.filter((session) => session.status === "running").length,
-      openTerminals: this.state.terminals.count(),
-    };
+  /** Chats mid-turn, which a quit would interrupt. */
+  runningChatCount(): number {
+    return [...this.state.sessions.values()].filter((session) => session.status === "running").length;
   }
 
   getSubagentTranscript(sessionId: string, subagentId: string): Promise<TranscriptTurn[]> {
@@ -265,7 +211,6 @@ export class SessionManager {
 
   async disposeAll(): Promise<void> {
     await this.persist();
-    await this.state.terminals.disposeAll();
     await this.state.warm.dispose();
     for (const s of this.state.agents.values()) {
       await s.dispose();

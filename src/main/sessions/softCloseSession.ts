@@ -8,17 +8,14 @@ import type { SessionRailLists } from "../railLists/SessionRailLists";
 import { metaFromSession } from "../storage/metaFromSession";
 import { saveSessionMeta } from "../storage/sessionMeta";
 import { saveTranscript } from "../storage/sessionTranscripts";
-import { updateTabCwd } from "../tabs/updateTabCwd";
 import type { AcpSession } from "../acp/session";
 import type { GlobalEventBus } from "../events";
-import type { TerminalHost } from "../pty/terminalHost";
 
 type SoftCloseHost = {
   sessions: Map<string, Session>;
   agents: Map<string, AcpSession>;
   transcripts: Map<string, TranscriptTurn[]>;
   hydrated: Set<string>;
-  terminals: TerminalHost;
   bus: GlobalEventBus;
   railLists: SessionRailLists;
   activeTabId: ActiveTabId;
@@ -26,7 +23,6 @@ type SoftCloseHost = {
   setRailLists: (lists: SessionRailLists) => void;
   send: (channel: string, payload: unknown) => void;
   refreshCommandsIfNeeded: (sessionId: string) => void;
-  activeParentSessionId: () => string | null;
 };
 
 /** Close a session from the rail without deleting its folder. */
@@ -38,13 +34,6 @@ export async function softCloseSession(
   if (!session) return;
   for (const turn of host.bus.setSessionTitle(sessionId, session.title)) {
     host.send("switchboard:turn", turn);
-  }
-  const tabIds = session.tabs.map((tab) => tab.tabId);
-  const cwds = await host.terminals.disposeMany(tabIds);
-  if (cwds.size > 0) {
-    let tabs = session.tabs;
-    for (const [tabId, cwd] of cwds) tabs = updateTabCwd(tabs, tabId, cwd);
-    session.tabs = tabs;
   }
   await saveSessionMeta(sessionId, metaFromSession(session));
   if (host.hydrated.has(sessionId)) {
@@ -58,8 +47,7 @@ export async function softCloseSession(
   host.sessions.delete(sessionId);
   host.transcripts.delete(sessionId);
   host.hydrated.delete(sessionId);
-  const activeParent = host.activeParentSessionId();
-  const wasActive = activeParent === sessionId || host.activeTabId === sessionId;
+  const wasActive = host.activeTabId === sessionId;
   const nextActive = wasActive ? nextActiveAfterClose(host.railLists, sessionId) : null;
   host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
   if (wasActive) {

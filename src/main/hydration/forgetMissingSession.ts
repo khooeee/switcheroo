@@ -13,9 +13,7 @@ export function forgetMissingSession(host: HydrationHost, sessionId: string): vo
     host.transcripts.delete(sessionId);
     host.hydrated.delete(sessionId);
     host.setRailLists(removeSessionFromLists(host.railLists, sessionId));
-    if (host.activeParentSessionId() === sessionId || host.activeTabId === sessionId) {
-      host.setActiveTabId(SWITCHBOARD_ID);
-    }
+    if (host.activeTabId === sessionId) host.setActiveTabId(SWITCHBOARD_ID);
     host.emitSessions();
   }
   host.bus.removeSession(sessionId);

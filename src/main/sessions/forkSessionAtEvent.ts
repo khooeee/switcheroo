@@ -78,8 +78,6 @@ export async function forkSessionAtEvent(
     createdAt: Date.now(),
     modelConfig: source.modelConfig,
     switcherooAware: source.switcherooAware,
-    tabs: [],
-    tabsExpanded: true,
   };
   host.addSession(session, clipped);
   host.setActiveSession(id);

@@ -15,15 +15,6 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       },
     },
     {
-      id: SESSION_MENU_IDS.newTerminal,
-      label: "New Terminal",
-      enabled: state.newTerminalEnabled,
-      accelerator: "Cmd+T",
-      click: () => {
-        win()?.webContents.send("session:new-terminal");
-      },
-    },
-    {
       id: SESSION_MENU_IDS.rename,
       label: "Rename",
       enabled: state.renameEnabled,

@@ -1,10 +1,9 @@
 import type { ActiveTabId } from "../activeTabId";
 import type { Session } from "../session";
 import { SWITCHBOARD_ID } from "../switchboardId";
-import { groupMatchesFilter } from "./groupMatchesFilter";
-import { visibleChildren } from "./visibleChildren";
+import { sessionMatchesFilter } from "./sessionMatchesFilter";
 
-/** Visible tab order for Ctrl+Tab: Switchboard, then each parent and its visible children. */
+/** Visible tab order for Ctrl+Tab: Switchboard, then each session matching the filter. */
 export function visibleTabOrder(
   pinned: Session[],
   unpinned: Session[],
@@ -12,11 +11,7 @@ export function visibleTabOrder(
 ): ActiveTabId[] {
   const order: ActiveTabId[] = [SWITCHBOARD_ID];
   for (const session of [...pinned, ...unpinned]) {
-    if (!groupMatchesFilter(session, filterQuery)) continue;
-    order.push(session.id);
-    for (const tab of visibleChildren(session, filterQuery)) {
-      order.push(tab.tabId);
-    }
+    if (sessionMatchesFilter(session, filterQuery)) order.push(session.id);
   }
   return order;
 }

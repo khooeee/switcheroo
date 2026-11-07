@@ -1,5 +1,4 @@
 import { activeForkMenuEnabled } from "./activeForkMenuEnabled";
-import { activeNewTerminalMenuEnabled } from "./activeNewTerminalMenuEnabled";
 import { activeOpenInCursorEnabled } from "./activeOpenInCursorEnabled";
 import { activePinMenuState } from "./activePinMenuState";
 import { activeRenameMenuEnabled } from "./activeRenameMenuEnabled";
@@ -17,6 +16,5 @@ export function activeSessionMenuState(ctx: MenuCtx): SessionMenuState {
     unreadEnabled: activeUnreadMenuEnabled(ctx),
     forkEnabled: activeForkMenuEnabled(ctx),
     stopEnabled: activeStopMenuEnabled(ctx),
-    newTerminalEnabled: activeNewTerminalMenuEnabled(ctx),
   };
 }

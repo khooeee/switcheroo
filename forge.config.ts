@@ -1,16 +1,15 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
-import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { join } from 'node:path';
 import { adHocSignApp } from './scripts/ad-hoc-sign-app.mjs';
 
 /**
- * Runtime packages Vite leaves external (native addons + ACP adapters spawned via
- * `node <bin>`). Forge's Vite plugin ignores all of `node_modules` by default, so
- * these must be allowlisted or `require()` / adapter spawns fail in the packaged app.
+ * Runtime packages Vite leaves external (ACP adapters spawned via `node <bin>`).
+ * Forge's Vite plugin ignores all of `node_modules` by default, so these must be
+ * allowlisted or adapter spawns fail in the packaged app.
  */
 const runtimeNodeModules = [
   '@agentclientprotocol',
@@ -36,19 +35,14 @@ const runtimeNodeModules = [
   'is-inside-container',
   'define-lazy-prop',
   'wsl-utils',
-  'node-pty',
-  // Hoisted dependency of node-pty; required when electron-rebuild runs in the staged app.
-  'node-addon-api',
 ];
 
 /**
- * Never shipped: the Claude Code and Codex CLIs (~550 MB) come from the user's own
- * installs, and node-pty's Windows prebuilds are dead weight in a macOS build.
+ * Never shipped: the Claude Code and Codex CLIs (~550 MB) come from the user's own installs.
  */
 const excludedPathPrefixes = [
   '/node_modules/@anthropic-ai/claude-agent-sdk-',
   '/node_modules/@openai/codex-',
-  '/node_modules/node-pty/prebuilds/win32-',
 ];
 
 function keepPackagedPath(file: string): boolean {
@@ -91,7 +85,6 @@ const config: ForgeConfig = {
     }, ['darwin']),
   ],
   plugins: [
-    new AutoUnpackNativesPlugin({}),
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
       // If you are familiar with Vite configuration, it will look really familiar.

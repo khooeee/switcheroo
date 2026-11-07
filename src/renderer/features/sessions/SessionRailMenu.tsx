@@ -15,7 +15,6 @@ export function SessionRailMenu({
   x,
   y,
   onRename,
-  onNewTerminal,
   onFork,
   onPin,
   onUnpin,
@@ -32,7 +31,6 @@ export function SessionRailMenu({
   x: number;
   y: number;
   onRename: (session: Session) => void;
-  onNewTerminal: (sessionId: string) => void;
   onFork: (id: string) => void;
   onPin: (id: string) => void;
   onUnpin: (id: string) => void;
@@ -63,13 +61,6 @@ export function SessionRailMenu({
         shortcut="⌘U"
         keys="Meta+U Control+U"
         onSelect={() => onToggleUnread(session.id)}
-        onDismiss={onDismiss}
-      />
-      <SessionRailMenuItem
-        label="New Terminal"
-        shortcut="⌘T"
-        keys="Meta+T Control+T"
-        onSelect={() => onNewTerminal(session.id)}
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem

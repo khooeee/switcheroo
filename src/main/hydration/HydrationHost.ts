@@ -19,6 +19,5 @@ export type HydrationHost = {
   queuePersist: () => void;
   pushTranscript: (sessionId: string) => void;
   send: (channel: string, payload: unknown) => void;
-  activeParentSessionId: () => string | null;
   prependSession: (session: Session, pin?: boolean) => void;
 };

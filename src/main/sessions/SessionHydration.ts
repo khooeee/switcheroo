@@ -42,7 +42,6 @@ export class SessionHydration {
       queuePersist: () => persistence.queuePersist(),
       pushTranscript: (sessionId: string) => state.pushTranscript(sessionId),
       send: (channel: string, payload: unknown) => state.send(channel, payload),
-      activeParentSessionId: () => state.activeParentSessionId(),
       prependSession: (session: Session, pin?: boolean) => state.prependSession(session, pin),
     };
   }

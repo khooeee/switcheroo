@@ -6,7 +6,7 @@ import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
-import type { Session, SessionTab } from "./session";
+import type { Session } from "./session";
 import type { SwitchboardTurn } from "./switchboardTurn";
 import type { TranscriptTurn } from "./transcript";
 
@@ -31,17 +31,6 @@ export interface SwitcherooApi {
   /** Sync Session menu Mark as Read/Unread for the active session. */
   setActiveSessionUnread: (unread: boolean) => Promise<void>;
   setActiveTab: (tabId: ActiveTabId) => Promise<void>;
-  createTerminalTab: (sessionId: string) => Promise<SessionTab>;
-  renameTab: (tabId: string, title: string) => Promise<void>;
-  closeTab: (tabId: string) => Promise<void>;
-  setTabsExpanded: (sessionId: string, expanded: boolean) => Promise<void>;
-  reorderTab: (sessionId: string, tabId: string, toIndex: number) => Promise<void>;
-  moveTab: (tabId: string, toSessionId: string, toIndex: number) => Promise<void>;
-  /** Ensure a PTY exists for this terminal tab (lazy spawn). */
-  attachTerminal: (tabId: string) => Promise<void>;
-  writeTerminal: (tabId: string, data: string) => Promise<void>;
-  resizeTerminal: (tabId: string, cols: number, rows: number) => Promise<void>;
-  onTerminalData: (cb: (payload: { tabId: string; data: string }) => void) => () => void;
   listSessions: () => Promise<SessionListPayload & { switchboardTurns: SwitchboardTurn[] }>;
   sendPrompt: (sessionId: string, text: string) => Promise<void>;
   cancelPrompt: (sessionId: string) => Promise<void>;

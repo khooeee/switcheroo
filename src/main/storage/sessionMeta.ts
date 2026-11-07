@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { isAgentKind, type AgentKind } from "../../shared/agentKind";
-import type { SessionModelConfig, SessionTab, SessionUsage } from "../../shared/session";
+import type { SessionModelConfig, SessionUsage } from "../../shared/session";
 import { isMissingFile } from "./isMissingFile";
 import { sessionMetaPath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";
@@ -13,8 +13,6 @@ export interface SessionMeta {
   usage?: SessionUsage;
   modelConfig?: SessionModelConfig;
   switcherooAware?: boolean;
-  tabs: SessionTab[];
-  tabsExpanded: boolean;
 }
 
 function readUsage(value: unknown): SessionUsage | undefined {
@@ -57,8 +55,6 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       usage: readUsage(parsed.usage),
       modelConfig: readModelConfig(parsed.modelConfig),
       switcherooAware: parsed.switcherooAware === true || undefined,
-      tabs: Array.isArray(parsed.tabs) ? parsed.tabs : [],
-      tabsExpanded: parsed.tabsExpanded !== false,
     };
   } catch (err) {
     if (isMissingFile(err)) return null;

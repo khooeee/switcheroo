@@ -1,4 +1,4 @@
 import type { SWITCHBOARD_ID } from "./switchboardId";
 
-/** Active rail selection: Switchboard, a chat parent, or a child tab id. */
+/** Active rail selection: Switchboard or a chat session id. */
 export type ActiveTabId = typeof SWITCHBOARD_ID | string;

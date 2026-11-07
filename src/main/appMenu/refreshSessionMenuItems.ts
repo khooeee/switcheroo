@@ -19,5 +19,4 @@ export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: b
   set(SESSION_MENU_IDS.markUnread, state.unreadEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
   set(SESSION_MENU_IDS.stop, state.stopEnabled);
   set(SESSION_MENU_IDS.close, state.renameEnabled);
-  set(SESSION_MENU_IDS.newTerminal, state.newTerminalEnabled);
 }

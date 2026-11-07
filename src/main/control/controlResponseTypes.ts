@@ -26,8 +26,6 @@ export const controlResponseTypes = {
     usage: "optional { used, size, cost?: { amount, currency } } — context window tokens",
     modelConfig: "optional { model?, effort? } — display names of the agent's current model and reasoning effort",
     switcherooAware: "optional boolean — the agent was told about this control API",
-    tabs: "{ tabId, kind: \"terminal\", title, cwd }[] — child tabs",
-    tabsExpanded: "boolean — UI rail state",
   } satisfies Record<keyof Session, string>,
   TranscriptTurn: {
     id: "string — the turnId returned by POST /sessions/:id/prompt",

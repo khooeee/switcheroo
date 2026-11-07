@@ -118,7 +118,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
   });
 
   installQuitHandler(
-    () => confirmQuit(mainWindow, sessions.quitBusyCounts()),
+    () => confirmQuit(mainWindow, sessions.runningChatCount()),
     async () => {
       crons.stop();
       await sessions.disposeAll();

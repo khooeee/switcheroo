@@ -1,4 +1,3 @@
-import type { ActiveTabId } from "../../shared/activeTabId";
 import type { PersistedState } from "../../shared/persistedState";
 import { SWITCHBOARD_ID } from "../../shared/switchboardId";
 import { loadSessionMeta } from "../storage/sessionMeta";
@@ -26,7 +25,7 @@ export async function restoreSavedState(
     const meta = metas[i];
     if (meta) state.sessions.set(id, sessionFromMeta(id, meta));
   });
-  state.activeTabId = resolveActiveTabId(state.sessions, saved.activeTabId, openIds);
+  state.activeTabId = openIds.includes(saved.activeTabId) ? saved.activeTabId : SWITCHBOARD_ID;
   const openSessionIds = new Set(openIds);
   const loadedSwitchboard = await loadSwitchboardTurns();
   const switchboardTurns = finalizeStalledTurns(loadedSwitchboard);
@@ -52,21 +51,7 @@ export async function restoreSavedState(
       navigable: navigableIds.has(e.sessionId),
     })),
   );
-  const parentId = state.activeParentSessionId();
-  if (parentId) await hydration.ensure(parentId);
+  const activeId = state.activeSessionId();
+  if (activeId) await hydration.ensure(activeId);
   if (switchboardTurns !== loadedSwitchboard) await saveSwitchboardTurns(state.bus.list());
-}
-
-function resolveActiveTabId(
-  sessions: SessionDeps["state"]["sessions"],
-  saved: ActiveTabId,
-  openIds: string[],
-): ActiveTabId {
-  if (saved === SWITCHBOARD_ID) return SWITCHBOARD_ID;
-  if (openIds.includes(saved)) return saved;
-  for (const id of openIds) {
-    const session = sessions.get(id);
-    if (session?.tabs.some((tab) => tab.tabId === saved)) return saved;
-  }
-  return SWITCHBOARD_ID;
 }

@@ -10,7 +10,5 @@ export function metaFromSession(session: Session): SessionMeta {
     usage: session.usage,
     modelConfig: session.modelConfig,
     switcherooAware: session.switcherooAware,
-    tabs: session.tabs,
-    tabsExpanded: session.tabsExpanded,
   };
 }

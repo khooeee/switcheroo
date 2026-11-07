@@ -8,15 +8,15 @@ import { useEffect } from "react";
 import { modKey } from "../shortcuts/modKey";
 
 function toggleActivePin(pinned: Session[], unpinned: Session[], activeTabId: ActiveTabId) {
-  const parentId = sessionIdForTab(activeTabId, [...pinned, ...unpinned]);
-  if (!parentId || activeTabId !== parentId) return;
-  if (pinned.some((session) => session.id === parentId)) {
-    void window.switcheroo.unpinSession(parentId);
+  const sessionId = sessionIdForTab(activeTabId, [...pinned, ...unpinned]);
+  if (!sessionId) return;
+  if (pinned.some((session) => session.id === sessionId)) {
+    void window.switcheroo.unpinSession(sessionId);
     return;
   }
   if (pinned.length >= MAX_PINNED_SESSIONS) return;
-  if (!unpinned.some((session) => session.id === parentId)) return;
-  void window.switcheroo.pinSession(parentId);
+  if (!unpinned.some((session) => session.id === sessionId)) return;
+  void window.switcheroo.pinSession(sessionId);
 }
 
 export function useSessionShortcuts(

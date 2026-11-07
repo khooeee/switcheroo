@@ -7,5 +7,4 @@ export const SESSION_MENU_IDS = {
   markUnread: "session-mark-unread",
   stop: "session-stop",
   close: "session-close",
-  newTerminal: "session-new-terminal",
 } as const;

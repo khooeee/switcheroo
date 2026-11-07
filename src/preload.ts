@@ -4,7 +4,6 @@ import type { CursorAskQuestionRequest } from "./shared/agentRequests";
 import type { AppSettings } from "./shared/appSettings";
 import type { CreateSessionInput } from "./shared/createSessionInput";
 import type { FindInSessionsHit } from "./shared/findInSessionsHit";
-import type { SessionTab } from "./shared/session";
 import type { SwitchboardTurn } from "./shared/switchboardTurn";
 import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
 import type { TranscriptTurn } from "./shared/transcript";
@@ -29,23 +28,6 @@ const api: SwitcherooApi = {
   unpinSession: (sessionId: string) => ipcRenderer.invoke("sessions:unpin", sessionId),
   setActiveSessionUnread: (unread) => ipcRenderer.invoke("sessions:setActiveUnread", unread),
   setActiveTab: (tabId: ActiveTabId) => ipcRenderer.invoke("sessions:setActive", tabId),
-  createTerminalTab: (sessionId: string) =>
-    ipcRenderer.invoke("sessions:createTerminal", sessionId) as Promise<SessionTab>,
-  renameTab: (tabId: string, title: string) =>
-    ipcRenderer.invoke("sessions:renameTab", tabId, title),
-  closeTab: (tabId: string) => ipcRenderer.invoke("sessions:closeTab", tabId),
-  setTabsExpanded: (sessionId: string, expanded: boolean) =>
-    ipcRenderer.invoke("sessions:setTabsExpanded", sessionId, expanded),
-  reorderTab: (sessionId: string, tabId: string, toIndex: number) =>
-    ipcRenderer.invoke("sessions:reorderTab", sessionId, tabId, toIndex),
-  moveTab: (tabId: string, toSessionId: string, toIndex: number) =>
-    ipcRenderer.invoke("sessions:moveTab", tabId, toSessionId, toIndex),
-  attachTerminal: (tabId: string) => ipcRenderer.invoke("terminal:attach", tabId),
-  writeTerminal: (tabId: string, data: string) =>
-    ipcRenderer.invoke("terminal:write", tabId, data),
-  resizeTerminal: (tabId: string, cols: number, rows: number) =>
-    ipcRenderer.invoke("terminal:resize", tabId, cols, rows),
-  onTerminalData: (cb) => subscribe<{ tabId: string; data: string }>("terminal:data", cb),
   listSessions: () => ipcRenderer.invoke("sessions:list"),
   sendPrompt: (sessionId: string, text: string) =>
     ipcRenderer.invoke("session:prompt", sessionId, text),
@@ -114,7 +96,6 @@ const MENU_EVENTS: Record<string, string> = {
   "markdown:save-view": "switcheroo:save-view-markdown",
   "find-sessions:open": "switcheroo:find-sessions",
   "session:new": "switcheroo:new-session",
-  "session:new-terminal": "switcheroo:new-terminal",
   "session:toggle-pin": "switcheroo:toggle-pin",
   "session:rename": "switcheroo:rename-session",
   "session:fork": "switcheroo:fork-session",

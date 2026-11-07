@@ -47,8 +47,8 @@ export function useRightRail({
   subagentTranscripts,
   loadingSubagents,
 }: {
-  /** Tab whose rail is shown (Switchboard or a chat); null on terminal tabs, which have none. */
-  tabId: ActiveTabId | null;
+  /** Tab whose rail is shown (Switchboard or a chat). */
+  tabId: ActiveTabId;
   activeSession: Session | null;
   transcripts: Record<string, TranscriptTurn[]>;
   switchboardTurns: SwitchboardTurn[];
@@ -57,7 +57,7 @@ export function useRightRail({
   loadingSubagents: ReadonlySet<string>;
 }) {
   const [selections, setSelections] = useState<Selections>({});
-  const selection = tabId ? selections[tabId] ?? null : null;
+  const selection = selections[tabId] ?? null;
   // Callbacks read these through refs/ids so they stay stable while turns stream
   // (memoized transcript and Switchboard rows receive them as props).
   const sessionId = activeSession?.id;
@@ -71,7 +71,7 @@ export function useRightRail({
   }, []);
 
   const closeRightRail = useCallback(() => {
-    if (tabIdRef.current) updateTab(tabIdRef.current, () => null);
+    updateTab(tabIdRef.current, () => null);
   }, [updateTab]);
 
   /** Toggle closed when activating the same message again; otherwise open / switch highlight. */
@@ -109,28 +109,24 @@ export function useRightRail({
 
   /** Show a subagent's transcript; selecting the open subagent again closes the rail. */
   const toggleSubagentRightRail = useCallback((subagentSessionId: string, subagentId: string) => {
-    const key = tabIdRef.current;
-    if (!key) return;
     const next = { ...nextRightRailSelection(subagentSessionId, ""), subagentId };
-    updateTab(key, (prev) =>
+    updateTab(tabIdRef.current, (prev) =>
       prev?.sessionId === subagentSessionId && prev.subagentId === subagentId ? null : next,
     );
   }, [updateTab]);
 
   const rightRailView = useMemo(
     () =>
-      tabId
-        ? resolveRightRailView({
-            selection,
-            activeSessionId: tabId,
-            activeSession,
-            transcripts,
-            switchboardTurns,
-            openSessions,
-            subagentTranscripts,
-            loadingSubagents,
-          })
-        : null,
+      resolveRightRailView({
+        selection,
+        activeSessionId: tabId,
+        activeSession,
+        transcripts,
+        switchboardTurns,
+        openSessions,
+        subagentTranscripts,
+        loadingSubagents,
+      }),
     [
       tabId,
       selection,
@@ -145,7 +141,7 @@ export function useRightRail({
 
   // Drop a selection whose turn (or session) is gone; other tabs' selections stay.
   useEffect(() => {
-    if (tabId && selection && !rightRailView) {
+    if (selection && !rightRailView) {
       updateTab(tabId, (prev) => (prev === selection ? null : prev));
     }
   }, [tabId, selection, rightRailView, updateTab]);
