@@ -15,8 +15,13 @@ const CURSOR_COMMANDS = [
     : []),
 ];
 
-/** Run the Cursor CLI, trying each known install location. */
+/**
+ * Run the Cursor CLI, trying each known install location. A failing command does not stop the
+ * search: `~/.local/bin/cursor` is the Cursor Agent shim, which exits 1 under the minimal PATH
+ * a Finder-launched app gets.
+ */
 export async function runCursor(args: string[], failMessage: string): Promise<void> {
+  let found = false;
   for (const command of CURSOR_COMMANDS) {
     try {
       await new Promise<void>((resolve, reject) => {
@@ -27,9 +32,10 @@ export async function runCursor(args: string[], failMessage: string): Promise<vo
       });
       return;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
-      throw new Error(failMessage);
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") found = true;
     }
   }
-  throw new Error("Cursor was not found. Install Cursor or enable its 'cursor' shell command.");
+  throw new Error(
+    found ? failMessage : "Cursor was not found. Install Cursor or enable its 'cursor' shell command.",
+  );
 }
