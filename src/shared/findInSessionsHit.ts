@@ -1,7 +1,7 @@
 import type { AgentKind } from "./agentKind";
 import type { TranscriptRole } from "./transcript";
 
-/** One transcript hit from Find in History (Cmd+Shift+F). */
+/** One transcript hit from Find in History (Cmd/Ctrl+Shift+F). */
 export interface FindInSessionsHit {
   sessionId: string;
   turnId: string;

@@ -4,13 +4,15 @@ import type { Session } from "../../../shared/session";
 import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { toggleDetailsVisible } from "../settings/details";
-import { usePromptFocusShortcut } from "./usePromptFocusShortcut";
 import { ctrlOnlyKey } from "./ctrlOnlyKey";
 import { dialogOpen } from "./dialogOpen";
 import { modKey } from "./modKey";
+import { requestPromptFocus } from "./paneFocus";
 import { useEscapeShortcut } from "./useEscapeShortcut";
-import { useFilterFocusShortcut } from "./useFilterFocusShortcut";
+import { useFocusShortcut } from "./useFocusShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
+
+const focusFilter = () => window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
 
 /** Window-level shortcuts: find, sessions, pin, focus, rename, fork, unread, stop, close, zen, Escape. */
 export function useAppShortcuts({
@@ -59,8 +61,8 @@ export function useAppShortcuts({
   forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
 
   const promptFocus = useSessionFocusShortcuts(activeTabId, blocked);
-  usePromptFocusShortcut({ hasPrompt: !!activeSession, blocked });
-  useFilterFocusShortcut(blocked);
+  useFocusShortcut("i", !!activeSession && !blocked, requestPromptFocus);
+  useFocusShortcut("g", !blocked, focusFilter);
   useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
 
   useEffect(() => {
