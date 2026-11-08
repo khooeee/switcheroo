@@ -6,6 +6,7 @@ import { useVoiceOnChime } from "./useVoiceOnChime";
 import { voiceKeyPresence } from "./voiceKeyPresence";
 import { VoiceSettingsModal } from "./VoiceSettingsModal";
 import { voiceStatusStore } from "./voiceStatusStore";
+import { voiceTooltip } from "./voiceTooltip";
 import "./voice.css";
 
 const OPEN_SETTINGS = "switcheroo:voice-settings";
@@ -23,10 +24,6 @@ export function VoiceButton() {
     return () => window.removeEventListener(OPEN_SETTINGS, open);
   }, []);
 
-  const tooltip = [voiceToggleLabel(status.state), status.error && `— ${status.error}`]
-    .filter(Boolean)
-    .join(" ");
-
   return (
     <>
       {hasKey && (
@@ -34,7 +31,7 @@ export function VoiceButton() {
           <button
             type="button"
             className={`rail-session voice-button voice-${status.state} voice-${status.activity}`}
-            data-tooltip={tooltip}
+            data-tooltip={voiceTooltip(status)}
             data-tooltip-align="center"
             aria-label={voiceToggleLabel(status.state)}
             aria-pressed={status.state === "listening"}
