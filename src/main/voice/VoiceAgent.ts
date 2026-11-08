@@ -11,6 +11,7 @@ import { exchangeVoiceSdp } from "./exchangeVoiceSdp";
 import { fetchIceServers } from "./fetchIceServers";
 import { realtimeErrorMessage } from "./realtimeErrorMessage";
 import { runVoiceSearch } from "./runVoiceSearch";
+import { responseUsage } from "./responseUsage";
 import { runVoiceTool } from "./runVoiceTool";
 import { sessionReasoningEffort } from "./sessionReasoningEffort";
 import { VoiceAnnouncer } from "./VoiceAnnouncer";
@@ -167,11 +168,14 @@ export class VoiceAgent {
         return;
       case "response.output_audio_transcript.done":
         return c.said(event.transcript);
-      case "response.done":
+      case "response.done": {
+        const usage = responseUsage(event);
+        if (usage) appendVoiceLog("usage", usage);
         c.responseEnded();
         this.setStatus({ activity: "idle" });
         this.notices.poke();
         return;
+      }
       case "response.function_call_arguments.done":
         void this.runTool(event);
         return;

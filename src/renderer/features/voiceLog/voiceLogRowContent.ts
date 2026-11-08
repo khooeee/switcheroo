@@ -26,6 +26,15 @@ function stateText(entry: VoiceLogEntry): string {
   return `Voice ${str(entry.state)}`;
 }
 
+function tokens(value: unknown): string {
+  return typeof value === "number" ? value.toLocaleString() : "?";
+}
+
+function usageText(entry: VoiceLogEntry): string {
+  const reasoning = typeof entry.reasoning === "number" ? `${tokens(entry.reasoning)} reasoning · ` : "";
+  return `Tokens: ${tokens(entry.input)} input · ${reasoning}${tokens(entry.output)} output`;
+}
+
 /** How one voice log entry renders: a transcript-style message, a divider, or nothing (redundant entries). */
 export function voiceLogRowContent(entry: VoiceLogEntry) {
   switch (entry.kind) {
@@ -53,6 +62,8 @@ export function voiceLogRowContent(entry: VoiceLogEntry) {
       } as const;
     case "state":
       return { type: "divider", text: stateText(entry) } as const;
+    case "usage":
+      return { type: "divider", text: usageText(entry) } as const;
     case "tool":
       break;
   }
