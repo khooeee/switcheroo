@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import { SettingsMenu } from "../settings/SettingsMenu";
+import { VoiceButton } from "../voice/VoiceButton";
 import { sessionMatchesFilter } from "../../../shared/tabNav/sessionMatchesFilter";
 import { flatRailSessions } from "./flatRailSessions";
 import { PlusIcon } from "./PlusIcon";
@@ -119,6 +120,7 @@ export function SessionRail({
         <div className="rail-fade" aria-hidden="true" />
       </div>
       <div className="rail-footer">
+        <VoiceButton />
         <SettingsMenu />
       </div>
       {menu &&

@@ -91,6 +91,24 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
+              onClick={closeThen(window.switcheroo.openVoiceLogFolder)}
+            >
+              Open Voice Log Folder
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
+              onClick={closeThen(async () => {
+                window.dispatchEvent(new CustomEvent("switcheroo:voice-settings"));
+              })}
+            >
+              Voice Settings…
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
               aria-keyshortcuts="Meta+/ Control+/"
               onClick={() => toggleDetailsVisible()}
             >

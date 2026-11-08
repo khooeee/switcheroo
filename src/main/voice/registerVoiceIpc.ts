@@ -1,0 +1,25 @@
+import { ipcMain } from "electron";
+import type { VoiceConnectionEvent } from "../../shared/voiceConnectionEvent";
+import { openVoiceLogFolder } from "../files/openVoiceLogFolder";
+import type { VoiceAgent } from "./VoiceAgent";
+import { voiceKeyStore } from "./voiceKeyStore";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Renderer ↔ main voice channels: controls, key, SDP exchange, and the relayed event stream. */
+export function registerVoiceIpc(voice: VoiceAgent): void {
+  ipcMain.handle("voice:toggle", () => voice.toggle());
+  ipcMain.handle("voice:status", () => voice.getStatus());
+  ipcMain.handle("voice:keyInfo", () => voiceKeyStore.info());
+  ipcMain.handle("voice:setKey", (_e, key: unknown) => voiceKeyStore.write(typeof key === "string" ? key : ""));
+  ipcMain.handle("voice:answer", (_e, offer: unknown) => voice.answer(typeof offer === "string" ? offer : ""));
+  ipcMain.handle("fs:openVoiceLogFolder", () => openVoiceLogFolder());
+  ipcMain.on("voice:connection", (_e, event: unknown) => {
+    if (isRecord(event) && typeof event.type === "string") voice.handleConnection(event as VoiceConnectionEvent);
+  });
+  ipcMain.on("voice:server-event", (_e, event: unknown) => {
+    if (isRecord(event)) voice.handleServerEvent(event);
+  });
+}

@@ -2,6 +2,7 @@ import { Menu, app } from "electron";
 import { standupPrompt } from "../activity/standupPrompt";
 import type { AppMenuOptions } from "./AppMenuOptions";
 import { sessionSubmenu } from "./sessionSubmenu";
+import { voiceSubmenu } from "./voiceSubmenu";
 
 /** Build the application menu; session item state comes from getters. */
 export function buildAppMenu(opts: AppMenuOptions): void {
@@ -129,6 +130,10 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           },
         },
       ],
+    },
+    {
+      label: "Voice",
+      submenu: voiceSubmenu(opts.voice),
     },
     {
       label: "Window",

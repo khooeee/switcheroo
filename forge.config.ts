@@ -68,6 +68,9 @@ const config: ForgeConfig = {
     name: "Switcheroo",
     icon: "./assets/icon",
     extraResource: ["./assets/icon.png"],
+    extendInfo: {
+      NSMicrophoneUsageDescription: "Switcheroo listens for voice commands while the voice agent is on.",
+    },
   },
   rebuildConfig: {},
   hooks: {

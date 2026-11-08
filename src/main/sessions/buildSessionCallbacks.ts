@@ -2,6 +2,7 @@ import type { Session, SessionStatus } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
 import type { AgentKind } from "../../shared/agentKind";
+import type { SessionObserver } from "./SessionObserver";
 
 type CallbackDeps = {
   session: Session;
@@ -14,6 +15,7 @@ type CallbackDeps = {
   noteForkSupport: (agent: AgentKind, supported: boolean) => void;
   queuePersist: () => void;
   askOwners: Map<string, string>;
+  observer: () => SessionObserver | null;
 };
 
 /** Wire AcpSession callbacks into SessionManager maps + IPC. */
@@ -21,7 +23,8 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
   const { session } = deps;
   return {
     onPromptComplete: () => {
-      deps.send("prompt:complete", { sessionId: session.id });
+      const announced = deps.observer()?.promptComplete(session.id) ?? false;
+      deps.send("prompt:complete", { sessionId: session.id, announced });
     },
     onTurn: (turn) => deps.handleTurn(session.id, turn),
     onSubagentTurn: (subagentId, turn) => deps.handleSubagentTurn(session.id, subagentId, turn),
@@ -49,10 +52,12 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
     onQuestionSettled: (requestId) => {
       deps.askOwners.delete(requestId);
       deps.send("question:settled", { requestId });
+      deps.observer()?.questionSettled(requestId);
     },
     onAskQuestion: (req) => {
       deps.askOwners.set(req.requestId, session.id);
       deps.send("ask-question", req);
+      deps.observer()?.askQuestion(req);
     },
     getSessionTitle: () => session.title,
   };

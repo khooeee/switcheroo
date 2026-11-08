@@ -18,6 +18,7 @@ import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useSessionRailActions } from "./features/sessions/useSessionRailActions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
+import { useVoiceConnection } from "./features/voice/useVoiceConnection";
 import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
 
@@ -26,6 +27,7 @@ const NO_TURNS: TranscriptTurn[] = [];
 
 export function App() {
   useCompletionSound();
+  useVoiceConnection();
   const {
     pinnedSessions,
     unpinnedSessions,
