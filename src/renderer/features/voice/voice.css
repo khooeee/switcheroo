@@ -1,0 +1,55 @@
+.rail-voice {
+  position: relative;
+  display: flex;
+}
+
+.rail-voice .rail-session {
+  width: 40px;
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Solid circle behind the mic while voice is on. */
+.voice-button.voice-listening svg {
+  box-sizing: content-box;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--voice-on-bg);
+  color: var(--voice-on-fg);
+}
+
+.voice-button.voice-connecting,
+.voice-button.voice-listening.voice-thinking {
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+.voice-button.voice-listening.voice-speaking {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.voice-error-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+@keyframes voice-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.voice-settings-note {
+  color: var(--text-dim);
+  font-size: var(--font-ui-size);
+}
+
+.voice-settings-warning {
+  color: var(--danger);
+  font-size: var(--font-ui-size);
+}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { AgentKind } from "../shared/agentKind";
 import type { TranscriptTurn } from "../shared/transcript";
 import { SessionRail } from "./features/sessions/SessionRail";
@@ -18,6 +18,9 @@ import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useSessionRailActions } from "./features/sessions/useSessionRailActions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
+import { useVoiceConnection } from "./features/voice/useVoiceConnection";
+import { VoiceLogPanel } from "./features/voiceLog/VoiceLogPanel";
+import { voiceLogView } from "./features/voiceLog/voiceLogView";
 import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
 
@@ -26,6 +29,7 @@ const NO_TURNS: TranscriptTurn[] = [];
 
 export function App() {
   useCompletionSound();
+  useVoiceConnection();
   const {
     pinnedSessions,
     unpinnedSessions,
@@ -39,6 +43,7 @@ export function App() {
     setSessionNotice,
   } = useAppSessionState();
   const railActions = useSessionRailActions();
+  const voiceLogOpen = useSyncExternalStore(voiceLogView.subscribe, voiceLogView.getSnapshot);
   const { subagentTranscripts, loadingSubagents, loadSubagentTranscript } = useSubagentTranscripts();
 
   const [showNewSession, setShowNewSession] = useState(false);
@@ -87,9 +92,15 @@ export function App() {
 
   // Each tab keeps its right rail open (or closed) across tab switches.
   const selectTab = useCallback((id: string) => {
+    voiceLogView.close();
     void window.switcheroo.setActiveTab(id);
     setFocusEvent(null);
   }, [setFocusEvent]);
+
+  // Switching sessions any other way (shortcuts, new session, navigation) also leaves the Voice Log.
+  useEffect(() => {
+    voiceLogView.close();
+  }, [activeTabId]);
 
   const promptFocus = useAppShortcuts({
     pinned: pinnedSessions,
@@ -144,7 +155,7 @@ export function App() {
             <SessionNotice message={sessionNotice} onDismiss={() => setSessionNotice(null)} />
           )}
 
-          {findOpen && activeSession && (
+          {findOpen && activeSession && !voiceLogOpen && (
             <FindBar
               key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
               query={findQuery}
@@ -156,7 +167,9 @@ export function App() {
             />
           )}
 
-          {activeSession ? (
+          {voiceLogOpen ? (
+            <VoiceLogPanel />
+          ) : activeSession ? (
             <ChatPanel
               session={activeSession}
               turns={transcripts[activeSession.id] ?? NO_TURNS}
@@ -180,7 +193,7 @@ export function App() {
           )}
         </div>
 
-        {rightRailView ? (
+        {rightRailView && !voiceLogOpen ? (
           <RightRail
             session={rightRailView.session}
             turn={rightRailView.turn}

@@ -75,6 +75,16 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
+              onClick={closeThen(async () => {
+                window.dispatchEvent(new CustomEvent("switcheroo:voice-settings"));
+              })}
+            >
+              Open Voice Settings
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
               onClick={closeThen(window.switcheroo.openActivityFolder)}
             >
               Open Activity Folder
@@ -91,11 +101,9 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              aria-keyshortcuts="Meta+/ Control+/"
-              onClick={() => toggleDetailsVisible()}
+              onClick={closeThen(window.switcheroo.openVoiceLogFolder)}
             >
-              Toggle Zen Mode
-              <kbd className="settings-shortcut">{modLabel("/")}</kbd>
+              Open Voice Log Folder
             </button>
             <button
               type="button"
@@ -112,6 +120,16 @@ export function SettingsMenu() {
               onClick={() => toggleStoredTheme()}
             >
               Toggle Theme
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
+              aria-keyshortcuts="Meta+/ Control+/"
+              onClick={() => toggleDetailsVisible()}
+            >
+              Toggle Zen Mode
+              <kbd className="settings-shortcut">{modLabel("/")}</kbd>
             </button>
           </div>,
           document.body,

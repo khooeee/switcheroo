@@ -14,5 +14,8 @@ export function defaultAppSettings(): AppSettings {
     lastPin: false,
     lastSwitcherooAware: false,
     sessionListMax: 500,
+    voiceModel: "inworld/models/gemma-4-26b-a4b-it",
+    voiceName: "Sarah",
+    voiceIdleMinutes: 30,
   };
 }

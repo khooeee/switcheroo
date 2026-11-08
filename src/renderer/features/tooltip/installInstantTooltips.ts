@@ -7,9 +7,12 @@ export function installInstantTooltips(): void {
   document.body.appendChild(tip);
 
   let active: Element | null = null;
+  // Follow text changes on the hovered element (e.g. the mic's state) without waiting for a re-hover.
+  const watcher = new MutationObserver(() => active && place(active));
 
   const hide = () => {
     active = null;
+    watcher.disconnect();
     tip.hidden = true;
     tip.textContent = "";
   };
@@ -21,6 +24,8 @@ export function installInstantTooltips(): void {
       return;
     }
     active = el;
+    watcher.disconnect();
+    watcher.observe(el, { attributes: true, attributeFilter: ["data-tooltip"] });
     tip.textContent = text;
     tip.hidden = false;
     const rect = el.getBoundingClientRect();

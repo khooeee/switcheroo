@@ -10,6 +10,7 @@ import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
 import { SubagentTranscriptStore } from "./SubagentTranscriptStore";
+import type { SessionObserver } from "./SessionObserver";
 
 /** In-memory session state shared by SessionManager collaborators, plus renderer IPC. */
 export class SessionState {
@@ -25,6 +26,7 @@ export class SessionState {
   warm = new WarmSessionPool<AcpSession>();
   forkSupport = new AgentForkSupport();
   onSessionsChanged: (() => void) | null = null;
+  observer: SessionObserver | null = null;
 
   setActiveTabId(id: ActiveTabId): void {
     this.activeTabId = id;

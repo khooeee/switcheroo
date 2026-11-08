@@ -9,7 +9,9 @@ export function setSessionStatus(
 ): void {
   const session = state.sessions.get(sessionId);
   if (!session) return;
+  const newError = status === "error" && session.status !== "error";
   session.status = status;
   session.error = error;
   state.emitSessions();
+  if (newError) state.observer?.sessionError(sessionId, error ?? "Unknown error");
 }

@@ -5,6 +5,9 @@ import type { CreateSessionInput } from "./shared/createSessionInput";
 import type { FindInSessionsHit } from "./shared/findInSessionsHit";
 import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
 import type { TranscriptTurn } from "./shared/transcript";
+import type { VoiceCommand } from "./shared/voiceCommand";
+import type { VoiceLogEntry } from "./shared/voiceLogEntry";
+import type { VoiceStatus } from "./shared/voiceStatus";
 
 function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
   const listener = (_event: Electron.IpcRendererEvent, payload: T) => cb(payload);
@@ -67,7 +70,20 @@ const api: SwitcherooApi = {
     subscribe<{ sessionId: string; turns: TranscriptTurn[]; draft?: string }>("transcript:reset", cb),
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
-  onPromptComplete: (cb) => subscribe<{ sessionId: string }>("prompt:complete", cb),
+  onPromptComplete: (cb) => subscribe<{ sessionId: string; announced?: boolean }>("prompt:complete", cb),
+  toggleVoice: () => ipcRenderer.invoke("voice:toggle"),
+  getVoiceStatus: () => ipcRenderer.invoke("voice:status"),
+  getVoiceKeyInfo: () => ipcRenderer.invoke("voice:keyInfo"),
+  setVoiceKey: (key) => ipcRenderer.invoke("voice:setKey", key),
+  openVoiceLogFolder: () => ipcRenderer.invoke("fs:openVoiceLogFolder"),
+  getVoiceLog: () => ipcRenderer.invoke("voice:log"),
+  onVoiceLogEntry: (cb) => subscribe<VoiceLogEntry>("voice:log-entry", cb),
+  voiceAnswer: (offerSdp) => ipcRenderer.invoke("voice:answer", offerSdp),
+  voiceConnection: (event) => ipcRenderer.send("voice:connection", event),
+  voiceServerEvent: (event) => ipcRenderer.send("voice:server-event", event),
+  onVoiceCommand: (cb) => subscribe<VoiceCommand>("voice:command", cb),
+  onVoiceClientEvent: (cb) => subscribe<object>("voice:client-event", cb),
+  onVoiceStatus: (cb) => subscribe<VoiceStatus>("voice:status", cb),
   onNavigateToEvent: (cb) =>
     subscribe<{ sessionId: string; turnId: string; eventId: string }>("navigate-event", cb),
   onFindProgress: (cb) =>
@@ -107,6 +123,7 @@ const MENU_EVENTS: Record<string, string> = {
   "prompt:paste-standup": "switcheroo:paste-standup-prompt",
   "prompt:paste-aware": "switcheroo:paste-aware-prompt",
   "filter:focus": "switcheroo:focus-filter",
+  "voice:open-settings": "switcheroo:voice-settings",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

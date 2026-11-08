@@ -15,6 +15,11 @@ import { runCron } from "./main/crons/runCron";
 import { registerIpc } from "./main/registerIpc";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
+import { refreshVoiceMenuItems } from "./main/appMenu/refreshVoiceMenuItems";
+import type { AppMenuOptions } from "./main/appMenu/AppMenuOptions";
+import { VoiceAgent } from "./main/voice/VoiceAgent";
+import { registerVoiceIpc } from "./main/voice/registerVoiceIpc";
+import { openVoiceLogFolder } from "./main/files/openVoiceLogFolder";
 import { errorMessage } from "./shared/errorMessage";
 
 installStdioGuards((error) => {
@@ -39,6 +44,12 @@ const crons = new CronScheduler((job, at) => {
   });
 });
 let activeSessionUnread = false;
+const voice = new VoiceAgent({
+  sessions,
+  getWindow: () => mainWindow,
+  onStatus: refreshVoiceMenuItems,
+});
+sessions.setObserver(voice.observer);
 
 function refreshMenus() {
   refreshSessionMenuItems(sessions.activeMenuState(), activeSessionUnread);
@@ -60,6 +71,8 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       autoplayPolicy: "no-user-gesture-required",
+      // Voice keeps talking and hearing while the window is hidden.
+      backgroundThrottling: false,
       nodeIntegration: false,
       sandbox: false,
     },
@@ -93,10 +106,11 @@ if (installSingleInstanceLock(() => mainWindow)) {
         refreshMenus();
       },
     });
+    registerVoiceIpc(voice);
     sessions.setOnSessionsChanged(() => {
       refreshMenus();
     });
-    buildAppMenu({
+    const menuOptions: AppMenuOptions = {
       getMainWindow: () => mainWindow,
       getMenuState: () => sessions.activeMenuState(),
       openActiveInCursor: () => {
@@ -108,7 +122,14 @@ if (installSingleInstanceLock(() => mainWindow)) {
         });
       },
       getActiveUnread: () => activeSessionUnread,
-    });
+      voice: {
+        getStatus: () => voice.getStatus(),
+        toggle: () => void voice.toggle(),
+        openSettings: () => mainWindow?.webContents.send("voice:open-settings"),
+        openLog: () => void openVoiceLogFolder().catch(console.error),
+      },
+    };
+    buildAppMenu(menuOptions);
     void createWindow().then(() => crons.start());
     void control.start(sessions);
   });
@@ -122,6 +143,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
   installQuitHandler(
     () => confirmQuit(mainWindow, sessions.runningChatCount()),
     async () => {
+      voice.stop();
       crons.stop();
       await sessions.disposeAll();
       await control.stop();

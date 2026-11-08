@@ -8,6 +8,11 @@ import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
+import type { VoiceCommand } from "./voiceCommand";
+import type { VoiceConnectionEvent } from "./voiceConnectionEvent";
+import type { VoiceKeyInfo } from "./voiceKeyInfo";
+import type { VoiceLogEntry } from "./voiceLogEntry";
+import type { VoiceStatus } from "./voiceStatus";
 
 export interface SessionListPayload {
   pinned: Session[];
@@ -101,7 +106,28 @@ export interface SwitcherooApi {
   ) => () => void;
   onQuestionSettled: (cb: (payload: { requestId: string }) => void) => () => void;
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
-  onPromptComplete: (cb: (payload: { sessionId: string }) => void) => () => void;
+  /** `announced`: the voice agent will speak about it, so skip the completion sound. */
+  onPromptComplete: (cb: (payload: { sessionId: string; announced?: boolean }) => void) => () => void;
+  /** Voice button / shortcut: start or stop. */
+  toggleVoice: () => Promise<void>;
+  getVoiceStatus: () => Promise<VoiceStatus>;
+  getVoiceKeyInfo: () => Promise<VoiceKeyInfo>;
+  /** Save the Inworld API key (encrypted in main); empty removes it. */
+  setVoiceKey: (key: string) => Promise<void>;
+  openVoiceLogFolder: () => Promise<void>;
+  /** The newest few hundred voice log entries (across days), oldest first. */
+  getVoiceLog: () => Promise<VoiceLogEntry[]>;
+  /** Each voice log entry as it is written. */
+  onVoiceLogEntry: (cb: (entry: VoiceLogEntry) => void) => () => void;
+  /** Exchange the WebRTC SDP offer for Inworld's answer (main holds the key). */
+  voiceAnswer: (offerSdp: string) => Promise<string>;
+  voiceConnection: (event: VoiceConnectionEvent) => void;
+  /** Relay a realtime server event from the data channel to main. */
+  voiceServerEvent: (event: object) => void;
+  onVoiceCommand: (cb: (command: VoiceCommand) => void) => () => void;
+  /** Realtime client events main wants on the data channel. */
+  onVoiceClientEvent: (cb: (event: object) => void) => () => void;
+  onVoiceStatus: (cb: (status: VoiceStatus) => void) => () => void;
   onNavigateToEvent: (cb: (payload: { sessionId: string; turnId: string; eventId: string }) => void) => () => void;
   navigateToEvent: (sessionId: string, turnId: string, eventId: string) => Promise<void>;
 }

@@ -47,6 +47,20 @@ export function sessionMetaPath(sessionId: string): string {
   return path.join(sessionDir(sessionId), "meta.json");
 }
 
+/** Inworld API key, encrypted with safeStorage; never sent to the renderer. */
+export function voiceKeyPath(): string {
+  return path.join(userDataDir(), "inworld-key.enc");
+}
+
+export function voiceLogDir(): string {
+  return path.join(userDataDir(), "voice");
+}
+
+/** Voice conversation log for one local day (`YYYY-MM-DD`). */
+export function voiceLogPath(date: string): string {
+  return path.join(voiceLogDir(), `${date}.jsonl`);
+}
+
 /** Content-addressed images from tool results, shared by every session. */
 export function imagesDir(): string {
   return path.join(userDataDir(), "images");

@@ -10,6 +10,8 @@
   --text-dim: #8b9aab;
   --accent: #3dd6c6;
   --accent-2: #f0a35e;
+  --voice-on-bg: var(--accent);
+  --voice-on-fg: var(--bg-0);
   --danger: #ef6b6b;
   --danger-soft: rgba(239, 107, 107, 0.2);
   --danger-pastel: #3a2428;
@@ -55,6 +57,8 @@ html[data-theme="light"] {
   --text-dim: #5c6d7a;
   --accent: color-mix(in srgb, var(--text-dim) 70%, var(--bg-2));
   --accent-2: #b86a22;
+  --voice-on-bg: #1a9e91;
+  --voice-on-fg: #ffffff;
   --danger: #c44747;
   --danger-soft: rgba(196, 71, 71, 0.12);
   --danger-pastel: #fce4e4;

@@ -22,6 +22,7 @@ There are also some niceties:
 
 There are also orchestration features:
 - "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization strategies (e.g. reading GitHub issues & implementing them in parallel).
+- A hands-free voice agent ([Inworld Realtime](https://docs.inworld.ai/realtime/overview)) controls every session: ask what's running, send or steer prompts, start new sessions, and hear finished turns announced.  It also answers general questions and searches the web.  Click the mic in the bottom left to start it; add your Inworld API key under **Voice** → **Open Voice Settings**.
 
 ## Install (macOS)
 
@@ -123,7 +124,6 @@ It's likely you don't have to read this section ever, but it's here in case your
 **Cmd/Ctrl+R**: Rename selected tab
 
 **Cmd/Ctrl+U**: Mark as Unread
-
 **Cmd/Ctrl+W**: Close selected tab
 
 **Cmd/Ctrl+Y**: Fork selected session

@@ -15,9 +15,10 @@ export function useCompletionSound(): void {
     };
     syncPreference();
     const unsubscribePreference = soundPreference.subscribe(syncPreference);
-    const unsubscribe = window.switcheroo.onPromptComplete(() => {
+    const unsubscribe = window.switcheroo.onPromptComplete(({ announced }) => {
       syncPreference();
-      if (sound.muted) return;
+      // The voice agent will say it out loud instead.
+      if (sound.muted || announced) return;
       sound.currentTime = 0;
       void sound.play().catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;

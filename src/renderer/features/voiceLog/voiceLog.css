@@ -1,0 +1,53 @@
+.rail-voice-log {
+  position: relative;
+  display: flex;
+}
+
+.rail-voice-log .rail-session {
+  width: 40px;
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Tool calls, notices and errors: secondary, like a turn's mid-turn events. */
+.message.voice-aside {
+  background: transparent;
+  border-left: 2px solid var(--bg-3);
+  border-radius: 0;
+  padding: 4px 10px;
+}
+
+.voice-log-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--font-mono-small-size);
+}
+
+.voice-log-divider::before,
+.voice-log-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
+.voice-log-day {
+  margin-top: 8px;
+  color: var(--text);
+}
+
+.voice-log-detail summary {
+  margin-top: 6px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--font-mono-small-size);
+}
+
+.voice-log-detail .body {
+  margin-top: 4px;
+  color: var(--text-dim);
+}

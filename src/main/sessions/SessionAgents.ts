@@ -99,6 +99,7 @@ export class SessionAgents {
       noteForkSupport: (agent, supported) => this.noteForkSupport(agent, supported),
       queuePersist: () => persistence.queuePersist(),
       askOwners: state.askOwners,
+      observer: () => state.observer,
     });
   }
 

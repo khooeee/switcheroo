@@ -16,6 +16,7 @@ import { SessionAgents } from "./SessionAgents";
 import { SessionFind } from "./SessionFind";
 import { SessionRail } from "./SessionRail";
 import type { SessionDeps } from "./SessionDeps";
+import type { SessionObserver } from "./SessionObserver";
 import { restoreSavedState } from "./restoreSavedState";
 import { enforceSessionListMax } from "./enforceSessionListMax";
 import { createSession } from "./createSession";
@@ -48,6 +49,10 @@ export class SessionManager {
 
   setOnSessionsChanged(cb: (() => void) | null): void {
     this.state.onSessionsChanged = cb;
+  }
+
+  setObserver(observer: SessionObserver | null): void {
+    this.state.observer = observer;
   }
 
   /** Session menu labels/enabled state for the active tab. */
