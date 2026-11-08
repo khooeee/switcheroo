@@ -24,6 +24,8 @@ export interface AppSettings {
   voiceReasoning: VoiceReasoningEffort;
   /** Inworld TTS voice name. */
   voiceName: string;
+  /** Language the voice agent speaks and expects to hear, interpolated into its instructions. */
+  voiceLanguage: string;
   /** Turn voice off after this many minutes without speech (0 = never). */
   voiceIdleMinutes: number;
 }

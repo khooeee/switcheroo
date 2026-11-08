@@ -13,7 +13,7 @@ export function voiceSessionConfig(settings: AppSettings) {
       ...(settings.voiceReasoning !== "DEFAULT" && {
         text_generation_config: { reasoning: { effort: settings.voiceReasoning } },
       }),
-      instructions: `${instructions}\n\nThe current local date and time is ${now}.`,
+      instructions: `${instructions.replaceAll("{{language}}", settings.voiceLanguage)}\n\nThe current local date and time is ${now}.`,
       output_modalities: ["audio"],
       audio: {
         input: {

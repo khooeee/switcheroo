@@ -17,6 +17,7 @@ export function defaultAppSettings(): AppSettings {
     voiceModel: "inworld/models/mimo-v2.6-pro",
     voiceReasoning: "NONE",
     voiceName: "Sarah",
+    voiceLanguage: "English",
     voiceIdleMinutes: 30,
   };
 }

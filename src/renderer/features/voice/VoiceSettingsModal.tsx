@@ -19,7 +19,7 @@ const REASONING_LABELS: Record<VoiceReasoningEffort, string> = {
   DEFAULT: "Model default",
 };
 
-/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, reasoning, voice, idle timeout. */
+/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, reasoning, voice, language, idle timeout. */
 export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
   const prefs = getAppSettingsCache();
   const [keyInfo, setKeyInfo] = useState<VoiceKeyInfo | null>(null);
@@ -28,6 +28,7 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
   const [model, setModel] = useState(prefs.voiceModel);
   const [reasoning, setReasoning] = useState(prefs.voiceReasoning);
   const [voiceName, setVoiceName] = useState(prefs.voiceName);
+  const [language, setLanguage] = useState(prefs.voiceLanguage);
   const [idleMinutes, setIdleMinutes] = useState(String(prefs.voiceIdleMinutes));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,7 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
         voiceModel: model.trim() || prefs.voiceModel,
         voiceReasoning: reasoning,
         voiceName: voiceName.trim() || prefs.voiceName,
+        voiceLanguage: language.trim() || prefs.voiceLanguage,
         voiceIdleMinutes: Number.isFinite(minutes) && minutes >= 0 ? Math.round(minutes) : prefs.voiceIdleMinutes,
       });
       onClose();
@@ -131,10 +133,14 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           .
         </div>
         <label>
+          Language
+          <input value={language} disabled={busy} onChange={(e) => setLanguage(e.target.value)} placeholder="English" />
+        </label>
+        <label>
           Turn voice off after idle minutes (0 = never)
           <input type="number" min={0} value={idleMinutes} disabled={busy} onChange={(e) => setIdleMinutes(e.target.value)} />
         </label>
-        <div className="voice-settings-note">Model, reasoning and voice apply on the next connect.</div>
+        <div className="voice-settings-note">Model, reasoning, voice and language apply on the next connect.</div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
           <button type="button" className="btn" disabled={busy} onClick={onClose}>
