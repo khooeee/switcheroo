@@ -10,8 +10,13 @@
   padding: 0;
 }
 
-.voice-button.voice-listening {
-  color: var(--accent);
+/* Solid circle behind the mic while voice is on. */
+.voice-button.voice-listening svg {
+  box-sizing: content-box;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--voice-on-bg);
+  color: var(--voice-on-fg);
 }
 
 .voice-button.voice-connecting,
