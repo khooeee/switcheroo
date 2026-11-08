@@ -27,11 +27,12 @@ function chosenIds(question: Question, picks: unknown): string[] {
   return question.allowMultiple ? [...new Set(ids)] : ids.slice(0, 1);
 }
 
-/** Answer (or skip) a Cursor agent's multiple-choice question. */
+/** Select the asking session and answer (or skip) its Cursor agent's multiple-choice question. */
 export async function answerQuestionTool(ctx: VoiceToolContext, args: Record<string, unknown>): Promise<unknown> {
   const found = findRequest(ctx, toolArgs.string(args, "session"));
   if (!found.ok) return found;
   const { request } = found;
+  await ctx.sessions.setActiveTab(request.sessionId);
   if (toolArgs.boolean(args, "skip")) {
     ctx.sessions.respondAskQuestion(request.requestId, { outcome: "skipped", reason: "Skipped by voice" });
     ctx.questions.delete(request.requestId);

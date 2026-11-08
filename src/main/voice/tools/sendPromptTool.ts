@@ -12,7 +12,7 @@ function delivery(session: Session): string {
   return "sent while it is working";
 }
 
-/** Send the user's instruction to a session (steers or queues when it is busy). */
+/** Select a session and send it the user's instruction (steers or queues when it is busy). */
 export async function sendPromptTool(ctx: VoiceToolContext, args: Record<string, unknown>): Promise<unknown> {
   const text = toolArgs.string(args, "text");
   if (!text) return { ok: false, error: "text is required." };
@@ -20,6 +20,7 @@ export async function sendPromptTool(ctx: VoiceToolContext, args: Record<string,
   if (!resolved.ok) return resolved;
   const { session } = resolved;
   const landed = delivery(session);
+  await ctx.sessions.setActiveTab(session.id);
   await ctx.sessions.enqueuePrompt(session.id, text);
   return { ok: true, session: sessionLabel(session), delivery: landed };
 }
