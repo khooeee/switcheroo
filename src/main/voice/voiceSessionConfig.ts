@@ -27,6 +27,8 @@ export function voiceSessionConfig(settings: AppSettings) {
       tool_choice: "auto",
       providerData: {
         stt: { voice_profile: false },
+        // Send a turn's leading steering tag with the first TTS chunk only (Inworld's advice for tts-2).
+        tts: { steering_handling: "emit_once" },
         memory: { enabled: true },
         responsiveness: { enabled: true },
       },
