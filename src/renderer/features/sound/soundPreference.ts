@@ -1,4 +1,4 @@
-import { getAppSettingsCache, patchAppSettings, subscribeAppSettings } from "../settings/appSettingsCache";
+import { getAppSettingsCache, subscribeAppSettings } from "../settings/appSettingsCache";
 
 export const soundPreference = {
   getSnapshot(): boolean {
@@ -7,9 +7,5 @@ export const soundPreference = {
 
   subscribe(listener: () => void): () => void {
     return subscribeAppSettings(listener);
-  },
-
-  toggle(): void {
-    void patchAppSettings({ soundEnabled: !getAppSettingsCache().soundEnabled });
   },
 };

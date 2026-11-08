@@ -54,7 +54,6 @@ export interface SwitcherooApi {
   openActivityFolder: () => Promise<void>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
-  openSettingsFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>;
   savePastedImage: (

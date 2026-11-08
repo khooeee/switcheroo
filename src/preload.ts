@@ -41,7 +41,6 @@ const api: SwitcherooApi = {
   openActivityFolder: () => ipcRenderer.invoke("fs:openActivityFolder"),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
   openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
-  openSettingsFile: () => ipcRenderer.invoke("fs:openSettingsFile"),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (patch: Partial<AppSettings>) => ipcRenderer.invoke("settings:update", patch),
   savePastedImage: (sessionId, image) =>
@@ -123,7 +122,7 @@ const MENU_EVENTS: Record<string, string> = {
   "prompt:paste-standup": "switcheroo:paste-standup-prompt",
   "prompt:paste-aware": "switcheroo:paste-aware-prompt",
   "filter:focus": "switcheroo:focus-filter",
-  "voice:open-settings": "switcheroo:voice-settings",
+  "settings:open": "switcheroo:open-settings",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

@@ -43,13 +43,3 @@
     opacity: 0.45;
   }
 }
-
-.voice-settings-note {
-  color: var(--text-dim);
-  font-size: var(--font-ui-size);
-}
-
-.voice-settings-warning {
-  color: var(--danger);
-  font-size: var(--font-ui-size);
-}

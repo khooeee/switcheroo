@@ -194,7 +194,7 @@ export class VoiceAgent {
       const key = await voiceKeyStore.read();
       if (!key) {
         this.link.openSettings();
-        throw new Error("Add your Inworld API key in Voice Settings.");
+        throw new Error("Add your Inworld API key in Settings.");
       }
       await ensureMicAccess();
       const iceServers = await fetchIceServers(key);

@@ -4,7 +4,6 @@ import { openFolderInCursor } from "./cursor/openFolderInCursor";
 import { openActivityFolder } from "./files/openActivityFolder";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
-import { openSettingsFile } from "./files/openSettingsFile";
 import { readClipboardPng } from "./images/readClipboardPng";
 import { savePastedImage } from "./images/savePastedImage";
 import { availableAgents } from "./acp/availableAgents";
@@ -101,7 +100,6 @@ export function registerIpc({ sessions, getMainWindow, setActiveSessionUnread }:
   ipcMain.handle("fs:openActivityFolder", () => openActivityFolder());
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
-  ipcMain.handle("fs:openSettingsFile", () => openSettingsFile());
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", (_e, patch: Partial<AppSettings>) =>
     sessions.updateSettings(patch),

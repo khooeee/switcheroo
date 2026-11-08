@@ -25,7 +25,7 @@ export class VoiceRendererLink {
   }
 
   openSettings(): void {
-    this.post("voice:open-settings");
+    this.post("settings:open");
   }
 
   private post(channel: string, payload?: unknown): void {

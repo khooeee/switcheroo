@@ -1,0 +1,30 @@
+.modal.settings-modal {
+  max-height: 85vh;
+}
+
+/* Scrolls between the fixed title and buttons; the bleed keeps focus rings and the scrollbar off the fields. */
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  margin-inline: -20px;
+  padding: 2px 20px;
+}
+
+.settings-section {
+  margin: 8px 0 0;
+  font-size: var(--font-ui-size);
+  font-weight: 600;
+}
+
+.settings-note {
+  color: var(--text-dim);
+  font-size: var(--font-ui-size);
+}
+
+.settings-warning {
+  color: var(--danger);
+  font-size: var(--font-ui-size);
+}

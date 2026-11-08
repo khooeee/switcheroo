@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { toggleStoredTheme } from "../theme/theme";
 import { toggleDetailsVisible } from "./details";
 import { modLabel } from "../shortcuts/modLabel";
-import { soundPreference } from "../sound/soundPreference";
 import { GearIcon } from "./GearIcon";
+import { OPEN_SETTINGS_EVENT } from "./openSettingsEvent";
+import { SettingsModal } from "./SettingsModal";
 import "./menus.css";
 import "./settingsShortcuts.css";
 
 export function SettingsMenu() {
-  const soundEnabled = useSyncExternalStore(soundPreference.subscribe, soundPreference.getSnapshot);
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -18,6 +18,12 @@ export function SettingsMenu() {
     setOpen(false);
     void action();
   };
+
+  useEffect(() => {
+    const openSettings = () => setSettingsOpen(true);
+    window.addEventListener(OPEN_SETTINGS_EVENT, openSettings);
+    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, openSettings);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -67,19 +73,9 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={closeThen(window.switcheroo.openSettingsFile)}
+              onClick={closeThen(async () => setSettingsOpen(true))}
             >
               Open Settings
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="settings-item"
-              onClick={closeThen(async () => {
-                window.dispatchEvent(new CustomEvent("switcheroo:voice-settings"));
-              })}
-            >
-              Open Voice Settings
             </button>
             <button
               type="button"
@@ -109,22 +105,6 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={() => soundPreference.toggle()}
-            >
-              {soundEnabled ? "Toggle Sound Off" : "Toggle Sound On"}
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="settings-item"
-              onClick={() => toggleStoredTheme()}
-            >
-              Toggle Theme
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="settings-item"
               aria-keyshortcuts="Meta+/ Control+/"
               onClick={() => toggleDetailsVisible()}
             >
@@ -134,6 +114,7 @@ export function SettingsMenu() {
           </div>,
           document.body,
         )}
+      {settingsOpen && createPortal(<SettingsModal onClose={() => setSettingsOpen(false)} />, document.body)}
       <button
         type="button"
         className={`rail-session ${open ? "active" : ""}`}

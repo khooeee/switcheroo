@@ -24,6 +24,6 @@ export async function inworldRequest(
   } catch {
     // Not JSON; keep the raw text.
   }
-  if (res.status === 401 || res.status === 403) message = `Inworld rejected the API key (${res.status}). Check it in Voice Settings.`;
+  if (res.status === 401 || res.status === 403) message = `Inworld rejected the API key (${res.status}). Check it in Settings.`;
   throw new Error(message || `Inworld request failed (${res.status})`);
 }

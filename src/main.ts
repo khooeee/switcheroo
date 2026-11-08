@@ -125,7 +125,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       voice: {
         getStatus: () => voice.getStatus(),
         toggle: () => void voice.toggle(),
-        openSettings: () => mainWindow?.webContents.send("voice:open-settings"),
+        openSettings: () => mainWindow?.webContents.send("settings:open"),
         openLog: () => void openVoiceLogFolder().catch(console.error),
       },
     };
