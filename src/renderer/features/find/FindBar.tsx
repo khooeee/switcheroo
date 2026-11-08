@@ -1,5 +1,8 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useSyncExternalStore, type RefObject } from "react";
 import { modKey } from "../shortcuts/modKey";
+import { FindOptionToggles } from "./FindOptionToggles";
+import { findOptions } from "./findOptions";
+import { findOptionShortcut } from "./findOptionShortcut";
 import { useFindMatches } from "./useFindMatches";
 import "./findBar.css";
 import "./findHighlights.css";
@@ -31,7 +34,8 @@ export function FindBar({
   onClose,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { count, index, go } = useFindMatches(rootRefs, query, rootsKey);
+  const options = useSyncExternalStore(findOptions.subscribe, findOptions.getSnapshot);
+  const { count, index, go } = useFindMatches(rootRefs, query, options, rootsKey);
   const { label, placeholder } = SCOPE_COPY[scope];
 
   useEffect(() => {
@@ -60,6 +64,12 @@ export function FindBar({
     <div className="find-bar" role="search" aria-label={label}
       onKeyDown={(event) => {
         if (event.nativeEvent.isComposing) return;
+        const option = findOptionShortcut(event.nativeEvent);
+        if (option) {
+          event.preventDefault();
+          findOptions.toggle(option);
+          return;
+        }
         if (event.key === "Escape") {
           event.preventDefault();
           event.stopPropagation();
@@ -83,6 +93,7 @@ export function FindBar({
       <span className="find-count" role="status" aria-live="polite">
         {query ? count ? `${index + 1} of ${count}` : "0 results" : ""}
       </span>
+      <FindOptionToggles options={options} />
       <button type="button" className="btn" aria-label="Previous match" data-tooltip="Previous match (Shift+Enter)" disabled={!count} onClick={() => go(-1)}>↑</button>
       <button type="button" className="btn" aria-label="Next match" data-tooltip="Next match (Enter)" disabled={!count} onClick={() => go(1)}>↓</button>
       <button type="button" className="btn" aria-label="Close find" data-tooltip="Close (Escape)" onClick={onClose}>✕</button>

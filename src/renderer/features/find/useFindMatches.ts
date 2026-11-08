@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
+import type { FindOptions } from "./findOptions";
 import { findTextRanges } from "./findTextRanges";
 import { nearestMatchIndex } from "./nearestMatchIndex";
 import { rangeScroller } from "./rangeScroller";
@@ -7,6 +8,7 @@ import { rangeScroller } from "./rangeScroller";
 export function useFindMatches(
   rootRefs: Array<RefObject<HTMLElement | null>>,
   query: string,
+  options: FindOptions,
   /** Bump when a root mounts/unmounts (e.g. right rail open). */
   rootsKey: string | number = 0,
 ) {
@@ -23,7 +25,7 @@ export function useFindMatches(
     shouldScrollRef.current = true;
     let initial = true;
     const update = () => {
-      const next = roots.flatMap((root) => findTextRanges(root, query));
+      const next = roots.flatMap((root) => findTextRanges(root, query, options));
       next.sort((a, b) => a.compareBoundaryPoints(Range.START_TO_START, b));
       CSS.highlights.set("find-matches", new Highlight(...next));
       setMatches(next);
@@ -54,7 +56,7 @@ export function useFindMatches(
     };
     // rootRefs is stable from the caller; rootsKey covers mount changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, rootsKey]);
+  }, [query, options, rootsKey]);
 
   useEffect(() => {
     const range = matches[index];

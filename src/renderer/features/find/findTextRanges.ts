@@ -1,9 +1,11 @@
+import type { FindOptions } from "./findOptions";
+
 // Search rendered text without inserting elements into React's DOM.
-export function findTextRanges(root: HTMLElement, query: string): Range[] {
+export function findTextRanges(root: HTMLElement, query: string, options: FindOptions): Range[] {
   if (!query) return [];
   const ranges: Range[] = [];
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const pattern = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+  const pattern = findPattern(query, options);
   while (walker.nextNode()) {
     const node = walker.currentNode;
     const parent = node.parentElement;
@@ -17,4 +19,11 @@ export function findTextRanges(root: HTMLElement, query: string): Range[] {
     }
   }
   return ranges;
+}
+
+function findPattern(query: string, { matchCase, wholeWord }: FindOptions): RegExp {
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Unicode-aware word edges; \b only knows ASCII.
+  const source = wholeWord ? `(?<![\\p{L}\\p{N}_])${escaped}(?![\\p{L}\\p{N}_])` : escaped;
+  return new RegExp(source, matchCase ? "gu" : "giu");
 }

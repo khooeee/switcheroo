@@ -26,6 +26,23 @@
   border-color: var(--accent);
 }
 
+.find-toggle {
+  padding: 7px 8px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.find-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-2));
+}
+
+.find-whole-word-glyph {
+  border: 1px solid currentColor;
+  border-top: none;
+  padding: 0 1px;
+}
+
 .find-count {
   font-family: var(--font-mono);
   font-weight: var(--font-mono-weight);
