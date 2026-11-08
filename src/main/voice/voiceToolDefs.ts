@@ -64,5 +64,5 @@ export const voiceToolDefs = [
     },
     ["query"],
   ),
-  tool("sleep", "Mute the microphone when the user says to stop listening or go to sleep."),
+  tool("stop_voice", "Turn voice off when the user says to stop listening, go to sleep, or goodbye."),
 ];

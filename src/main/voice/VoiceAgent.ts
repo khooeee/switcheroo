@@ -46,7 +46,7 @@ export class VoiceAgent {
   private readonly tools: VoiceToolContext;
   private readonly idle = new VoiceIdleTimer((minutes) => {
     appendVoiceLog("state", { idleMinutes: minutes });
-    this.mute();
+    this.stop();
   });
   private key: string | null = null;
   private channelOpen = false;
@@ -54,11 +54,10 @@ export class VoiceAgent {
   private opened = false;
   private retries = 0;
   private reconnecting = false;
-  private startMuted = false;
 
   constructor(private readonly deps: Deps) {
     this.link = new VoiceRendererLink(deps.getWindow);
-    const connected = () => this.channelOpen && (this.status.state === "listening" || this.status.state === "muted");
+    const connected = () => this.channelOpen && this.status.state === "listening";
     this.notices = new VoiceNotices(
       () => this.status.state !== "off",
       (quietMs) => connected() && this.conversation.isQuiet(quietMs),
@@ -72,7 +71,7 @@ export class VoiceAgent {
       startSearch: (query, depth) => {
         if (this.key) runVoiceSearch(this.key, deps.sessions.getSettings().voiceModel, query, depth, this.notices);
       },
-      mute: () => this.mute(),
+      stopVoice: () => this.stop(),
     };
   }
 
@@ -84,13 +83,10 @@ export class VoiceAgent {
     return { ...this.status };
   }
 
-  /** Button and menu: off → listening → muted → listening; connecting → off. */
+  /** Button and menu: start when off, otherwise stop. */
   async toggle(): Promise<void> {
-    const { state } = this.status;
-    if (state === "off") return this.start();
-    if (state === "connecting") this.stop();
-    else if (state === "listening") this.mute();
-    else this.unmute();
+    if (this.status.state === "off") return this.start();
+    this.stop();
   }
 
   async start(): Promise<void> {
@@ -98,7 +94,7 @@ export class VoiceAgent {
     this.conversation.reset();
     this.opened = false;
     this.retries = 0;
-    await this.connect(false);
+    await this.connect();
   }
 
   stop(): void {
@@ -110,25 +106,6 @@ export class VoiceAgent {
     this.notices.clear();
     this.setStatus({ state: "off", activity: "idle", error: null });
     appendVoiceLog("state", { state: "off" });
-  }
-
-  mute(): void {
-    if (this.status.state === "connecting") this.startMuted = true;
-    if (this.status.state !== "listening") return;
-    this.link.command({ type: "mute" });
-    this.idle.clear();
-    this.conversation.userSpeaking = false;
-    this.setStatus({ state: "muted" });
-    appendVoiceLog("state", { state: "muted" });
-  }
-
-  unmute(): void {
-    if (this.status.state === "connecting") this.startMuted = false;
-    if (this.status.state !== "muted") return;
-    this.link.command({ type: "unmute" });
-    this.setStatus({ state: "listening" });
-    this.resetIdle();
-    appendVoiceLog("state", { state: "listening" });
   }
 
   /** Renderer's SDP offer → Inworld's answer (the key never leaves main). */
@@ -196,9 +173,8 @@ export class VoiceAgent {
     }
   }
 
-  private async connect(muted: boolean): Promise<void> {
+  private async connect(): Promise<void> {
     this.channelOpen = false;
-    this.startMuted = muted;
     this.setStatus({ state: "connecting", activity: "idle", error: null });
     try {
       const key = await voiceKeyStore.read();
@@ -210,7 +186,7 @@ export class VoiceAgent {
       const iceServers = await fetchIceServers(key);
       if (this.status.state !== "connecting") return;
       this.key = key;
-      this.link.command({ type: "connect", iceServers, muted: this.startMuted });
+      this.link.command({ type: "connect", iceServers });
     } catch (error) {
       this.fail(errorMessage(error));
     }
@@ -226,12 +202,9 @@ export class VoiceAgent {
     if (reconnected && this.conversation.history.length) {
       this.link.send(voiceUserMessage(`${VoiceNotices.HEADER} ${voiceNoticeText.reconnected(this.conversation.history)}`));
     }
-    const state = this.startMuted ? "muted" : "listening";
-    // The user may have muted or unmuted while it was connecting.
-    this.link.command({ type: state === "muted" ? "mute" : "unmute" });
-    this.setStatus({ state, activity: "idle", error: null });
+    this.setStatus({ state: "listening", activity: "idle", error: null });
     this.resetIdle();
-    appendVoiceLog("state", { state, reconnected });
+    appendVoiceLog("state", { state: "listening", reconnected });
     this.notices.poke();
   }
 
@@ -240,8 +213,6 @@ export class VoiceAgent {
     if (this.reconnecting) return;
     appendVoiceLog("error", { error: reason });
     if (!this.opened || this.retries >= MAX_RETRIES) return this.fail(reason);
-    // Stay muted across the reconnect; mute/unmute during the wait updates this too.
-    this.startMuted = this.status.state === "muted" || (this.status.state === "connecting" && this.startMuted);
     this.retries += 1;
     this.reconnecting = true;
     this.channelOpen = false;
@@ -250,7 +221,7 @@ export class VoiceAgent {
     await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** (this.retries - 1)));
     this.reconnecting = false;
     if (this.status.state !== "connecting") return;
-    await this.connect(this.startMuted);
+    await this.connect();
   }
 
   private fail(error: string): void {
@@ -280,7 +251,7 @@ export class VoiceAgent {
     appendVoiceLog("notice", { text: clipText(text, 2000) });
   }
 
-  /** Only while listening: muted and off never time out. */
+  /** Only while listening; connecting and off never time out. */
   private resetIdle(): void {
     if (this.status.state === "listening") this.idle.reset(this.deps.sessions.getSettings().voiceIdleMinutes);
     else this.idle.clear();

@@ -4,7 +4,6 @@ import type { VoiceStatus } from "../../shared/voiceStatus";
 export type VoiceMenuActions = {
   getStatus: () => VoiceStatus;
   toggle: () => void;
-  turnOff: () => void;
   openSettings: () => void;
   openLog: () => void;
 };

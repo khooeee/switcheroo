@@ -6,10 +6,7 @@ export function voiceToggleLabel(state: VoiceStatus["state"]): string {
     case "off":
       return "Start Voice";
     case "connecting":
-      return "Cancel Voice";
     case "listening":
-      return "Mute Voice";
-    case "muted":
-      return "Unmute Voice";
+      return "Stop Voice";
   }
 }

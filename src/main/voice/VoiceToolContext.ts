@@ -10,5 +10,5 @@ export interface VoiceToolContext {
   questions: Map<string, CursorAskQuestionRequest>;
   /** Run a web search in the background; the answer arrives as a notice. */
   startSearch: (query: string, depth: "quick" | "deep") => void;
-  mute: () => void;
+  stopVoice: () => void;
 }

@@ -12,12 +12,6 @@ export function voiceSubmenu(voice: VoiceMenuActions): MenuItemConstructorOption
       label: voiceToggleLabel(state),
       click: () => voice.toggle(),
     },
-    {
-      id: VOICE_MENU_IDS.turnOff,
-      label: "Turn Off Voice",
-      enabled: state !== "off",
-      click: () => voice.turnOff(),
-    },
     { type: "separator" },
     { label: "Open Voice Settings", click: () => voice.openSettings() },
     { label: "Open Voice Log Folder", click: () => voice.openLog() },

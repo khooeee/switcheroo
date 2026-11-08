@@ -10,13 +10,8 @@
   padding: 0;
 }
 
-.voice-button.voice-listening,
-.voice-button.voice-muted {
+.voice-button.voice-listening {
   color: var(--accent);
-}
-
-.voice-button.voice-muted {
-  opacity: 0.7;
 }
 
 .voice-button.voice-connecting,

@@ -38,7 +38,7 @@ export function VoiceButton() {
           setSettingsOpen(true);
         }}
       >
-        <MicIcon muted={status.state === "muted"} />
+        <MicIcon />
         {status.error && status.state === "off" && <span className="voice-error-dot" aria-hidden="true" />}
       </button>
       {settingsOpen && createPortal(<VoiceSettingsModal onClose={() => setSettingsOpen(false)} />, document.body)}

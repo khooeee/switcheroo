@@ -13,7 +13,7 @@ export class VoiceAnnouncer implements SessionObserver {
   constructor(
     private readonly sessions: SessionManager,
     private readonly notices: VoiceNotices,
-    /** Voice is connected (listening or muted), so a notice can be spoken. */
+    /** Voice is on, so a notice can be spoken. */
     private readonly connected: () => boolean,
   ) {}
 

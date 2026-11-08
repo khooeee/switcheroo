@@ -6,8 +6,8 @@ import { listSessionsTool } from "./tools/listSessionsTool";
 import { readTurnsTool } from "./tools/readTurnsTool";
 import { sendPromptTool } from "./tools/sendPromptTool";
 import { showSessionTool } from "./tools/showSessionTool";
-import { sleepTool } from "./tools/sleepTool";
 import { stopSessionTool } from "./tools/stopSessionTool";
+import { stopVoiceTool } from "./tools/stopVoiceTool";
 import { updateSessionTool } from "./tools/updateSessionTool";
 import { webSearchTool } from "./tools/webSearchTool";
 import { toolArgs } from "./toolArgs";
@@ -26,7 +26,7 @@ const HANDLERS: Record<string, Handler> = {
   update_session: updateSessionTool,
   answer_question: answerQuestionTool,
   web_search: webSearchTool,
-  sleep: sleepTool,
+  stop_voice: stopVoiceTool,
 };
 
 /** Tools that change sessions; refused unless the user's own speech triggered the response. */

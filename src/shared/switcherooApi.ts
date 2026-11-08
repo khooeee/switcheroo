@@ -107,7 +107,7 @@ export interface SwitcherooApi {
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   /** `announced`: the voice agent will speak about it, so skip the completion sound. */
   onPromptComplete: (cb: (payload: { sessionId: string; announced?: boolean }) => void) => () => void;
-  /** Voice button / shortcut: start, mute, unmute or cancel. */
+  /** Voice button / shortcut: start or stop. */
   toggleVoice: () => Promise<void>;
   getVoiceStatus: () => Promise<VoiceStatus>;
   getVoiceKeyInfo: () => Promise<VoiceKeyInfo>;

@@ -9,21 +9,19 @@ function ipcError(error: unknown): string {
 
 /**
  * The voice WebRTC peer: mic up, agent audio down, realtime events over `oai-events`.
- * Main decides what to do; this only connects, mutes and relays.
+ * Main decides what to do; this only connects and relays.
  */
 export class VoiceConnection {
   private pc: RTCPeerConnection | null = null;
   private channel: RTCDataChannel | null = null;
   private mic: MediaStream | null = null;
-  private sender: RTCRtpSender | null = null;
   private audio: HTMLAudioElement | null = null;
   /** Bumped on every connect/disconnect so callbacks from an old peer are ignored. */
   private generation = 0;
 
   handle(command: VoiceCommand): void {
-    if (command.type === "connect") void this.connect(command.iceServers, command.muted);
-    else if (command.type === "disconnect") this.disconnect();
-    else this.setMuted(command.type === "mute");
+    if (command.type === "connect") void this.connect(command.iceServers);
+    else this.disconnect();
   }
 
   send(event: object): void {
@@ -42,11 +40,10 @@ export class VoiceConnection {
     this.pc = null;
     this.channel = null;
     this.mic = null;
-    this.sender = null;
     this.audio = null;
   }
 
-  private async connect(iceServers: RTCIceServer[], muted: boolean): Promise<void> {
+  private async connect(iceServers: RTCIceServer[]): Promise<void> {
     this.disconnect();
     const generation = this.generation;
     const current = () => generation === this.generation;
@@ -71,8 +68,7 @@ export class VoiceConnection {
       pc.ontrack = (event) => {
         audio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
       };
-      this.sender = pc.addTrack(track, mic);
-      if (muted) await this.sender.replaceTrack(null);
+      pc.addTrack(track, mic);
 
       const channel = pc.createDataChannel("oai-events", { ordered: true });
       this.channel = channel;
@@ -95,12 +91,6 @@ export class VoiceConnection {
       this.disconnect();
       api.voiceConnection({ type: "failed", error: ipcError(error) });
     }
-  }
-
-  /** Muting detaches the mic track entirely, so no audio (and no STT time) is sent. */
-  private setMuted(muted: boolean): void {
-    const track = this.mic?.getAudioTracks()[0] ?? null;
-    void this.sender?.replaceTrack(muted ? null : track).catch((error) => console.error("[voice] mute failed", error));
   }
 
   /** Forward server events to main, minus streaming deltas it never reads. */

@@ -8,7 +8,7 @@ import "../modals/modal.css";
 /** Stand-in shown for a saved key, which never leaves main. */
 const KEY_MASK = "•".repeat(16);
 
-/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, voice, idle mute. */
+/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, voice, idle timeout. */
 export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
   const prefs = getAppSettingsCache();
   const [keyInfo, setKeyInfo] = useState<VoiceKeyInfo | null>(null);
@@ -90,7 +90,7 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           <input value={voiceName} disabled={busy} onChange={(e) => setVoiceName(e.target.value)} spellCheck={false} />
         </label>
         <label>
-          Mute the mic after this many idle minutes (0 = never)
+          Turn voice off after this many idle minutes (0 = never)
           <input type="number" min={0} value={idleMinutes} disabled={busy} onChange={(e) => setIdleMinutes(e.target.value)} />
         </label>
         <div className="voice-settings-note">Model and voice apply on the next connect.</div>

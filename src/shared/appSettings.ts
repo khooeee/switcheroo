@@ -21,6 +21,6 @@ export interface AppSettings {
   voiceModel: string;
   /** Inworld TTS voice name. */
   voiceName: string;
-  /** Mute the mic after this many minutes without speech (0 = never). */
+  /** Turn voice off after this many minutes without speech (0 = never). */
   voiceIdleMinutes: number;
 }
