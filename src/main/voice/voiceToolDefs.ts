@@ -24,14 +24,13 @@ export const voiceToolDefs = [
   ),
   tool(
     "create_session",
-    "Start a new coding session in a project the user already works in, and send it the first prompt.",
+    "Start a new coding session in a project the user already works in, and send it the first prompt if the user gave a task.",
     {
       project: { type: "string", description: "Project folder name as the user said it. Omit to use the current project." },
-      prompt: { type: "string", description: "The task, close to what the user said." },
+      prompt: { type: "string", description: "The task, close to what the user said. Omit when the user only asked for a new session." },
       agent: { type: "string", description: "Claude Code, Codex, Cursor or Pi. Omit for the user's usual agent." },
       title: { type: "string", description: "Short session title. Omit to derive one from the prompt." },
     },
-    ["prompt"],
   ),
   tool("stop_session", "Stop the session's running turn. The session and its work stay.", { session: SESSION }),
   tool("show_session", "Switch the screen to a session. Only when the user asks to see it.", { session: SESSION }),

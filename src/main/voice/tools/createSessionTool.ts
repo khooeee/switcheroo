@@ -8,10 +8,9 @@ import { resolveProjectCwd } from "../resolveProjectCwd";
 import { toolArgs } from "../toolArgs";
 import type { VoiceToolContext } from "../VoiceToolContext";
 
-/** Start a session in a known project (in the background) and send it the first prompt. */
+/** Start a session in a known project (in the background) and send it the first prompt, if any. */
 export async function createSessionTool(ctx: VoiceToolContext, args: Record<string, unknown>): Promise<unknown> {
   const prompt = toolArgs.string(args, "prompt");
-  if (!prompt) return { ok: false, error: "prompt is required." };
   const settings = ctx.sessions.getSettings();
   const focusCwd = ctx.focus.sessionId ? ctx.sessions.getSession(ctx.focus.sessionId)?.cwd : undefined;
   const project = resolveProjectCwd(railSessions(ctx.sessions), toolArgs.string(args, "project"), focusCwd ?? settings.lastCwd);
@@ -19,7 +18,7 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
   const agent = resolveAgentKind(toolArgs.string(args, "agent"), settings.lastAgent);
   if (!agent.ok) return agent;
 
-  const title = toolArgs.string(args, "title") ?? clipText(prompt, 60);
+  const title = toolArgs.string(args, "title") ?? (prompt ? clipText(prompt, 60) : undefined);
   const session = await ctx.sessions.createSession(
     {
       agent: agent.agent,
@@ -31,6 +30,6 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
   );
   if (session.status === "error") return { ok: false, error: session.error ?? "The session failed to start." };
   ctx.focus.sessionId = session.id;
-  await ctx.sessions.enqueuePrompt(session.id, prompt);
-  return { ok: true, title, project: path.basename(project.cwd), agent: AGENT_LABELS[agent.agent] };
+  if (prompt) await ctx.sessions.enqueuePrompt(session.id, prompt);
+  return { ok: true, title: session.title, project: path.basename(project.cwd), agent: AGENT_LABELS[agent.agent] };
 }

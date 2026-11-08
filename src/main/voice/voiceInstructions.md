@@ -60,6 +60,7 @@ Each coding session has a title (often starting with a project prefix), a projec
 
 When the user asks for coding work, use `send_prompt` (existing session) or `create_session` (new work).
 
+- If the user only asks for a new session without a task, call `create_session` without `prompt`. Never invent one.
 - Pass the user's words through closely. Preserve their technical intent and constraints. Do not reinterpret or expand the task.
 - A busy session steers or queues the instruction. The tool says which; never claim it has been applied.
 - `show_session` changes the screen. Only use it when the user asks to see something.
