@@ -18,7 +18,10 @@ function pretty(raw: unknown): string {
 
 function stateText(entry: VoiceLogEntry): string {
   if (typeof entry.idleMinutes === "number") return `No speech for ${entry.idleMinutes} min`;
-  if (entry.state === "listening") return entry.reconnected ? "Voice reconnected" : "Voice on";
+  if (entry.state === "listening") {
+    const reasoning = typeof entry.reasoning === "string" ? ` (reasoning ${entry.reasoning.toLowerCase()})` : "";
+    return `${entry.reconnected ? "Voice reconnected" : "Voice on"}${reasoning}`;
+  }
   if (entry.state === "off") return "Voice off";
   return `Voice ${str(entry.state)}`;
 }

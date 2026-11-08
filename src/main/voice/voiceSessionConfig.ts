@@ -10,6 +10,9 @@ export function voiceSessionConfig(settings: AppSettings) {
     session: {
       type: "realtime",
       model: settings.voiceModel,
+      ...(settings.voiceReasoning !== "DEFAULT" && {
+        text_generation_config: { reasoning: { effort: settings.voiceReasoning } },
+      }),
       instructions: `${instructions}\n\nThe current local date and time is ${now}.`,
       output_modalities: ["audio"],
       audio: {

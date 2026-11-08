@@ -107,8 +107,6 @@ It's likely you don't have to read this section ever, but it's here in case your
 
 ## inworld.ai models
 
-
-
 ```
 inworld/models/gemma-4-26b-a4b-it
 # under 0.15s TTFT, 237 tok/s, $0.07 input, $0.34 output

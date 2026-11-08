@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { errorMessage } from "../../../shared/errorMessage";
 import type { VoiceKeyInfo } from "../../../shared/voiceKeyInfo";
+import { VOICE_REASONING_EFFORTS, type VoiceReasoningEffort } from "../../../shared/voiceReasoningEffort";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { voiceKeyPresence } from "./voiceKeyPresence";
@@ -9,13 +10,23 @@ import "../modals/modal.css";
 /** Stand-in shown for a saved key, which never leaves main. */
 const KEY_MASK = "•".repeat(16);
 
-/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, voice, idle timeout. */
+const REASONING_LABELS: Record<VoiceReasoningEffort, string> = {
+  NONE: "None (fastest)",
+  MINIMAL: "Minimal",
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+  DEFAULT: "Model default",
+};
+
+/** Inworld key (write-only; stored encrypted in main; clear the field to remove it), model, reasoning, voice, idle timeout. */
 export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
   const prefs = getAppSettingsCache();
   const [keyInfo, setKeyInfo] = useState<VoiceKeyInfo | null>(null);
   /** null until edited, so an untouched field keeps the saved key. */
   const [key, setKey] = useState<string | null>(null);
   const [model, setModel] = useState(prefs.voiceModel);
+  const [reasoning, setReasoning] = useState(prefs.voiceReasoning);
   const [voiceName, setVoiceName] = useState(prefs.voiceName);
   const [idleMinutes, setIdleMinutes] = useState(String(prefs.voiceIdleMinutes));
   const [busy, setBusy] = useState(false);
@@ -54,6 +65,7 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
       const minutes = Number(idleMinutes);
       await patchAppSettings({
         voiceModel: model.trim() || prefs.voiceModel,
+        voiceReasoning: reasoning,
         voiceName: voiceName.trim() || prefs.voiceName,
         voiceIdleMinutes: Number.isFinite(minutes) && minutes >= 0 ? Math.round(minutes) : prefs.voiceIdleMinutes,
       });
@@ -97,6 +109,17 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           .
         </div>
         <label>
+          Reasoning
+          <select value={reasoning} disabled={busy} onChange={(e) => setReasoning(e.target.value as VoiceReasoningEffort)}>
+            {VOICE_REASONING_EFFORTS.map((effort) => (
+              <option key={effort} value={effort}>
+                {REASONING_LABELS[effort]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="voice-settings-note">Reasoning delays spoken replies. Some models reject some levels.</div>
+        <label>
           Voice
           <input value={voiceName} disabled={busy} onChange={(e) => setVoiceName(e.target.value)} spellCheck={false} />
         </label>
@@ -111,7 +134,7 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           Turn voice off after idle minutes (0 = never)
           <input type="number" min={0} value={idleMinutes} disabled={busy} onChange={(e) => setIdleMinutes(e.target.value)} />
         </label>
-        <div className="voice-settings-note">Model and voice apply on the next connect.</div>
+        <div className="voice-settings-note">Model, reasoning and voice apply on the next connect.</div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
           <button type="button" className="btn" disabled={busy} onClick={onClose}>

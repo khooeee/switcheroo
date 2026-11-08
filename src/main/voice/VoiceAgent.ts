@@ -12,6 +12,7 @@ import { fetchIceServers } from "./fetchIceServers";
 import { realtimeErrorMessage } from "./realtimeErrorMessage";
 import { runVoiceSearch } from "./runVoiceSearch";
 import { runVoiceTool } from "./runVoiceTool";
+import { sessionReasoningEffort } from "./sessionReasoningEffort";
 import { VoiceAnnouncer } from "./VoiceAnnouncer";
 import { VoiceConversation } from "./VoiceConversation";
 import { VoiceIdleTimer } from "./VoiceIdleTimer";
@@ -53,6 +54,8 @@ export class VoiceAgent {
   private channelOpen = false;
   /** Opened at least once since start, so drops reconnect instead of failing. */
   private opened = false;
+  /** "Voice on" waits for `session.updated` so it can show the reasoning effort; holds `reconnected`. */
+  private onLogPending: boolean | null = null;
   private retries = 0;
   private reconnecting = false;
 
@@ -172,6 +175,11 @@ export class VoiceAgent {
       case "response.function_call_arguments.done":
         void this.runTool(event);
         return;
+      case "session.updated":
+        if (this.onLogPending === null) return;
+        appendVoiceLog("state", { state: "listening", reconnected: this.onLogPending, reasoning: sessionReasoningEffort(event) });
+        this.onLogPending = null;
+        return;
     }
   }
 
@@ -206,7 +214,7 @@ export class VoiceAgent {
     }
     this.setStatus({ state: "listening", activity: "idle", error: null });
     this.resetIdle();
-    appendVoiceLog("state", { state: "listening", reconnected });
+    this.onLogPending = reconnected;
     this.notices.poke();
   }
 

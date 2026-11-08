@@ -15,6 +15,7 @@ export function defaultAppSettings(): AppSettings {
     lastSwitcherooAware: false,
     sessionListMax: 500,
     voiceModel: "inworld/models/mimo-v2.6-pro",
+    voiceReasoning: "NONE",
     voiceName: "Sarah",
     voiceIdleMinutes: 30,
   };

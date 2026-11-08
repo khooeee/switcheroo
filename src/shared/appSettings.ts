@@ -1,4 +1,5 @@
 import type { AgentKind } from "./agentKind";
+import type { VoiceReasoningEffort } from "./voiceReasoningEffort";
 
 export type Theme = "light" | "dark";
 
@@ -19,6 +20,8 @@ export interface AppSettings {
   sessionListMax: number;
   /** Inworld realtime LLM; also answers web searches. */
   voiceModel: string;
+  /** Reasoning effort for the realtime LLM; NONE keeps spoken replies fast. */
+  voiceReasoning: VoiceReasoningEffort;
   /** Inworld TTS voice name. */
   voiceName: string;
   /** Turn voice off after this many minutes without speech (0 = never). */
