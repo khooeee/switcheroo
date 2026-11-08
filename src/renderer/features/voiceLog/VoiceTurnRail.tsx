@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type RefObject } from "react";
 import { useShowRightRail } from "../chat/useShowRightRail";
 import { startRightRailResize } from "../chat/startRightRailResize";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
@@ -14,7 +14,7 @@ import "./voiceLog.css";
 const RAIL_ID = "voice-log";
 
 /** Right rail for the Voice Log: one voice turn in full, with its tool calls, searches, notices and token usage. */
-export function VoiceTurnRail({ turnId }: { turnId: string }) {
+export function VoiceTurnRail({ turnId, scrollRef }: { turnId: string; scrollRef: RefObject<HTMLDivElement | null> }) {
   const entries = useVoiceLog();
   const turn = useMemo(() => (entries ? groupVoiceTurns(entries).turns.get(turnId) : undefined), [entries, turnId]);
   useShowRightRail(RAIL_ID);
@@ -36,7 +36,7 @@ export function VoiceTurnRail({ turnId }: { turnId: string }) {
           </button>
         </div>
       </div>
-      <div className="right-rail-scroll" onContextMenu={onEditContextMenu}>
+      <div className="right-rail-scroll" ref={scrollRef} onContextMenu={onEditContextMenu}>
         <div className="transcript">
           {!entries && <div className="empty">Loading…</div>}
           {entries && !turn && <div className="empty">This turn is no longer in the log.</div>}

@@ -11,7 +11,7 @@ interface Props {
   /** Changes when an optional root (e.g. right rail) mounts or unmounts. */
   rootsKey?: string | number;
   /** Where find is searching. */
-  scope?: "session" | "message" | "turn-details";
+  scope?: "session" | "message" | "turn-details" | "voice-log";
   onClose: () => void;
 }
 
@@ -19,6 +19,7 @@ const SCOPE_COPY = {
   session: { label: "Find in current session", placeholder: "Find in session…" },
   message: { label: "Find in message", placeholder: "Find in message…" },
   "turn-details": { label: "Find in turn details", placeholder: "Find in turn details…" },
+  "voice-log": { label: "Find in voice log", placeholder: "Find in voice log…" },
 } as const;
 
 export function FindBar({

@@ -64,6 +64,9 @@ export function App() {
   } = useFindUiState(activeTabId);
   const chatRef = useRef<HTMLDivElement>(null);
   const rightRailScrollRef = useRef<HTMLDivElement>(null);
+  const voiceLogRef = useRef<HTMLDivElement>(null);
+  const voiceRailRef = useRef<HTMLDivElement>(null);
+  const voiceRailOpen = voiceLogOpen && !!voiceTurnId;
   const askQuestion = useAgentQuestions(activeTabId);
   const pinTranscriptToBottom = useSessionScrollPosition(activeTabId, chatRef);
 
@@ -87,9 +90,12 @@ export function App() {
 
   const findRootRefs = useMemo(() => {
     if (findScope) return [findScopeRef];
+    if (voiceLogOpen) return [voiceRailOpen ? voiceRailRef : voiceLogRef];
     if (rightRailView) return [rightRailScrollRef];
     return [chatRef];
-  }, [findScope, rightRailView]);
+  }, [findScope, rightRailView, voiceLogOpen, voiceRailOpen]);
+  const railOpen = voiceLogOpen ? voiceRailOpen : !!rightRailView;
+  const findScopeName = findScope ? "message" : railOpen ? "turn-details" : voiceLogOpen ? "voice-log" : "session";
 
   useTurnDetailsEvent(toggleRightRail);
 
@@ -158,20 +164,20 @@ export function App() {
             <SessionNotice message={sessionNotice} onDismiss={() => setSessionNotice(null)} />
           )}
 
-          {findOpen && activeSession && !voiceLogOpen && (
+          {findOpen && (activeSession || voiceLogOpen) && (
             <FindBar
-              key={`${activeTabId}:${findScope?.getAttribute("data-event-id") ?? (rightRailView ? "turn" : "session")}`}
+              key={`${voiceLogOpen ? "voice-log" : activeTabId}:${findScope?.getAttribute("data-event-id") ?? findScopeName}`}
               query={findQuery}
               onQuery={setFindQuery}
               rootRefs={findRootRefs}
-              rootsKey={`${rightRailView ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
-              scope={findScope ? "message" : rightRailView ? "turn-details" : "session"}
+              rootsKey={`${railOpen ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
+              scope={findScopeName}
               onClose={closeFind}
             />
           )}
 
           {voiceLogOpen ? (
-            <VoiceLogPanel />
+            <VoiceLogPanel scrollRef={voiceLogRef} />
           ) : activeSession ? (
             <ChatPanel
               session={activeSession}
@@ -207,7 +213,7 @@ export function App() {
             onClose={closeRightRail}
           />
         ) : null}
-        {voiceLogOpen && voiceTurnId ? <VoiceTurnRail turnId={voiceTurnId} /> : null}
+        {voiceRailOpen && voiceTurnId ? <VoiceTurnRail turnId={voiceTurnId} scrollRef={voiceRailRef} /> : null}
 
         {showNewSession && (
           <NewSessionModal

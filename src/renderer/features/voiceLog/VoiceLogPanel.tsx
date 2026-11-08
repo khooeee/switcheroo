@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useMemo, useRef, type ReactNode, type RefObject } from "react";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
 import { groupVoiceTurns } from "./groupVoiceTurns";
 import { isVoiceLogMainEntry } from "./isVoiceLogMainEntry";
@@ -16,9 +16,8 @@ function sameDay(a: number, b: number): boolean {
 }
 
 /** Main-pane view of recent voice activity, styled like a session transcript; follows new entries. */
-export function VoiceLogPanel() {
+export function VoiceLogPanel({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }) {
   const entries = useVoiceLog();
-  const scrollRef = useRef<HTMLDivElement>(null);
   const stuck = useRef(true);
   const { turnOf, turns } = useMemo(() => groupVoiceTurns(entries ?? []), [entries]);
   /** Turns with something beyond what the main view shows. */
