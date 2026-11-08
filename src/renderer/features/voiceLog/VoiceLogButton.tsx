@@ -4,7 +4,7 @@ import { VoiceLogIcon } from "./VoiceLogIcon";
 import { voiceLogView } from "./voiceLogView";
 import "./voiceLog.css";
 
-/** Rail footer button beside the mic (hidden without a key): shows or hides the Voice Log. */
+/** Rail footer button left of the mic (hidden without a key): shows or hides the Voice Log. */
 export function VoiceLogButton() {
   const hasKey = useSyncExternalStore(voiceKeyPresence.subscribe, voiceKeyPresence.getSnapshot);
   const open = useSyncExternalStore(voiceLogView.subscribe, voiceLogView.getSnapshot);

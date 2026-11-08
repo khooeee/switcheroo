@@ -121,8 +121,8 @@ export function SessionRail({
         <div className="rail-fade" aria-hidden="true" />
       </div>
       <div className="rail-footer">
-        <VoiceButton />
         <VoiceLogButton />
+        <VoiceButton />
         <SettingsMenu />
       </div>
       {menu &&
