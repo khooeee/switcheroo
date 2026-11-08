@@ -1,4 +1,4 @@
-import * as acp from "@agentclientprotocol/sdk";
+import * as acp from "@agentclientprotocol/sdk/unstable";
 import { formatAgentError } from "../../shared/formatAgentError";
 import { airSessionMeta } from "./airSessionMeta";
 

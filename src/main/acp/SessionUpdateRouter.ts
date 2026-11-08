@@ -1,4 +1,4 @@
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { AgentKind } from "../../shared/agentKind";
 import type { SessionCallbacks } from "./SessionCallbacks";
 import type { SessionOutput } from "./SessionOutput";

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import * as acp from "@agentclientprotocol/sdk";
+import * as acp from "@agentclientprotocol/sdk/unstable";
 import type { TranscriptItem } from "../../shared/transcript";
 import { formatAgentError } from "../../shared/formatAgentError";
 import type { SessionCallbacks } from "./SessionCallbacks";

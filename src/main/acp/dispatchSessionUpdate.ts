@@ -1,4 +1,4 @@
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { SessionUsage, SlashCommand } from "../../shared/session";
 
 type ThreadStatus = "active" | "idle" | "systemError";

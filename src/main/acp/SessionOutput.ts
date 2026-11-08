@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { AgentKind } from "../../shared/agentKind";
 import type { TranscriptItem } from "../../shared/transcript";
 import { stripCursorStreamNoise } from "../../shared/cursorStreamNoise";

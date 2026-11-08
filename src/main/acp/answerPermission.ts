@@ -1,4 +1,4 @@
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import { autoApprovePermission } from "./autoApprovePermission";
 
 /** Auto-approve a permission request when allowed; `note` is the transcript line to show. */

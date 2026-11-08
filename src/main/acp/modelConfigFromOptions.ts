@@ -1,4 +1,4 @@
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { SessionModelConfig } from "../../shared/session";
 
 /** Name of a select option's current value. Claude's "default" model names the resolved model in its description. */

@@ -1,4 +1,4 @@
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import { SUBAGENT_UPDATE_METHOD } from "./subagentUpdateMethod";
 
 const LIFECYCLE = new Set(["subagent_spawned", "subagent_state_update"]);

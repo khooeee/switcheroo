@@ -1,4 +1,4 @@
-import * as acp from "@agentclientprotocol/sdk";
+import * as acp from "@agentclientprotocol/sdk/unstable";
 import { airSessionMeta } from "./airSessionMeta";
 
 /** `session/resume` on this connection, carrying the session's instructions. */

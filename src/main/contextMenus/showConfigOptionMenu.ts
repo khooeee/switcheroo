@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu, type MenuItemConstructorOptions } from "electron";
-import type * as acp from "@agentclientprotocol/sdk";
+import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { ConfigMenuCategory } from "../../shared/configMenuCategory";
 
 type SelectOption = Extract<acp.SessionConfigOption, { type: "select" }>;

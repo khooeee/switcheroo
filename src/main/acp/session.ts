@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import * as acp from "@agentclientprotocol/sdk";
+import * as acp from "@agentclientprotocol/sdk/unstable";
 import type { AgentKind } from "../../shared/agentKind";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
