@@ -1,25 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { errorMessage } from "../../../shared/errorMessage";
-import type { VoiceAnnounce } from "../../../shared/voiceAnnounce";
 import type { VoiceKeyInfo } from "../../../shared/voiceKeyInfo";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import "../modals/modal.css";
 
-const ANNOUNCE_LABELS: Record<VoiceAnnounce, string> = {
-  all: "Every finished session",
-  "voice-started": "Only sessions I started by voice",
-  off: "Nothing",
-};
-
-/** Inworld key (write-only; stored encrypted in main), model, voice, announcements, idle mute. */
+/** Inworld key (write-only; stored encrypted in main), model, voice, idle mute. */
 export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
   const prefs = getAppSettingsCache();
   const [keyInfo, setKeyInfo] = useState<VoiceKeyInfo | null>(null);
   const [key, setKey] = useState("");
   const [model, setModel] = useState(prefs.voiceModel);
   const [voiceName, setVoiceName] = useState(prefs.voiceName);
-  const [announce, setAnnounce] = useState<VoiceAnnounce>(prefs.voiceAnnounce);
   const [idleMinutes, setIdleMinutes] = useState(String(prefs.voiceIdleMinutes));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +47,6 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
       await patchAppSettings({
         voiceModel: model.trim() || prefs.voiceModel,
         voiceName: voiceName.trim() || prefs.voiceName,
-        voiceAnnounce: announce,
         voiceIdleMinutes: Number.isFinite(minutes) && minutes >= 0 ? Math.round(minutes) : prefs.voiceIdleMinutes,
       });
       onClose();
@@ -92,16 +83,6 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
         <label>
           Voice
           <input value={voiceName} disabled={busy} onChange={(e) => setVoiceName(e.target.value)} spellCheck={false} />
-        </label>
-        <label>
-          Announce
-          <select value={announce} disabled={busy} onChange={(e) => setAnnounce(e.target.value as VoiceAnnounce)}>
-            {(Object.keys(ANNOUNCE_LABELS) as VoiceAnnounce[]).map((value) => (
-              <option key={value} value={value}>
-                {ANNOUNCE_LABELS[value]}
-              </option>
-            ))}
-          </select>
         </label>
         <label>
           Mute the mic after this many idle minutes (0 = never)

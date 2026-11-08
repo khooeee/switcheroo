@@ -31,7 +31,6 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
   );
   if (session.status === "error") return { ok: false, error: session.error ?? "The session failed to start." };
   ctx.focus.sessionId = session.id;
-  ctx.noteVoiceStarted(session.id);
   await ctx.sessions.enqueuePrompt(session.id, prompt);
   return { ok: true, title, project: path.basename(project.cwd), agent: AGENT_LABELS[agent.agent] };
 }

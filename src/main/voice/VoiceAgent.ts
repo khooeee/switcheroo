@@ -69,7 +69,6 @@ export class VoiceAgent {
       sessions: deps.sessions,
       focus: { sessionId: null, numbered: [] },
       questions: this.announcer.questions,
-      noteVoiceStarted: (sessionId) => this.announcer.noteVoiceStarted(sessionId),
       startSearch: (query, depth) => {
         if (this.key) runVoiceSearch(this.key, deps.sessions.getSettings().voiceModel, query, depth, this.notices);
       },

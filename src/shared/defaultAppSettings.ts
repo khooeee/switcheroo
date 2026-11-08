@@ -16,7 +16,6 @@ export function defaultAppSettings(): AppSettings {
     sessionListMax: 500,
     voiceModel: "inworld/models/gemma-4-26b-a4b-it",
     voiceName: "Sarah",
-    voiceAnnounce: "all",
     voiceIdleMinutes: 30,
   };
 }

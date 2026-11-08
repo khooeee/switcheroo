@@ -21,6 +21,5 @@ export async function sendPromptTool(ctx: VoiceToolContext, args: Record<string,
   const { session } = resolved;
   const landed = delivery(session);
   await ctx.sessions.enqueuePrompt(session.id, text);
-  ctx.noteVoiceStarted(session.id);
   return { ok: true, session: sessionLabel(session), delivery: landed };
 }

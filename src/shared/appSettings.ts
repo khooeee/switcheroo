@@ -1,5 +1,4 @@
 import type { AgentKind } from "./agentKind";
-import type { VoiceAnnounce } from "./voiceAnnounce";
 
 export type Theme = "light" | "dark";
 
@@ -22,7 +21,6 @@ export interface AppSettings {
   voiceModel: string;
   /** Inworld TTS voice name. */
   voiceName: string;
-  voiceAnnounce: VoiceAnnounce;
   /** Mute the mic after this many minutes without speech (0 = never). */
   voiceIdleMinutes: number;
 }
