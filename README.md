@@ -117,7 +117,9 @@ inworld/models/mimo-v2.6-pro
 # under 0.18s TTFT, 273 tok/s, $0.43 input, $0.87 output
 ```
 
-See [https://inworld.ai/models](https://inworld.ai/models).
+See [Inworld's list of models](https://inworld.ai/models).
+
+For intelligence comparisons, see [Artificial Analysis](https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index?models=mimo-v2-6-pro%2Cgemma-4-31b%2Cglm-5-3-flash%2Cdeepseek-v4-1-flash-1017-non-reasoning%2Cdeepseek-v4-1-flash-1017%2Cdeepseek-v4-1-flash-1017-high).
 
 ## Shortcuts
 
