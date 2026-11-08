@@ -2,16 +2,18 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { voiceToggleLabel } from "../../../shared/voiceToggleLabel";
 import { MicIcon } from "./MicIcon";
+import { useVoiceOnChime } from "./useVoiceOnChime";
 import { VoiceSettingsModal } from "./VoiceSettingsModal";
 import { voiceStatusStore } from "./voiceStatusStore";
 import "./voice.css";
 
 const OPEN_SETTINGS = "switcheroo:voice-settings";
 
-/** Rail footer mic: shows the voice state, toggles it, and hosts Voice Settings. */
+/** Rail footer mic: shows the voice state, toggles it, chimes when it turns on, and hosts Voice Settings. */
 export function VoiceButton() {
   const status = useSyncExternalStore(voiceStatusStore.subscribe, voiceStatusStore.getSnapshot);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  useVoiceOnChime();
 
   useEffect(() => {
     const open = () => setSettingsOpen(true);
