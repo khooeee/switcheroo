@@ -21,6 +21,8 @@ import { useCompletionSound } from "./features/sound/useCompletionSound";
 import { useVoiceConnection } from "./features/voice/useVoiceConnection";
 import { VoiceLogPanel } from "./features/voiceLog/VoiceLogPanel";
 import { voiceLogView } from "./features/voiceLog/voiceLogView";
+import { voiceTurnDetails } from "./features/voiceLog/voiceTurnDetails";
+import { VoiceTurnRail } from "./features/voiceLog/VoiceTurnRail";
 import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
 
@@ -44,6 +46,7 @@ export function App() {
   } = useAppSessionState();
   const railActions = useSessionRailActions();
   const voiceLogOpen = useSyncExternalStore(voiceLogView.subscribe, voiceLogView.getSnapshot);
+  const voiceTurnId = useSyncExternalStore(voiceTurnDetails.subscribe, voiceTurnDetails.getSnapshot);
   const { subagentTranscripts, loadingSubagents, loadSubagentTranscript } = useSubagentTranscripts();
 
   const [showNewSession, setShowNewSession] = useState(false);
@@ -204,6 +207,7 @@ export function App() {
             onClose={closeRightRail}
           />
         ) : null}
+        {voiceLogOpen && voiceTurnId ? <VoiceTurnRail turnId={voiceTurnId} /> : null}
 
         {showNewSession && (
           <NewSessionModal

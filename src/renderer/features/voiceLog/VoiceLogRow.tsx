@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import type { VoiceLogEntry } from "../../../shared/voiceLogEntry";
+import { TurnDetailsButton } from "../copy/TurnDetailsButton";
 import { MarkdownBody } from "../markdown/MarkdownBody";
 import { voiceLogRowContent } from "./voiceLogRowContent";
 
@@ -12,7 +13,21 @@ function day(at: number): string {
 }
 
 /** One voice log entry as a transcript message or a state divider, after a date divider when a new day starts. */
-export const VoiceLogRow = memo(function VoiceLogRow({ entry, newDay }: { entry: VoiceLogEntry; newDay: boolean }) {
+export const VoiceLogRow = memo(function VoiceLogRow({
+  entry,
+  newDay,
+  turnId,
+  onToggleDetails,
+}: {
+  entry: VoiceLogEntry;
+  newDay: boolean;
+  /** Set on messages whose turn has more in Turn Details. */
+  turnId?: string;
+  onToggleDetails?: (turnId: string) => void;
+}) {
+  const toggleDetails = useCallback(() => {
+    if (turnId) onToggleDetails?.(turnId);
+  }, [turnId, onToggleDetails]);
   const content = voiceLogRowContent(entry);
   if (!content && !newDay) return null;
 
@@ -37,6 +52,11 @@ export const VoiceLogRow = memo(function VoiceLogRow({ entry, newDay }: { entry:
               <summary>Details</summary>
               <div className="body">{content.detail}</div>
             </details>
+          ) : null}
+          {turnId && onToggleDetails ? (
+            <div className="event-actions">
+              <TurnDetailsButton onToggle={toggleDetails} />
+            </div>
           ) : null}
         </div>
       )}

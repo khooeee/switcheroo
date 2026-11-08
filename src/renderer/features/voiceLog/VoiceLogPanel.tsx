@@ -1,7 +1,10 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { onEditContextMenu } from "../copy/onEditContextMenu";
+import { groupVoiceTurns } from "./groupVoiceTurns";
+import { isVoiceLogMainEntry } from "./isVoiceLogMainEntry";
 import { useVoiceLog } from "./useVoiceLog";
 import { VoiceLogRow } from "./VoiceLogRow";
+import { voiceTurnDetails } from "./voiceTurnDetails";
 import "../chat/transcript.css";
 import "./voiceLog.css";
 
@@ -17,6 +20,32 @@ export function VoiceLogPanel() {
   const entries = useVoiceLog();
   const scrollRef = useRef<HTMLDivElement>(null);
   const stuck = useRef(true);
+  const { turnOf, turns } = useMemo(() => groupVoiceTurns(entries ?? []), [entries]);
+  /** Turns with something beyond what the main view shows. */
+  const detailed = useMemo(
+    () => new Set([...turns].filter(([, list]) => list.some((entry) => !isVoiceLogMainEntry(entry))).map(([id]) => id)),
+    [turns],
+  );
+
+  // Tool calls, searches, notices and token usage live in Turn Details; day dividers follow the shown entries.
+  const rows: ReactNode[] = [];
+  let lastAt: number | null = null;
+  entries?.forEach((entry, index) => {
+    if (!isVoiceLogMainEntry(entry)) return;
+    const turnId = turnOf[index];
+    const message = entry.kind === "heard" || entry.kind === "said";
+    rows.push(
+      // Append-only list, so the index is a stable key.
+      <VoiceLogRow
+        key={index}
+        entry={entry}
+        newDay={lastAt === null || !sameDay(lastAt, entry.at)}
+        turnId={message && turnId && detailed.has(turnId) ? turnId : undefined}
+        onToggleDetails={voiceTurnDetails.toggle}
+      />,
+    );
+    lastAt = entry.at;
+  });
 
   useLayoutEffect(() => {
     const el = scrollRef.current;
@@ -42,10 +71,7 @@ export function VoiceLogPanel() {
       >
         <div className="transcript">
           {entries?.length === 0 && <div className="empty">No voice activity yet.</div>}
-          {entries?.map((entry, index) => (
-            // Append-only list, so the index is a stable key.
-            <VoiceLogRow key={index} entry={entry} newDay={index === 0 || !sameDay(entries[index - 1].at, entry.at)} />
-          ))}
+          {rows}
         </div>
       </div>
       <div className="scroll-fade" aria-hidden="true" />
