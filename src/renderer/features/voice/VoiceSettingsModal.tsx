@@ -89,6 +89,13 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           Model
           <input value={model} disabled={busy} onChange={(e) => setModel(e.target.value)} spellCheck={false} />
         </label>
+        <div className="voice-settings-note">
+          See available models at{" "}
+          <a href="https://inworld.ai/models" target="_blank" rel="noopener noreferrer">
+            inworld.ai/models
+          </a>
+          .
+        </div>
         <label>
           Voice
           <input value={voiceName} disabled={busy} onChange={(e) => setVoiceName(e.target.value)} spellCheck={false} />
