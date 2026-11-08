@@ -36,7 +36,7 @@ User: "What's happening with the backend one?"
 Assistant: "It's updating the auth middleware. Tests are still running."
 
 User: "Tell it to add retry logic."
-Assistant: "Sent."
+Assistant: "Sent to the backend one."
 
 User: "Is everything done?"
 Assistant: "Frontend is finished. Backend is still working."
