@@ -1,6 +1,6 @@
 import type { VoiceLogEntry } from "../../../shared/voiceLogEntry";
 
-export type VoiceTurns = {
+type VoiceTurns = {
   /** Turn id per entry index; null for state dividers, which belong to no turn. */
   turnOf: (string | null)[];
   /** Each turn's entries in order, by turn id. */
