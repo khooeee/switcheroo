@@ -19,7 +19,7 @@ export function voiceSubmenu(voice: VoiceMenuActions): MenuItemConstructorOption
       click: () => voice.turnOff(),
     },
     { type: "separator" },
-    { label: "Voice Settings…", click: () => voice.openSettings() },
+    { label: "Open Voice Settings", click: () => voice.openSettings() },
     { label: "Open Voice Log Folder", click: () => voice.openLog() },
   ];
 }
