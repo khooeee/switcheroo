@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { findTextRanges } from "./findTextRanges";
+import { nearestMatchIndex } from "./nearestMatchIndex";
+import { rangeScroller } from "./rangeScroller";
 
 /** Find in one or more roots (e.g. transcript + right rail). */
 export function useFindMatches(
@@ -11,6 +13,7 @@ export function useFindMatches(
   const [matches, setMatches] = useState<Range[]>([]);
   const [index, setIndex] = useState(0);
   const shouldScrollRef = useRef(true);
+  const activeRef = useRef<Range | null>(null);
 
   useEffect(() => {
     const roots = rootRefs
@@ -18,12 +21,17 @@ export function useFindMatches(
       .filter((node): node is HTMLElement => !!node);
     if (!roots.length) return;
     shouldScrollRef.current = true;
-    setIndex(0);
+    let initial = true;
     const update = () => {
       const next = roots.flatMap((root) => findTextRanges(root, query));
       next.sort((a, b) => a.compareBoundaryPoints(Range.START_TO_START, b));
       CSS.highlights.set("find-matches", new Highlight(...next));
       setMatches(next);
+      if (initial) {
+        initial = false;
+        setIndex(nearestMatchIndex(next, activeRef.current));
+        return;
+      }
       setIndex((previous) => Math.min(previous, Math.max(0, next.length - 1)));
     };
     update();
@@ -50,6 +58,7 @@ export function useFindMatches(
 
   useEffect(() => {
     const range = matches[index];
+    activeRef.current = range ?? null;
     const highlight = new Highlight(...(range ? [range] : []));
     highlight.priority = 1;
     CSS.highlights.set("find-active", highlight);
@@ -67,10 +76,10 @@ export function useFindMatches(
 }
 
 function scrollRangeIntoView(range: Range): void {
-  const node = range.startContainer;
-  const el = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement) as Element | null;
-  const scroller = el?.closest(".scroll, .right-rail-scroll") as HTMLElement | null;
+  const scroller = rangeScroller(range);
   if (!scroller) {
+    const node = range.startContainer;
+    const el = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement) as Element | null;
     el?.scrollIntoView({ block: "center", inline: "nearest" });
     return;
   }
