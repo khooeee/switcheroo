@@ -76,23 +76,25 @@ export function FindBar({
           onClose();
         }
       }}>
-      <input
-        ref={inputRef}
-        value={query}
-        aria-label={label}
-        placeholder={placeholder}
-        spellCheck={false}
-        onChange={(event) => onQuery(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-            event.preventDefault();
-            go(event.shiftKey ? -1 : 1);
-          }
-        }}
-      />
-      <span className="find-count" role="status" aria-live="polite">
-        {query ? count ? `${index + 1} of ${count}` : "0 results" : ""}
-      </span>
+      <div className="find-field">
+        <input
+          ref={inputRef}
+          value={query}
+          aria-label={label}
+          placeholder={placeholder}
+          spellCheck={false}
+          onChange={(event) => onQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              go(event.shiftKey ? -1 : 1);
+            }
+          }}
+        />
+        <span className="find-count" role="status" aria-live="polite">
+          {query ? count ? `${index + 1} of ${count}` : "0 results" : ""}
+        </span>
+      </div>
       <FindOptionToggles options={options} />
       <button type="button" className="btn" aria-label="Previous match" data-tooltip="Previous match (Shift+Enter)" disabled={!count} onClick={() => go(-1)}>↑</button>
       <button type="button" className="btn" aria-label="Next match" data-tooltip="Next match (Enter)" disabled={!count} onClick={() => go(1)}>↓</button>
