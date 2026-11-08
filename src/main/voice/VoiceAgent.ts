@@ -177,7 +177,7 @@ export class VoiceAgent {
         return;
       case "session.updated":
         if (this.onLogPending === null) return;
-        appendVoiceLog("state", { state: "listening", reconnected: this.onLogPending, reasoning: sessionReasoningEffort(event) });
+        appendVoiceLog("state", { state: "listening", reconnected: this.onLogPending, reasoning: sessionReasoningEffort(event) ?? "model default" });
         this.onLogPending = null;
         return;
     }
