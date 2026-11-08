@@ -105,6 +105,20 @@ It's likely you don't have to read this section ever, but it's here in case your
 - The session list is capped to 500 on app startup and whenever a session is created (can be edited via `settings.sessionListMax`).  The oldest sessions are removed from the list but are still on disk.  You can still find these sessions through "Find in History".
 - If you're running out of disk space, click on Settings button on the bottom, select "Open Sessions Folder" and then archive/delete folders as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list until you click them.  Only then will the app check its existence and remove it from the list if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
+## inworld.ai models
+
+
+
+```
+inworld/models/gemma-4-26b-a4b-it
+# under 0.15s TTFT, 237 tok/s, $0.07 input, $0.34 output
+
+inworld/models/mimo-v2.6-pro
+# under 0.18s TTFT, 273 tok/s, $0.43 input, $0.87 output
+```
+
+See [https://inworld.ai/models](https://inworld.ai/models).
+
 ## Shortcuts
 
 **Ctrl+D**: Close session on empty prompt
