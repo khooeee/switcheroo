@@ -3,6 +3,7 @@ import { errorMessage } from "../../../shared/errorMessage";
 import type { VoiceKeyInfo } from "../../../shared/voiceKeyInfo";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
+import { voiceKeyPresence } from "./voiceKeyPresence";
 import "../modals/modal.css";
 
 /** Stand-in shown for a saved key, which never leaves main. */
@@ -46,7 +47,10 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      if (key !== null) await window.switcheroo.setVoiceKey(key);
+      if (key !== null) {
+        await window.switcheroo.setVoiceKey(key);
+        voiceKeyPresence.refresh();
+      }
       const minutes = Number(idleMinutes);
       await patchAppSettings({
         voiceModel: model.trim() || prefs.voiceModel,

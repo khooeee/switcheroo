@@ -13,7 +13,12 @@ export function registerVoiceIpc(voice: VoiceAgent): void {
   ipcMain.handle("voice:toggle", () => voice.toggle());
   ipcMain.handle("voice:status", () => voice.getStatus());
   ipcMain.handle("voice:keyInfo", () => voiceKeyStore.info());
-  ipcMain.handle("voice:setKey", (_e, key: unknown) => voiceKeyStore.write(typeof key === "string" ? key : ""));
+  ipcMain.handle("voice:setKey", async (_e, key: unknown) => {
+    const value = typeof key === "string" ? key.trim() : "";
+    await voiceKeyStore.write(value);
+    // The mic hides without a key, so don't leave voice running unseen.
+    if (!value) voice.stop();
+  });
   ipcMain.handle("voice:answer", (_e, offer: unknown) => voice.answer(typeof offer === "string" ? offer : ""));
   ipcMain.handle("fs:openVoiceLogFolder", () => openVoiceLogFolder());
   ipcMain.on("voice:connection", (_e, event: unknown) => {
