@@ -100,8 +100,15 @@ export function VoiceSettingsModal({ onClose }: { onClose: () => void }) {
           Voice
           <input value={voiceName} disabled={busy} onChange={(e) => setVoiceName(e.target.value)} spellCheck={false} />
         </label>
+        <div className="voice-settings-note">
+          See available voices at{" "}
+          <a href="https://platform.inworld.ai/voice-library" target="_blank" rel="noopener noreferrer">
+            platform.inworld.ai/voice-library
+          </a>
+          .
+        </div>
         <label>
-          Turn voice off after this many idle minutes (0 = never)
+          Turn voice off after idle minutes (0 = never)
           <input type="number" min={0} value={idleMinutes} disabled={busy} onChange={(e) => setIdleMinutes(e.target.value)} />
         </label>
         <div className="voice-settings-note">Model and voice apply on the next connect.</div>
