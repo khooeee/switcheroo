@@ -27,6 +27,10 @@
   font-size: var(--font-mono-small-size);
 }
 
+html[data-details="hidden"] .voice-log-divider {
+  display: none;
+}
+
 .voice-log-divider::before,
 .voice-log-divider::after {
   content: "";
