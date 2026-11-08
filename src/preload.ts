@@ -6,6 +6,7 @@ import type { FindInSessionsHit } from "./shared/findInSessionsHit";
 import type { SessionListPayload, SwitcherooApi } from "./shared/switcherooApi";
 import type { TranscriptTurn } from "./shared/transcript";
 import type { VoiceCommand } from "./shared/voiceCommand";
+import type { VoiceLogEntry } from "./shared/voiceLogEntry";
 import type { VoiceStatus } from "./shared/voiceStatus";
 
 function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
@@ -75,6 +76,8 @@ const api: SwitcherooApi = {
   getVoiceKeyInfo: () => ipcRenderer.invoke("voice:keyInfo"),
   setVoiceKey: (key) => ipcRenderer.invoke("voice:setKey", key),
   openVoiceLogFolder: () => ipcRenderer.invoke("fs:openVoiceLogFolder"),
+  getVoiceLog: () => ipcRenderer.invoke("voice:log"),
+  onVoiceLogEntry: (cb) => subscribe<VoiceLogEntry>("voice:log-entry", cb),
   voiceAnswer: (offerSdp) => ipcRenderer.invoke("voice:answer", offerSdp),
   voiceConnection: (event) => ipcRenderer.send("voice:connection", event),
   voiceServerEvent: (event) => ipcRenderer.send("voice:server-event", event),

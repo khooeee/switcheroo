@@ -1,8 +1,12 @@
 import { ipcMain } from "electron";
 import type { VoiceConnectionEvent } from "../../shared/voiceConnectionEvent";
 import { openVoiceLogFolder } from "../files/openVoiceLogFolder";
+import { readRecentVoiceLog } from "./readRecentVoiceLog";
 import type { VoiceAgent } from "./VoiceAgent";
 import { voiceKeyStore } from "./voiceKeyStore";
+
+/** How many recent entries the Voice Log view loads. */
+const VOICE_LOG_LIMIT = 300;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -21,6 +25,7 @@ export function registerVoiceIpc(voice: VoiceAgent): void {
   });
   ipcMain.handle("voice:answer", (_e, offer: unknown) => voice.answer(typeof offer === "string" ? offer : ""));
   ipcMain.handle("fs:openVoiceLogFolder", () => openVoiceLogFolder());
+  ipcMain.handle("voice:log", () => readRecentVoiceLog(VOICE_LOG_LIMIT));
   ipcMain.on("voice:connection", (_e, event: unknown) => {
     if (isRecord(event) && typeof event.type === "string") voice.handleConnection(event as VoiceConnectionEvent);
   });

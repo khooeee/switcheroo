@@ -16,6 +16,7 @@ import { VoiceAnnouncer } from "./VoiceAnnouncer";
 import { VoiceConversation } from "./VoiceConversation";
 import { VoiceIdleTimer } from "./VoiceIdleTimer";
 import { voiceKeyStore } from "./voiceKeyStore";
+import { voiceLogFeed } from "./voiceLogFeed";
 import { voiceNoticeText } from "./voiceNoticeText";
 import { VoiceNotices } from "./VoiceNotices";
 import { VoiceRendererLink } from "./VoiceRendererLink";
@@ -57,6 +58,7 @@ export class VoiceAgent {
 
   constructor(private readonly deps: Deps) {
     this.link = new VoiceRendererLink(deps.getWindow);
+    voiceLogFeed.subscribe((entry) => this.link.logEntry(entry));
     const connected = () => this.channelOpen && this.status.state === "listening";
     this.notices = new VoiceNotices(
       () => this.status.state !== "off",

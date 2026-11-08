@@ -11,6 +11,7 @@ import type { TranscriptTurn } from "./transcript";
 import type { VoiceCommand } from "./voiceCommand";
 import type { VoiceConnectionEvent } from "./voiceConnectionEvent";
 import type { VoiceKeyInfo } from "./voiceKeyInfo";
+import type { VoiceLogEntry } from "./voiceLogEntry";
 import type { VoiceStatus } from "./voiceStatus";
 
 export interface SessionListPayload {
@@ -114,6 +115,10 @@ export interface SwitcherooApi {
   /** Save the Inworld API key (encrypted in main); empty removes it. */
   setVoiceKey: (key: string) => Promise<void>;
   openVoiceLogFolder: () => Promise<void>;
+  /** The newest few hundred voice log entries (across days), oldest first. */
+  getVoiceLog: () => Promise<VoiceLogEntry[]>;
+  /** Each voice log entry as it is written. */
+  onVoiceLogEntry: (cb: (entry: VoiceLogEntry) => void) => () => void;
   /** Exchange the WebRTC SDP offer for Inworld's answer (main holds the key). */
   voiceAnswer: (offerSdp: string) => Promise<string>;
   voiceConnection: (event: VoiceConnectionEvent) => void;

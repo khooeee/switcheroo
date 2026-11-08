@@ -1,5 +1,6 @@
 import type { BrowserWindow } from "electron";
 import type { VoiceCommand } from "../../shared/voiceCommand";
+import type { VoiceLogEntry } from "../../shared/voiceLogEntry";
 import type { VoiceStatus } from "../../shared/voiceStatus";
 
 /** Main → renderer voice channels; the renderer owns the WebRTC connection. */
@@ -17,6 +18,10 @@ export class VoiceRendererLink {
 
   status(status: VoiceStatus): void {
     this.post("voice:status", status);
+  }
+
+  logEntry(entry: VoiceLogEntry): void {
+    this.post("voice:log-entry", entry);
   }
 
   openSettings(): void {
