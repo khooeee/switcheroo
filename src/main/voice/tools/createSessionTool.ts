@@ -24,6 +24,7 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
       agent: agent.agent,
       cwd: project.cwd,
       title,
+      pin: true,
       switcherooAware: settings.lastSwitcherooAware && supportsSwitcherooAware(agent.agent),
     },
     { focus: false },
