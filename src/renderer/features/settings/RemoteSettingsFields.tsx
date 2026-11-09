@@ -74,7 +74,6 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
         />
       </label>
       <div className="settings-note">
-        Agents and the iOS app share one token.{" "}
         <button type="button" className="btn" disabled={busy || resetting} onClick={() => void resetToken()}>
           {resetting ? "Resetting…" : "Reset Token"}
         </button>
