@@ -60,7 +60,7 @@ export interface SwitcherooApi {
   /** iOS remote access: the pairing link and `tailscale serve` setup. */
   getRemoteStatus: () => Promise<RemoteStatus>;
   /** New token for Switcheroo-aware agents and the iOS app; returns the status with the new link. */
-  resetControlToken: () => Promise<RemoteStatus>;
+  rotateControlToken: () => Promise<RemoteStatus>;
   savePastedImage: (
     sessionId: string,
     image: { mimeType: string; bytes: Uint8Array },

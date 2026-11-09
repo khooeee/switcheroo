@@ -109,8 +109,8 @@ export function registerIpc({ sessions, control, getMainWindow, setActiveSession
     return next;
   });
   ipcMain.handle("remote:status", () => control.status());
-  ipcMain.handle("control:resetToken", async () => {
-    await control.resetToken();
+  ipcMain.handle("control:rotateToken", async () => {
+    await control.rotateToken();
     return control.status();
   });
   ipcMain.handle("images:savePaste", async (_e, sessionId: string, mimeType: string, bytes: Uint8Array) => {

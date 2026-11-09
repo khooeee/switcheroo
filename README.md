@@ -101,7 +101,7 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 4. Run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
 5. Paste the link into the iOS app.
 
-The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Reset Token** in **Settings** and pair again; aware sessions pick up the new token from `control.json`.
+The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again; aware sessions pick up the new token from `control.json`.
 
 ## Daily Standup
 

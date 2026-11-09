@@ -36,8 +36,8 @@ export class ControlServer {
   }
 
   /** Replace the token; agents re-read control.json, and the iOS app needs the new link. */
-  resetToken(): Promise<void> {
-    return this.enqueue(() => this.rotateToken());
+  rotateToken(): Promise<void> {
+    return this.enqueue(() => this.swapToken());
   }
 
   stop(): Promise<void> {
@@ -45,14 +45,14 @@ export class ControlServer {
   }
 
   async status(): Promise<RemoteStatus> {
-    const off = { link: null, serveCommand: null, served: false };
+    const off = { token: this.endpoint?.token ?? null, link: null, serveCommand: null, served: false };
     if (!this.remoteEnabled) return { ...off, error: null };
     if (!this.endpoint || this.error) return { ...off, error: this.error ?? "The control server is not running." };
     const { port, token } = this.endpoint;
     const [host, served] = await Promise.all([tailscaleDnsName(), tailscaleServesPort(port)]);
     const serveCommand = `tailscale serve --bg ${port}`;
     if (!host) return { ...off, serveCommand, error: "Tailscale is not installed or not logged in." };
-    return { link: `switcheroo://${host}?token=${token}`, serveCommand, served, error: null };
+    return { token, link: `switcheroo://${host}?token=${token}`, serveCommand, served, error: null };
   }
 
   private async reconcile({ remoteEnabled, controlPort }: ControlSettings): Promise<void> {
@@ -83,7 +83,7 @@ export class ControlServer {
     return run;
   }
 
-  private async rotateToken(): Promise<void> {
+  private async swapToken(): Promise<void> {
     const token = await createControlToken();
     if (!this.endpoint) return;
     this.endpoint = { ...this.endpoint, token };

@@ -12,7 +12,7 @@ import type { SettingsFieldsProps } from "./SettingsFieldsProps";
 export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsProps) {
   const [status, setStatus] = useState<RemoteStatus | null>(null);
   const [applying, setApplying] = useState(false);
-  const [resetting, setResetting] = useState(false);
+  const [rotating, setRotating] = useState(false);
   const [linkCopied, copyLink] = useCopiedFlash();
   const [commandCopied, copyCommand] = useCopiedFlash();
 
@@ -37,16 +37,16 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
     }
   };
 
-  const resetToken = async () => {
+  const rotateToken = async () => {
     const ok = window.confirm(
-      "Reset the token? The iOS app will need the new link.\n\nSwitcheroo-aware agents pick it up from control.json.",
+      "Rotate the token? The iOS app will need the new link.\n\nSwitcheroo-aware agents pick it up from control.json.",
     );
     if (!ok) return;
-    setResetting(true);
+    setRotating(true);
     try {
-      setStatus(await window.switcheroo.resetControlToken());
+      setStatus(await window.switcheroo.rotateControlToken());
     } finally {
-      setResetting(false);
+      setRotating(false);
     }
   };
 
@@ -73,9 +73,13 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
           onChange={(e) => onChange({ controlPort: e.target.value })}
         />
       </label>
+      <label>
+        Token
+        <input type="text" readOnly value={status?.token ?? ""} onFocus={(e) => e.target.select()} />
+      </label>
       <div className="settings-note">
-        <button type="button" className="btn" disabled={busy || resetting} onClick={() => void resetToken()}>
-          {resetting ? "Resetting…" : "Reset Token"}
+        <button type="button" className="btn" disabled={busy || rotating} onClick={() => void rotateToken()}>
+          {rotating ? "Rotating…" : "Rotate Token"}
         </button>
       </div>
       {status?.error && <div className="settings-warning">{status.error}</div>}
