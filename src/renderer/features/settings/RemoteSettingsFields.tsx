@@ -1,19 +1,41 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { RemoteStatus } from "../../../shared/remoteStatus";
 import { useCopiedFlash } from "../copy/useCopiedFlash";
+import { patchAppSettings } from "./appSettingsCache";
 import type { SettingsFieldsProps } from "./SettingsFieldsProps";
 
-/** iOS access: enable and port; once serving, the one-time `tailscale serve` command and the pairing link. */
+/**
+ * iOS access: the checkbox applies at once (unlike the rest of the modal) so pairing needs no reopen;
+ * the port (shared with Switcheroo-aware agents) applies on Save. Status refreshes on window focus,
+ * e.g. after running `tailscale serve`.
+ */
 export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsProps) {
   const [status, setStatus] = useState<RemoteStatus | null>(null);
+  const [applying, setApplying] = useState(false);
   const [linkCopied, copyLink] = useCopiedFlash();
   const [commandCopied, copyCommand] = useCopiedFlash();
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     void window.switcheroo.getRemoteStatus().then(setStatus);
   }, []);
 
-  const serving = !!status?.serveCommand;
+  useEffect(() => {
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [refresh]);
+
+  const toggle = async (remoteEnabled: boolean) => {
+    onChange({ remoteEnabled });
+    setApplying(true);
+    try {
+      await patchAppSettings({ remoteEnabled });
+    } finally {
+      setApplying(false);
+      refresh();
+    }
+  };
+
   return (
     <>
       <h3 className="settings-section">Remote</h3>
@@ -21,25 +43,22 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
         <input
           type="checkbox"
           checked={draft.remoteEnabled}
-          disabled={busy}
-          onChange={(e) => onChange({ remoteEnabled: e.target.checked })}
+          disabled={busy || applying}
+          onChange={(e) => void toggle(e.target.checked)}
         />
         Allow the iOS app over Tailscale
       </label>
       <label>
-        Local port
+        Control API port
         <input
           type="number"
           min={1}
           max={65535}
-          value={draft.remotePort}
+          value={draft.controlPort}
           disabled={busy}
-          onChange={(e) => onChange({ remotePort: e.target.value })}
+          onChange={(e) => onChange({ controlPort: e.target.value })}
         />
       </label>
-      {draft.remoteEnabled && !serving && !status?.error && (
-        <div className="settings-note">Save, then reopen Settings to pair the iOS app.</div>
-      )}
       {status?.error && <div className="settings-warning">{status.error}</div>}
       {status?.serveCommand && !status.served && (
         <div className="settings-note">

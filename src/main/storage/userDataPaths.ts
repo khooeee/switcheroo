@@ -52,9 +52,9 @@ export function voiceKeyPath(): string {
   return path.join(userDataDir(), "inworld-key.enc");
 }
 
-/** Bearer token the iOS app pairs with (remote access over Tailscale). */
-export function remoteTokenPath(): string {
-  return path.join(userDataDir(), "remote.json");
+/** Control API bearer token, shared by Switcheroo-aware agents and the paired iOS app. */
+export function controlTokenPath(): string {
+  return path.join(userDataDir(), "control-token.json");
 }
 
 export function voiceLogDir(): string {

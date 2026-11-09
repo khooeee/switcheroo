@@ -97,11 +97,11 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 
 1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), turn on MagicDNS and HTTPS certificates.
 2. Build the app on iOS: `brew install xcodegen`, then `npm run ios` and open `ios/Switcheroo.xcodeproj`. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
-3. In Switcheroo desktop app, open **Settings**, tick **Allow the iOS app over Tailscale** and Save.
-4. Reopen **Settings**, run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
+3. In Switcheroo desktop app, open **Settings** and tick **Allow the iOS app over Tailscale**.
+4. Run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
 5. Paste the link into the iOS app.
 
-The token stays the same across launches. To revoke it, quit Switcheroo, delete `remote.json` from the app's data folder and pair again.
+The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, quit Switcheroo, delete `control-token.json` from the app's data folder and pair again.
 
 ## Daily log
 

@@ -13,7 +13,7 @@ import { showImageContextMenu } from "./contextMenus/showImageContextMenu";
 import { resolveFolderPickerStart } from "./files/resolveFolderPickerStart";
 import { saveMarkdownFile } from "./files/saveMarkdownFile";
 import type { SessionManager } from "./sessions/SessionManager";
-import type { RemoteServer } from "./remote/RemoteServer";
+import type { ControlServer } from "./control/ControlServer";
 import type { AppSettings } from "../shared/appSettings";
 import type { ConfigMenuCategory } from "../shared/configMenuCategory";
 import type { CreateSessionInput } from "../shared/createSessionInput";
@@ -21,13 +21,13 @@ import type { EditContextMenuOptions } from "../shared/editContextMenuOptions";
 
 type IpcContext = {
   sessions: SessionManager;
-  remote: RemoteServer;
+  control: ControlServer;
   getMainWindow: () => BrowserWindow | null;
   setActiveSessionUnread: (unread: boolean) => void;
 };
 
 /** Register every renderer → main `ipcMain.handle` channel. */
-export function registerIpc({ sessions, remote, getMainWindow, setActiveSessionUnread }: IpcContext): void {
+export function registerIpc({ sessions, control, getMainWindow, setActiveSessionUnread }: IpcContext): void {
   ipcMain.handle("files:openInCursor", async (_event, sessionId: string, filePath: string) => {
     await openInCursor(requireSession(sessionId).cwd, filePath);
   });
@@ -105,10 +105,10 @@ export function registerIpc({ sessions, remote, getMainWindow, setActiveSessionU
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", async (_e, patch: Partial<AppSettings>) => {
     const next = sessions.updateSettings(patch);
-    await remote.apply(next);
+    await control.apply(next);
     return next;
   });
-  ipcMain.handle("remote:status", () => remote.status());
+  ipcMain.handle("remote:status", () => control.status());
   ipcMain.handle("images:savePaste", async (_e, sessionId: string, mimeType: string, bytes: Uint8Array) => {
     requireSession(sessionId);
     return savePastedImage(bytes, mimeType);

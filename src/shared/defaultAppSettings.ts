@@ -20,6 +20,6 @@ export function defaultAppSettings(): AppSettings {
     voiceLanguage: "English",
     voiceIdleMinutes: 30,
     remoteEnabled: false,
-    remotePort: 7389,
+    controlPort: 7389,
   };
 }

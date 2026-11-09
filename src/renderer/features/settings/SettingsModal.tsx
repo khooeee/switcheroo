@@ -13,7 +13,7 @@ import type { SettingsDraft } from "./SettingsDraft";
 import "../modals/modal.css";
 import "./settingsModal.css";
 
-/** General, voice and remote settings; nothing saves until Save. */
+/** General, voice and remote settings; nothing saves until Save except the remote access checkbox. */
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const [draft, setDraft] = useState(() => draftFromSettings(getAppSettingsCache()));
   const [busy, setBusy] = useState(false);

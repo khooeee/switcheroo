@@ -1,50 +1,118 @@
 import { createServer, type Server } from "node:http";
-import { randomBytes } from "node:crypto";
+import type { AppSettings } from "../../shared/appSettings";
+import { errorMessage } from "../../shared/errorMessage";
+import type { RemoteStatus } from "../../shared/remoteStatus";
 import type { SessionManager } from "../sessions/SessionManager";
+import { RemoteEventHub } from "../remote/RemoteEventHub";
+import { tailscaleDnsName } from "../remote/tailscaleDnsName";
+import { tailscaleServesPort } from "../remote/tailscaleServesPort";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
-import { handleControlRequest } from "./controlRoutes";
+import { handleServerRequest } from "./handleServerRequest";
+import { loadControlToken } from "./loadControlToken";
 
-/** Localhost HTTP control plane for SessionManager (curl / scripts). */
+type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
+
+/**
+ * Localhost control API for Switcheroo-aware agents (via control.json) and the iOS app
+ * (via `tailscale serve`). Always on; `remoteEnabled` only gates requests that come through Tailscale.
+ */
 export class ControlServer {
+  private hub: RemoteEventHub;
   private server: Server | null = null;
   private endpoint: ControlEndpoint | null = null;
+  private wantedPort = 0;
+  private remoteEnabled = false;
+  private error: string | null = null;
+  private applying = Promise.resolve();
 
-  async start(sessions: SessionManager): Promise<ControlEndpoint | null> {
-    if (process.env.SWITCHEROO_CONTROL === "0") return null;
-
-    const token = randomBytes(24).toString("hex");
-    this.server = createServer((req, res) => {
-      const baseUrl = this.endpoint?.spec ?? "http://127.0.0.1/";
-      void handleControlRequest(req, res, token, baseUrl, sessions);
-    });
-
-    await new Promise<void>((resolve, reject) => {
-      this.server!.once("error", reject);
-      this.server!.listen(0, "127.0.0.1", () => resolve());
-    });
-
-    const addr = this.server.address();
-    if (!addr || typeof addr === "string") throw new Error("Control server failed to bind");
-    this.endpoint = {
-      port: addr.port,
-      token,
-      spec: `http://127.0.0.1:${addr.port}/`,
-    };
-    await writeControlFile(this.endpoint);
-    console.log(`[control] listening on ${this.endpoint.spec}`);
-    return this.endpoint;
+  constructor(private sessions: SessionManager) {
+    this.hub = new RemoteEventHub(sessions);
   }
 
-  async stop(): Promise<void> {
-    if (this.endpoint) {
-      await clearControlFile(this.endpoint);
-      this.endpoint = null;
+  /** Start, or move to a new port, to match settings; calls apply in order. */
+  apply(settings: ControlSettings): Promise<void> {
+    this.applying = this.applying.then(() => this.reconcile(settings));
+    return this.applying;
+  }
+
+  stop(): Promise<void> {
+    this.applying = this.applying.then(() => this.close());
+    return this.applying;
+  }
+
+  async status(): Promise<RemoteStatus> {
+    const off = { link: null, serveCommand: null, served: false };
+    if (!this.remoteEnabled) return { ...off, error: null };
+    if (!this.endpoint || this.error) return { ...off, error: this.error ?? "The control server is not running." };
+    const { port, token } = this.endpoint;
+    const [host, served] = await Promise.all([tailscaleDnsName(), tailscaleServesPort(port)]);
+    const serveCommand = `tailscale serve --bg ${port}`;
+    if (!host) return { ...off, serveCommand, error: "Tailscale is not installed or not logged in." };
+    return { link: `switcheroo://${host}?token=${token}`, serveCommand, served, error: null };
+  }
+
+  private async reconcile({ remoteEnabled, controlPort }: ControlSettings): Promise<void> {
+    this.remoteEnabled = remoteEnabled;
+    if (process.env.SWITCHEROO_CONTROL === "0") return;
+    if (this.server && controlPort === this.wantedPort) return;
+    await this.close();
+    this.wantedPort = controlPort;
+    this.error = null;
+    try {
+      const token = await loadControlToken();
+      const server = await this.listenFixedOrRandom(controlPort);
+      const port = (server.address() as { port: number }).port;
+      this.server = server;
+      this.endpoint = { port, token, spec: `http://127.0.0.1:${port}/` };
+      await writeControlFile(this.endpoint);
+      console.log(`[control] listening on ${this.endpoint.spec}`);
+    } catch (error) {
+      this.error = `Could not start the control server: ${errorMessage(error)}`;
+      console.warn(`[control] ${this.error}`);
     }
-    const server = this.server;
-    this.server = null;
-    if (!server) return;
-    await new Promise<void>((resolve) => {
-      server.close(() => resolve());
+  }
+
+  /** A busy fixed port (e.g. another Switcheroo build) still leaves agents a random one. */
+  private async listenFixedOrRandom(port: number): Promise<Server> {
+    try {
+      return await this.listen(port);
+    } catch (error) {
+      this.error = `Port ${port} is busy (${errorMessage(error)}), so the iOS app can't connect.`;
+      console.warn(`[control] ${this.error}`);
+      return this.listen(0);
+    }
+  }
+
+  private async listen(port: number): Promise<Server> {
+    const server = createServer((req, res) => {
+      const baseUrl = this.endpoint?.spec ?? `http://127.0.0.1:${port}/`;
+      void handleServerRequest(req, res, {
+        token: this.endpoint?.token ?? "",
+        baseUrl,
+        sessions: this.sessions,
+        hub: this.hub,
+        remoteEnabled: () => this.remoteEnabled,
+      });
     });
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(port, "127.0.0.1", () => {
+        server.off("error", reject);
+        resolve();
+      });
+    });
+    return server;
+  }
+
+  private async close(): Promise<void> {
+    const server = this.server;
+    const endpoint = this.endpoint;
+    this.server = null;
+    this.endpoint = null;
+    if (endpoint) await clearControlFile(endpoint);
+    if (!server) return;
+    this.hub.closeAll();
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 }
