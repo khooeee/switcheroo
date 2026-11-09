@@ -19,5 +19,7 @@ export function defaultAppSettings(): AppSettings {
     voiceName: "Sarah",
     voiceLanguage: "English",
     voiceIdleMinutes: 30,
+    remoteEnabled: false,
+    remotePort: 7389,
   };
 }

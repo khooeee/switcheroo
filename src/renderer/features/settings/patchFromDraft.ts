@@ -7,6 +7,12 @@ function wholeNumber(text: string, fallback: number): number {
   return Number.isFinite(value) && value >= 0 ? Math.round(value) : fallback;
 }
 
+/** A TCP port from `text`, else `fallback`. */
+function port(text: string, fallback: number): number {
+  const value = wholeNumber(text, fallback);
+  return value >= 1 && value <= 65535 ? value : fallback;
+}
+
 /** Settings to save from the form; blank or invalid fields keep `prefs`. The key saves separately. */
 export function patchFromDraft(draft: SettingsDraft, prefs: AppSettings): Partial<AppSettings> {
   return {
@@ -18,5 +24,7 @@ export function patchFromDraft(draft: SettingsDraft, prefs: AppSettings): Partia
     voiceName: draft.voiceName.trim() || prefs.voiceName,
     voiceLanguage: draft.voiceLanguage.trim() || prefs.voiceLanguage,
     voiceIdleMinutes: wholeNumber(draft.voiceIdleMinutes, prefs.voiceIdleMinutes),
+    remoteEnabled: draft.remoteEnabled,
+    remotePort: port(draft.remotePort, prefs.remotePort),
   };
 }

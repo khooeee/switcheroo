@@ -11,6 +11,7 @@ import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
 import { SubagentTranscriptStore } from "./SubagentTranscriptStore";
 import type { SessionObserver } from "./SessionObserver";
+import type { SessionEventListener } from "./SessionEventListener";
 
 /** In-memory session state shared by SessionManager collaborators, plus renderer IPC. */
 export class SessionState {
@@ -27,6 +28,8 @@ export class SessionState {
   forkSupport = new AgentForkSupport();
   onSessionsChanged: (() => void) | null = null;
   observer: SessionObserver | null = null;
+  /** Main-process taps on every renderer event (remote clients). */
+  listeners = new Set<SessionEventListener>();
 
   setActiveTabId(id: ActiveTabId): void {
     this.activeTabId = id;
@@ -95,5 +98,6 @@ export class SessionState {
 
   send(channel: string, payload: unknown): void {
     this.window?.webContents.send(channel, payload);
+    for (const listener of this.listeners) listener(channel, payload);
   }
 }

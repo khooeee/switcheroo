@@ -5,6 +5,7 @@ import type { AppSettings } from "./appSettings";
 import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { FindInSessionsHit } from "./findInSessionsHit";
+import type { RemoteStatus } from "./remoteStatus";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
@@ -56,6 +57,8 @@ export interface SwitcherooApi {
   openCronsFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>;
+  /** iOS remote access: the pairing link and `tailscale serve` setup. */
+  getRemoteStatus: () => Promise<RemoteStatus>;
   savePastedImage: (
     sessionId: string,
     image: { mimeType: string; bytes: Uint8Array },

@@ -1,0 +1,2 @@
+// Put DEVELOPMENT_TEAM = <your team id> in Local.xcconfig (gitignored) to run on a device.
+#include? "Local.xcconfig"

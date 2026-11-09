@@ -15,7 +15,8 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "upgrade": "npx npm-check-updates -u && npm install"
+    "upgrade": "npx npm-check-updates -u && npm install",
+    "ios": "xcodegen generate --spec ios/project.yml"
   },
   "keywords": [],
   "author": {

@@ -8,11 +8,12 @@ import { getAppSettingsCache, patchAppSettings } from "./appSettingsCache";
 import { draftFromSettings } from "./draftFromSettings";
 import { GeneralSettingsFields } from "./GeneralSettingsFields";
 import { patchFromDraft } from "./patchFromDraft";
+import { RemoteSettingsFields } from "./RemoteSettingsFields";
 import type { SettingsDraft } from "./SettingsDraft";
 import "../modals/modal.css";
 import "./settingsModal.css";
 
-/** General and voice settings; nothing saves until Save. */
+/** General, voice and remote settings; nothing saves until Save. */
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const [draft, setDraft] = useState(() => draftFromSettings(getAppSettingsCache()));
   const [busy, setBusy] = useState(false);
@@ -57,6 +58,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <div className="settings-body">
           <GeneralSettingsFields draft={draft} busy={busy} onChange={onChange} />
           <VoiceSettingsFields draft={draft} busy={busy} onChange={onChange} />
+          <RemoteSettingsFields draft={draft} busy={busy} onChange={onChange} />
         </div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
         <div className="composer-actions" style={{ justifyContent: "flex-end" }}>
