@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu } from "electron";
-import { standupPrompt } from "../activity/standupPrompt";
+import { standupPrompt } from "../dailyLog/standupPrompt";
 
 /** Cut / Copy / Paste / Paste Standup Prompt / Paste Switcheroo Aware Prompt (+ Undo / Redo / Select All) for the composer textarea. */
 export function showComposerContextMenu(

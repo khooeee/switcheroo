@@ -14,13 +14,13 @@ export function cronsPath(): string {
   return path.join(userDataDir(), "crons.json");
 }
 
-export function activityDir(): string {
-  return path.join(userDataDir(), "activity");
+export function dailyLogDir(): string {
+  return path.join(userDataDir(), "daily-log");
 }
 
 /** Finished turns for one local day (`YYYY-MM-DD`). */
-export function activityLogPath(date: string): string {
-  return path.join(activityDir(), `${date}.jsonl`);
+export function dailyLogPath(date: string): string {
+  return path.join(dailyLogDir(), `${date}.jsonl`);
 }
 
 export function sessionsDir(): string {

@@ -1,6 +1,6 @@
 import type { Session } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
-import type { ActivityEntry } from "./ActivityEntry";
+import type { DailyLogEntry } from "./DailyLogEntry";
 
 const MAX_TEXT_LENGTH = 4000;
 
@@ -9,7 +9,7 @@ function clip(text: string): string {
 }
 
 /** Slim log entry for a finished turn. */
-export function activityFromTurn(session: Session, turn: TranscriptTurn): ActivityEntry {
+export function dailyLogEntryFromTurn(session: Session, turn: TranscriptTurn): DailyLogEntry {
   const steers = turn.events.filter((event) => event.role === "user");
   return {
     at: Date.now(),

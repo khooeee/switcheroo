@@ -91,9 +91,9 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 - `title` is optional; `YYYY-MM-DD`, `HH:MM` and `H:MM` in it become the run's local date and 24-hour time.
 - Crons only run while Switcheroo is open. Runs missed while the app was closed or the computer was asleep are skipped.
 
-## Activity log
+## Daily log
 
-Each finished turn adds one line to `activity/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Activity Folder** to see them.
+Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Daily Log Folder** to see them.
 
 To generate standup notes, select **Edit** → **Paste Standup Prompt**. It pastes a prompt for yesterday into the composer, so change the date if you need another day, then send it. If that day has no log, the agent uses the newest earlier one.
 

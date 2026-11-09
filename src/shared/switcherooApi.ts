@@ -51,7 +51,7 @@ export interface SwitcherooApi {
   pickFolder: (startPath?: string) => Promise<string | null>;
   /** Save-as dialog that writes `text` to a `.md` file named from `nameHint` (else `text`); false when cancelled. */
   saveMarkdown: (text: string, nameHint?: string) => Promise<boolean>;
-  openActivityFolder: () => Promise<void>;
+  openDailyLogFolder: () => Promise<void>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;

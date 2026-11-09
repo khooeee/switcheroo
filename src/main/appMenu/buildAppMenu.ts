@@ -1,5 +1,5 @@
 import { Menu, app } from "electron";
-import { standupPrompt } from "../activity/standupPrompt";
+import { standupPrompt } from "../dailyLog/standupPrompt";
 import type { AppMenuOptions } from "./AppMenuOptions";
 import { sessionSubmenu } from "./sessionSubmenu";
 import { voiceSubmenu } from "./voiceSubmenu";

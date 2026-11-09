@@ -1,6 +1,6 @@
 import type { TranscriptTurn } from "../../shared/transcript";
-import { activityFromTurn } from "../activity/activityFromTurn";
-import { appendActivity } from "../activity/appendActivity";
+import { dailyLogEntryFromTurn } from "../dailyLog/dailyLogEntryFromTurn";
+import { appendDailyLog } from "../dailyLog/appendDailyLog";
 import type { SessionState } from "./SessionState";
 
 /** Upsert a streamed turn into the transcript, notify the renderer and log it once finished. */
@@ -14,5 +14,5 @@ export function recordTurn(state: SessionState, sessionId: string, turn: Transcr
   else list.push(turn);
   state.transcripts.set(sessionId, list);
   state.send("transcript", { sessionId, turn });
-  if (finished) appendActivity(activityFromTurn(session, turn));
+  if (finished) appendDailyLog(dailyLogEntryFromTurn(session, turn));
 }

@@ -81,9 +81,9 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={closeThen(window.switcheroo.openActivityFolder)}
+              onClick={closeThen(window.switcheroo.openDailyLogFolder)}
             >
-              Open Activity Folder
+              Open Daily Log Folder
             </button>
             <button
               type="button"

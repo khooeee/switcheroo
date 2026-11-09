@@ -1,13 +1,13 @@
 import { localDateStamp } from "../storage/localDateStamp";
-import { activityDir, sessionsDir } from "../storage/userDataPaths";
+import { dailyLogDir, sessionsDir } from "../storage/userDataPaths";
 
-/** Prompt that turns yesterday's activity log into standup notes; the date is editable once pasted. */
+/** Prompt that turns yesterday's daily log into standup notes; the date is editable once pasted. */
 export function standupPrompt(now = new Date()): string {
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
   return [
     `Write my standup notes for ${localDateStamp(yesterday)}.`,
     "",
-    `My Switcheroo activity logs are in "${activityDir()}", one YYYY-MM-DD.jsonl file per local day.`,
+    `My Switcheroo daily logs are in "${dailyLogDir()}", one YYYY-MM-DD.jsonl file per local day.`,
     "Read the file for that date. If it is missing, use the newest earlier file and say which date you used.",
     "",
     "Each line is one finished agent turn: at (epoch ms), sessionId, turnId, title, cwd, agent,",
