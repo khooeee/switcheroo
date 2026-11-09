@@ -75,7 +75,7 @@ const createWindow = async () => {
       // Voice keeps talking and hearing while the window is hidden.
       backgroundThrottling: false,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
