@@ -1,14 +1,14 @@
 import * as path from "node:path";
 import { AGENT_LABELS } from "../../shared/agentLabels";
+import { clipText } from "../../shared/clipText";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import { errorMessage } from "../../shared/errorMessage";
+import { supportsSwitcherooAware } from "../../shared/supportsSwitcherooAware";
 import type { Session } from "../../shared/session";
 import { controlBootstrapText } from "../../shared/controlBootstrapText";
 import { newSessionId } from "./newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
-import { sessionInstructions } from "./sessionInstructions";
-import { warmKey } from "./warmKey";
 
 /** Add a new session to the rail and connect it, preferring a warm agent. */
 export async function createSession(
@@ -16,10 +16,12 @@ export async function createSession(
   input: CreateSessionInput,
   focus: boolean,
 ): Promise<Session> {
-  const warm = state.warm.take(warmKey(input.agent, input.switcherooAware === true), input.cwd);
-  // Keep the warm session's id: an aware one's instructions already name it.
+  // Session instructions are set at start, so a warm session cannot take them.
+  const instructed = input.switcherooAware === true && supportsSwitcherooAware(input.agent);
+  const warm = instructed ? null : state.warm.take(input.agent, input.cwd);
   const id = warm?.acp.id ?? newSessionId();
-  const title = input.title ?? `${AGENT_LABELS[input.agent]} · ${path.basename(input.cwd)}`;
+  const title = input.title
+    ?? (input.prompt ? clipText(input.prompt, 60) : `${AGENT_LABELS[input.agent]} · ${path.basename(input.cwd)}`);
   const session: Session = {
     id,
     title,
@@ -31,7 +33,7 @@ export async function createSession(
     createdAt: Date.now(),
     switcherooAware: input.switcherooAware || undefined,
     cron: input.cron || undefined,
-    autoTitle: input.autoTitle,
+    autoTitle: input.autoTitle || undefined,
   };
   state.prependSession(session, input.pin === true);
   state.transcripts.set(id, []);
@@ -40,7 +42,6 @@ export async function createSession(
   state.emitSessions();
 
   try {
-    const instructed = sessionInstructions(session) !== null;
     const claimed = warm && (await warm.started) ? warm.acp : null;
     const acp = claimed ?? agents.openSession(session);
     state.agents.set(id, acp);

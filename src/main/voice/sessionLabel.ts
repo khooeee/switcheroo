@@ -1,5 +1,5 @@
 import type { Session } from "../../shared/session";
-import { clipText } from "./clipText";
+import { clipText } from "../../shared/clipText";
 
 /** First non-empty title line (prefix + name), short enough to speak. */
 export function sessionLabel(session: Session): string {

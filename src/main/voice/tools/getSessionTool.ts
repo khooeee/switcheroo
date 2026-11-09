@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
-import { clipText } from "../clipText";
+import { clipText } from "../../../shared/clipText";
 import { questionPayload } from "../questionPayload";
 import { resolveToolSession } from "../resolveToolSession";
 import { sessionLabel } from "../sessionLabel";

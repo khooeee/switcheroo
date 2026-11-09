@@ -14,11 +14,6 @@ export interface SessionModelConfig {
   effort?: string;
 }
 
-/** The agent may title the session (ACP `session_info_update`); its title is shown after `prefix`. */
-export interface SessionAutoTitle {
-  prefix: string;
-}
-
 export interface SlashCommand {
   name: string;
   description: string;
@@ -51,5 +46,5 @@ export interface Session {
   /** Started by a cron run (persisted); forks of it are the user's own. */
   cron?: boolean;
   /** Take the agent's generated title (persisted); cleared when the user renames the session. */
-  autoTitle?: SessionAutoTitle;
+  autoTitle?: boolean;
 }

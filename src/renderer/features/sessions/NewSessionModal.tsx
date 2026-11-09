@@ -3,8 +3,7 @@ import type { AgentKind } from "../../../shared/agentKind";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
 import type { CreateSessionInput } from "../../../shared/createSessionInput";
 import { errorMessage } from "../../../shared/errorMessage";
-import { sessionTitleWithPrefix } from "../../../shared/sessionTitleWithPrefix";
-import { supportsSwitcherooAware } from "../../../shared/supportsSwitcherooAware";
+import { generatesSessionTitles } from "../../../shared/generatesSessionTitles";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
@@ -22,24 +21,23 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
   const prefs = getAppSettingsCache();
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
-  const [prefix, setPrefix] = useState(prefs.lastPrefix);
-  const [placeholderTitle] = useState(randomSessionTitle);
-  const [title, setTitle] = useState(placeholderTitle);
+  const [prompt, setPrompt] = useState("");
+  const [title, setTitle] = useState(randomSessionTitle);
   const [pin, setPin] = useState(prefs.lastPin);
-  const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const available = useAvailableAgents();
   const agentOptions = AGENT_KINDS.filter((kind) => available === null || available.includes(kind));
   // Fall back when the remembered agent is no longer installed.
   const selectedAgent = agentOptions.includes(agent) ? agent : agentOptions[0];
-  const canBeAware = supportsSwitcherooAware(selectedAgent);
-  const canCreate = !!selectedAgent && !!cwd && !!(prefix.trim() || title.trim()) && !busy;
+  // Agents that title themselves get the first prompt; the rest (pi) a title.
+  const asksPrompt = generatesSessionTitles(selectedAgent);
+  const canCreate = !!selectedAgent && !!cwd && (asksPrompt || !!title.trim()) && !busy;
 
   useEffect(() => {
-    const input = titleRef.current;
+    const input = fieldRef.current;
     if (!input) return;
     input.focus();
     input.select();
@@ -47,27 +45,18 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
 
   const create = async () => {
     if (!canCreate) return;
-    const sessionTitle = sessionTitleWithPrefix(prefix, title);
-    // A kept placeholder (or no name) is replaced by the agent's title after the first prompt.
-    const autoTitle = !title.trim() || title === placeholderTitle ? { prefix } : undefined;
+    const named = asksPrompt
+      ? { prompt: prompt.trim() || undefined, autoTitle: true }
+      : { title: title.trim() };
     setBusy(true);
     setError(null);
     void patchAppSettings({
       lastAgent: selectedAgent,
       lastCwd: cwd,
-      lastPrefix: prefix,
       lastPin: pin,
-      lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate({
-        agent: selectedAgent,
-        cwd,
-        title: sessionTitle,
-        switcherooAware: canBeAware && switcherooAware,
-        pin,
-        autoTitle,
-      });
+      await onCreate({ agent: selectedAgent, cwd, pin, ...named });
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -104,29 +93,6 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
     >
       <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>New agent session</h2>
-        <label>
-          Prefix
-          <textarea
-            value={prefix}
-            rows={2}
-            disabled={busy}
-            onChange={(e) => setPrefix(e.target.value)}
-            onKeyDown={createOnEnter}
-            spellCheck={false}
-          />
-        </label>
-        <label>
-          Title
-          <textarea
-            ref={titleRef}
-            value={title}
-            rows={2}
-            disabled={busy}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={createOnEnter}
-            spellCheck={false}
-          />
-        </label>
         <label>
           Agent
           <select
@@ -168,6 +134,19 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
             </button>
           </div>
         </label>
+        <label>
+          {asksPrompt ? "Prompt" : "Title"}
+          <textarea
+            ref={fieldRef}
+            value={asksPrompt ? prompt : title}
+            rows={asksPrompt ? 4 : 2}
+            disabled={busy}
+            onChange={(e) => (asksPrompt ? setPrompt : setTitle)(e.target.value)}
+            onKeyDown={createOnEnter}
+            placeholder={asksPrompt ? "The agent names the session from it" : undefined}
+            spellCheck={false}
+          />
+        </label>
         <div className="modal-checks">
           <label className="modal-check">
             <input
@@ -178,16 +157,6 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
               onKeyDown={createOnEnter}
             />
             Pin
-          </label>
-          <label className="modal-check" data-tooltip={canBeAware ? undefined : "Claude and Codex only"}>
-            <input
-              type="checkbox"
-              checked={canBeAware && switcherooAware}
-              disabled={busy || !canBeAware}
-              onChange={(e) => setSwitcherooAware(e.target.checked)}
-              onKeyDown={createOnEnter}
-            />
-            Switcheroo aware
           </label>
         </div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}

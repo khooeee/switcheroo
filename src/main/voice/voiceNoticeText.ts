@@ -3,7 +3,7 @@ import { AGENT_LABELS } from "../../shared/agentLabels";
 import type { CursorAskQuestionRequest } from "../../shared/agentRequests";
 import type { Session } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
-import { clipText } from "./clipText";
+import { clipText } from "../../shared/clipText";
 import { questionPayload } from "./questionPayload";
 import { sessionLabel } from "./sessionLabel";
 

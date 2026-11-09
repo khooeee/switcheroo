@@ -2,7 +2,6 @@ import type { Session, SessionStatus } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
 import type { AgentKind } from "../../shared/agentKind";
-import { sessionTitleWithPrefix } from "../../shared/sessionTitleWithPrefix";
 import type { SessionObserver } from "./SessionObserver";
 
 type CallbackDeps = {
@@ -48,7 +47,7 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
     },
     onTitle: (title) => {
       if (!session.autoTitle) return;
-      session.title = sessionTitleWithPrefix(session.autoTitle.prefix, title);
+      session.title = title.trim();
       deps.emitSessions();
       deps.queuePersist();
     },

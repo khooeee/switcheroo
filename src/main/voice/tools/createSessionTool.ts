@@ -1,7 +1,6 @@
 import * as path from "node:path";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
-import { supportsSwitcherooAware } from "../../../shared/supportsSwitcherooAware";
-import { clipText } from "../clipText";
+import { clipText } from "../../../shared/clipText";
 import { railSessions } from "../railSessions";
 import { resolveAgentKind } from "../resolveAgentKind";
 import { resolveProjectCwd } from "../resolveProjectCwd";
@@ -24,7 +23,6 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
     cwd: project.cwd,
     title,
     pin: true,
-    switcherooAware: settings.lastSwitcherooAware && supportsSwitcherooAware(agent.agent),
   });
   if (session.status === "error") return { ok: false, error: session.error ?? "The session failed to start." };
   ctx.focus.sessionId = session.id;
