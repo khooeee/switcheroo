@@ -5,7 +5,7 @@ const keys = new Map<string, string>();
 
 /**
  * Per-session bearer keys for the MCP endpoint, kept in memory: agents get new ones each launch, a key
- * proves which session is calling, and rotating the iOS token does not cut aware sessions off.
+ * proves which session is calling, and rotating the iOS token does not cut sessions off.
  */
 export const mcpSessionKeys = {
   keyFor(sessionId: string): string {

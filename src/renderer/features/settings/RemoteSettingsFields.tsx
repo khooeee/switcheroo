@@ -7,7 +7,7 @@ import type { SettingsFieldsProps } from "./SettingsFieldsProps";
 
 /**
  * iOS access: the checkbox applies at once (unlike the rest of the modal) so pairing needs no reopen;
- * the port (shared with Switcheroo-aware agents) applies on Save. Status refreshes on window focus,
+ * the port (shared with every session's MCP server) applies on Save. Status refreshes on window focus,
  * e.g. after running `tailscale serve`.
  */
 export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsProps) {
@@ -40,7 +40,7 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
 
   const rotateToken = async () => {
     const ok = window.confirm(
-      "Rotate the token? The iOS app will need the new link.\n\nSwitcheroo-aware agents pick it up from control.json.",
+      "Rotate the token? The iOS app will need the new link.",
     );
     if (!ok) return;
     setRotating(true);

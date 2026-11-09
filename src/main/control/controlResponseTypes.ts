@@ -25,7 +25,6 @@ export const controlResponseTypes = {
     slashCommands: "optional { name, description, hint? }[]",
     usage: "optional { used, size, cost?: { amount, currency } } — context window tokens",
     modelConfig: "optional { model?, effort? } — display names of the agent's current model and reasoning effort",
-    switcherooAware: "optional boolean — the agent has Switcheroo's MCP tools",
     cron: "optional boolean — started by a cron run",
     autoTitle: "optional boolean — title follows the agent's generated title until renamed",
   } satisfies Record<keyof Session, string>,

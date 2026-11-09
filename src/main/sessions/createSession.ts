@@ -14,8 +14,7 @@ export async function createSession(
   input: CreateSessionInput,
   focus: boolean,
 ): Promise<Session> {
-  // MCP servers are set when the agent session starts, so a warm session cannot take them.
-  const warm = input.switcherooAware ? null : state.warm.take(input.agent, input.cwd);
+  const warm = state.warm.take(input.agent, input.cwd);
   const id = warm?.acp.id ?? newSessionId();
   const title = input.title
     ?? folderTitle(input.cwd, input.prompt ? clipText(input.prompt, 60) : AGENT_LABELS[input.agent]);
@@ -28,7 +27,6 @@ export async function createSession(
     status: "connecting",
     error: null,
     createdAt: Date.now(),
-    switcherooAware: input.switcherooAware || undefined,
     cron: input.cron || undefined,
     autoTitle: input.autoTitle || undefined,
   };

@@ -17,7 +17,7 @@ export async function forkSession(
     ensureSession: async (session) => agents.ensureSession(session),
     forkSupport: (agent) => state.forkSupport.flags(agent),
     callbacksFor: (session) => agents.callbacksFor(session),
-    mcpServersFor: (session) => () => switcherooMcpServers(session),
+    mcpServersFor: (session) => () => switcherooMcpServers(session.id),
     setSession: (id, session) => { state.agents.set(id, session); },
     addSession: (session, transcript) => {
       state.prependSession(session);

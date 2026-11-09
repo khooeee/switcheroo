@@ -14,5 +14,4 @@ export interface CronJob {
   prompt: string;
   /** YYYY-MM-DD, HH:MM and H:MM are replaced with the run's local date/time. */
   title?: string;
-  switcherooAware: boolean;
 }

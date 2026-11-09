@@ -4,7 +4,6 @@ export const SESSION_MENU_IDS = {
   rename: "session-rename",
   openInCursor: "session-open-in-cursor",
   fork: "session-fork",
-  makeAware: "session-make-aware",
   markUnread: "session-mark-unread",
   stop: "session-stop",
   close: "session-close",

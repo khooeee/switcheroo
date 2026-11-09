@@ -12,7 +12,6 @@ export interface SessionMeta {
   agentSessionId: string | null;
   usage?: SessionUsage;
   modelConfig?: SessionModelConfig;
-  switcherooAware?: boolean;
   cron?: boolean;
   autoTitle?: boolean;
 }
@@ -56,7 +55,6 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       agentSessionId: parsed.agentSessionId ?? null,
       usage: readUsage(parsed.usage),
       modelConfig: readModelConfig(parsed.modelConfig),
-      switcherooAware: parsed.switcherooAware === true || undefined,
       cron: parsed.cron === true || undefined,
       autoTitle: parsed.autoTitle === true || undefined,
     };

@@ -4,7 +4,7 @@ function tool(name: string, description: string, properties: Record<string, unkn
   return { name, description, inputSchema: { type: "object", properties, required } };
 }
 
-/** Tools an aware session gets from Switcheroo's MCP server; `callSwitcherooTool` runs them. */
+/** Tools every session gets from Switcheroo's MCP server; `callSwitcherooTool` runs them. */
 export const SWITCHEROO_TOOLS = [
   tool("list_sessions", "List the sessions in Switcheroo's sidebar, pinned first."),
   tool(
@@ -15,7 +15,6 @@ export const SWITCHEROO_TOOLS = [
       cwd: { type: "string", description: "Absolute workspace path" },
       title: { type: "string" },
       prompt: { type: "string", description: "First prompt; returns without waiting for the reply" },
-      switcherooAware: { type: "boolean", description: "Give the new session these tools too" },
       pin: { type: "boolean", description: "Pin it at the top of the sidebar" },
     },
     ["agent", "cwd"],
