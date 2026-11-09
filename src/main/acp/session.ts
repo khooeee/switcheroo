@@ -10,7 +10,6 @@ import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
 import { resumeAcpSession } from "./resumeAcpSession";
 import type { AirForkPoint } from "./airForkPoint";
-import type { McpServersSource } from "./McpServersSource";
 import { sessionRoutes } from "./sessionRoutes";
 import { TurnBuilder } from "./TurnBuilder";
 import { connectAcpAgent } from "./connectAcpAgent";
@@ -19,9 +18,10 @@ import { SharedAgentConnection } from "./SharedAgentConnection";
 import { SessionUpdateRouter } from "./SessionUpdateRouter";
 import { SessionConfigOptions } from "./SessionConfigOptions";
 import { sessionConnectionHandlers } from "./sessionConnectionHandlers";
+import { switcherooMcpServers } from "../mcp/switcherooMcpServers";
 
 export class AcpSession extends SharedAgentConnection {
-  id: string;
+  readonly id: string;
   readonly agent: AgentKind;
   readonly cwd: string;
   sessionId: string | null = null;
@@ -48,8 +48,6 @@ export class AcpSession extends SharedAgentConnection {
     agent: AgentKind,
     cwd: string,
     cb: SessionCallbacks,
-    /** The session's MCP servers (Switcheroo's own); none by default. */
-    private readonly mcpServers: McpServersSource = async () => [],
   ) {
     super();
     this.id = id;
@@ -111,11 +109,9 @@ export class AcpSession extends SharedAgentConnection {
     this.turns.restore(turns);
   }
 
-  /** Rebind Switcheroo session id + callbacks after claiming from the warm pool. */
-  adopt(id: string, cb: SessionCallbacks): void {
-    this.id = id;
+  /** Rebind callbacks after claiming from the warm pool; the session keeps its id. */
+  adopt(cb: SessionCallbacks): void {
     this.cb = cb;
-    this.questions.setSessionId(id);
     // Steering support was reported to the warm no-op callbacks; replay it to the new owner.
     this.runner.configureDelivery(this.initializationMeta);
     this.config.replay();
@@ -140,7 +136,7 @@ export class AcpSession extends SharedAgentConnection {
   }
 
   private async startSession(options?: { quiet?: boolean }): Promise<void> {
-    await this.connectAgent(await this.mcpServers(), options);
+    await this.connectAgent(await switcherooMcpServers(this.id), options);
     await this.createAgentSession();
   }
 
@@ -149,7 +145,7 @@ export class AcpSession extends SharedAgentConnection {
     if (!this.connection) throw new Error("Session closed");
     const session = await this.connection.agent.request(acp.methods.agent.session.new, {
       cwd: this.cwd,
-      mcpServers: await this.mcpServers(),
+      mcpServers: await switcherooMcpServers(this.id),
     });
     this.setSessionId(session.sessionId);
     this.config.note(session.configOptions);
@@ -158,7 +154,7 @@ export class AcpSession extends SharedAgentConnection {
   }
 
   private async attachSession(sessionId: string, options?: { quiet?: boolean }): Promise<void> {
-    const mcpServers = await this.mcpServers();
+    const mcpServers = await switcherooMcpServers(this.id);
     await this.connectAgent(mcpServers, options);
     await attachAcpSession({
       connection: this.connection,
@@ -178,23 +174,18 @@ export class AcpSession extends SharedAgentConnection {
     }, sessionId);
   }
 
-  /** `mcpServers` are the fork's own: it gets a new Switcheroo session id. */
-  async fork(forkPoint: AirForkPoint | undefined, mcpServers: acp.McpServer[]): Promise<acp.ForkSessionResponse> {
-    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready to fork");
-    return forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint, mcpServers);
-  }
-
   /** Fork on this connection and return a sibling session sharing the agent process. */
   async forkSibling(
     id: string,
     cb: SessionCallbacks,
     forkPoint?: AirForkPoint,
-    mcpServersSource: McpServersSource = async () => [],
   ): Promise<AcpSession> {
-    const mcpServers = await mcpServersSource();
-    const forked = await this.fork(forkPoint, mcpServers);
+    // The fork's own MCP servers: they name its new Switcheroo session id.
+    const mcpServers = await switcherooMcpServers(id);
+    if (!this.connection || !this.sessionId || this.disposed) throw new Error("Session not ready to fork");
+    const forked = await forkAcpSession(this.connection, this.sessionId, this.cwd, forkPoint, mcpServers);
     const forkedId = forked.sessionId;
-    const child = new AcpSession(id, this.agent, this.cwd, cb, mcpServersSource);
+    const child = new AcpSession(id, this.agent, this.cwd, cb);
     this.shareConnectionWith(child);
     child.setSessionId(forkedId);
     child.initializationMeta = this.initializationMeta;

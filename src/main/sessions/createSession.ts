@@ -41,7 +41,7 @@ export async function createSession(
     const acp = claimed ?? agents.openSession(session);
     state.agents.set(id, acp);
     if (claimed) {
-      claimed.adopt(id, agents.callbacksFor(session));
+      claimed.adopt(agents.callbacksFor(session));
       session.agentSessionId = claimed.sessionId;
       setSessionStatus(state, id, "ready", null);
     } else {

@@ -11,7 +11,6 @@ import type { SessionHydration } from "./SessionHydration";
 import { recordTurn } from "./recordTurn";
 import { recordSubagentTurn } from "./recordSubagentTurn";
 import { removeTurn } from "./removeTurn";
-import { switcherooMcpServers } from "../mcp/switcherooMcpServers";
 import { setSessionStatus } from "./setSessionStatus";
 import { warmCallbacks } from "./warmCallbacks";
 
@@ -51,7 +50,7 @@ export class SessionAgents {
 
   openSession(session: Session): AcpSession {
     const callbacks = this.callbacksFor(session);
-    const acp = new AcpSession(session.id, session.agent, session.cwd, callbacks, () => switcherooMcpServers(session.id));
+    const acp = new AcpSession(session.id, session.agent, session.cwd, callbacks);
     const turns = this.state.transcripts.get(session.id);
     if (turns?.length) acp.restoreTurns(turns);
     return acp;
@@ -64,14 +63,13 @@ export class SessionAgents {
     this.state.warm.ensure(cwd, openers);
   }
 
-  /** Warm sessions get Switcheroo's MCP server too: a claimed session keeps the id its URL names. */
+  /** A claimed warm session keeps this id, which its MCP server URL names. */
   private openWarm(agent: AgentKind, cwd: string): AcpSession {
     const callbacks: SessionCallbacks = {
       ...warmCallbacks,
       onForkSupport: (supported) => this.noteForkSupport(agent, supported),
     };
-    const id = newSessionId();
-    return new AcpSession(id, agent, cwd, callbacks, () => switcherooMcpServers(id));
+    return new AcpSession(newSessionId(), agent, cwd, callbacks);
   }
 
   refreshCommandsIfNeeded(sessionId: string): void {

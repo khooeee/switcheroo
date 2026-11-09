@@ -10,14 +10,10 @@ export class PendingQuestions {
   private pending = new Map<string, (outcome: Outcome) => void>();
 
   constructor(
-    private sessionId: string,
+    private readonly sessionId: string,
     private publish: (request: CursorAskQuestionRequest) => void,
     private settled: (requestId: string) => void,
   ) {}
-
-  setSessionId(sessionId: string): void {
-    this.sessionId = sessionId;
-  }
 
   request(raw: unknown, signal?: AbortSignal): Promise<Outcome> {
     if (signal?.aborted) return Promise.resolve(CANCELLED);
