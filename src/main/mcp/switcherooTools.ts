@@ -54,10 +54,4 @@ export const SWITCHEROO_TOOLS = [
     },
   ),
   tool("cancel_session", "Stop another session's running turn.", { sessionId }, ["sessionId"]),
-  tool(
-    "close_session",
-    "Close another session once you are done with it; it leaves the sidebar and its history stays on disk.",
-    { sessionId },
-    ["sessionId"],
-  ),
 ];

@@ -21,7 +21,7 @@ function optionalNumber(args: Args, key: string): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
-/** The session another tool acts on; prompting, stopping or closing the caller itself is refused. */
+/** The session another tool acts on; prompting or stopping the caller itself is refused. */
 function otherSession(callerId: string, args: Args): string {
   const sessionId = text(args, "sessionId");
   if (sessionId === callerId) throw new Error("That is this session; act on another one.");
@@ -93,11 +93,6 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       const sessionId = otherSession(callerId, args);
       await sessions.cancelPrompt(sessionId);
       return { sessionId, cancelled: true };
-    }
-    case "close_session": {
-      const sessionId = otherSession(callerId, args);
-      await sessions.closeSession(sessionId);
-      return { sessionId, closed: true };
     }
     default:
       throw new Error(`Unknown tool: ${name}`);
