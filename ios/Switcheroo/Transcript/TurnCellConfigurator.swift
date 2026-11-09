@@ -12,7 +12,7 @@ enum TurnCellConfigurator {
         cell.contentConfiguration = content
 
         var background = UIBackgroundConfiguration.listCell()
-        background.backgroundColor = .secondarySystemBackground
+        background.backgroundColor = UIColor(resource: .userMessage)
         background.cornerRadius = 16
         background.backgroundInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
         cell.backgroundConfiguration = background
