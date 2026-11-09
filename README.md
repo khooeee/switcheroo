@@ -93,13 +93,13 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 
 ## iOS app
 
-`ios/` is a UIKit client (Swift 6, iOS 26+) that lists your sessions and lets you prompt, steer and stop them from your phone over [Tailscale](https://tailscale.com). Switcheroo only listens on localhost; `tailscale serve` publishes it to your tailnet over HTTPS.
+`ios/` is an iOS client that lets you interact with your sessions over [Tailscale](https://tailscale.com). Switcheroo only listens on localhost; `tailscale serve` publishes it to your tailnet over HTTPS.
 
 1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), turn on MagicDNS and HTTPS certificates.
-2. In Switcheroo, open **Settings**, tick **Allow the iOS app over Tailscale** and Save.
-3. Reopen **Settings**, run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
-4. Build the app: `brew install xcodegen`, then `npm run ios` and open `ios/Switcheroo.xcodeproj`. Rerun `npm run ios` after adding or moving Swift files. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
-5. Paste the link into the app (Universal Clipboard works), or tap it on the phone.
+2. Build the app on iOS: `brew install xcodegen`, then `npm run ios` and open `ios/Switcheroo.xcodeproj`. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
+3. In Switcheroo desktop app, open **Settings**, tick **Allow the iOS app over Tailscale** and Save.
+4. Reopen **Settings**, run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
+5. Paste the link into the iOS app.
 
 The token stays the same across launches. To revoke it, quit Switcheroo, delete `remote.json` from the app's data folder and pair again.
 
