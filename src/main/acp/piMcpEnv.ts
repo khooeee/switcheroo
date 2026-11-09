@@ -14,6 +14,7 @@ function piMcpDir(): string {
 /**
  * pi-acp accepts `mcpServers` but never hands them to Pi, so run Pi through a wrapper that loads an
  * extension registering them from `PI_ACP_MCP_SERVERS`. Each Pi session has its own pi-acp process.
+ * See docs/pi-mcp-servers.md.
  */
 export function piMcpEnv(agent: AgentKind, mcpServers: acp.McpServer[]): Record<string, string> {
   if (agent !== "pi" || mcpServers.length === 0) return {};
