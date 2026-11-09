@@ -11,7 +11,6 @@ import { applyComposerHistoryKey } from "./applyComposerHistoryKey";
 import { emptyComposerHistory, type ComposerHistoryState } from "./composerHistoryState";
 import { formatSessionUsage } from "./formatSessionUsage";
 import { useComposerDraft } from "./useComposerDraft";
-import { usePasteAwarePrompt } from "./usePasteAwarePrompt";
 import { usePasteStandupPrompt } from "./usePasteStandupPrompt";
 import { userPromptHistory } from "./userPromptHistory";
 import "./composer.css";
@@ -46,7 +45,6 @@ export function ChatComposer({
     setHistoryState((state) => applyComposerHistoryEdit(state, text));
     setDraft(text);
   };
-  usePasteAwarePrompt(session.id, promptRef, setDraftFromUser);
   usePasteStandupPrompt(promptRef, setDraftFromUser);
 
   /** Clickable model/effort label that opens the agent's picker. */

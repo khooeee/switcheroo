@@ -1,17 +1,11 @@
 import * as acp from "@agentclientprotocol/sdk/unstable";
-import { airSessionMeta } from "./airSessionMeta";
 
-/** `session/resume` on this connection, carrying the session's instructions. */
+/** `session/resume` on this connection, carrying the session's MCP servers. */
 export async function resumeAcpSession(
   connection: acp.ClientConnection,
   sessionId: string,
   cwd: string,
-  instructions: string | null,
+  mcpServers: acp.McpServer[],
 ): Promise<acp.ResumeSessionResponse> {
-  return connection.agent.request(acp.methods.agent.session.resume, {
-    sessionId,
-    cwd,
-    mcpServers: [],
-    ...airSessionMeta(instructions),
-  });
+  return connection.agent.request(acp.methods.agent.session.resume, { sessionId, cwd, mcpServers });
 }

@@ -11,7 +11,7 @@ import type { SessionHydration } from "./SessionHydration";
 import { recordTurn } from "./recordTurn";
 import { recordSubagentTurn } from "./recordSubagentTurn";
 import { removeTurn } from "./removeTurn";
-import { sessionInstructions } from "./sessionInstructions";
+import { switcherooMcpServers } from "../mcp/switcherooMcpServers";
 import { setSessionStatus } from "./setSessionStatus";
 import { warmCallbacks } from "./warmCallbacks";
 
@@ -51,7 +51,7 @@ export class SessionAgents {
 
   openSession(session: Session): AcpSession {
     const callbacks = this.callbacksFor(session);
-    const acp = new AcpSession(session.id, session.agent, session.cwd, callbacks, sessionInstructions(session));
+    const acp = new AcpSession(session.id, session.agent, session.cwd, callbacks, () => switcherooMcpServers(session));
     const turns = this.state.transcripts.get(session.id);
     if (turns?.length) acp.restoreTurns(turns);
     return acp;
@@ -64,13 +64,13 @@ export class SessionAgents {
     this.state.warm.ensure(cwd, openers);
   }
 
-  /** Warm sessions have no Switcheroo instructions; an aware Claude or Codex session starts cold. */
+  /** Warm sessions have no Switcheroo MCP server; an aware session starts cold. */
   private openWarm(agent: AgentKind, cwd: string): AcpSession {
     const callbacks: SessionCallbacks = {
       ...warmCallbacks,
       onForkSupport: (supported) => this.noteForkSupport(agent, supported),
     };
-    return new AcpSession(newSessionId(), agent, cwd, callbacks, null);
+    return new AcpSession(newSessionId(), agent, cwd, callbacks);
   }
 
   refreshCommandsIfNeeded(sessionId: string): void {

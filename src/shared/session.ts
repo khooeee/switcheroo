@@ -41,7 +41,7 @@ export interface Session {
   usage?: SessionUsage;
   /** Current model and effort from ACP config options (persisted in session meta). */
   modelConfig?: SessionModelConfig;
-  /** Knows Switcheroo's control API (persisted): instructions for Claude/Codex, else a bootstrap prompt. */
+  /** Has Switcheroo's MCP tools to drive other sessions (persisted). */
   switcherooAware?: boolean;
   /** Started by a cron run (persisted); forks of it are the user's own. */
   cron?: boolean;

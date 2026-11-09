@@ -3,9 +3,7 @@ import { clipText } from "../../shared/clipText";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import { errorMessage } from "../../shared/errorMessage";
 import { folderTitle } from "../../shared/folderTitle";
-import { supportsSwitcherooAware } from "../../shared/supportsSwitcherooAware";
 import type { Session } from "../../shared/session";
-import { controlBootstrapText } from "../../shared/controlBootstrapText";
 import { newSessionId } from "./newSessionId";
 import type { SessionDeps } from "./SessionDeps";
 import { setSessionStatus } from "./setSessionStatus";
@@ -16,9 +14,8 @@ export async function createSession(
   input: CreateSessionInput,
   focus: boolean,
 ): Promise<Session> {
-  // Session instructions are set at start, so a warm session cannot take them.
-  const instructed = input.switcherooAware === true && supportsSwitcherooAware(input.agent);
-  const warm = instructed ? null : state.warm.take(input.agent, input.cwd);
+  // MCP servers are set when the agent session starts, so a warm session cannot take them.
+  const warm = input.switcherooAware ? null : state.warm.take(input.agent, input.cwd);
   const id = warm?.acp.id ?? newSessionId();
   const title = input.title
     ?? folderTitle(input.cwd, input.prompt ? clipText(input.prompt, 60) : AGENT_LABELS[input.agent]);
@@ -53,12 +50,6 @@ export async function createSession(
       await acp.start();
       session.agentSessionId = acp.sessionId;
       state.emitSessions();
-    }
-    if (input.switcherooAware && !instructed) {
-      // Agents without session instructions get the control API as a first prompt.
-      // Don't hold the caller for the whole bootstrap turn; prompts sent
-      // meanwhile queue behind it as their own turns instead of steering in.
-      await acp.prompt(controlBootstrapText(id), { wait: false, exclusive: true });
     }
   } catch (err) {
     setSessionStatus(state, id, "error", errorMessage(err));

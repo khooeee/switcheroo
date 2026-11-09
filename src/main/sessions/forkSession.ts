@@ -1,7 +1,7 @@
 import type { Session } from "../../shared/session";
 import { forkSessionAtEvent } from "./forkSessionAtEvent";
 import type { SessionDeps } from "./SessionDeps";
-import { sessionInstructions } from "./sessionInstructions";
+import { switcherooMcpServers } from "../mcp/switcherooMcpServers";
 
 /** Fork a session (optionally at an event) into a new unpinned rail entry. */
 export async function forkSession(
@@ -17,7 +17,7 @@ export async function forkSession(
     ensureSession: async (session) => agents.ensureSession(session),
     forkSupport: (agent) => state.forkSupport.flags(agent),
     callbacksFor: (session) => agents.callbacksFor(session),
-    instructionsFor: sessionInstructions,
+    mcpServersFor: (session) => () => switcherooMcpServers(session),
     setSession: (id, session) => { state.agents.set(id, session); },
     addSession: (session, transcript) => {
       state.prependSession(session);

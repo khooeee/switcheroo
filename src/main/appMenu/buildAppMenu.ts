@@ -54,12 +54,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             win()?.webContents.send("prompt:paste-standup", standupPrompt());
           },
         },
-        {
-          label: "Paste Switcheroo Aware Prompt",
-          click: () => {
-            win()?.webContents.send("prompt:paste-aware");
-          },
-        },
         { role: "selectAll" },
         { type: "separator" },
         {

@@ -59,6 +59,14 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
         win()?.webContents.send("session:toggle-pin");
       },
     },
+    {
+      id: SESSION_MENU_IDS.makeAware,
+      label: "Make Switcheroo Aware",
+      enabled: state.makeAwareEnabled,
+      click: () => {
+        opts.makeActiveSwitcherooAware();
+      },
+    },
     { type: "separator" },
     {
       id: SESSION_MENU_IDS.stop,

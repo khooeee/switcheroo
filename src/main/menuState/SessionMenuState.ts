@@ -8,5 +8,7 @@ export type SessionMenuState = {
   /** The active chat's project folder exists. */
   openInCursorEnabled: boolean;
   forkEnabled: boolean;
+  /** The active chat is not Switcheroo aware yet and is not mid-turn. */
+  makeAwareEnabled: boolean;
   stopEnabled: boolean;
 };

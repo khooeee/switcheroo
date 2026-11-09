@@ -6,7 +6,7 @@ import { errorMessage } from "../../shared/errorMessage";
 import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
-import { codexInstructionsEnv } from "./codexInstructionsEnv";
+import { piMcpEnv } from "./piMcpEnv";
 import { parseSubagentNotification } from "./subagents/parseSubagentNotification";
 import { rewriteSubagentUpdates } from "./subagents/rewriteSubagentUpdates";
 import type { SubagentUpdate } from "./subagents/SubagentUpdate";
@@ -23,8 +23,8 @@ type ConnectAcpResult = {
 export type ConnectHandlers = {
   agent: AgentKind;
   cwd: string;
-  /** Session instructions; Codex reads them from its process environment. */
-  instructions: string | null;
+  /** The session's MCP servers; Pi reads them from its process environment. */
+  mcpServers: acp.McpServer[];
   quiet?: boolean;
   isDisposed: () => boolean;
   onStatus: (status: "connecting" | "error", message?: string) => void;
@@ -52,7 +52,7 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
 
   let proc: ChildProcessWithoutNullStreams;
   try {
-    const env = { ...preset.env, ...codexInstructionsEnv(handlers.agent, handlers.instructions) };
+    const env = { ...preset.env, ...piMcpEnv(handlers.agent, handlers.mcpServers) };
     proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, env);
   } catch (err) {
     const message = errorMessage(err);
