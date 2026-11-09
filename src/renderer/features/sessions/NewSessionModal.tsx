@@ -3,6 +3,7 @@ import type { AgentKind } from "../../../shared/agentKind";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
 import type { CreateSessionInput } from "../../../shared/createSessionInput";
 import { errorMessage } from "../../../shared/errorMessage";
+import { folderTitle } from "../../../shared/folderTitle";
 import { generatesSessionTitles } from "../../../shared/generatesSessionTitles";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
@@ -48,7 +49,7 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
     if (!canCreate) return;
     const named = asksPrompt
       ? { prompt: prompt.trim() || undefined, autoTitle: true }
-      : { title: title.trim() };
+      : { title: folderTitle(cwd, title) };
     setBusy(true);
     setError(null);
     void patchAppSettings({

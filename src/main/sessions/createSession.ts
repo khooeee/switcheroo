@@ -1,8 +1,8 @@
-import * as path from "node:path";
 import { AGENT_LABELS } from "../../shared/agentLabels";
 import { clipText } from "../../shared/clipText";
 import type { CreateSessionInput } from "../../shared/createSessionInput";
 import { errorMessage } from "../../shared/errorMessage";
+import { folderTitle } from "../../shared/folderTitle";
 import { supportsSwitcherooAware } from "../../shared/supportsSwitcherooAware";
 import type { Session } from "../../shared/session";
 import { controlBootstrapText } from "../../shared/controlBootstrapText";
@@ -21,7 +21,7 @@ export async function createSession(
   const warm = instructed ? null : state.warm.take(input.agent, input.cwd);
   const id = warm?.acp.id ?? newSessionId();
   const title = input.title
-    ?? (input.prompt ? clipText(input.prompt, 60) : `${AGENT_LABELS[input.agent]} · ${path.basename(input.cwd)}`);
+    ?? folderTitle(input.cwd, input.prompt ? clipText(input.prompt, 60) : AGENT_LABELS[input.agent]);
   const session: Session = {
     id,
     title,
