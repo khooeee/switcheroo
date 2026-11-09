@@ -4,6 +4,7 @@ import { applyAppIcon } from "./main/lifecycle/applyAppIcon";
 import { installAboutPanel } from "./main/lifecycle/installAboutPanel";
 import { installExternalLinks } from "./main/lifecycle/installExternalLinks";
 import { installNavigationGuard } from "./main/lifecycle/installNavigationGuard";
+import { installPermissionGuard } from "./main/lifecycle/installPermissionGuard";
 import { installImageProtocol } from "./main/images/installImageProtocol";
 import { SessionManager } from "./main/sessions/SessionManager";
 import { installQuitHandler } from "./main/lifecycle/installQuitHandler";
@@ -81,6 +82,7 @@ const createWindow = async () => {
 
   installExternalLinks(mainWindow.webContents);
   installNavigationGuard(mainWindow.webContents);
+  installPermissionGuard(mainWindow.webContents.session);
   sessions.setWindow(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
