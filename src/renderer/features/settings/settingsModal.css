@@ -24,6 +24,24 @@
   font-size: var(--font-ui-size);
 }
 
+.command-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 4px 4px 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.command-box code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 .settings-warning {
   color: var(--danger);
   font-size: var(--font-ui-size);

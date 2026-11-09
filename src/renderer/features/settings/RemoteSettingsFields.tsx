@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { RemoteStatus } from "../../../shared/remoteStatus";
 import { useCopiedFlash } from "../copy/useCopiedFlash";
+import { CommandBox } from "./CommandBox";
 import { patchAppSettings } from "./appSettingsCache";
 import type { SettingsFieldsProps } from "./SettingsFieldsProps";
 
@@ -15,7 +16,6 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
   const [rotating, setRotating] = useState(false);
   const [linkCopied, copyLink] = useCopiedFlash();
   const [pasteHint, setPasteHint] = useState(false);
-  const [commandCopied, copyCommand] = useCopiedFlash();
 
   const refresh = useCallback(() => {
     void window.switcheroo.getRemoteStatus().then(setStatus);
@@ -63,6 +63,18 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
         />
         Allow the iOS app over Tailscale
       </label>
+      {status?.serveCommand && !status.servedUrl && (
+        <div className="settings-note">
+          Run once in a terminal:
+          <CommandBox command={status.serveCommand} />
+        </div>
+      )}
+      {status?.servedUrl && status.unserveCommand && (
+        <div className="settings-note">
+          Served at {status.servedUrl}. To stop:
+          <CommandBox command={status.unserveCommand} />
+        </div>
+      )}
       <label>
         Control API port
         <input
@@ -84,14 +96,6 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
         </button>
       </div>
       {status?.error && <div className="settings-warning">{status.error}</div>}
-      {status?.serveCommand && !status.served && (
-        <div className="settings-note">
-          Run once in a terminal: <code>{status.serveCommand}</code>{" "}
-          <button type="button" className="btn" onClick={() => copyCommand(status.serveCommand!)}>
-            {commandCopied ? "Copied" : "Copy"}
-          </button>
-        </div>
-      )}
       {status?.link && (
         <div className="settings-note">
           <button

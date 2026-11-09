@@ -5,7 +5,7 @@ import type { RemoteStatus } from "../../shared/remoteStatus";
 import type { SessionManager } from "../sessions/SessionManager";
 import { RemoteEventHub } from "../remote/RemoteEventHub";
 import { tailscaleDnsName } from "../remote/tailscaleDnsName";
-import { tailscaleServesPort } from "../remote/tailscaleServesPort";
+import { tailscaleServeFor } from "../remote/tailscaleServeFor";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
 import { createControlToken } from "./createControlToken";
 import { handleServerRequest } from "./handleServerRequest";
@@ -45,14 +45,22 @@ export class ControlServer {
   }
 
   async status(): Promise<RemoteStatus> {
-    const off = { token: this.endpoint?.token ?? null, link: null, serveCommand: null, served: false };
+    // Still reported when unticked, so Settings can show how to stop serving.
+    const serve = this.endpoint ? await tailscaleServeFor(this.endpoint.port) : null;
+    const off = {
+      token: this.endpoint?.token ?? null,
+      link: null,
+      serveCommand: null,
+      servedUrl: serve?.url ?? null,
+      unserveCommand: serve?.offCommand ?? null,
+    };
     if (!this.remoteEnabled) return { ...off, error: null };
     if (!this.endpoint || this.error) return { ...off, error: this.error ?? "The control server is not running." };
     const { port, token } = this.endpoint;
-    const [host, served] = await Promise.all([tailscaleDnsName(), tailscaleServesPort(port)]);
+    const host = await tailscaleDnsName();
     const serveCommand = `tailscale serve --bg ${port}`;
     if (!host) return { ...off, serveCommand, error: "Tailscale is not installed or not logged in." };
-    return { token, link: `switcheroo://${host}?token=${token}`, serveCommand, served, error: null };
+    return { ...off, link: `switcheroo://${host}?token=${token}`, serveCommand, error: null };
   }
 
   private async reconcile({ remoteEnabled, controlPort }: ControlSettings): Promise<void> {

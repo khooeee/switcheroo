@@ -95,11 +95,17 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 
 `ios/` is an iOS client that lets you interact with your sessions over [Tailscale](https://tailscale.com). Switcheroo only listens on localhost; `tailscale serve` publishes it to your tailnet over HTTPS.
 
+Initial setup
 1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), turn on MagicDNS and HTTPS certificates.
 2. Build the app on iOS: `brew install xcodegen`, then `npm run ios` and open `ios/Switcheroo.xcodeproj`. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
-3. In Switcheroo desktop app, open **Settings** and tick **Allow the iOS app over Tailscale**.
-4. Run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
-5. Paste the link into the iOS app.
+
+Switcheroo desktop app
+3. If using a MacBook, plug it in.
+4. Keep lid open (unless an external display is connected).
+5. Run `caffeinate -ims` to keep it awake.
+6. In Switcheroo desktop app, open **Settings** and tick **Allow the iOS app over Tailscale**.
+7. Run the provided command which should look similar to `tailscale serve --bg <port>`.
+8. Click **Copy iOS Link** & paste the link into the iOS app.
 
 The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again; aware sessions pick up the new token from `control.json`.
 
