@@ -14,6 +14,7 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
   const [applying, setApplying] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [linkCopied, copyLink] = useCopiedFlash();
+  const [pasteHint, setPasteHint] = useState(false);
   const [commandCopied, copyCommand] = useCopiedFlash();
 
   const refresh = useCallback(() => {
@@ -93,10 +94,17 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
       )}
       {status?.link && (
         <div className="settings-note">
-          Paste the link into the iOS app.{" "}
-          <button type="button" className="btn" onClick={() => copyLink(status.link!)}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              copyLink(status.link!);
+              setPasteHint(true);
+            }}
+          >
             {linkCopied ? "Copied" : "Copy iOS Link"}
           </button>
+          {pasteHint && " Paste the link into the iOS app."}
         </div>
       )}
     </>
