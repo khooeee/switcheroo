@@ -44,6 +44,7 @@ const api: SwitcherooApi = {
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (patch: Partial<AppSettings>) => ipcRenderer.invoke("settings:update", patch),
   getRemoteStatus: () => ipcRenderer.invoke("remote:status"),
+  resetControlToken: () => ipcRenderer.invoke("control:resetToken"),
   savePastedImage: (sessionId, image) =>
     ipcRenderer.invoke("images:savePaste", sessionId, image.mimeType, image.bytes),
   saveClipboardImage: (sessionId) => ipcRenderer.invoke("images:saveClipboard", sessionId),

@@ -101,9 +101,9 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 4. Run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
 5. Paste the link into the iOS app.
 
-The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, quit Switcheroo, delete `control-token.json` from the app's data folder and pair again.
+The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Reset Token** in **Settings** and pair again; aware sessions pick up the new token from `control.json`.
 
-## Daily log
+## Daily Standup
 
 Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Daily Log Folder** to see them.
 
@@ -117,7 +117,7 @@ It's likely you don't have to read this section ever, but it's here in case your
 - The session list is capped to 500 on app startup and whenever a session is created (can be edited via `settings.sessionListMax`).  The oldest sessions are removed from the list but are still on disk.  You can still find these sessions through "Find in History".
 - If you're running out of disk space, click on Settings button on the bottom, select "Open Sessions Folder" and then archive/delete folders as you wish (folder names are prefixed with YYYY-MM-DD which is when those sessions started).  Keep in mind those sessions might still show up in your session list until you click them.  Only then will the app check its existence and remove it from the list if it doesn't exist anymore.  This was done to avoid extra checks in the app to maximize app performance.
 
-## inworld.ai models
+## Inworld Model Research
 
 ```
 inworld/models/gemma-4-26b-a4b-it

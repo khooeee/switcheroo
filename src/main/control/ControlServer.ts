@@ -7,6 +7,7 @@ import { RemoteEventHub } from "../remote/RemoteEventHub";
 import { tailscaleDnsName } from "../remote/tailscaleDnsName";
 import { tailscaleServesPort } from "../remote/tailscaleServesPort";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
+import { createControlToken } from "./createControlToken";
 import { handleServerRequest } from "./handleServerRequest";
 import { loadControlToken } from "./loadControlToken";
 
@@ -31,13 +32,16 @@ export class ControlServer {
 
   /** Start, or move to a new port, to match settings; calls apply in order. */
   apply(settings: ControlSettings): Promise<void> {
-    this.applying = this.applying.then(() => this.reconcile(settings));
-    return this.applying;
+    return this.enqueue(() => this.reconcile(settings));
+  }
+
+  /** Replace the token; agents re-read control.json, and the iOS app needs the new link. */
+  resetToken(): Promise<void> {
+    return this.enqueue(() => this.rotateToken());
   }
 
   stop(): Promise<void> {
-    this.applying = this.applying.then(() => this.close());
-    return this.applying;
+    return this.enqueue(() => this.close());
   }
 
   async status(): Promise<RemoteStatus> {
@@ -70,6 +74,22 @@ export class ControlServer {
       this.error = `Could not start the control server: ${errorMessage(error)}`;
       console.warn(`[control] ${this.error}`);
     }
+  }
+
+  /** One failed task must not wedge the ones after it. */
+  private enqueue(task: () => Promise<void>): Promise<void> {
+    const run = this.applying.then(task);
+    this.applying = run.catch(() => undefined);
+    return run;
+  }
+
+  private async rotateToken(): Promise<void> {
+    const token = await createControlToken();
+    if (!this.endpoint) return;
+    this.endpoint = { ...this.endpoint, token };
+    await writeControlFile(this.endpoint);
+    // Open event streams were authorized with the old token.
+    this.hub.closeAll();
   }
 
   /** A busy fixed port (e.g. another Switcheroo build) still leaves agents a random one. */

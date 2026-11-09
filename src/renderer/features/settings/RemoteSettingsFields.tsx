@@ -12,6 +12,7 @@ import type { SettingsFieldsProps } from "./SettingsFieldsProps";
 export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsProps) {
   const [status, setStatus] = useState<RemoteStatus | null>(null);
   const [applying, setApplying] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [linkCopied, copyLink] = useCopiedFlash();
   const [commandCopied, copyCommand] = useCopiedFlash();
 
@@ -33,6 +34,19 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
     } finally {
       setApplying(false);
       refresh();
+    }
+  };
+
+  const resetToken = async () => {
+    const ok = window.confirm(
+      "Reset the token? The iOS app will need the new link.\n\nSwitcheroo-aware agents pick it up from control.json.",
+    );
+    if (!ok) return;
+    setResetting(true);
+    try {
+      setStatus(await window.switcheroo.resetControlToken());
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -59,6 +73,12 @@ export function RemoteSettingsFields({ draft, busy, onChange }: SettingsFieldsPr
           onChange={(e) => onChange({ controlPort: e.target.value })}
         />
       </label>
+      <div className="settings-note">
+        Agents and the iOS app share one token.{" "}
+        <button type="button" className="btn" disabled={busy || resetting} onClick={() => void resetToken()}>
+          {resetting ? "Resetting…" : "Reset Token"}
+        </button>
+      </div>
       {status?.error && <div className="settings-warning">{status.error}</div>}
       {status?.serveCommand && !status.served && (
         <div className="settings-note">
