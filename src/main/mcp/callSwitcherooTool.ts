@@ -51,8 +51,6 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       const session = await sessions.createSession({ ...parseCreateSession(args), prompt }, { focus: false });
       return summary(session.id);
     }
-    case "get_session":
-      return summary(text(args, "sessionId"));
     case "send_prompt": {
       const sessionId = otherSession(callerId, args);
       const turnId = await sessions.enqueuePrompt(sessionId, text(args, "text"));

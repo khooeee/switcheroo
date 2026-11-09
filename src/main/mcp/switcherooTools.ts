@@ -19,7 +19,6 @@ export const SWITCHEROO_TOOLS = [
     },
     ["agent", "cwd"],
   ),
-  tool("get_session", "Get one session, including its status (connecting, ready, running or error).", { sessionId }, ["sessionId"]),
   tool(
     "send_prompt",
     "Send a prompt to another session. Returns once it is accepted, without waiting for the reply; a busy session steers or queues it. Keep working and collect replies later with wait_for_sessions.",
