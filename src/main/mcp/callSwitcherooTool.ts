@@ -113,7 +113,7 @@ export async function callSwitcherooTool(
 ): Promise<ToolResult> {
   try {
     const result = await run(sessions, callerId, name, args, signal);
-    return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    return { content: [{ type: "text", text: JSON.stringify(result) }] };
   } catch (error) {
     return { content: [{ type: "text", text: errorMessage(error) }], isError: true };
   }
