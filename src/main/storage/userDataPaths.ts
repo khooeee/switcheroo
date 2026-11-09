@@ -52,8 +52,8 @@ export function voiceKeyPath(): string {
   return path.join(userDataDir(), "inworld-key.enc");
 }
 
-/** Control API bearer token, shared by control.json scripts and the paired iOS app. */
-export function controlTokenPath(): string {
+/** The iOS app's control API bearer token; the name predates the separate local token and keeps pairings working. */
+export function remoteTokenPath(): string {
   return path.join(userDataDir(), "control-token.json");
 }
 

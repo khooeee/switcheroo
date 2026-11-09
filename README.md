@@ -93,7 +93,7 @@ Switcheroo desktop app
 7. Run the provided command which should look similar to `tailscale serve --bg <port>`.
 8. Click **Copy iOS Link** & paste the link into the iOS app.
 
-The phone uses the localhost control API, on a fixed port (7389 by default) that also serves Switcheroo's MCP server to sessions. Unticking the checkbox only refuses requests that come through Tailscale; sessions keep their MCP tools. The token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again; sessions have their own MCP keys, so they are unaffected.
+The phone uses the localhost control API, on a fixed port (7389 by default) that also serves Switcheroo's MCP server to sessions. Unticking the checkbox only refuses requests that come through Tailscale; sessions keep their MCP tools. Tailscale Funnel (public internet) traffic is always refused. The iOS token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again. Scripts on the Mac use a separate token from `~/.switcheroo/control.json`, which is new every launch and refused over Tailscale; sessions have their own MCP keys. Neither is affected by rotating.
 
 ## Daily Standup
 

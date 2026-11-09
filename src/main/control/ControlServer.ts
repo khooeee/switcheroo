@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import type { AppSettings } from "../../shared/appSettings";
 import { errorMessage } from "../../shared/errorMessage";
@@ -7,10 +8,10 @@ import { RemoteEventHub } from "../remote/RemoteEventHub";
 import { tailscaleDnsName } from "../remote/tailscaleDnsName";
 import { tailscaleServeFor } from "../remote/tailscaleServeFor";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
-import { createControlToken } from "./createControlToken";
+import { createRemoteToken } from "./createRemoteToken";
 import { handleServerRequest } from "./handleServerRequest";
 import { liveControlEndpoint } from "./liveControlEndpoint";
-import { loadControlToken } from "./loadControlToken";
+import { loadRemoteToken } from "./loadRemoteToken";
 import { sendJson } from "./sendJson";
 
 type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
@@ -18,10 +19,13 @@ type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
 /**
  * Localhost control API for scripts (via control.json) and the iOS app (via `tailscale serve`), plus the
  * MCP server every session uses. Always on; `remoteEnabled` only gates requests that come through Tailscale.
+ * Scripts and the phone have separate tokens, so rotating one never cuts off the other.
  */
 export class ControlServer {
   private hub: RemoteEventHub;
   private server: Server | null = null;
+  /** Local scripts' token is `endpoint.token`; this one is the iOS app's. */
+  private remoteToken = "";
   private endpoint: ControlEndpoint | null = null;
   private wantedPort = 0;
   private remoteEnabled = false;
@@ -37,7 +41,7 @@ export class ControlServer {
     return this.enqueue(() => this.reconcile(settings));
   }
 
-  /** Replace the token; agents re-read control.json, and the iOS app needs the new link. */
+  /** Replace the iOS token; the app needs the new link, and control.json scripts keep theirs. */
   rotateToken(): Promise<void> {
     return this.enqueue(() => this.swapToken());
   }
@@ -53,7 +57,7 @@ export class ControlServer {
     // Still reported when unticked, so Settings can show how to stop serving.
     const serve = this.endpoint ? await tailscaleServeFor(this.endpoint.port) : null;
     const off = {
-      token: this.endpoint?.token ?? null,
+      token: this.endpoint ? this.remoteToken : null,
       link: null,
       serveCommand: null,
       servedUrl: serve?.url ?? null,
@@ -61,11 +65,10 @@ export class ControlServer {
     };
     if (!this.remoteEnabled) return { ...off, error: null };
     if (!this.endpoint || this.error) return { ...off, error: this.error ?? "The control server is not running." };
-    const { port, token } = this.endpoint;
     const host = await tailscaleDnsName();
-    const serveCommand = `tailscale serve --bg ${port}`;
+    const serveCommand = `tailscale serve --bg ${this.endpoint.port}`;
     if (!host) return { ...off, serveCommand, error: "Tailscale is not installed or not logged in." };
-    return { ...off, link: `switcheroo://${host}?token=${token}`, serveCommand, error: null };
+    return { ...off, link: `switcheroo://${host}?token=${this.remoteToken}`, serveCommand, error: null };
   }
 
   private async reconcile({ remoteEnabled, controlPort }: ControlSettings): Promise<void> {
@@ -76,10 +79,12 @@ export class ControlServer {
     this.wantedPort = controlPort;
     this.error = null;
     try {
-      const token = await loadControlToken();
+      this.remoteToken = await loadRemoteToken();
       const server = await this.listenFixedOrRandom(controlPort);
       const port = (server.address() as { port: number }).port;
       this.server = server;
+      // New every start: scripts re-read control.json, so a token leaked into a transcript dies with this run.
+      const token = randomBytes(24).toString("hex");
       this.endpoint = { port, token, spec: `http://127.0.0.1:${port}/` };
       await writeControlFile(this.endpoint);
       console.log(`[control] listening on ${this.endpoint.spec}`);
@@ -99,12 +104,8 @@ export class ControlServer {
   }
 
   private async swapToken(): Promise<void> {
-    const token = await createControlToken();
-    if (!this.endpoint) return;
-    this.endpoint = { ...this.endpoint, token };
-    liveControlEndpoint.set(this.endpoint);
-    await writeControlFile(this.endpoint);
-    // Open event streams were authorized with the old token.
+    this.remoteToken = await createRemoteToken();
+    // The phone's open event streams were authorized with the old token; local ones just reconnect.
     this.hub.closeAll();
   }
 
@@ -124,7 +125,8 @@ export class ControlServer {
       const baseUrl = this.endpoint?.spec ?? `http://127.0.0.1:${port}/`;
       // A throw before any route answers (e.g. a malformed %-escape) must not leave the socket hanging.
       void handleServerRequest(req, res, {
-        token: this.endpoint?.token ?? "",
+        localToken: this.endpoint?.token ?? "",
+        remoteToken: this.remoteToken,
         baseUrl,
         sessions: this.sessions,
         hub: this.hub,

@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { SessionManager } from "../sessions/SessionManager";
-import { bearerAuthorized } from "./bearerAuthorized";
 import { controlCatalogJson } from "./controlCatalogJson";
 import { applyTranscriptQuery } from "./transcriptQuery";
 import { parseCreateSession } from "./parseCreateSession";
@@ -8,11 +7,11 @@ import { readJson } from "./readJson";
 import { sendJson } from "./sendJson";
 import { errorMessage } from "../../shared/errorMessage";
 
-/** Route one control API HTTP request to SessionManager. */
+/** Route one control API HTTP request to SessionManager; `authorized` says its bearer token was accepted. */
 export async function handleControlRequest(
   req: IncomingMessage,
   res: ServerResponse,
-  token: string,
+  authorized: boolean,
   baseUrl: string,
   sessions: SessionManager,
 ): Promise<void> {
@@ -22,12 +21,10 @@ export async function handleControlRequest(
     const pathname = url.pathname.replace(/\/$/, "") || "/";
 
     if (method === "GET" && pathname === "/") {
-      return sendJson(res, 200, controlCatalogJson(baseUrl, "Use token from control.json; never commit it."));
+      return sendJson(res, 200, controlCatalogJson(baseUrl, "Use token from control.json; it changes every launch, so re-read it on a 401. Never commit it."));
     }
 
-    if (!bearerAuthorized(req.headers.authorization, token)) {
-      return sendJson(res, 401, { error: "Unauthorized" });
-    }
+    if (!authorized) return sendJson(res, 401, { error: "Unauthorized" });
 
     if (method === "GET" && pathname === "/sessions") {
       return sendJson(res, 200, sessions.list());
