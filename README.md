@@ -98,7 +98,7 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), turn on MagicDNS and HTTPS certificates.
 2. In Switcheroo, open **Settings**, tick **Allow the iOS app over Tailscale** and Save.
 3. Reopen **Settings**, run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
-4. Build the app: `brew install xcodegen`, then `cd ios && xcodegen && open Switcheroo.xcodeproj`. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
+4. Build the app: `brew install xcodegen`, then `npm run ios` and open `ios/Switcheroo.xcodeproj`. Rerun `npm run ios` after adding or moving Swift files. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
 5. Paste the link into the app (Universal Clipboard works), or tap it on the phone.
 
 The token stays the same across launches. To revoke it, quit Switcheroo, delete `remote.json` from the app's data folder and pair again.
