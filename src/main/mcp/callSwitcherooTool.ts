@@ -44,12 +44,16 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
     case "list_sessions": {
       const limit = Math.max(1, Math.floor(optionalNumber(args, "limit") ?? LIST_LIMIT));
       const { pinned, unpinned } = sessions.list();
-      const shownIds = new Set([...pinned, ...unpinned].slice(0, limit).map((session) => session.id));
+      const all = [...pinned, ...unpinned];
       // The caller always sees itself, so it can find its own id.
-      shownIds.add(callerId);
-      const shown = (list: typeof pinned) =>
-        list.filter((session) => shownIds.has(session.id)).map((session) => sessionSummary(session, callerId));
-      return { pinned: shown(pinned), unpinned: shown(unpinned), total: pinned.length + unpinned.length };
+      const shown = all.filter((session, index) => index < limit || session.id === callerId);
+      return {
+        sessions: shown.map((session) => ({
+          ...sessionSummary(session, callerId),
+          ...(pinned.includes(session) ? { pinned: true } : {}),
+        })),
+        total: all.length,
+      };
     }
     case "create_session": {
       const prompt = typeof args.prompt === "string" && args.prompt.trim() ? args.prompt : undefined;
