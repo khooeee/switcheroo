@@ -1,6 +1,6 @@
 /** Minimal surface WarmSessionPool needs from an ACP session. */
 type WarmAcp = {
-  /** Switcheroo session id; a claimed session keeps it. */
+  /** Switcheroo session id; a claimed session keeps it (its MCP server URL names it). */
   id: string;
   start(options?: { quiet?: boolean }): Promise<void>;
   dispose(): Promise<void>;

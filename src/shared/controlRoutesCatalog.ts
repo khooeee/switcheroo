@@ -43,7 +43,6 @@ export function controlRoutesCatalog(baseUrl: string): CatalogRoute[] {
         agent: "claude | codex | cursor | pi",
         cwd: "absolute workspace path",
         title: "optional string",
-        switcherooAware: "optional boolean — give the agent Switcheroo's MCP tools to drive other sessions",
         pin: "optional boolean — pin the session at the top of the rail",
       },
       response: "Session",

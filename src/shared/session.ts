@@ -41,8 +41,6 @@ export interface Session {
   usage?: SessionUsage;
   /** Current model and effort from ACP config options (persisted in session meta). */
   modelConfig?: SessionModelConfig;
-  /** Has Switcheroo's MCP tools to drive other sessions (persisted). */
-  switcherooAware?: boolean;
   /** Started by a cron run (persisted); forks of it are the user's own. */
   cron?: boolean;
   /** Take the agent's generated title (persisted); cleared when the user renames the session. */

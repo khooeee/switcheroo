@@ -13,7 +13,6 @@ export function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
     createdAt: Date.now(),
     usage: meta?.usage,
     modelConfig: meta?.modelConfig,
-    switcherooAware: meta?.switcherooAware,
     cron: meta?.cron,
     autoTitle: meta?.autoTitle,
   };

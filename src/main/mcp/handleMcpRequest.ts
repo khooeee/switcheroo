@@ -56,7 +56,7 @@ async function answer(
 }
 
 /**
- * Streamable HTTP MCP endpoint for one aware session (`POST /mcp/:sessionId`). Replies are plain JSON;
+ * Streamable HTTP MCP endpoint for one session (`POST /mcp/:sessionId`). Replies are plain JSON;
  * there is no server-sent stream, so GET is refused and notifications are only acknowledged.
  */
 export async function handleMcpRequest(

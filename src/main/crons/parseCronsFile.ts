@@ -39,6 +39,5 @@ function parseEntry(entry: unknown): CronJob {
     enabled: raw.enabled === true,
     prompt: raw.prompt,
     title,
-    switcherooAware: raw.switcherooAware === true,
   };
 }

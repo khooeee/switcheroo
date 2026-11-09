@@ -22,7 +22,6 @@ import { restoreSavedState } from "./restoreSavedState";
 import { enforceSessionListMax } from "./enforceSessionListMax";
 import { createSession } from "./createSession";
 import { forkSession } from "./forkSession";
-import { makeSessionAware } from "./makeSessionAware";
 import { setActiveTab } from "./setActiveTab";
 import { navigateToEvent } from "./navigateToEvent";
 import { promptSession } from "./promptSession";
@@ -72,12 +71,6 @@ export class SessionManager {
     const session = this.state.activeSession();
     if (!session?.cwd.trim()) return;
     await openFolderInCursor(session.cwd);
-  }
-
-  /** Reconnect the active session with Switcheroo's MCP tools. */
-  async makeActiveSwitcherooAware(): Promise<void> {
-    const session = this.state.activeSession();
-    if (session) await makeSessionAware(this.deps, session.id);
   }
 
   async init(): Promise<void> {

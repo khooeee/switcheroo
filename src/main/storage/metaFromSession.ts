@@ -9,7 +9,6 @@ export function metaFromSession(session: Session): SessionMeta {
     agentSessionId: session.agentSessionId,
     usage: session.usage,
     modelConfig: session.modelConfig,
-    switcherooAware: session.switcherooAware,
     cron: session.cron,
     autoTitle: session.autoTitle,
   };

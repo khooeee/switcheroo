@@ -12,7 +12,6 @@ const STARTER_CRONS = JSON.stringify(
         cwd: "~/code/my-project",
         prompt: "Summarize yesterday's commits.",
         enabled: false,
-        switcherooAware: false,
       },
     ],
   },

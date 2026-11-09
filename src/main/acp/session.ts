@@ -48,7 +48,7 @@ export class AcpSession extends SharedAgentConnection {
     agent: AgentKind,
     cwd: string,
     cb: SessionCallbacks,
-    /** Switcheroo's MCP server for an aware session; none by default. */
+    /** The session's MCP servers (Switcheroo's own); none by default. */
     private readonly mcpServers: McpServersSource = async () => [],
   ) {
     super();

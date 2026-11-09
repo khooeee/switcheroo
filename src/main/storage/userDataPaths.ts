@@ -52,7 +52,7 @@ export function voiceKeyPath(): string {
   return path.join(userDataDir(), "inworld-key.enc");
 }
 
-/** Control API bearer token, shared by Switcheroo-aware agents and the paired iOS app. */
+/** Control API bearer token, shared by control.json scripts and the paired iOS app. */
 export function controlTokenPath(): string {
   return path.join(userDataDir(), "control-token.json");
 }

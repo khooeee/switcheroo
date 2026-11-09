@@ -16,7 +16,6 @@ export async function runCron(
       agent: job.agent,
       cwd: job.cwd,
       title: job.title === undefined ? undefined : formatCronTitle(job.title, at),
-      switcherooAware: job.switcherooAware,
       pin: false,
       cron: true,
     },

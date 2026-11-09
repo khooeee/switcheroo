@@ -16,7 +16,7 @@ type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
 
 /**
  * Localhost control API for scripts (via control.json) and the iOS app (via `tailscale serve`), plus the
- * MCP server aware sessions use. Always on; `remoteEnabled` only gates requests that come through Tailscale.
+ * MCP server every session uses. Always on; `remoteEnabled` only gates requests that come through Tailscale.
  */
 export class ControlServer {
   private hub: RemoteEventHub;
@@ -86,7 +86,7 @@ export class ControlServer {
       this.error = `Could not start the control server: ${errorMessage(error)}`;
       console.warn(`[control] ${this.error}`);
     }
-    // Aware sessions starting meanwhile wait for this to build their MCP server URL.
+    // Sessions starting meanwhile wait for this to build their MCP server URL.
     liveControlEndpoint.set(this.endpoint);
   }
 
