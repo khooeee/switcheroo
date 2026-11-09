@@ -1,5 +1,6 @@
 import type { Session, SessionStatus } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
+import { folderTitle } from "../../shared/folderTitle";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
 import type { AgentKind } from "../../shared/agentKind";
 import type { SessionObserver } from "./SessionObserver";
@@ -42,6 +43,12 @@ export function buildSessionCallbacks(deps: CallbackDeps): SessionCallbacks {
     },
     onModelConfig: (config) => {
       session.modelConfig = config;
+      deps.emitSessions();
+      deps.queuePersist();
+    },
+    onTitle: (title) => {
+      if (!session.autoTitle) return;
+      session.title = folderTitle(session.cwd, title);
       deps.emitSessions();
       deps.queuePersist();
     },

@@ -1,0 +1,22 @@
+.modal.new-session-modal {
+  width: min(640px, 90vw);
+  padding: 24px;
+  gap: 16px;
+}
+
+/* Matches the chat composer's prompt. */
+.modal.new-session-modal textarea.new-session-prompt {
+  font-family: var(--font-mono);
+  font-weight: var(--font-mono-weight);
+  font-size: var(--font-mono-size);
+  line-height: 1.5;
+  height: 180px;
+  max-height: 50vh;
+  padding: 10px 12px;
+  background: var(--bg-1);
+  outline: none;
+}
+
+.modal.new-session-modal textarea.new-session-prompt:focus {
+  border-color: var(--accent);
+}

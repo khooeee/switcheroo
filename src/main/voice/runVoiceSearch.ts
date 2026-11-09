@@ -1,6 +1,6 @@
 import { errorMessage } from "../../shared/errorMessage";
 import { appendVoiceLog } from "./appendVoiceLog";
-import { clipText } from "./clipText";
+import { clipText } from "../../shared/clipText";
 import { voiceNoticeText } from "./voiceNoticeText";
 import type { VoiceNotices } from "./VoiceNotices";
 import { webSearch } from "./webSearch";

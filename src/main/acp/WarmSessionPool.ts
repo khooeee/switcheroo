@@ -12,7 +12,7 @@ type Slot<T extends WarmAcp> = {
   ready: Promise<void>;
 };
 
-/** Invisible, fully-started ACP sessions for one cwd: one per key (agent, or agent + Switcheroo aware). */
+/** Invisible, fully-started ACP sessions for one cwd: one per key (agent). */
 export class WarmSessionPool<T extends WarmAcp = WarmAcp> {
   private slots = new Map<string, Slot<T>>();
 

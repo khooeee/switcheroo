@@ -45,4 +45,6 @@ export interface Session {
   switcherooAware?: boolean;
   /** Started by a cron run (persisted); forks of it are the user's own. */
   cron?: boolean;
+  /** Take the agent's generated title (persisted); cleared when the user renames the session. */
+  autoTitle?: boolean;
 }

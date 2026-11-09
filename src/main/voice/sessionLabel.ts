@@ -1,8 +1,8 @@
 import type { Session } from "../../shared/session";
-import { clipText } from "./clipText";
+import { clipText } from "../../shared/clipText";
 
-/** First non-empty title line (prefix + name), short enough to speak. */
+/** First two non-empty title lines (folder + name), short enough to speak. */
 export function sessionLabel(session: Session): string {
-  const first = session.title.split("\n").find((line) => line.trim()) ?? "Untitled";
-  return clipText(first, 80);
+  const lines = session.title.split("\n").filter((line) => line.trim()).slice(0, 2);
+  return clipText(lines.join(", ") || "Untitled", 120);
 }

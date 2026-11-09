@@ -5,7 +5,7 @@ import type { VoiceStatus } from "../../shared/voiceStatus";
 import type { SessionManager } from "../sessions/SessionManager";
 import type { SessionObserver } from "../sessions/SessionObserver";
 import { appendVoiceLog } from "./appendVoiceLog";
-import { clipText } from "./clipText";
+import { clipText } from "../../shared/clipText";
 import { ensureMicAccess } from "./ensureMicAccess";
 import { exchangeVoiceSdp } from "./exchangeVoiceSdp";
 import { fetchIceServers } from "./fetchIceServers";

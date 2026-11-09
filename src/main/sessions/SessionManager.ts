@@ -114,6 +114,7 @@ export class SessionManager {
   ): Promise<Session> {
     const session = await createSession(this.deps, input, focus);
     await this.trimRail(session.id);
+    if (input.prompt && session.status !== "error") await this.enqueuePrompt(session.id, input.prompt);
     return session;
   }
 

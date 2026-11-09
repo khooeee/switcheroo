@@ -1,48 +1,45 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { AgentKind } from "../../../shared/agentKind";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
+import type { CreateSessionInput } from "../../../shared/createSessionInput";
 import { errorMessage } from "../../../shared/errorMessage";
-import { supportsSwitcherooAware } from "../../../shared/supportsSwitcherooAware";
+import { folderTitle } from "../../../shared/folderTitle";
+import { generatesSessionTitles } from "../../../shared/generatesSessionTitles";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
 import { randomSessionTitle } from "./sessionTitle";
 import { useAvailableAgents } from "./useAvailableAgents";
 import "../modals/modal.css";
+import "./newSessionModal.css";
 
 const AGENT_KINDS = Object.keys(AGENT_LABELS) as AgentKind[];
 
 interface Props {
   onCancel: () => void;
-  onCreate: (
-    agent: AgentKind,
-    cwd: string,
-    title: string,
-    switcherooAware: boolean,
-    pin: boolean,
-  ) => Promise<void>;
+  onCreate: (input: CreateSessionInput) => Promise<void>;
 }
 
 export function NewSessionModal({ onCancel, onCreate }: Props) {
   const prefs = getAppSettingsCache();
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
-  const [prefix, setPrefix] = useState(prefs.lastPrefix);
+  const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState(randomSessionTitle);
   const [pin, setPin] = useState(prefs.lastPin);
-  const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const available = useAvailableAgents();
   const agentOptions = AGENT_KINDS.filter((kind) => available === null || available.includes(kind));
   // Fall back when the remembered agent is no longer installed.
   const selectedAgent = agentOptions.includes(agent) ? agent : agentOptions[0];
-  const canBeAware = supportsSwitcherooAware(selectedAgent);
-  const canCreate = !!selectedAgent && !!cwd && !!(prefix.trim() || title.trim()) && !busy;
+  // Agents that title themselves get the first prompt; the rest (pi) a title.
+  const asksPrompt = generatesSessionTitles(selectedAgent);
+  const canCreate = !!selectedAgent && !!cwd && (asksPrompt || !!title.trim()) && !busy;
 
   useEffect(() => {
-    const input = titleRef.current;
+    const input = fieldRef.current;
     if (!input) return;
     input.focus();
     input.select();
@@ -50,18 +47,18 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
 
   const create = async () => {
     if (!canCreate) return;
-    const sessionTitle = [prefix.trim(), title.trim()].filter(Boolean).join(" ");
+    const named = asksPrompt
+      ? { prompt: prompt.trim() || undefined, autoTitle: true }
+      : { title: folderTitle(cwd, title) };
     setBusy(true);
     setError(null);
     void patchAppSettings({
       lastAgent: selectedAgent,
       lastCwd: cwd,
-      lastPrefix: prefix,
       lastPin: pin,
-      lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(selectedAgent, cwd, sessionTitle, canBeAware && switcherooAware, pin);
+      await onCreate({ agent: selectedAgent, cwd, pin, ...named });
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -96,31 +93,8 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
         if (!busy) onCancel();
       }}
     >
-      <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} className="modal new-session-modal" onClick={(e) => e.stopPropagation()}>
         <h2>New agent session</h2>
-        <label>
-          Prefix
-          <textarea
-            value={prefix}
-            rows={2}
-            disabled={busy}
-            onChange={(e) => setPrefix(e.target.value)}
-            onKeyDown={createOnEnter}
-            spellCheck={false}
-          />
-        </label>
-        <label>
-          Title
-          <textarea
-            ref={titleRef}
-            value={title}
-            rows={2}
-            disabled={busy}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={createOnEnter}
-            spellCheck={false}
-          />
-        </label>
         <label>
           Agent
           <select
@@ -162,6 +136,20 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
             </button>
           </div>
         </label>
+        <label>
+          {asksPrompt ? "Prompt" : "Title"}
+          <textarea
+            ref={fieldRef}
+            className={asksPrompt ? "new-session-prompt" : undefined}
+            value={asksPrompt ? prompt : title}
+            rows={2}
+            disabled={busy}
+            onChange={(e) => (asksPrompt ? setPrompt : setTitle)(e.target.value)}
+            onKeyDown={createOnEnter}
+            placeholder={asksPrompt ? "Message the agent… (Enter to send, Shift+Enter for newline)" : undefined}
+            spellCheck={false}
+          />
+        </label>
         <div className="modal-checks">
           <label className="modal-check">
             <input
@@ -172,16 +160,6 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
               onKeyDown={createOnEnter}
             />
             Pin
-          </label>
-          <label className="modal-check" data-tooltip={canBeAware ? undefined : "Claude and Codex only"}>
-            <input
-              type="checkbox"
-              checked={canBeAware && switcherooAware}
-              disabled={busy || !canBeAware}
-              onChange={(e) => setSwitcherooAware(e.target.checked)}
-              onKeyDown={createOnEnter}
-            />
-            Switcheroo aware
           </label>
         </div>
         {error && <div style={{ color: "var(--danger)" }}>{error}</div>}

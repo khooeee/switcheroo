@@ -27,6 +27,7 @@ export const controlResponseTypes = {
     modelConfig: "optional { model?, effort? } — display names of the agent's current model and reasoning effort",
     switcherooAware: "optional boolean — the agent was told about this control API",
     cron: "optional boolean — started by a cron run",
+    autoTitle: "optional boolean — title follows the agent's generated title until renamed",
   } satisfies Record<keyof Session, string>,
   TranscriptTurn: {
     id: "string — the turnId returned by POST /sessions/:id/prompt",

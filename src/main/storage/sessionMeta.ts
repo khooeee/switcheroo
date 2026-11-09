@@ -14,6 +14,7 @@ export interface SessionMeta {
   modelConfig?: SessionModelConfig;
   switcherooAware?: boolean;
   cron?: boolean;
+  autoTitle?: boolean;
 }
 
 function readUsage(value: unknown): SessionUsage | undefined {
@@ -57,6 +58,7 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       modelConfig: readModelConfig(parsed.modelConfig),
       switcherooAware: parsed.switcherooAware === true || undefined,
       cron: parsed.cron === true || undefined,
+      autoTitle: parsed.autoTitle === true || undefined,
     };
   } catch (err) {
     if (isMissingFile(err)) return null;

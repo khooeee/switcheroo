@@ -13,9 +13,7 @@ export interface AppSettings {
   composerHeight: number;
   lastAgent: AgentKind;
   lastCwd: string;
-  lastPrefix: string;
   lastPin: boolean;
-  lastSwitcherooAware: boolean;
   /** Soft-close oldest rail sessions on startup when over this (0 = unlimited). */
   sessionListMax: number;
   /** Inworld realtime LLM; also answers web searches. */
