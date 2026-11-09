@@ -45,10 +45,8 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       const limit = Math.max(1, Math.floor(optionalNumber(args, "limit") ?? LIST_LIMIT));
       const { pinned, unpinned } = sessions.list();
       const all = [...pinned, ...unpinned];
-      // The caller always sees itself, so it can find its own id.
-      const shown = all.filter((session, index) => index < limit || session.id === callerId);
       return {
-        sessions: shown.map((session) => ({
+        sessions: all.slice(0, limit).map((session) => ({
           ...sessionSummary(session, callerId),
           ...(pinned.includes(session) ? { pinned: true } : {}),
         })),
