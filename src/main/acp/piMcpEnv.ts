@@ -1,14 +1,11 @@
-import { existsSync } from "node:fs";
+import { app } from "electron";
 import { join } from "node:path";
 import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { AgentKind } from "../../shared/agentKind";
 
-/** `assets/pi-mcp` in a dev checkout, or the packaged extraResource. */
+/** The packaged extraResource, or `assets/pi-mcp` in a dev checkout; never the launch directory when packaged. */
 function piMcpDir(): string {
-  const roots = [join(process.cwd(), "assets")];
-  if (typeof process.resourcesPath === "string") roots.unshift(process.resourcesPath);
-  const dirs = roots.map((root) => join(root, "pi-mcp"));
-  return dirs.find((dir) => existsSync(dir)) ?? dirs.at(-1)!;
+  return join(app.isPackaged ? process.resourcesPath : join(process.cwd(), "assets"), "pi-mcp");
 }
 
 /**
