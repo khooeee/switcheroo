@@ -19,7 +19,6 @@ export const SWITCHEROO_TOOLS = [
       cwd: { type: "string", description: "Absolute workspace path" },
       title: { type: "string" },
       prompt: { type: "string", description: "First prompt; returns without waiting for the reply" },
-      pin: { type: "boolean", description: "Pin it at the top of the sidebar" },
     },
     ["agent", "cwd"],
   ),
