@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { SessionManager } from "../sessions/SessionManager";
 import type { RemoteEventHub } from "../remote/RemoteEventHub";
 import { handleMcpRequest } from "../mcp/handleMcpRequest";
+import { allowedHost } from "./allowedHost";
 import { bearerAuthorized } from "./bearerAuthorized";
 import { handleControlRequest } from "./controlRoutes";
 import { sendJson } from "./sendJson";
@@ -15,12 +16,18 @@ export type ServerContext = {
   remoteEnabled: () => boolean;
 };
 
-/** Refuse Tailscale traffic unless remote access is on; MCP and event streams here, everything else is the control API. */
+/**
+ * Refuse unexpected Host headers, and Tailscale traffic unless remote access is on; MCP and event streams
+ * here, everything else is the control API.
+ */
 export async function handleServerRequest(
   req: IncomingMessage,
   res: ServerResponse,
   { token, baseUrl, sessions, hub, remoteEnabled }: ServerContext,
 ): Promise<void> {
+  if (!allowedHost(req.headers.host)) {
+    return sendJson(res, 403, { error: "Unexpected Host header" });
+  }
   if (!remoteEnabled() && viaTailscaleServe(req)) {
     return sendJson(res, 403, { error: "Remote access is off. Tick Allow the iOS app over Tailscale in Switcheroo's Settings." });
   }
