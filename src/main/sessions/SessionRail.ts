@@ -29,6 +29,8 @@ export class SessionRail {
     const { state, persistence } = this.deps;
     const session = state.sessions.get(sessionId);
     if (!session) return;
+    // The user's own title is never replaced by the agent's.
+    if (title !== session.title) session.autoTitle = undefined;
     session.title = title;
     state.emitSessions();
     void persistence.persist();

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import type { AgentKind } from "../shared/agentKind";
+import type { CreateSessionInput } from "../shared/createSessionInput";
 import type { TranscriptTurn } from "../shared/transcript";
 import { SessionRail } from "./features/sessions/SessionRail";
 import { SessionNotice } from "./features/sessions/SessionNotice";
@@ -129,15 +129,9 @@ export function App() {
     onCloseRightRail: closeRightRail,
   });
 
-  const createSession = useCallback((
-    agent: AgentKind,
-    cwd: string,
-    title: string,
-    switcherooAware: boolean,
-    pin: boolean,
-  ) => {
+  const createSession = useCallback((input: CreateSessionInput) => {
     setShowNewSession(false);
-    void window.switcheroo.createSession({ agent, cwd, title, switcherooAware, pin }).then((session) => {
+    void window.switcheroo.createSession(input).then((session) => {
       setTranscripts((prev) => ({ ...prev, [session.id]: prev[session.id] ?? [] }));
     });
     return Promise.resolve();

@@ -7,6 +7,7 @@ type UpdateHandlers = {
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
   onConfigOptions: (options: acp.SessionConfigOption[]) => void;
+  onTitle: (title: string) => void;
   /** Transcript output (messages, thoughts, tool calls, ...). */
   onOutput: (update: acp.SessionUpdate) => void;
   onThreadStatus: (status: ThreadStatus) => void;
@@ -49,6 +50,10 @@ export function dispatchSessionUpdate(update: acp.SessionUpdate, handlers: Updat
   if (update.sessionUpdate === "config_option_update") {
     handlers.onConfigOptions(update.configOptions);
     return;
+  }
+  // Not returned: Codex also sends its thread status in session_info_update `_meta`.
+  if (update.sessionUpdate === "session_info_update" && update.title?.trim()) {
+    handlers.onTitle(update.title);
   }
   handlers.onOutput(update);
   const status = codexThreadStatus(update);

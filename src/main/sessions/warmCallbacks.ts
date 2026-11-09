@@ -8,6 +8,7 @@ export const warmCallbacks: SessionCallbacks = {
   onAvailableCommands: () => undefined,
   onUsage: () => undefined,
   onModelConfig: () => undefined,
+  onTitle: () => undefined,
   onTurn: () => undefined,
   onStatus: () => undefined,
   onAskQuestion: () => undefined,

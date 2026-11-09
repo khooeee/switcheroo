@@ -26,6 +26,7 @@ export async function ensureSessionHydrated(
   session.modelConfig = meta.modelConfig;
   session.switcherooAware = meta.switcherooAware;
   session.cron = meta.cron;
+  session.autoTitle = meta.autoTitle;
   const loaded = await loadTranscript(sessionId);
   const items = finalizeStalledTurns(loaded);
   host.transcripts.set(sessionId, items);

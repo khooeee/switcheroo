@@ -1,4 +1,5 @@
 import type { AgentKind } from "./agentKind";
+import type { SessionAutoTitle } from "./session";
 
 export interface CreateSessionInput {
   agent: AgentKind;
@@ -10,4 +11,6 @@ export interface CreateSessionInput {
   pin?: boolean;
   /** Started by a cron run, not the user. */
   cron?: boolean;
+  /** Replace `title` with the agent's generated title once it has one. */
+  autoTitle?: SessionAutoTitle;
 }

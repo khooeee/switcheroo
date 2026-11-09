@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { AgentKind } from "../../../shared/agentKind";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
+import type { CreateSessionInput } from "../../../shared/createSessionInput";
 import { errorMessage } from "../../../shared/errorMessage";
+import { sessionTitleWithPrefix } from "../../../shared/sessionTitleWithPrefix";
 import { supportsSwitcherooAware } from "../../../shared/supportsSwitcherooAware";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCache";
@@ -13,13 +15,7 @@ const AGENT_KINDS = Object.keys(AGENT_LABELS) as AgentKind[];
 
 interface Props {
   onCancel: () => void;
-  onCreate: (
-    agent: AgentKind,
-    cwd: string,
-    title: string,
-    switcherooAware: boolean,
-    pin: boolean,
-  ) => Promise<void>;
+  onCreate: (input: CreateSessionInput) => Promise<void>;
 }
 
 export function NewSessionModal({ onCancel, onCreate }: Props) {
@@ -27,7 +23,8 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
   const [agent, setAgent] = useState<AgentKind>(prefs.lastAgent);
   const [cwd, setCwd] = useState(prefs.lastCwd);
   const [prefix, setPrefix] = useState(prefs.lastPrefix);
-  const [title, setTitle] = useState(randomSessionTitle);
+  const [placeholderTitle] = useState(randomSessionTitle);
+  const [title, setTitle] = useState(placeholderTitle);
   const [pin, setPin] = useState(prefs.lastPin);
   const [switcherooAware, setSwitcherooAware] = useState(prefs.lastSwitcherooAware);
   const [busy, setBusy] = useState(false);
@@ -50,7 +47,9 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
 
   const create = async () => {
     if (!canCreate) return;
-    const sessionTitle = [prefix.trim(), title.trim()].filter(Boolean).join(" ");
+    const sessionTitle = sessionTitleWithPrefix(prefix, title);
+    // A kept placeholder (or no name) is replaced by the agent's title after the first prompt.
+    const autoTitle = !title.trim() || title === placeholderTitle ? { prefix } : undefined;
     setBusy(true);
     setError(null);
     void patchAppSettings({
@@ -61,7 +60,14 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
       lastSwitcherooAware: switcherooAware,
     });
     try {
-      await onCreate(selectedAgent, cwd, sessionTitle, canBeAware && switcherooAware, pin);
+      await onCreate({
+        agent: selectedAgent,
+        cwd,
+        title: sessionTitle,
+        switcherooAware: canBeAware && switcherooAware,
+        pin,
+        autoTitle,
+      });
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);

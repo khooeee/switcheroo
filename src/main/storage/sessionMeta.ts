@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { isAgentKind, type AgentKind } from "../../shared/agentKind";
-import type { SessionModelConfig, SessionUsage } from "../../shared/session";
+import type { SessionAutoTitle, SessionModelConfig, SessionUsage } from "../../shared/session";
 import { isMissingFile } from "./isMissingFile";
 import { sessionMetaPath } from "./userDataPaths";
 import { writeFileAtomic } from "./writeFileAtomic";
@@ -14,6 +14,7 @@ export interface SessionMeta {
   modelConfig?: SessionModelConfig;
   switcherooAware?: boolean;
   cron?: boolean;
+  autoTitle?: SessionAutoTitle;
 }
 
 function readUsage(value: unknown): SessionUsage | undefined {
@@ -41,6 +42,12 @@ function readModelConfig(value: unknown): SessionModelConfig | undefined {
   };
 }
 
+function readAutoTitle(value: unknown): SessionAutoTitle | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const { prefix } = value as SessionAutoTitle;
+  return typeof prefix === "string" ? { prefix } : undefined;
+}
+
 export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | null> {
   try {
     const raw = await fs.readFile(sessionMetaPath(sessionId), "utf8");
@@ -57,6 +64,7 @@ export async function loadSessionMeta(sessionId: string): Promise<SessionMeta | 
       modelConfig: readModelConfig(parsed.modelConfig),
       switcherooAware: parsed.switcherooAware === true || undefined,
       cron: parsed.cron === true || undefined,
+      autoTitle: readAutoTitle(parsed.autoTitle),
     };
   } catch (err) {
     if (isMissingFile(err)) return null;

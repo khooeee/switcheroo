@@ -11,6 +11,8 @@ export interface SessionCallbacks {
   onAvailableCommands: (commands: SlashCommand[]) => void;
   onUsage: (usage: SessionUsage) => void;
   onModelConfig: (config: SessionModelConfig) => void;
+  /** The agent named the session (ACP `session_info_update`). */
+  onTitle: (title: string) => void;
   onTurn: (turn: TranscriptTurn) => void;
   onTurnRemoved?: (turnId: string) => void;
   /** A turn in one of this session's subagent transcripts started or changed. */

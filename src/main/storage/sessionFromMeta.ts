@@ -15,5 +15,6 @@ export function sessionFromMeta(id: string, meta: SessionMeta | null): Session {
     modelConfig: meta?.modelConfig,
     switcherooAware: meta?.switcherooAware,
     cron: meta?.cron,
+    autoTitle: meta?.autoTitle,
   };
 }

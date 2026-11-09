@@ -48,6 +48,7 @@ export class SessionUpdateRouter {
       onAvailableCommands: (commands) => deps.callbacks().onAvailableCommands(commands),
       onUsage: (usage) => deps.callbacks().onUsage(usage),
       onConfigOptions: (options) => deps.onConfigOptions(options),
+      onTitle: (title) => deps.callbacks().onTitle(title),
       onOutput: (output) => deps.output.handleUpdate(output),
       onThreadStatus: (status) => {
         // Ignore live-status during load/resume replay — it would leave turnRunning
