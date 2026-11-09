@@ -9,6 +9,7 @@ import { getAppSettingsCache, patchAppSettings } from "../settings/appSettingsCa
 import { randomSessionTitle } from "./sessionTitle";
 import { useAvailableAgents } from "./useAvailableAgents";
 import "../modals/modal.css";
+import "./newSessionModal.css";
 
 const AGENT_KINDS = Object.keys(AGENT_LABELS) as AgentKind[];
 
@@ -91,7 +92,7 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
         if (!busy) onCancel();
       }}
     >
-      <div ref={dialogRef} className="modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} className="modal new-session-modal" onClick={(e) => e.stopPropagation()}>
         <h2>New agent session</h2>
         <label>
           Agent
@@ -138,12 +139,13 @@ export function NewSessionModal({ onCancel, onCreate }: Props) {
           {asksPrompt ? "Prompt" : "Title"}
           <textarea
             ref={fieldRef}
+            className={asksPrompt ? "new-session-prompt" : undefined}
             value={asksPrompt ? prompt : title}
-            rows={asksPrompt ? 4 : 2}
+            rows={2}
             disabled={busy}
             onChange={(e) => (asksPrompt ? setPrompt : setTitle)(e.target.value)}
             onKeyDown={createOnEnter}
-            placeholder={asksPrompt ? "The agent names the session from it" : undefined}
+            placeholder={asksPrompt ? "Message the agent… (Enter to send, Shift+Enter for newline)" : undefined}
             spellCheck={false}
           />
         </label>
