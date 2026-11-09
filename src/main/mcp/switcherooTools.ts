@@ -53,5 +53,4 @@ export const SWITCHEROO_TOOLS = [
       pinned: { type: "boolean", description: "Pin it at the top of the sidebar" },
     },
   ),
-  tool("cancel_session", "Stop another session's running turn.", { sessionId }, ["sessionId"]),
 ];
