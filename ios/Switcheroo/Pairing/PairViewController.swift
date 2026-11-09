@@ -62,7 +62,7 @@ final class PairViewController: UIViewController {
 
     private func connect() {
         guard let config = ServerConfig(link: linkField.text ?? "") else {
-            errorLabel.text = "That isn't a Switcheroo link. It starts with switcheroo://"
+            errorLabel.text = "That isn't a Switcheroo link. Copy it from Switcheroo's Settings: switcheroo://<mac>.ts.net?token=…"
             return
         }
         errorLabel.text = nil

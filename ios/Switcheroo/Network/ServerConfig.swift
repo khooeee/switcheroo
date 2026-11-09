@@ -10,7 +10,7 @@ struct ServerConfig: Sendable, Equatable {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let components = URLComponents(string: link),
               components.scheme == "switcheroo",
-              let host = components.host, !host.isEmpty,
+              let host = components.host?.lowercased(), Self.allowedHost(host),
               let token = components.queryItems?.first(where: { $0.name == "token" })?.value, !token.isEmpty
         else { return nil }
         var base = URLComponents()
@@ -22,5 +22,10 @@ struct ServerConfig: Sendable, Equatable {
         self.link = link
         self.baseURL = baseURL
         self.token = token
+    }
+
+    /// Your tailnet, or this Mac for the simulator. A link to any other host would send your prompts there.
+    private static func allowedHost(_ host: String) -> Bool {
+        host == "localhost" || host == "127.0.0.1" || host.hasSuffix(".ts.net")
     }
 }
