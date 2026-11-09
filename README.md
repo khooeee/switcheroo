@@ -91,6 +91,18 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 - `title` is optional; `YYYY-MM-DD`, `HH:MM` and `H:MM` in it become the run's local date and 24-hour time.
 - Crons only run while Switcheroo is open. Runs missed while the app was closed or the computer was asleep are skipped.
 
+## iOS app
+
+`ios/` is a UIKit client (Swift 6, iOS 26+) that lists your sessions and lets you prompt, steer and stop them from your phone over [Tailscale](https://tailscale.com). Switcheroo only listens on localhost; `tailscale serve` publishes it to your tailnet over HTTPS.
+
+1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), turn on MagicDNS and HTTPS certificates.
+2. In Switcheroo, open **Settings**, tick **Allow the iOS app over Tailscale** and Save.
+3. Reopen **Settings**, run the `tailscale serve --bg <port>` command it shows once, then click **Copy iOS Link**.
+4. Build the app: `brew install xcodegen`, then `cd ios && xcodegen && open Switcheroo.xcodeproj`. To run on a device, put `DEVELOPMENT_TEAM = <your team id>` in `ios/Config/Local.xcconfig`.
+5. Paste the link into the app (Universal Clipboard works), or tap it on the phone.
+
+The token stays the same across launches. To revoke it, quit Switcheroo, delete `remote.json` from the app's data folder and pair again.
+
 ## Daily log
 
 Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Daily Log Folder** to see them.

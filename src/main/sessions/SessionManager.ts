@@ -17,6 +17,7 @@ import { SessionFind } from "./SessionFind";
 import { SessionRail } from "./SessionRail";
 import type { SessionDeps } from "./SessionDeps";
 import type { SessionObserver } from "./SessionObserver";
+import type { SessionEventListener } from "./SessionEventListener";
 import { restoreSavedState } from "./restoreSavedState";
 import { enforceSessionListMax } from "./enforceSessionListMax";
 import { createSession } from "./createSession";
@@ -53,6 +54,12 @@ export class SessionManager {
 
   setObserver(observer: SessionObserver | null): void {
     this.state.observer = observer;
+  }
+
+  /** Receive every event sent to the renderer; returns an unsubscribe. */
+  subscribe(listener: SessionEventListener): () => void {
+    this.state.listeners.add(listener);
+    return () => this.state.listeners.delete(listener);
   }
 
   /** Session menu labels/enabled state for the active tab. */

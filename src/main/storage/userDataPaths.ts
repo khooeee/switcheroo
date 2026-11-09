@@ -52,6 +52,11 @@ export function voiceKeyPath(): string {
   return path.join(userDataDir(), "inworld-key.enc");
 }
 
+/** Bearer token the iOS app pairs with (remote access over Tailscale). */
+export function remoteTokenPath(): string {
+  return path.join(userDataDir(), "remote.json");
+}
+
 export function voiceLogDir(): string {
   return path.join(userDataDir(), "voice");
 }

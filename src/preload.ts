@@ -43,6 +43,7 @@ const api: SwitcherooApi = {
   openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (patch: Partial<AppSettings>) => ipcRenderer.invoke("settings:update", patch),
+  getRemoteStatus: () => ipcRenderer.invoke("remote:status"),
   savePastedImage: (sessionId, image) =>
     ipcRenderer.invoke("images:savePaste", sessionId, image.mimeType, image.bytes),
   saveClipboardImage: (sessionId) => ipcRenderer.invoke("images:saveClipboard", sessionId),

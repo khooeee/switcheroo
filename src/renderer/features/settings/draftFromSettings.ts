@@ -12,5 +12,7 @@ export function draftFromSettings(prefs: AppSettings): SettingsDraft {
     voiceName: prefs.voiceName,
     voiceLanguage: prefs.voiceLanguage,
     voiceIdleMinutes: String(prefs.voiceIdleMinutes),
+    remoteEnabled: prefs.remoteEnabled,
+    remotePort: String(prefs.remotePort),
   };
 }
