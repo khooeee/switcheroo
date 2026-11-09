@@ -45,12 +45,11 @@ export const SWITCHEROO_TOOLS = [
     ["sessionId"],
   ),
   tool(
-    "rename_session",
-    "Rename a session, including this one. Titles can be multiline, and URLs in them become links.",
-    { sessionId, title: { type: "string" } },
-    ["sessionId", "title"],
+    "update_session",
+    "Rename, pin or unpin a session, including this one. Titles can be multiline, and URLs in them become links.",
+    { sessionId, title: { type: "string" }, pinned: { type: "boolean", description: "Pin it at the top of the sidebar" } },
+    ["sessionId"],
   ),
-  tool("pin_session", "Pin or unpin a session in the sidebar.", { sessionId, pinned: { type: "boolean" } }, ["sessionId", "pinned"]),
   tool("cancel_session", "Stop another session's running turn.", { sessionId }, ["sessionId"]),
   tool(
     "close_session",

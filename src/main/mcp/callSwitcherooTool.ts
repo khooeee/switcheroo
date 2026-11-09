@@ -77,16 +77,14 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
         reply: turn.assistant?.text ?? null,
       }));
     }
-    case "rename_session": {
+    case "update_session": {
       const sessionId = knownSession(sessions, args);
-      sessions.renameSession(sessionId, text(args, "title").trim());
-      return summary(sessionId);
-    }
-    case "pin_session": {
-      const sessionId = knownSession(sessions, args);
-      if (args.pinned === false) sessions.unpinSession(sessionId);
-      else sessions.pinSession(sessionId);
-      return { sessionId, pinned: args.pinned !== false };
+      const pinned = typeof args.pinned === "boolean" ? args.pinned : undefined;
+      if (args.title === undefined && pinned === undefined) throw new Error("title or pinned is required");
+      if (args.title !== undefined) sessions.renameSession(sessionId, text(args, "title").trim());
+      if (pinned === true) sessions.pinSession(sessionId);
+      if (pinned === false) sessions.unpinSession(sessionId);
+      return { ...summary(sessionId), ...(pinned === undefined ? {} : { pinned }) };
     }
     case "cancel_session": {
       const sessionId = otherSession(callerId, args);
