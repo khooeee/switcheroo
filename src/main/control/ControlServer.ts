@@ -11,6 +11,7 @@ import { createControlToken } from "./createControlToken";
 import { handleServerRequest } from "./handleServerRequest";
 import { liveControlEndpoint } from "./liveControlEndpoint";
 import { loadControlToken } from "./loadControlToken";
+import { sendJson } from "./sendJson";
 
 type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
 
@@ -121,12 +122,16 @@ export class ControlServer {
   private async listen(port: number): Promise<Server> {
     const server = createServer((req, res) => {
       const baseUrl = this.endpoint?.spec ?? `http://127.0.0.1:${port}/`;
+      // A throw before any route answers (e.g. a malformed %-escape) must not leave the socket hanging.
       void handleServerRequest(req, res, {
         token: this.endpoint?.token ?? "",
         baseUrl,
         sessions: this.sessions,
         hub: this.hub,
         remoteEnabled: () => this.remoteEnabled,
+      }).catch((error) => {
+        if (res.headersSent) res.end();
+        else sendJson(res, 400, { error: errorMessage(error) });
       });
     });
     await new Promise<void>((resolve, reject) => {

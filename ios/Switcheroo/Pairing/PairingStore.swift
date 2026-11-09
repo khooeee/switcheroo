@@ -25,7 +25,8 @@ struct PairingStore {
         SecItemDelete(query as CFDictionary)
         var item = query
         item[kSecValueData as String] = Data(config.link.utf8)
-        item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        // ThisDeviceOnly: the token never moves to another phone through a backup restore.
+        item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         SecItemAdd(item as CFDictionary, nil)
     }
 }
