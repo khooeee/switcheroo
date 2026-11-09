@@ -44,11 +44,12 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
     case "list_sessions": {
       const limit = Math.max(1, Math.floor(optionalNumber(args, "limit") ?? LIST_LIMIT));
       const { pinned, unpinned } = sessions.list();
-      return {
-        pinned: pinned.slice(0, limit).map((session) => sessionSummary(session, callerId)),
-        unpinned: unpinned.slice(0, Math.max(0, limit - pinned.length)).map((session) => sessionSummary(session, callerId)),
-        total: pinned.length + unpinned.length,
-      };
+      const shownIds = new Set([...pinned, ...unpinned].slice(0, limit).map((session) => session.id));
+      // The caller always sees itself, so it can find its own id.
+      shownIds.add(callerId);
+      const shown = (list: typeof pinned) =>
+        list.filter((session) => shownIds.has(session.id)).map((session) => sessionSummary(session, callerId));
+      return { pinned: shown(pinned), unpinned: shown(unpinned), total: pinned.length + unpinned.length };
     }
     case "create_session": {
       const prompt = typeof args.prompt === "string" && args.prompt.trim() ? args.prompt : undefined;
@@ -78,7 +79,7 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       }));
     }
     case "update_session": {
-      const sessionId = knownSession(sessions, args);
+      const sessionId = args.sessionId === undefined ? callerId : knownSession(sessions, args);
       const pinned = typeof args.pinned === "boolean" ? args.pinned : undefined;
       if (args.title === undefined && pinned === undefined) throw new Error("title or pinned is required");
       if (args.title !== undefined) sessions.renameSession(sessionId, text(args, "title").trim());

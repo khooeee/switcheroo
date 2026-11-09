@@ -47,8 +47,11 @@ export const SWITCHEROO_TOOLS = [
   tool(
     "update_session",
     "Rename, pin or unpin a session, including this one. Titles can be multiline, and URLs in them become links.",
-    { sessionId, title: { type: "string" }, pinned: { type: "boolean", description: "Pin it at the top of the sidebar" } },
-    ["sessionId"],
+    {
+      sessionId: { ...sessionId, description: "Switcheroo session id; defaults to this session" },
+      title: { type: "string" },
+      pinned: { type: "boolean", description: "Pin it at the top of the sidebar" },
+    },
   ),
   tool("cancel_session", "Stop another session's running turn.", { sessionId }, ["sessionId"]),
   tool(
