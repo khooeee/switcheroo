@@ -7,6 +7,9 @@ import { waitForSessions } from "./waitForSessions";
 type Args = Record<string, unknown>;
 type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
 
+/** The sidebar can hold hundreds of sessions (sessionListMax); list only the top ones by default. */
+const LIST_LIMIT = 20;
+
 function text(args: Args, key: string): string {
   const value = args[key];
   if (typeof value !== "string" || !value.trim()) throw new Error(`${key} is required`);
@@ -39,10 +42,12 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
   };
   switch (name) {
     case "list_sessions": {
+      const limit = Math.max(1, Math.floor(optionalNumber(args, "limit") ?? LIST_LIMIT));
       const { pinned, unpinned } = sessions.list();
       return {
-        pinned: pinned.map((session) => sessionSummary(session, callerId)),
-        unpinned: unpinned.map((session) => sessionSummary(session, callerId)),
+        pinned: pinned.slice(0, limit).map((session) => sessionSummary(session, callerId)),
+        unpinned: unpinned.slice(0, Math.max(0, limit - pinned.length)).map((session) => sessionSummary(session, callerId)),
+        total: pinned.length + unpinned.length,
       };
     }
     case "create_session": {

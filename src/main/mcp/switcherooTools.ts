@@ -6,7 +6,11 @@ function tool(name: string, description: string, properties: Record<string, unkn
 
 /** Tools every session gets from Switcheroo's MCP server; `callSwitcherooTool` runs them. */
 export const SWITCHEROO_TOOLS = [
-  tool("list_sessions", "List the sessions in Switcheroo's sidebar, pinned first."),
+  tool(
+    "list_sessions",
+    "List the sessions in Switcheroo's sidebar, pinned first, then newest. Returns up to `limit` of them and the total count.",
+    { limit: { type: "number", description: "Default 20" } },
+  ),
   tool(
     "create_session",
     "Start a new agent session in the background, optionally with a first prompt. Returns at once with the session; keep its id and track children by id, never by title.",
