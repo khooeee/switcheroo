@@ -28,8 +28,8 @@ export interface AppSettings {
   voiceLanguage: string;
   /** Turn voice off after this many minutes without speech (0 = never). */
   voiceIdleMinutes: number;
-  /** Serve the control API to the iOS app over Tailscale. */
+  /** Accept control API requests that arrive through `tailscale serve` (the iOS app). */
   remoteEnabled: boolean;
-  /** Port for remote access. */
-  remotePort: number;
+  /** Fixed localhost port of the control API, so `tailscale serve` can point at it. */
+  controlPort: number;
 }

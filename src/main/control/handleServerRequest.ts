@@ -1,23 +1,28 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { SessionManager } from "../sessions/SessionManager";
-import { bearerAuthorized } from "../control/bearerAuthorized";
-import { handleControlRequest } from "../control/controlRoutes";
-import { sendJson } from "../control/sendJson";
-import type { RemoteEventHub } from "./RemoteEventHub";
+import type { RemoteEventHub } from "../remote/RemoteEventHub";
+import { bearerAuthorized } from "./bearerAuthorized";
+import { handleControlRequest } from "./controlRoutes";
+import { sendJson } from "./sendJson";
+import { viaTailscaleServe } from "./viaTailscaleServe";
 
-export type RemoteContext = {
+export type ServerContext = {
   token: string;
   baseUrl: string;
   sessions: SessionManager;
   hub: RemoteEventHub;
+  remoteEnabled: () => boolean;
 };
 
-/** Event streams here; everything else is the control API. */
-export async function handleRemoteRequest(
+/** Refuse Tailscale traffic unless remote access is on; event streams here, everything else is the control API. */
+export async function handleServerRequest(
   req: IncomingMessage,
   res: ServerResponse,
-  { token, baseUrl, sessions, hub }: RemoteContext,
+  { token, baseUrl, sessions, hub, remoteEnabled }: ServerContext,
 ): Promise<void> {
+  if (!remoteEnabled() && viaTailscaleServe(req)) {
+    return sendJson(res, 403, { error: "Remote access is off. Tick Allow the iOS app over Tailscale in Switcheroo's Settings." });
+  }
   const url = new URL(req.url ?? "/", baseUrl);
   const pathname = url.pathname.replace(/\/$/, "") || "/";
   const streamMatch = req.method === "GET" ? /^\/(?:sessions\/([^/]+)\/)?events$/.exec(pathname) : null;

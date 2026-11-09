@@ -13,6 +13,6 @@ export function draftFromSettings(prefs: AppSettings): SettingsDraft {
     voiceLanguage: prefs.voiceLanguage,
     voiceIdleMinutes: String(prefs.voiceIdleMinutes),
     remoteEnabled: prefs.remoteEnabled,
-    remotePort: String(prefs.remotePort),
+    controlPort: String(prefs.controlPort),
   };
 }

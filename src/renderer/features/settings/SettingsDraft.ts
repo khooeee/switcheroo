@@ -14,5 +14,5 @@ export type SettingsDraft = {
   voiceLanguage: string;
   voiceIdleMinutes: string;
   remoteEnabled: boolean;
-  remotePort: string;
+  controlPort: string;
 };

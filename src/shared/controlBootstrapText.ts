@@ -27,7 +27,7 @@ export function controlBootstrapText(sessionId: string): string {
     "python3 script using urllib + json rather than shell; do not rely on shell-specific behavior.",
     "",
     "Do not hardcode the port or token; on a 401 or connection error, re-read",
-    "control.json (Switcheroo issues a new token each launch).",
+    "control.json (the port can change in Settings, and the token when it is rotated).",
     "Do not put the bearer token in files you commit.",
   ].join("\n");
 }

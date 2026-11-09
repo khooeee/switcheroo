@@ -10,7 +10,6 @@ import { confirmQuit } from "./main/lifecycle/confirmQuit";
 import { installSingleInstanceLock } from "./main/lifecycle/installSingleInstanceLock";
 import { installStdioGuards } from "./main/lifecycle/installStdioGuards";
 import { ControlServer } from "./main/control/ControlServer";
-import { RemoteServer } from "./main/remote/RemoteServer";
 import { CronScheduler } from "./main/crons/CronScheduler";
 import { runCron } from "./main/crons/runCron";
 import { registerIpc } from "./main/registerIpc";
@@ -36,8 +35,7 @@ app.setName("Switcheroo");
 installImageProtocol();
 
 const sessions = new SessionManager();
-const control = new ControlServer();
-const remote = new RemoteServer(sessions);
+const control = new ControlServer(sessions);
 let mainWindow: BrowserWindow | null = null;
 const crons = new CronScheduler((job, at) => {
   if (!mainWindow) return;
@@ -102,7 +100,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     installAboutPanel();
     registerIpc({
       sessions,
-      remote,
+      control,
       getMainWindow: () => mainWindow,
       setActiveSessionUnread: (unread) => {
         activeSessionUnread = unread;
@@ -135,9 +133,8 @@ if (installSingleInstanceLock(() => mainWindow)) {
     buildAppMenu(menuOptions);
     void createWindow().then(() => {
       crons.start();
-      void remote.apply(sessions.getSettings());
+      void control.apply(sessions.getSettings());
     });
-    void control.start(sessions);
   });
 
   app.on("window-all-closed", () => app.quit());
@@ -153,7 +150,6 @@ if (installSingleInstanceLock(() => mainWindow)) {
       crons.stop();
       await sessions.disposeAll();
       await control.stop();
-      await remote.stop();
     },
   );
 }

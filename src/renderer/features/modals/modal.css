@@ -69,6 +69,7 @@ html[data-theme="light"] .modal textarea {
 }
 
 .modal input:disabled,
+.modal input[readonly],
 .modal textarea:disabled {
   opacity: 0.4;
   color: var(--text-dim);

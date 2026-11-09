@@ -25,6 +25,6 @@ export function patchFromDraft(draft: SettingsDraft, prefs: AppSettings): Partia
     voiceLanguage: draft.voiceLanguage.trim() || prefs.voiceLanguage,
     voiceIdleMinutes: wholeNumber(draft.voiceIdleMinutes, prefs.voiceIdleMinutes),
     remoteEnabled: draft.remoteEnabled,
-    remotePort: port(draft.remotePort, prefs.remotePort),
+    controlPort: port(draft.controlPort, prefs.controlPort),
   };
 }
