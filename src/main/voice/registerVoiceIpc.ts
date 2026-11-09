@@ -1,4 +1,5 @@
 import { ipcMain } from "electron";
+import { isRecord } from "../../shared/isRecord";
 import type { VoiceConnectionEvent } from "../../shared/voiceConnectionEvent";
 import { openVoiceLogFolder } from "../files/openVoiceLogFolder";
 import { readRecentVoiceLog } from "./readRecentVoiceLog";
@@ -7,10 +8,6 @@ import { voiceKeyStore } from "./voiceKeyStore";
 
 /** How many recent entries the Voice Log view loads. */
 const VOICE_LOG_LIMIT = 300;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 /** Renderer ↔ main voice channels: controls, key, SDP exchange, and the relayed event stream. */
 export function registerVoiceIpc(voice: VoiceAgent): void {

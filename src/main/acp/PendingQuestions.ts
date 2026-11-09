@@ -1,13 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { CursorAskQuestionRequest } from "../../shared/agentRequests";
+import { isRecord } from "../../shared/isRecord";
 
 type Outcome = Record<string, unknown>;
 
 const CANCELLED: Outcome = { outcome: "cancelled" };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 export class PendingQuestions {
   private pending = new Map<string, (outcome: Outcome) => void>();

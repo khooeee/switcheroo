@@ -1,10 +1,11 @@
 import type { AgentKind } from "../../shared/agentKind";
+import { isRecord } from "../../shared/isRecord";
 
 /** A `CODEX_CONFIG` the user already exports, so ours adds to it. */
 function userCodexConfig(): Record<string, unknown> {
   try {
     const parsed: unknown = JSON.parse(process.env.CODEX_CONFIG ?? "{}");
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+    return isRecord(parsed) ? parsed : {};
   } catch {
     return {};
   }

@@ -1,3 +1,5 @@
+import { isRecord } from "../../shared/isRecord";
+
 type Args = Record<string, unknown>;
 
 /** Typed reads of a voice tool call's JSON arguments; wrong types read as missing. */
@@ -5,7 +7,7 @@ export const toolArgs = {
   parse(raw: string): Args {
     try {
       const value: unknown = JSON.parse(raw || "{}");
-      return value && typeof value === "object" && !Array.isArray(value) ? (value as Args) : {};
+      return isRecord(value) ? value : {};
     } catch {
       return {};
     }
