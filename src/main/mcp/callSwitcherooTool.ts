@@ -65,6 +65,8 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
     case "wait_for_sessions": {
       const ids = Array.isArray(args.sessionIds) ? args.sessionIds.filter((id) => typeof id === "string") : [];
       if (ids.length === 0) throw new Error("sessionIds is required");
+      // The caller is mid-turn while it waits, so waiting on itself never finishes.
+      if (ids.includes(callerId)) throw new Error("sessionIds includes this session; wait on other ones.");
       return waitForSessions(sessions, ids, optionalNumber(args, "timeoutSeconds"), signal);
     }
     case "read_transcript": {
