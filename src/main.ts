@@ -3,6 +3,7 @@ import path from "node:path";
 import { applyAppIcon } from "./main/lifecycle/applyAppIcon";
 import { installAboutPanel } from "./main/lifecycle/installAboutPanel";
 import { installExternalLinks } from "./main/lifecycle/installExternalLinks";
+import { installNavigationGuard } from "./main/lifecycle/installNavigationGuard";
 import { installImageProtocol } from "./main/images/installImageProtocol";
 import { SessionManager } from "./main/sessions/SessionManager";
 import { installQuitHandler } from "./main/lifecycle/installQuitHandler";
@@ -79,6 +80,7 @@ const createWindow = async () => {
   });
 
   installExternalLinks(mainWindow.webContents);
+  installNavigationGuard(mainWindow.webContents);
   sessions.setWindow(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {

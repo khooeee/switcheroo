@@ -3,22 +3,14 @@
 An agentic development environment that sparks joy in my everyday coding:
 - The user message & final assistant message are the only messages shown in the main content area.  Most of the time, seeing the tool calls & other events are unnecessary.  You can always open them by right clicking on the message and selecting turn details.
 - Each session on the left sidebar shows the title, nothing else.  Details such as coding agent, directory you're in, date/time, etc. add clutter and are not useful most of the time.  Renaming the title is very easy to do and it can be multiline as well.  If you supply URLs, they will be linked as well so you can stuff things into it like issue/PR URLs, etc.
-- Project management is having a prefix to define what project you're on.  Pinning sessions will put them at the top of the list, and once you're done, unpin and they will eventually float down.  You can find them later on through find in history.
+- Pinning sessions will put them at the top of the list, and once you're done, unpin and they will eventually float down.  You can find them later on through find in history.
 - Sending new messages while the agent is already in progress should always steer where available, otherwise queue.  Claude Code & Codex steer.  Cursor & Pi queue (due to lack of support for steering in their ACP implementation).  But in general, I think the concept of queueing should just go away and every coding agent should always steer.
 - All agents are started in bypass permissions/YOLO mode.
-- You can go back and forward through the sessions you selected.  As an example of how I use this, I do something similar to `/btw` by forking a session, sending a prompt and jumping back to my original session to keep on working.
+- You can go back and forward through the sessions you selected.  As an example of how I use this, I do something similar to `/btw` by forking a session, sending a prompt and then going back to the original session to keep on working.
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
 - Standup notes can be generated for your daily work by going to **Edit** → **Paste Standup Prompt**.
+- You can control your sessions through an iOS app.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
-
-There are also speed optimizations to eliminate unnecessary waiting:
-- Pre-warmed session pool so time to first prompt is very fast
-- Find in history is a streaming search that is performant even with a large history.
-
-There are also some niceties:
-- Copy message or copy individual code blocks
-- Save message or session as Markdown
-- Preview Markdown files like how they would appear in GitHub
 
 There are also orchestration features:
 - "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization strategies (e.g. reading GitHub issues & implementing them in parallel).
@@ -59,11 +51,6 @@ At least one agent CLI installed and authenticated. The Claude Code, Codex, and 
 npm install
 npm start
 ```
-
-## Usage
-
-1. Click **+** to create a session.
-2. Ticking **Switcheroo aware** will inject a prompt at the beginning of the session which will allow that session to create & control other sessions in Switcheroo.
 
 ## Crons
 
@@ -115,7 +102,7 @@ Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's da
 
 To generate standup notes, select **Edit** → **Paste Standup Prompt**. It pastes a prompt for yesterday into the composer, so change the date if you need another day, then send it. If that day has no log, the agent uses the newest earlier one.
 
-## History management
+## History Management
 
 It's likely you don't have to read this section ever, but it's here in case your app gets slow.
 
@@ -137,6 +124,17 @@ See [Inworld's list of models](https://inworld.ai/models).
 
 For intelligence comparisons, see [Artificial Analysis](https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index?models=mimo-v2-6-pro%2Cgemma-4-31b%2Cglm-5-3-flash%2Cdeepseek-v4-1-flash-1017-non-reasoning%2Cdeepseek-v4-1-flash-1017%2Cdeepseek-v4-1-flash-1017-high).
 
+## Features
+
+Speed optimizations:
+- Pre-warmed session pool so time to first prompt is very fast
+- Find in history is a streaming search that is performant even with a large history.
+
+Niceties:
+- Copy message or copy individual code blocks
+- Save message or session as Markdown
+- Preview Markdown files like how they would appear in GitHub
+
 ## Shortcuts
 
 **Ctrl+D**: Close session on empty prompt
@@ -156,6 +154,7 @@ For intelligence comparisons, see [Artificial Analysis](https://artificialanalys
 **Cmd/Ctrl+R**: Rename selected tab
 
 **Cmd/Ctrl+U**: Mark as Unread
+
 **Cmd/Ctrl+W**: Close selected tab
 
 **Cmd/Ctrl+Y**: Fork selected session
