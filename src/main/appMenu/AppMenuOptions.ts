@@ -7,6 +7,8 @@ export type AppMenuOptions = {
   getMainWindow: () => BrowserWindow | null;
   getMenuState: () => SessionMenuState;
   openActiveInCursor: () => void;
+  /** Give the active session Switcheroo's MCP tools. */
+  makeActiveSwitcherooAware: () => void;
   getActiveUnread: () => boolean;
   voice: VoiceMenuActions;
 };

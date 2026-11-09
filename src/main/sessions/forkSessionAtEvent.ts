@@ -6,6 +6,7 @@ import { errorMessage } from "../../shared/errorMessage";
 import { nextForkTitle } from "../../shared/nextForkTitle";
 import type { AcpSession } from "../acp/session";
 import type { SessionCallbacks } from "../acp/SessionCallbacks";
+import type { McpServersSource } from "../acp/McpServersSource";
 import { newSessionId } from "./newSessionId";
 import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { airForkPoint, type AirForkPoint } from "../acp/airForkPoint";
@@ -19,8 +20,8 @@ interface ForkSessionHost {
   ensureSession(session: Session): Promise<AcpSession>;
   forkSupport(agent: AgentKind): Pick<Session, "supportsFork" | "supportsForkAtMessage">;
   callbacksFor(session: Session): SessionCallbacks;
-  /** The fork's own instructions: it has a new Switcheroo session id. */
-  instructionsFor(session: Session): string | null;
+  /** The fork's own MCP servers: it has a new Switcheroo session id. */
+  mcpServersFor(session: Session): McpServersSource;
   setSession(sessionId: string, session: AcpSession): void;
   addSession(session: Session, transcript: TranscriptTurn[]): void;
   setActiveSession(sessionId: string): void;
@@ -94,7 +95,7 @@ export async function forkSessionAtEvent(
     // No assistant message before the fork point leaves no agent history to keep.
     const acp = eventId && !forkPoint
       ? await host.ensureSession(session)
-      : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint, host.instructionsFor(session));
+      : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint, host.mcpServersFor(session));
     acp.restoreTurns(clipped);
     host.setSession(id, acp);
     session.agentSessionId = acp.sessionId;

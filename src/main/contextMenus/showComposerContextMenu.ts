@@ -1,7 +1,7 @@
 import { BrowserWindow, Menu } from "electron";
 import { standupPrompt } from "../dailyLog/standupPrompt";
 
-/** Cut / Copy / Paste / Paste Standup Prompt / Paste Switcheroo Aware Prompt (+ Undo / Redo / Select All) for the composer textarea. */
+/** Cut / Copy / Paste / Paste Standup Prompt (+ Undo / Redo / Select All) for the composer textarea. */
 export function showComposerContextMenu(
   win: BrowserWindow | null,
   opts: { canCut?: boolean; canCopy?: boolean; canSelectAll?: boolean } = {},
@@ -17,10 +17,6 @@ export function showComposerContextMenu(
     {
       label: "Paste Standup Prompt",
       click: () => win.webContents.send("prompt:paste-standup", standupPrompt()),
-    },
-    {
-      label: "Paste Switcheroo Aware Prompt",
-      click: () => win.webContents.send("prompt:paste-aware"),
     },
     { type: "separator" },
     { role: "selectAll", enabled: !!opts.canSelectAll },

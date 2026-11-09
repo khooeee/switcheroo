@@ -30,7 +30,7 @@ export function sessionConnectionHandlers({
   finishPending,
   closeConnection,
   routerFor,
-}: SessionConnectionHost): Omit<ConnectHandlers, "agent" | "cwd" | "instructions" | "quiet"> {
+}: SessionConnectionHost): Omit<ConnectHandlers, "agent" | "cwd" | "mcpServers" | "quiet"> {
   return {
     isDisposed,
     onStatus: (status, message) => {

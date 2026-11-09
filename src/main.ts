@@ -124,6 +124,14 @@ if (installSingleInstanceLock(() => mainWindow)) {
           );
         });
       },
+      makeActiveSwitcherooAware: () => {
+        void sessions.makeActiveSwitcherooAware().catch((error) => {
+          dialog.showErrorBox(
+            "Could not make the session Switcheroo aware",
+            errorMessage(error),
+          );
+        });
+      },
       getActiveUnread: () => activeSessionUnread,
       voice: {
         getStatus: () => voice.getStatus(),

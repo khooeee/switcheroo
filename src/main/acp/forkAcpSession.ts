@@ -17,14 +17,14 @@ export async function forkAcpSession(
   sessionId: string,
   cwd: string,
   forkPoint: AirForkPoint | undefined,
-  /** The fork's own instructions (it has a new Switcheroo session id). */
-  instructions: string | null,
+  /** The fork's own MCP servers (it has a new Switcheroo session id). */
+  mcpServers: acp.McpServer[],
 ): Promise<acp.ForkSessionResponse> {
   const response = await connection.agent.request(acp.methods.agent.session.fork, {
     sessionId,
     cwd,
-    mcpServers: [],
-    ...airSessionMeta(instructions, forkPoint),
+    mcpServers,
+    ...airSessionMeta(forkPoint),
   });
   if (!response.sessionId) throw new Error("Agent did not return a forked session id");
   return response;

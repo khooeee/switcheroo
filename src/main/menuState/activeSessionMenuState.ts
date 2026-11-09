@@ -10,6 +10,7 @@ export function activeSessionMenuState(ctx: MenuCtx): SessionMenuState {
     chatItemsEnabled: !!activeSession,
     openInCursorEnabled: !!activeSession?.cwd.trim(),
     forkEnabled: !!activeSession && supportsFork(activeSession.agent),
+    makeAwareEnabled: !!activeSession && !activeSession.switcherooAware && activeSession.status !== "running",
     stopEnabled: activeSession?.status === "running",
   };
 }

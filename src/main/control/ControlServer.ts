@@ -9,13 +9,14 @@ import { tailscaleServeFor } from "../remote/tailscaleServeFor";
 import { clearControlFile, writeControlFile, type ControlEndpoint } from "./controlFile";
 import { createControlToken } from "./createControlToken";
 import { handleServerRequest } from "./handleServerRequest";
+import { liveControlEndpoint } from "./liveControlEndpoint";
 import { loadControlToken } from "./loadControlToken";
 
 type ControlSettings = Pick<AppSettings, "remoteEnabled" | "controlPort">;
 
 /**
- * Localhost control API for Switcheroo-aware agents (via control.json) and the iOS app
- * (via `tailscale serve`). Always on; `remoteEnabled` only gates requests that come through Tailscale.
+ * Localhost control API for scripts (via control.json) and the iOS app (via `tailscale serve`), plus the
+ * MCP server aware sessions use. Always on; `remoteEnabled` only gates requests that come through Tailscale.
  */
 export class ControlServer {
   private hub: RemoteEventHub;
@@ -41,7 +42,10 @@ export class ControlServer {
   }
 
   stop(): Promise<void> {
-    return this.enqueue(() => this.close());
+    return this.enqueue(async () => {
+      await this.close();
+      liveControlEndpoint.set(null);
+    });
   }
 
   async status(): Promise<RemoteStatus> {
@@ -65,7 +69,7 @@ export class ControlServer {
 
   private async reconcile({ remoteEnabled, controlPort }: ControlSettings): Promise<void> {
     this.remoteEnabled = remoteEnabled;
-    if (process.env.SWITCHEROO_CONTROL === "0") return;
+    if (process.env.SWITCHEROO_CONTROL === "0") return liveControlEndpoint.set(null);
     if (this.server && controlPort === this.wantedPort) return;
     await this.close();
     this.wantedPort = controlPort;
@@ -82,6 +86,8 @@ export class ControlServer {
       this.error = `Could not start the control server: ${errorMessage(error)}`;
       console.warn(`[control] ${this.error}`);
     }
+    // Aware sessions starting meanwhile wait for this to build their MCP server URL.
+    liveControlEndpoint.set(this.endpoint);
   }
 
   /** One failed task must not wedge the ones after it. */
@@ -95,6 +101,7 @@ export class ControlServer {
     const token = await createControlToken();
     if (!this.endpoint) return;
     this.endpoint = { ...this.endpoint, token };
+    liveControlEndpoint.set(this.endpoint);
     await writeControlFile(this.endpoint);
     // Open event streams were authorized with the old token.
     this.hub.closeAll();

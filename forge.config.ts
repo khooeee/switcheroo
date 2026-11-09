@@ -67,7 +67,8 @@ const config: ForgeConfig = {
     ignore: (file) => !keepPackagedPath(file),
     name: "Switcheroo",
     icon: "./assets/icon",
-    extraResource: ["./assets/icon.png"],
+    // `pi-mcp` runs outside the asar: pi-acp spawns its wrapper and Pi loads its extension.
+    extraResource: ["./assets/icon.png", "./assets/pi-mcp"],
     extendInfo: {
       NSMicrophoneUsageDescription: "Switcheroo listens for voice commands while the voice agent is on.",
     },

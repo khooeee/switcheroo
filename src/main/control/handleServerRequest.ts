@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { SessionManager } from "../sessions/SessionManager";
 import type { RemoteEventHub } from "../remote/RemoteEventHub";
+import { handleMcpRequest } from "../mcp/handleMcpRequest";
 import { bearerAuthorized } from "./bearerAuthorized";
 import { handleControlRequest } from "./controlRoutes";
 import { sendJson } from "./sendJson";
@@ -14,7 +15,7 @@ export type ServerContext = {
   remoteEnabled: () => boolean;
 };
 
-/** Refuse Tailscale traffic unless remote access is on; event streams here, everything else is the control API. */
+/** Refuse Tailscale traffic unless remote access is on; MCP and event streams here, everything else is the control API. */
 export async function handleServerRequest(
   req: IncomingMessage,
   res: ServerResponse,
@@ -25,6 +26,8 @@ export async function handleServerRequest(
   }
   const url = new URL(req.url ?? "/", baseUrl);
   const pathname = url.pathname.replace(/\/$/, "") || "/";
+  const mcpMatch = /^\/mcp\/([^/]+)$/.exec(pathname);
+  if (mcpMatch) return handleMcpRequest(req, res, decodeURIComponent(mcpMatch[1]!), sessions);
   const streamMatch = req.method === "GET" ? /^\/(?:sessions\/([^/]+)\/)?events$/.exec(pathname) : null;
   if (!streamMatch) return handleControlRequest(req, res, token, baseUrl, sessions);
 

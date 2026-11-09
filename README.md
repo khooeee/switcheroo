@@ -13,7 +13,7 @@ An agentic development environment that sparks joy in my everyday coding:
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
 There are also orchestration features:
-- "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, read them & close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization strategies (e.g. reading GitHub issues & implementing them in parallel).
+- "Switcheroo aware" sessions can create other sessions, rename them, send prompts to them, wait for & read their replies, and close them.  In other words, pretty much everything session-specific aside from forking.  This can lead to very useful parallelization strategies (e.g. reading GitHub issues & implementing them in parallel).  They get these as tools from Switcheroo's own MCP server, so it works the same for Claude Code, Codex, Cursor & Pi.  Make an existing session aware with **Session** → **Make Switcheroo Aware**.
 - A hands-free voice agent ([Inworld Realtime](https://docs.inworld.ai/realtime/overview)) controls every session: ask what's running, send or steer prompts, start new sessions, and hear finished turns announced.  It also answers general questions and searches the web.  Click the mic in the bottom left to start it; add your Inworld API key under **Voice** → **Open Settings**.
 
 ## Install (macOS)
@@ -94,7 +94,7 @@ Switcheroo desktop app
 7. Run the provided command which should look similar to `tailscale serve --bg <port>`.
 8. Click **Copy iOS Link** & paste the link into the iOS app.
 
-The phone uses the same localhost control API as Switcheroo-aware sessions, on a fixed port (7389 by default). Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again; aware sessions pick up the new token from `control.json`.
+The phone uses the localhost control API, on a fixed port (7389 by default) that also serves aware sessions' MCP server. Unticking the checkbox only refuses requests that come through Tailscale; aware sessions keep working. The token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again; aware sessions have their own keys, so they are unaffected.
 
 ## Daily Standup
 
