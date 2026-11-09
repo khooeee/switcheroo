@@ -5,7 +5,6 @@ import type { TranscriptTurn } from "../../shared/transcript";
 import { SessionOutput } from "./SessionOutput";
 import type { SessionCallbacks } from "./SessionCallbacks";
 import { PromptRunner } from "./PromptRunner";
-import { SessionFiles } from "./SessionFiles";
 import { PendingQuestions } from "./PendingQuestions";
 import { forkAcpSession } from "./forkAcpSession";
 import { resumeAcpSession } from "./resumeAcpSession";
@@ -33,7 +32,6 @@ export class AcpSession extends SharedAgentConnection {
   private initializationMeta: unknown;
   private cb: SessionCallbacks;
   private questions: PendingQuestions;
-  private files: SessionFiles;
   private output: SessionOutput;
   private turns: TurnBuilder;
   private updates: SessionUpdateRouter;
@@ -54,7 +52,6 @@ export class AcpSession extends SharedAgentConnection {
     this.agent = agent;
     this.cwd = cwd;
     this.cb = cb;
-    this.files = new SessionFiles(cwd);
     this.questions = new PendingQuestions(
       id,
       (req) => this.cb.onAskQuestion(req),
@@ -231,7 +228,6 @@ export class AcpSession extends SharedAgentConnection {
       quiet: options?.quiet,
       ...sessionConnectionHandlers({
         callbacks: () => this.cb,
-        files: this.files,
         questions: this.questions,
         runner: this.runner,
         isDisposed: () => this.disposed,

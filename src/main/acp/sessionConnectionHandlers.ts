@@ -3,13 +3,11 @@ import type { ConnectHandlers } from "./connectAcpAgent";
 import type { PendingQuestions } from "./PendingQuestions";
 import type { PromptRunner } from "./PromptRunner";
 import type { SessionCallbacks } from "./SessionCallbacks";
-import type { SessionFiles } from "./SessionFiles";
 import type { SessionUpdateRouter } from "./SessionUpdateRouter";
 
 type SessionConnectionHost = {
   /** Read on every call: adopting a warm session rebinds its callbacks. */
   callbacks: () => SessionCallbacks;
-  files: SessionFiles;
   questions: PendingQuestions;
   runner: PromptRunner;
   isDisposed: () => boolean;
@@ -22,7 +20,6 @@ type SessionConnectionHost = {
 /** How an AcpSession responds to its agent connection: requests, updates, and disconnects. */
 export function sessionConnectionHandlers({
   callbacks,
-  files,
   questions,
   runner,
   isDisposed,
@@ -42,8 +39,6 @@ export function sessionConnectionHandlers({
       noteSystem(note);
       return response;
     },
-    onReadFile: (params) => files.read(params),
-    onWriteFile: (params) => files.write(params),
     onAskQuestion: async (params, signal) => {
       if (isDisposed() || runner.stopRequested) return { outcome: "cancelled" };
       noteSystem("Question from agent");

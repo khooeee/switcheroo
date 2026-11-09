@@ -29,8 +29,6 @@ export type ConnectHandlers = {
   isDisposed: () => boolean;
   onStatus: (status: "connecting" | "error", message?: string) => void;
   onPermission: (params: acp.RequestPermissionRequest) => Promise<acp.RequestPermissionResponse>;
-  onReadFile: (params: acp.ReadTextFileRequest) => Promise<acp.ReadTextFileResponse>;
-  onWriteFile: (params: acp.WriteTextFileRequest) => Promise<acp.WriteTextFileResponse>;
   onAskQuestion: (
     params: unknown,
     signal: AbortSignal,
@@ -75,12 +73,6 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
     .onRequest(acp.methods.client.session.requestPermission, async (ctx) => {
       return handlers.onPermission(ctx.params);
     })
-    .onRequest(acp.methods.client.fs.readTextFile, async (ctx) => {
-      return handlers.onReadFile(ctx.params);
-    })
-    .onRequest(acp.methods.client.fs.writeTextFile, async (ctx) => {
-      return handlers.onWriteFile(ctx.params);
-    })
     .onRequest("cursor/ask_question", (params: unknown) => params as Record<string, unknown>, async (ctx) => {
       return handlers.onAskQuestion(ctx.params, ctx.signal);
     })
@@ -103,7 +95,8 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
   const initialized = await agent.request(acp.methods.agent.initialize, {
     protocolVersion: acp.PROTOCOL_VERSION,
     clientCapabilities: {
-      fs: { readTextFile: true, writeTextFile: true },
+      // No adapter routes its file tools through the client; agents read and write files themselves.
+      fs: { readTextFile: false, writeTextFile: false },
       terminal: false,
       ...(preset.clientCapabilityMeta ? { _meta: preset.clientCapabilityMeta } : {}),
     },
