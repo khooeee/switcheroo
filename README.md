@@ -166,4 +166,6 @@ For intelligence comparisons, see [Artificial Analysis](https://artificialanalys
 
 **Cmd/Ctrl+/**: Toggle zen mode
 
+**Cmd/Ctrl+,**: Open settings
+
 **/**: shows autocomplete of slash commands in the composer

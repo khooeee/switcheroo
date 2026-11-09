@@ -16,6 +16,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             submenu: [
               { role: "about" as const },
               { type: "separator" as const },
+              {
+                label: "Settings…",
+                accelerator: "Cmd+,",
+                click: () => {
+                  win()?.webContents.send("settings:open");
+                },
+              },
+              { type: "separator" as const },
               { role: "services" as const },
               { type: "separator" as const },
               { role: "hide" as const },
@@ -68,6 +76,19 @@ export function buildAppMenu(opts: AppMenuOptions): void {
             win()?.webContents.send("find-sessions:open");
           },
         },
+        // macOS has Settings… in the app menu; Linux has no app menu, so it lives here.
+        ...(isMac
+          ? []
+          : [
+              { type: "separator" as const },
+              {
+                label: "Settings…",
+                accelerator: "Ctrl+,",
+                click: () => {
+                  win()?.webContents.send("settings:open");
+                },
+              },
+            ]),
       ],
     },
     {
