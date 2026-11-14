@@ -17,6 +17,14 @@ function update(sessionId: string, change: (prev: ExplorerState) => ExplorerStat
   explorerChanges.notify(sessionId);
 }
 
+/** Expand each folder in `dirs` that is closed. */
+function expandFolders(sessionId: string, dirs: readonly string[]): void {
+  update(sessionId, (prev) => {
+    const closed = dirs.filter((dir) => !prev.expanded.includes(dir));
+    return closed.length ? { ...prev, expanded: [...prev.expanded, ...closed] } : prev;
+  });
+}
+
 /** The tab that takes over when `path` closes: the one to its right, else its left. */
 function neighborTab(openFiles: readonly string[], path: string): string | null {
   const index = openFiles.indexOf(path);
@@ -62,11 +70,14 @@ export const explorerStore = {
 
   /** Open a file tab with its folders expanded, so its row shows in the tree. */
   revealFile(sessionId: string, path: string): void {
-    update(sessionId, (prev) => {
-      const closed = ancestorPaths(path).filter((dir) => !prev.expanded.includes(dir));
-      return closed.length ? { ...prev, expanded: [...prev.expanded, ...closed] } : prev;
-    });
+    expandFolders(sessionId, ancestorPaths(path));
     explorerStore.openFile(sessionId, path);
+  },
+
+  /** Expand a folder and the folders holding it, and highlight its row. */
+  revealFolder(sessionId: string, path: string): void {
+    expandFolders(sessionId, [...ancestorPaths(path), path]);
+    explorerStore.select(sessionId, path);
   },
 
   /** Switch to the tab `delta` places along (wrapping), highlighting its row. */

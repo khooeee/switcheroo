@@ -1,0 +1,85 @@
+.go-to-file {
+  width: min(600px, 80vw);
+  margin: 48px auto auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-1);
+  color: var(--text);
+  box-shadow: 0 12px 32px var(--shadow);
+  overflow: hidden;
+}
+
+.go-to-file[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.go-to-file::backdrop {
+  background: transparent;
+}
+
+.go-to-file input {
+  flex-shrink: 0;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  background: transparent;
+  padding: 10px 12px;
+}
+
+.go-to-file-results {
+  max-height: min(50vh, 420px);
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.go-to-file-empty {
+  padding: 6px 12px;
+  color: var(--text-dim);
+}
+
+.go-to-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.go-to-file-row:hover {
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
+}
+
+.go-to-file-row[aria-selected="true"] {
+  background: var(--bg-selected-tab);
+}
+
+.go-to-file-name {
+  flex-shrink: 0;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.go-to-file-dir {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+  font-size: var(--font-mono-small-size);
+}
+
+.go-to-file-row strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The light accent is a gray that does not stand out from the text. */
+html[data-theme="light"] .go-to-file-row strong {
+  color: var(--voice-on-bg);
+}

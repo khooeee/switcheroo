@@ -4,6 +4,7 @@ import { parsePersistedExplorer } from "../storage/parsePersistedExplorer";
 import { loadSessionExplorer, saveSessionExplorer } from "../storage/sessionExplorer";
 import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
+import { listSessionFiles } from "./listSessionFiles";
 import { readSessionFile } from "./readSessionFile";
 import { SessionFileWatcher } from "./SessionFileWatcher";
 import { writeSessionFile } from "./writeSessionFile";
@@ -20,6 +21,7 @@ export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
   ipcMain.handle("files:list", (_e, sessionId: string, relPath: string) =>
     listSessionDir(cwdOf(sessionId), relPath),
   );
+  ipcMain.handle("files:listAll", (_e, sessionId: string) => listSessionFiles(cwdOf(sessionId)));
   ipcMain.handle("files:read", (_e, sessionId: string, relPath: string) =>
     readSessionFile(cwdOf(sessionId), relPath),
   );

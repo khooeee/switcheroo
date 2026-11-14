@@ -5,6 +5,8 @@ import { EditorTabs } from "../editor/EditorTabs";
 import { FileEditor } from "../editor/FileEditor";
 import { FileHeader } from "../editor/FileHeader";
 import { fileBufferStore } from "../editor/fileBufferStore";
+import { GoToFile } from "../goToFile/GoToFile";
+import { modLabel } from "../shortcuts/modLabel";
 import { explorerStore } from "./explorerStore";
 import { useExplorerRestored } from "./useExplorerRestored";
 import { useExplorerState } from "./useExplorerState";
@@ -62,8 +64,9 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
           </div>
         </>
       ) : (
-        <div className="empty">Double-click a file to open it.</div>
+        <div className="empty">Double-click a file to open it, or press {modLabel("P")} to search.</div>
       )}
+      <GoToFile key={sessionId} sessionId={sessionId} />
     </section>
   );
 }

@@ -156,40 +156,68 @@ Niceties:
 
 ## Shortcuts
 
-**Ctrl+D**: Close session on empty prompt
+### Global Shortcuts
 
-**Cmd/Ctrl+F**: Find in current session
+**Cmd/Ctrl+E**: Open selected session's folder in Files mode
+
+**Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+G**: Focus on filter tabs
-
-**Cmd/Ctrl+I**: Focus on prompt
+**Cmd/Ctrl+I**: Focus on prompt (switches to Sessions mode)
 
 **Cmd/Ctrl+N**: New session
 
-**Cmd/Ctrl+P**: Pin/unpin selected session
-
-**Cmd/Ctrl+R**: Rename selected tab
+**Cmd/Ctrl+R**: Rename selected tab (switches to Sessions mode)
 
 **Cmd/Ctrl+U**: Mark as Unread
 
-**Cmd/Ctrl+W**: Close selected tab
-
 **Cmd/Ctrl+Y**: Fork selected session
-
-**Ctrl+Tab**: Go to next visible tab
-
-**Ctrl+Shift+Tab**: Go to previous visible tab
 
 **Alt+Left or Cmd+[**: Go back to the previously selected tab
 
 **Alt+Right or Cmd+]**: Go forward through selected tabs
 
+**Cmd/Ctrl+,**: Open settings
+
+### Sessions mode
+
+**Ctrl+D**: Close session on empty prompt
+
+**Cmd/Ctrl+F**: Find in current session
+
+**Cmd/Ctrl+G**: Focus on filter tabs
+
+**Cmd/Ctrl+P**: Pin/unpin selected session
+
+**Cmd/Ctrl+W**: Close selected tab
+
 **Escape**: Stop agent (while running)
+
+**Ctrl+Tab**: Go to next visible tab
+
+**Ctrl+Shift+Tab**: Go to previous visible tab
+
+**/**: shows autocomplete of slash commands in the composer
 
 **Cmd/Ctrl+/**: Toggle zen mode
 
-**Cmd/Ctrl+,**: Open settings
+### Files mode
 
-**/**: shows autocomplete of slash commands in the composer
+**Cmd/Ctrl+F**: Find in file
+
+**Cmd/Ctrl+G**: Find next
+
+**Cmd/Ctrl+P**: Go to File (search files & folders, Enter to open)
+
+**Cmd/Ctrl+S**: Save file
+
+**Cmd/Ctrl+W**: Close file
+
+**Arrow keys, Home/End**: Move through the file tree, expand/collapse folders
+
+**Enter**: Open selected file, or expand/collapse selected folder
+
+**Ctrl+Tab**: Go to next open file
+
+**Ctrl+Shift+Tab**: Go to previous open file
