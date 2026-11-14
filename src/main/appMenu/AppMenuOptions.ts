@@ -7,6 +7,7 @@ export type AppMenuOptions = {
   getMainWindow: () => BrowserWindow | null;
   getMenuState: () => SessionMenuState;
   openActiveInCursor: () => void;
+  reloadShellEnv: () => void;
   getActiveUnread: () => boolean;
   voice: VoiceMenuActions;
 };

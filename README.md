@@ -45,6 +45,8 @@ At least one agent CLI installed and authenticated. The Claude Code, Codex, and 
 - **Cursor**: Cursor CLI `agent` on `PATH` (typically `~/.local/bin/agent`) and `agent login`
 - **Pi**: `pi` on `PATH` via `npm install -g @earendil-works/pi-coding-agent`
 
+`PATH` here means your terminal's `PATH`. On startup Switcheroo runs your login shell once (`$SHELL -i -l`), so agents get the same environment as a new terminal window, even when you open the app from the Dock. While it runs, `SWITCHEROO_RESOLVING_SHELL_ENV=1` is set, so your rc files can skip slow steps. If the shell fails or takes more than 10 seconds, agents use Switcheroo's own environment plus common bin dirs. After editing rc files, choose **Session → Reload Shell Environment**.
+
 ## Develop
 
 ```bash

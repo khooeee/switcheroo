@@ -9,6 +9,7 @@ import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSett
 import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
 import type { SessionMenuState } from "../menuState/SessionMenuState";
 import { openFolderInCursor } from "../cursor/openFolderInCursor";
+import { shellEnv } from "../shellEnv/shellEnv";
 import { SessionState } from "./SessionState";
 import { SessionPersistence } from "./SessionPersistence";
 import { SessionHydration } from "./SessionHydration";
@@ -78,6 +79,13 @@ export class SessionManager {
     hydrateAppSettings(saved?.settings);
     if (saved) await restoreSavedState(this.deps, saved);
     if (await enforceSessionListMax(this.deps)) await this.persistence.persistStateFile();
+    this.agents.ensureWarm(getAppSettings().lastCwd);
+  }
+
+  /** Re-read the user's shell environment and restart warm agents so new sessions get it. */
+  async reloadShellEnv(): Promise<void> {
+    await shellEnv.reload();
+    await this.state.warm.dispose();
     this.agents.ensureWarm(getAppSettings().lastCwd);
   }
 

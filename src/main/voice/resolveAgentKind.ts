@@ -6,8 +6,8 @@ import { spokenMatchScore } from "./spokenMatchScore";
 type Resolved = { ok: true; agent: AgentKind } | { ok: false; error: string; candidates?: string[] };
 
 /** Spoken agent name → installed agent; none named uses `fallback` (last used) when installed. */
-export function resolveAgentKind(spoken: string | undefined, fallback: AgentKind): Resolved {
-  const installed = availableAgents();
+export async function resolveAgentKind(spoken: string | undefined, fallback: AgentKind): Promise<Resolved> {
+  const installed = await availableAgents();
   if (!installed.length) return { ok: false, error: "No coding agents are installed." };
   const labels = installed.map((agent) => AGENT_LABELS[agent]);
   if (!spoken) return { ok: true, agent: installed.includes(fallback) ? fallback : installed[0]! };
