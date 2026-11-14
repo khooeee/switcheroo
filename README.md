@@ -81,7 +81,7 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 
 ## Reminders
 
-Ask any session to remind you of something ("remind me to check the deploy in 20 minutes"). Agents set reminders with the `set_reminder` tool from Switcheroo's MCP server, and can list and cancel them too. When one is due, Switcheroo shows a desktop notification and plays a short chime (unless sounds are off in settings); clicking it opens the session that set it. If voice is on, it reads the reminder out instead of chiming. Reminders are for you: they never send a prompt to a session.
+Ask any session to remind you of something ("remind me to check the deploy in 20 minutes"). Agents set reminders with the `set_reminder` tool from Switcheroo's MCP server, and can list and cancel them too. The voice agent can as well; its reminders link to the session you're talking about or the one on screen, or to the session you name. When one is due, Switcheroo shows a desktop notification and plays a short chime (unless sounds are off in settings); clicking it opens the session that set it. If voice is on, it reads the reminder out instead of chiming. Reminders are for you: they never send a prompt to a session.
 
 Pending reminders live in `reminders.json`. Click the Settings button on the bottom and select **Open Reminders** to view or edit it; changes apply as soon as you save.
 

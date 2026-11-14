@@ -63,5 +63,21 @@ export const voiceToolDefs = [
     },
     ["query"],
   ),
+  tool(
+    "set_reminder",
+    "Remind the user at a time: a popup with a chime, or you read it out while voice is on. Set it yourself; never start or prompt a coding session for it. Give minutes or at.",
+    {
+      message: { type: "string", description: "What to remind the user of, close to their words." },
+      minutes: { type: "number", description: "Minutes from now." },
+      at: { type: "string", description: "Local date and time as YYYY-MM-DDTHH:MM." },
+      session: {
+        ...SESSION,
+        description: "The session it is about; clicking the reminder opens it. Omit for the session already being discussed or on screen.",
+      },
+    },
+    ["message"],
+  ),
+  tool("list_reminders", "Pending reminders, soonest first, with the current time."),
+  tool("cancel_reminder", "Cancel a pending reminder by its id from list_reminders.", { id: { type: "string" } }, ["id"]),
   tool("stop_voice", "Turn voice off when the user says to stop listening, go to sleep, or goodbye."),
 ];

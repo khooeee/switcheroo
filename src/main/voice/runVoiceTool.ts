@@ -1,10 +1,13 @@
 import { errorMessage } from "../../shared/errorMessage";
 import { answerQuestionTool } from "./tools/answerQuestionTool";
+import { cancelReminderTool } from "./tools/cancelReminderTool";
 import { createSessionTool } from "./tools/createSessionTool";
 import { getSessionTool } from "./tools/getSessionTool";
+import { listRemindersTool } from "./tools/listRemindersTool";
 import { listSessionsTool } from "./tools/listSessionsTool";
 import { readTurnsTool } from "./tools/readTurnsTool";
 import { sendPromptTool } from "./tools/sendPromptTool";
+import { setReminderTool } from "./tools/setReminderTool";
 import { showSessionTool } from "./tools/showSessionTool";
 import { stopSessionTool } from "./tools/stopSessionTool";
 import { stopVoiceTool } from "./tools/stopVoiceTool";
@@ -26,11 +29,22 @@ const HANDLERS: Record<string, Handler> = {
   update_session: updateSessionTool,
   answer_question: answerQuestionTool,
   web_search: webSearchTool,
+  set_reminder: setReminderTool,
+  list_reminders: listRemindersTool,
+  cancel_reminder: cancelReminderTool,
   stop_voice: stopVoiceTool,
 };
 
-/** Tools that change sessions; refused unless the user's own speech triggered the response. */
-const CHANGES_SESSIONS = new Set(["send_prompt", "create_session", "stop_session", "update_session", "answer_question"]);
+/** Tools that change sessions or reminders; refused unless the user's own speech triggered the response. */
+const USER_ONLY = new Set([
+  "send_prompt",
+  "create_session",
+  "stop_session",
+  "update_session",
+  "answer_question",
+  "set_reminder",
+  "cancel_reminder",
+]);
 
 const MAX_OUTPUT = 3000;
 
@@ -45,7 +59,7 @@ export async function runVoiceTool(
   let result: unknown;
   if (!handler) {
     result = { ok: false, error: `Unknown tool ${name}.` };
-  } else if (trigger === "notice" && CHANGES_SESSIONS.has(name)) {
+  } else if (trigger === "notice" && USER_ONLY.has(name)) {
     result = {
       ok: false,
       error: "Refused: a Switcheroo notice triggered this response, not the user. Ask the user, and act only on their spoken answer.",
