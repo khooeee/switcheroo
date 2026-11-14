@@ -1,18 +1,16 @@
 import { Notification } from "electron";
+import type { ReminderAlert } from "./ReminderAlert";
 
 /** Shown notifications; a collected one stops delivering its click. */
 const live = new Set<Notification>();
 
-/** Show a desktop notification; does nothing where the OS has none. */
-export function showNotification(options: {
-  title: string;
-  /** macOS only. */
-  subtitle?: string;
-  body: string;
-  onClick: () => void;
-}): void {
-  if (!Notification.isSupported()) return;
-  const { onClick, ...content } = options;
+/**
+ * Show a desktop notification, or call `onFailed` where the OS won't: macOS refuses apps that are not
+ * properly code-signed, and the user may have turned notifications off.
+ */
+export function showNotification(alert: ReminderAlert, onFailed: () => void): void {
+  if (!Notification.isSupported()) return onFailed();
+  const { onClick, ...content } = alert;
   const notification = new Notification(content);
   const forget = () => live.delete(notification);
   notification.on("click", () => {
@@ -20,6 +18,11 @@ export function showNotification(options: {
     onClick();
   });
   notification.on("close", forget);
+  notification.on("failed", (_event, error) => {
+    forget();
+    console.warn(`[reminders] notification failed: ${error}`);
+    onFailed();
+  });
   live.add(notification);
   notification.show();
 }

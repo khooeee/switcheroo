@@ -101,7 +101,7 @@ Pending reminders live in `reminders.json`. Click the Settings button on the bot
 - `dueAt` is ISO 8601; without an offset it is local time.
 - `sessionId` is optional; without it, the notification just brings Switcheroo to the front.
 - Each reminder fires once and is then removed. One that came due while Switcheroo was closed or the computer was asleep fires late, as soon as Switcheroo is running again.
-- macOS asks for permission to show notifications the first time.
+- macOS only shows notifications for properly code-signed apps, so release builds show a small Switcheroo popup in the top-right corner instead. It stays until you click it (opens the session) or dismiss it, and never takes focus.
 
 ## iOS app
 
