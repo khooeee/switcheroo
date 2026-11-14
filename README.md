@@ -120,10 +120,6 @@ Switcheroo desktop app
 
 The phone uses the localhost control API, on a fixed port (7389 by default) that also serves Switcheroo's MCP server to sessions. Unticking the checkbox only refuses requests that come through Tailscale; sessions keep their MCP tools. Tailscale Funnel (public internet) traffic is always refused. The iOS token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again. Scripts on the Mac use a separate token from `~/.switcheroo/control.json`, which is new every launch and refused over Tailscale; sessions have their own MCP keys. Neither is affected by rotating.
 
-## Daily Log
-
-Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Daily Log Folder** to see them.
-
 ## History Management
 
 It's likely you don't have to read this section ever, but it's here in case your app gets slow.

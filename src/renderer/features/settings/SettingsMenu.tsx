@@ -89,14 +89,6 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={closeThen(window.switcheroo.openDailyLogFolder)}
-            >
-              Open Daily Log Folder
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="settings-item"
               onClick={closeThen(window.switcheroo.openTranscriptsFolder)}
             >
               Open Sessions Folder

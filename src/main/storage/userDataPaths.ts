@@ -19,15 +19,6 @@ export function remindersPath(): string {
   return path.join(userDataDir(), "reminders.json");
 }
 
-export function dailyLogDir(): string {
-  return path.join(userDataDir(), "daily-log");
-}
-
-/** Finished turns for one local day (`YYYY-MM-DD`). */
-export function dailyLogPath(date: string): string {
-  return path.join(dailyLogDir(), `${date}.jsonl`);
-}
-
 export function sessionsDir(): string {
   return path.join(userDataDir(), "sessions");
 }

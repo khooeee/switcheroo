@@ -1,7 +1,6 @@
 import { BrowserWindow, dialog, ipcMain } from "electron";
 import { openInCursor } from "./cursor/openInCursor";
 import { openFolderInCursor } from "./cursor/openFolderInCursor";
-import { openDailyLogFolder } from "./files/openDailyLogFolder";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
 import { openRemindersFile } from "./files/openRemindersFile";
@@ -100,7 +99,6 @@ export function registerIpc({ sessions, control, getMainWindow, setActiveSession
   ipcMain.handle("fs:saveMarkdown", (event, text: string, nameHint?: string) =>
     saveMarkdownFile(BrowserWindow.fromWebContents(event.sender), text, nameHint),
   );
-  ipcMain.handle("fs:openDailyLogFolder", () => openDailyLogFolder());
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
   ipcMain.handle("fs:openRemindersFile", () => openRemindersFile());
