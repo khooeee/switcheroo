@@ -92,7 +92,6 @@ const api: SwitcherooApi = {
   getVoiceStatus: () => ipcRenderer.invoke("voice:status"),
   getVoiceKeyInfo: () => ipcRenderer.invoke("voice:keyInfo"),
   setVoiceKey: (key) => ipcRenderer.invoke("voice:setKey", key),
-  openVoiceLogFolder: () => ipcRenderer.invoke("fs:openVoiceLogFolder"),
   getVoiceLog: () => ipcRenderer.invoke("voice:log"),
   onVoiceLogEntry: (cb) => subscribe<VoiceLogEntry>("voice:log-entry", cb),
   voiceAnswer: (offerSdp) => ipcRenderer.invoke("voice:answer", offerSdp),

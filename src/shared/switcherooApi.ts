@@ -155,7 +155,6 @@ export interface SwitcherooApi {
   getVoiceKeyInfo: () => Promise<VoiceKeyInfo>;
   /** Save the Inworld API key (encrypted in main); empty removes it. */
   setVoiceKey: (key: string) => Promise<void>;
-  openVoiceLogFolder: () => Promise<void>;
   /** The newest few hundred voice log entries (across days), oldest first. */
   getVoiceLog: () => Promise<VoiceLogEntry[]>;
   /** Each voice log entry as it is written. */
