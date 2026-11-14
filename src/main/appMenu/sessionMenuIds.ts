@@ -2,7 +2,6 @@
 export const SESSION_MENU_IDS = {
   pin: "session-toggle-pin",
   rename: "session-rename",
-  openInEditor: "session-open-in-editor",
   fork: "session-fork",
   markUnread: "session-mark-unread",
   stop: "session-stop",

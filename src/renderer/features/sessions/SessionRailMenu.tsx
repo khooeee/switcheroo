@@ -50,8 +50,6 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label="Open in Editor"
-        shortcut={modLabel("E")}
-        keys="Meta+E Control+E"
         disabled={!session.cwd.trim()}
         onSelect={() => void openSessionInEditor(session.id).catch(console.error)}
         onDismiss={onDismiss}

@@ -137,7 +137,6 @@ const MENU_EVENTS: Record<string, string> = {
   "filter:focus": "switcheroo:focus-filter",
   "settings:open": "switcheroo:open-settings",
   "explorer:toggle": "switcheroo:toggle-explorer",
-  "session:open-in-editor": "switcheroo:open-in-editor",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

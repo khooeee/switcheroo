@@ -8,7 +8,6 @@ export function activeSessionMenuState(ctx: MenuCtx): SessionMenuState {
   return {
     pin: activePinMenuState(ctx),
     chatItemsEnabled: !!activeSession,
-    openInEditorEnabled: !!activeSession?.cwd.trim(),
     forkEnabled: !!activeSession && supportsFork(activeSession.agent),
     stopEnabled: activeSession?.status === "running",
   };

@@ -24,15 +24,6 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       },
     },
     {
-      id: SESSION_MENU_IDS.openInEditor,
-      label: "Open in Editor",
-      enabled: state.openInEditorEnabled,
-      accelerator: "CmdOrCtrl+E",
-      click: () => {
-        win()?.webContents.send("session:open-in-editor");
-      },
-    },
-    {
       id: SESSION_MENU_IDS.markUnread,
       label: opts.getActiveUnread() ? "Mark as Read" : "Mark as Unread",
       enabled: state.chatItemsEnabled,

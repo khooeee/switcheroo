@@ -14,7 +14,6 @@ export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: b
   };
   set(SESSION_MENU_IDS.pin, state.pin.enabled, state.pin.label);
   set(SESSION_MENU_IDS.rename, state.chatItemsEnabled);
-  set(SESSION_MENU_IDS.openInEditor, state.openInEditorEnabled);
   set(SESSION_MENU_IDS.fork, state.forkEnabled);
   set(SESSION_MENU_IDS.markUnread, state.chatItemsEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
   set(SESSION_MENU_IDS.stop, state.stopEnabled);

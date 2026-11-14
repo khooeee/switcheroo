@@ -158,8 +158,6 @@ Niceties:
 
 ### Global Shortcuts
 
-**Cmd/Ctrl+E**: Open selected session's folder in Files mode
-
 **Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
 
 **Cmd/Ctrl+I**: Focus on prompt (switches to Sessions mode)
