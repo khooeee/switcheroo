@@ -63,8 +63,8 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label="Fork"
-        shortcut={modLabel("Y")}
-        keys="Meta+Y Control+Y"
+        shortcut={modLabel("N", true)}
+        keys="Meta+Shift+N Control+Shift+N"
         disabled={!session.supportsFork}
         onSelect={() => onFork(session.id)}
         onDismiss={onDismiss}

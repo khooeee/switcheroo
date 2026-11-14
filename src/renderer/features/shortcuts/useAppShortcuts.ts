@@ -148,7 +148,7 @@ export function useAppShortcuts({
         setShowNewSession(true);
         return;
       }
-      if (modKey(event, "y")) {
+      if (modKey(event, "n", true)) {
         event.preventDefault();
         if (event.repeat) return;
         forkActive();

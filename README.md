@@ -184,7 +184,7 @@ Niceties:
 
 **Cmd/Ctrl+W**: Close selected tab
 
-**Cmd/Ctrl+Y**: Fork selected session
+**Cmd/Ctrl+Shift+N**: Fork selected session
 
 **Escape**: Stop agent (while running)
 
