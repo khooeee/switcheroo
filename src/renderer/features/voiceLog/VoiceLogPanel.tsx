@@ -56,7 +56,6 @@ export function VoiceLogPanel({ scrollRef }: { scrollRef: RefObject<HTMLDivEleme
       <div className="panel-header">
         <div>
           <h2>Voice Log</h2>
-          <div className="meta">What voice heard, said and did, newest at the bottom</div>
         </div>
       </div>
       <div
