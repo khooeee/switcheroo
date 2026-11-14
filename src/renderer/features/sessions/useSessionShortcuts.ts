@@ -47,21 +47,7 @@ export function useSessionShortcuts(
       event.preventDefault();
       step(event.shiftKey ? -1 : 1);
     };
-    const onNext = () => step(1);
-    const onPrev = () => step(-1);
-    const onTogglePin = () => {
-      if (disabled) return;
-      toggleActivePin(pinned, activeTabId);
-    };
     window.addEventListener("keydown", onKey, true);
-    window.addEventListener("switcheroo:session-next", onNext);
-    window.addEventListener("switcheroo:session-prev", onPrev);
-    window.addEventListener("switcheroo:toggle-pin", onTogglePin);
-    return () => {
-      window.removeEventListener("keydown", onKey, true);
-      window.removeEventListener("switcheroo:session-next", onNext);
-      window.removeEventListener("switcheroo:session-prev", onPrev);
-      window.removeEventListener("switcheroo:toggle-pin", onTogglePin);
-    };
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [pinned, unpinned, activeTabId, selectTab, disabled, filterQuery]);
 }

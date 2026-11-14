@@ -3,9 +3,18 @@ import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import { visibleTabOrder } from "../../../shared/tabNav/visibleTabOrder";
 import { dialogOpen } from "../shortcuts/dialogOpen";
+import { isMac } from "../shortcuts/isMac";
+import { modKey } from "../shortcuts/modKey";
 import { TabHistory } from "./TabHistory";
 
-/** Go menu back/forward through previously selected tabs, skipping closed or filtered-out sessions. */
+/** Back (-1) or forward (1) for Cmd+[ / Cmd+] on macOS and Alt+Left / Alt+Right elsewhere. */
+function historyKeyStep(event: KeyboardEvent): 1 | -1 | null {
+  if (isMac) return modKey(event, "[") ? -1 : modKey(event, "]") ? 1 : null;
+  if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return null;
+  return event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : null;
+}
+
+/** Back/forward shortcuts through previously selected tabs, skipping closed or filtered-out sessions. */
 export function useTabHistory(
   pinned: Session[],
   unpinned: Session[],
@@ -21,18 +30,15 @@ export function useTabHistory(
   }, [history, activeTabId]);
 
   useEffect(() => {
-    const step = (delta: 1 | -1) => {
-      if (disabled || dialogOpen()) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (disabled || event.defaultPrevented || event.isComposing || dialogOpen()) return;
+      const delta = historyKeyStep(event);
+      if (!delta) return;
+      event.preventDefault();
       const id = history.step(delta, activeTabId, visibleTabOrder(pinned, unpinned, filterQuery));
       if (id) selectTab(id);
     };
-    const onBack = () => step(-1);
-    const onForward = () => step(1);
-    window.addEventListener("switcheroo:session-back", onBack);
-    window.addEventListener("switcheroo:session-forward", onForward);
-    return () => {
-      window.removeEventListener("switcheroo:session-back", onBack);
-      window.removeEventListener("switcheroo:session-forward", onForward);
-    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [history, pinned, unpinned, activeTabId, selectTab, disabled, filterQuery]);
 }

@@ -6,8 +6,6 @@ import type { Session } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { loadState } from "../storage/persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
-import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
-import type { SessionMenuState } from "../menuState/SessionMenuState";
 import { SessionState } from "./SessionState";
 import { SessionPersistence } from "./SessionPersistence";
 import { SessionHydration } from "./SessionHydration";
@@ -48,10 +46,6 @@ export class SessionManager {
     if (sessionId) this.agents.refreshCommandsIfNeeded(sessionId);
   }
 
-  setOnSessionsChanged(cb: (() => void) | null): void {
-    this.state.onSessionsChanged = cb;
-  }
-
   setObserver(observer: SessionObserver | null): void {
     this.state.observer = observer;
   }
@@ -60,11 +54,6 @@ export class SessionManager {
   subscribe(listener: SessionEventListener): () => void {
     this.state.listeners.add(listener);
     return () => this.state.listeners.delete(listener);
-  }
-
-  /** Session menu labels/enabled state for the active tab. */
-  activeMenuState(): SessionMenuState {
-    return activeSessionMenuState(this.state.menuCtx());
   }
 
   async init(): Promise<void> {

@@ -1,12 +1,10 @@
 import type { BrowserWindow } from "electron";
 import type { ActiveTabId } from "../../shared/activeTabId";
-import type { AgentKind } from "../../shared/agentKind";
 import type { Session } from "../../shared/session";
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { AcpSession } from "../acp/session";
 import { WarmSessionPool } from "../acp/WarmSessionPool";
 import { AgentForkSupport } from "../acp/AgentForkSupport";
-import { getAppSettings } from "../appSettings";
 import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
@@ -27,7 +25,6 @@ export class SessionState {
   askOwners = new Map<string, string>();
   warm = new WarmSessionPool<AcpSession>();
   forkSupport = new AgentForkSupport();
-  onSessionsChanged: (() => void) | null = null;
   observer: SessionObserver | null = null;
   /** Main-process taps on every renderer event (remote clients). */
   listeners = new Set<SessionEventListener>();
@@ -43,15 +40,6 @@ export class SessionState {
   /** The session in the main panel, if any. */
   activeSession(): Session | null {
     return this.activeTabId ? this.sessions.get(this.activeTabId) ?? null : null;
-  }
-
-  menuCtx() {
-    return {
-      activeSession: this.activeSession(),
-      pinnedIds: this.railLists.pinnedIds,
-      railMode: getAppSettings().railMode,
-      supportsFork: (agent: AgentKind) => this.forkSupport.flags(agent).supportsFork,
-    };
   }
 
   prependSession(session: Session, pin = false): void {
@@ -87,7 +75,6 @@ export class SessionState {
 
   emitSessions(): void {
     this.send("sessions:changed", this.sessionListPayload());
-    this.onSessionsChanged?.();
   }
 
   /** Push the in-memory transcript so the renderer cannot show a stale empty list. */

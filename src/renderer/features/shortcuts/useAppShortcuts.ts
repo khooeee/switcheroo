@@ -60,14 +60,13 @@ export function useAppShortcuts({
   activeId.current = activeTabId;
   const blockedRef = useRef(blocked);
   blockedRef.current = blocked;
-  const runningId = useRef<string | null>(null);
-  runningId.current = activeSession?.status === "running" ? activeSession.id : null;
   const forkableId = useRef<string | null>(null);
   forkableId.current = activeSession?.supportsFork ? activeSession.id : null;
 
   const filesMode = useRailMode() === "files";
   const promptFocus = useSessionFocusShortcuts(activeTabId, blocked);
-  useFocusShortcut("i", !!activeSession && !blocked, requestPromptFocus);
+  // Not gated on an active session: from File Explorer mode Cmd+I also switches back to Sessions.
+  useFocusShortcut("i", !blocked, requestPromptFocus);
   // In File Explorer mode Cmd+P is Go to File.
   useFocusShortcut("p", !blocked && !filesMode, focusFilter);
   // Pin, tab stepping and history, find in history, new, fork, unread and rename are Sessions mode only.
@@ -85,11 +84,6 @@ export function useAppShortcuts({
       if (!id || blockedRef.current || inFilesMode()) return;
       void window.switcheroo.forkSession(id).catch(console.error);
     };
-    const stopActive = () => {
-      const id = runningId.current;
-      if (!id || blockedRef.current) return;
-      void window.switcheroo.cancelPrompt(id).catch(console.error);
-    };
     const openFind = () => {
       if (dialogOpen() || findInSessionsOpen.current) return;
       if (inFilesMode()) {
@@ -103,9 +97,6 @@ export function useAppShortcuts({
       setFindOpen(false);
       setFindQuery("");
       setShowFindInSessions(true);
-    };
-    const openNewSession = () => {
-      if (!dialogOpen() && !inFilesMode()) setShowNewSession(true);
     };
 
     const onKey = (event: KeyboardEvent) => {
@@ -180,10 +171,6 @@ export function useAppShortcuts({
     const menuCommands: Array<[string, () => void]> = [
       ["switcheroo:find", openFind],
       ["switcheroo:find-sessions", openFindSessions],
-      ["switcheroo:new-session", openNewSession],
-      ["switcheroo:fork-session", forkActive],
-      ["switcheroo:close-session", closeActive],
-      ["switcheroo:stop-session", stopActive],
     ];
     for (const [name, handler] of menuCommands) window.addEventListener(name, handler);
     window.addEventListener("keydown", onKey);

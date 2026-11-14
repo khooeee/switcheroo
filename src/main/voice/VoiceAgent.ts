@@ -30,8 +30,6 @@ import { voiceUserMessage } from "./voiceUserMessage";
 type Deps = {
   sessions: SessionManager;
   getWindow: () => BrowserWindow | null;
-  /** Status changed (refresh the Voice menu). */
-  onStatus: (status: VoiceStatus) => void;
 };
 type ServerEvent = Record<string, unknown>;
 
@@ -284,6 +282,5 @@ export class VoiceAgent {
     if (next.state === this.status.state && next.activity === this.status.activity && next.error === this.status.error) return;
     this.status = next;
     this.link.status(this.getStatus());
-    this.deps.onStatus(this.getStatus());
   }
 }

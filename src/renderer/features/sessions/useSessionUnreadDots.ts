@@ -38,9 +38,5 @@ export function useSessionUnreadDots(activeTabId: ActiveTabId) {
     });
   }, []);
 
-  useEffect(() => {
-    void window.switcheroo.setActiveSessionUnread(!!activeTabId && unread.has(activeTabId));
-  }, [activeTabId, unread]);
-
   return { unread, toggleUnread };
 }

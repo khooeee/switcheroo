@@ -21,7 +21,6 @@ type IpcContext = {
   sessions: SessionManager;
   control: ControlServer;
   getMainWindow: () => BrowserWindow | null;
-  setActiveSessionUnread: (unread: boolean) => void;
   refreshMenus: () => void;
 };
 
@@ -30,7 +29,6 @@ export function registerIpc({
   sessions,
   control,
   getMainWindow,
-  setActiveSessionUnread,
   refreshMenus,
 }: IpcContext): void {
   ipcMain.handle("agents:available", () => availableAgents());
@@ -61,9 +59,6 @@ export function registerIpc({
   });
   ipcMain.handle("sessions:unpin", (_e, sessionId: string) => {
     sessions.unpinSession(sessionId);
-  });
-  ipcMain.handle("sessions:setActiveUnread", (_e, unread: boolean) => {
-    setActiveSessionUnread(!!unread);
   });
   ipcMain.handle("sessions:setActive", (_e, tabId: string) =>
     sessions.setActiveTab(tabId),
@@ -104,7 +99,7 @@ export function registerIpc({
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", async (_e, patch: Partial<AppSettings>) => {
     const next = sessions.updateSettings(patch);
-    // Session menu items are disabled in File Explorer mode.
+    // Find in History is disabled in File Explorer mode.
     if (patch.railMode !== undefined) refreshMenus();
     await control.apply(next);
     return next;

@@ -1,14 +1,12 @@
 import { Menu, app } from "electron";
 import type { AppMenuOptions } from "./AppMenuOptions";
 import { SESSION_MENU_IDS } from "./sessionMenuIds";
-import { sessionSubmenu } from "./sessionSubmenu";
-import { voiceSubmenu } from "./voiceSubmenu";
 
 /** Build the application menu; session item state comes from getters. */
 export function buildAppMenu(opts: AppMenuOptions): void {
   const win = () => opts.getMainWindow();
   const isMac = process.platform === "darwin";
-  const sessionsMode = opts.getMenuState().sessionsModeEnabled;
+  const sessionsMode = opts.getSessionsMode();
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(isMac
       ? [
@@ -36,10 +34,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           },
         ]
       : []),
-    {
-      label: "Session",
-      submenu: sessionSubmenu(opts),
-    },
     {
       label: "Edit",
       submenu: [
@@ -104,71 +98,9 @@ export function buildAppMenu(opts: AppMenuOptions): void {
       ],
     },
     {
-      label: "Go",
-      submenu: [
-        {
-          id: SESSION_MENU_IDS.nextTab,
-          label: "Go to Next Tab",
-          enabled: sessionsMode,
-          accelerator: "Ctrl+Tab",
-          click: () => {
-            win()?.webContents.send("session:next");
-          },
-        },
-        {
-          id: SESSION_MENU_IDS.prevTab,
-          label: "Go to Previous Tab",
-          enabled: sessionsMode,
-          accelerator: "Ctrl+Shift+Tab",
-          click: () => {
-            win()?.webContents.send("session:prev");
-          },
-        },
-        {
-          id: SESSION_MENU_IDS.back,
-          label: "Go Back",
-          enabled: sessionsMode,
-          accelerator: isMac ? "Cmd+[" : "Alt+Left",
-          click: () => {
-            win()?.webContents.send("session:back");
-          },
-        },
-        {
-          id: SESSION_MENU_IDS.forward,
-          label: "Go Forward",
-          enabled: sessionsMode,
-          accelerator: isMac ? "Cmd+]" : "Alt+Right",
-          click: () => {
-            win()?.webContents.send("session:forward");
-          },
-        },
-        { type: "separator" },
-        {
-          label: "Go to Prompt",
-          accelerator: "CmdOrCtrl+I",
-          click: () => {
-            win()?.webContents.send("prompt:focus");
-          },
-        },
-        {
-          id: SESSION_MENU_IDS.filter,
-          label: "Go to Filter Sessions",
-          enabled: sessionsMode,
-          accelerator: "CmdOrCtrl+P",
-          click: () => {
-            win()?.webContents.send("filter:focus");
-          },
-        },
-      ],
-    },
-    {
-      label: "Voice",
-      submenu: voiceSubmenu(opts.voice),
-    },
-    {
       label: "Window",
-      // The close role binds Ctrl+W on Linux, which belongs to Session → Close.
-      submenu: [{ role: "minimize" }, ...(isMac ? [{ role: "close" as const }] : [])],
+      // No close role: it binds Cmd/Ctrl+W, which closes the active session in the renderer.
+      submenu: [{ role: "minimize" }],
     },
     ...(isMac
       ? []

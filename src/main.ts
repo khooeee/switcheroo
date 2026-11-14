@@ -22,11 +22,9 @@ import type { SessionFileWatcher } from "./main/files/SessionFileWatcher";
 import { confirmRendererUnsaved } from "./main/files/confirmRendererUnsaved";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
-import { refreshVoiceMenuItems } from "./main/appMenu/refreshVoiceMenuItems";
 import type { AppMenuOptions } from "./main/appMenu/AppMenuOptions";
 import { VoiceAgent } from "./main/voice/VoiceAgent";
 import { registerVoiceIpc } from "./main/voice/registerVoiceIpc";
-import { openVoiceLogFolder } from "./main/files/openVoiceLogFolder";
 import { shellEnv } from "./main/shellEnv/shellEnv";
 import { errorMessage } from "./shared/errorMessage";
 
@@ -51,20 +49,20 @@ const crons = new CronScheduler((job, at) => {
     console.warn(`[crons] "${job.cron}" in ${job.cwd} failed:`, errorMessage(error));
   });
 });
-let activeSessionUnread = false;
 let fileWatcher: SessionFileWatcher | null = null;
 const voice = new VoiceAgent({
   sessions,
   getWindow: () => mainWindow,
-  onStatus: refreshVoiceMenuItems,
 });
 sessions.setObserver(voice.observer);
 const reminders = new ReminderScheduler((reminder) =>
   fireReminder(reminder, { sessions, voice, getWindow: () => mainWindow }),
 );
 
+const sessionsMode = () => sessions.getSettings().railMode === "sessions";
+
 function refreshMenus() {
-  refreshSessionMenuItems(sessions.activeMenuState(), activeSessionUnread);
+  refreshSessionMenuItems(sessionsMode());
 }
 
 const createWindow = async () => {
@@ -118,27 +116,13 @@ if (installSingleInstanceLock(() => mainWindow)) {
       sessions,
       control,
       getMainWindow: () => mainWindow,
-      setActiveSessionUnread: (unread) => {
-        activeSessionUnread = unread;
-        refreshMenus();
-      },
       refreshMenus,
     });
     registerVoiceIpc(voice);
     fileWatcher = registerFileIpc(sessions);
-    sessions.setOnSessionsChanged(() => {
-      refreshMenus();
-    });
     const menuOptions: AppMenuOptions = {
       getMainWindow: () => mainWindow,
-      getMenuState: () => sessions.activeMenuState(),
-      getActiveUnread: () => activeSessionUnread,
-      voice: {
-        getStatus: () => voice.getStatus(),
-        toggle: () => void voice.toggle(),
-        openSettings: () => mainWindow?.webContents.send("settings:open"),
-        openLog: () => void openVoiceLogFolder().catch(console.error),
-      },
+      getSessionsMode: sessionsMode,
     };
     buildAppMenu(menuOptions);
     void createWindow().then(() => {

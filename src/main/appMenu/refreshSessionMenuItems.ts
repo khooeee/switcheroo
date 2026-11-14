@@ -1,23 +1,12 @@
 import { Menu } from "electron";
-import type { SessionMenuState } from "../menuState/SessionMenuState";
 import { SESSION_MENU_IDS } from "./sessionMenuIds";
 
-/** Update session menu labels/enabled state in place without rebuilding the menu. */
-export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: boolean): void {
+/** Enable or disable the Sessions-mode menu items in place without rebuilding the menu. */
+export function refreshSessionMenuItems(sessionsMode: boolean): void {
   const menu = Menu.getApplicationMenu();
   if (!menu) return;
-  const set = (id: string, enabled: boolean, label?: string) => {
+  for (const id of Object.values(SESSION_MENU_IDS)) {
     const item = menu.getMenuItemById(id);
-    if (!item) return;
-    item.enabled = enabled;
-    if (label !== undefined) item.label = label;
-  };
-  const sessionsModeIds = ["newSession", "findInHistory", "nextTab", "prevTab", "back", "forward", "filter"] as const;
-  for (const key of sessionsModeIds) set(SESSION_MENU_IDS[key], state.sessionsModeEnabled);
-  set(SESSION_MENU_IDS.pin, state.pin.enabled, state.pin.label);
-  set(SESSION_MENU_IDS.rename, state.chatItemsEnabled);
-  set(SESSION_MENU_IDS.fork, state.forkEnabled);
-  set(SESSION_MENU_IDS.markUnread, state.chatItemsEnabled, activeUnread ? "Mark as Read" : "Mark as Unread");
-  set(SESSION_MENU_IDS.stop, state.stopEnabled);
-  set(SESSION_MENU_IDS.close, state.chatItemsEnabled);
+    if (item) item.enabled = sessionsMode;
+  }
 }
