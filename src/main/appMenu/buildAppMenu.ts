@@ -1,5 +1,6 @@
 import { Menu, app } from "electron";
 import type { AppMenuOptions } from "./AppMenuOptions";
+import { SESSION_MENU_IDS } from "./sessionMenuIds";
 import { sessionSubmenu } from "./sessionSubmenu";
 import { voiceSubmenu } from "./voiceSubmenu";
 
@@ -7,6 +8,7 @@ import { voiceSubmenu } from "./voiceSubmenu";
 export function buildAppMenu(opts: AppMenuOptions): void {
   const win = () => opts.getMainWindow();
   const isMac = process.platform === "darwin";
+  const sessionsMode = opts.getMenuState().sessionsModeEnabled;
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(isMac
       ? [
@@ -57,7 +59,9 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           },
         },
         {
+          id: SESSION_MENU_IDS.findInHistory,
           label: "Find in History",
+          enabled: sessionsMode,
           accelerator: "CmdOrCtrl+Shift+F",
           click: () => {
             win()?.webContents.send("find-sessions:open");
@@ -103,28 +107,36 @@ export function buildAppMenu(opts: AppMenuOptions): void {
       label: "Go",
       submenu: [
         {
+          id: SESSION_MENU_IDS.nextTab,
           label: "Go to Next Tab",
+          enabled: sessionsMode,
           accelerator: "Ctrl+Tab",
           click: () => {
             win()?.webContents.send("session:next");
           },
         },
         {
+          id: SESSION_MENU_IDS.prevTab,
           label: "Go to Previous Tab",
+          enabled: sessionsMode,
           accelerator: "Ctrl+Shift+Tab",
           click: () => {
             win()?.webContents.send("session:prev");
           },
         },
         {
+          id: SESSION_MENU_IDS.back,
           label: "Go Back",
+          enabled: sessionsMode,
           accelerator: isMac ? "Cmd+[" : "Alt+Left",
           click: () => {
             win()?.webContents.send("session:back");
           },
         },
         {
+          id: SESSION_MENU_IDS.forward,
           label: "Go Forward",
+          enabled: sessionsMode,
           accelerator: isMac ? "Cmd+]" : "Alt+Right",
           click: () => {
             win()?.webContents.send("session:forward");

@@ -122,6 +122,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
         activeSessionUnread = unread;
         refreshMenus();
       },
+      refreshMenus,
     });
     registerVoiceIpc(voice);
     fileWatcher = registerFileIpc(sessions);

@@ -22,10 +22,17 @@ type IpcContext = {
   control: ControlServer;
   getMainWindow: () => BrowserWindow | null;
   setActiveSessionUnread: (unread: boolean) => void;
+  refreshMenus: () => void;
 };
 
 /** Register every renderer → main `ipcMain.handle` channel. */
-export function registerIpc({ sessions, control, getMainWindow, setActiveSessionUnread }: IpcContext): void {
+export function registerIpc({
+  sessions,
+  control,
+  getMainWindow,
+  setActiveSessionUnread,
+  refreshMenus,
+}: IpcContext): void {
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle("edit:contextMenu", (event, opts?: EditContextMenuOptions) => {
     showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
@@ -97,6 +104,8 @@ export function registerIpc({ sessions, control, getMainWindow, setActiveSession
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", async (_e, patch: Partial<AppSettings>) => {
     const next = sessions.updateSettings(patch);
+    // Session menu items are disabled in File Explorer mode.
+    if (patch.railMode !== undefined) refreshMenus();
     await control.apply(next);
     return next;
   });

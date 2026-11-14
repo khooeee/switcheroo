@@ -8,7 +8,9 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
   const state = opts.getMenuState();
   return [
     {
+      id: SESSION_MENU_IDS.newSession,
       label: "New Session",
+      enabled: state.sessionsModeEnabled,
       accelerator: "CmdOrCtrl+N",
       click: () => {
         win()?.webContents.send("session:new");

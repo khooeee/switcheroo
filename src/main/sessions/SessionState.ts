@@ -6,6 +6,7 @@ import type { TranscriptTurn } from "../../shared/transcript";
 import type { AcpSession } from "../acp/session";
 import { WarmSessionPool } from "../acp/WarmSessionPool";
 import { AgentForkSupport } from "../acp/AgentForkSupport";
+import { getAppSettings } from "../appSettings";
 import { prependPinnedInLists } from "../railLists/prependPinnedInLists";
 import { prependUnpinnedInLists } from "../railLists/prependUnpinnedInLists";
 import type { SessionRailLists } from "../railLists/SessionRailLists";
@@ -48,6 +49,7 @@ export class SessionState {
     return {
       activeSession: this.activeSession(),
       pinnedIds: this.railLists.pinnedIds,
+      railMode: getAppSettings().railMode,
       supportsFork: (agent: AgentKind) => this.forkSupport.flags(agent).supportsFork,
     };
   }
