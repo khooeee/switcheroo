@@ -8,7 +8,7 @@ import { requestAuthorized } from "./requestAuthorized";
 import { sendJson } from "./sendJson";
 import { viaTailscaleServe } from "./viaTailscaleServe";
 
-export type ServerContext = {
+type ServerContext = {
   /** control.json scripts' token; refused over Tailscale. */
   localToken: string;
   /** The iOS app's token. */

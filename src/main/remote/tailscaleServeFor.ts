@@ -1,6 +1,6 @@
 import { runTailscale } from "./runTailscale";
 
-export interface TailscaleServe {
+interface TailscaleServe {
   /** e.g. `https://mac.tail1234.ts.net` */
   url: string;
   /** Stops serving that URL, e.g. `tailscale serve --https=443 off`. */
