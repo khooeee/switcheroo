@@ -151,7 +151,9 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           },
         },
         {
+          id: SESSION_MENU_IDS.filter,
           label: "Go to Filter Sessions",
+          enabled: sessionsMode,
           accelerator: "CmdOrCtrl+P",
           click: () => {
             win()?.webContents.send("filter:focus");

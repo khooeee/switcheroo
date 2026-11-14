@@ -12,4 +12,5 @@ export const SESSION_MENU_IDS = {
   prevTab: "session-prev-tab",
   back: "session-back",
   forward: "session-forward",
+  filter: "session-filter",
 } as const;

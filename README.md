@@ -212,10 +212,6 @@ Niceties:
 
 **Cmd/Ctrl+W**: Close file
 
-**Arrow keys, Home/End**: Move through the file tree, expand/collapse folders
-
-**Enter**: Open selected file, or expand/collapse selected folder
-
 **Ctrl+Tab**: Go to next open file
 
 **Ctrl+Shift+Tab**: Go to previous open file

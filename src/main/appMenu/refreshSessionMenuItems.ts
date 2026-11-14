@@ -12,7 +12,7 @@ export function refreshSessionMenuItems(state: SessionMenuState, activeUnread: b
     item.enabled = enabled;
     if (label !== undefined) item.label = label;
   };
-  const sessionsModeIds = ["newSession", "findInHistory", "nextTab", "prevTab", "back", "forward"] as const;
+  const sessionsModeIds = ["newSession", "findInHistory", "nextTab", "prevTab", "back", "forward", "filter"] as const;
   for (const key of sessionsModeIds) set(SESSION_MENU_IDS[key], state.sessionsModeEnabled);
   set(SESSION_MENU_IDS.pin, state.pin.enabled, state.pin.label);
   set(SESSION_MENU_IDS.rename, state.chatItemsEnabled);
