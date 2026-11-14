@@ -4,7 +4,9 @@ import { closeFileTab } from "../editor/closeFileTab";
 import { EditorTabs } from "../editor/EditorTabs";
 import { FileEditor } from "../editor/FileEditor";
 import { FileHeader } from "../editor/FileHeader";
-import { fileBufferStore } from "../editor/fileBufferStore";
+import { nextUntitledPath } from "../editor/nextUntitledPath";
+import { saveFileAs } from "../editor/saveFileAs";
+import { saveFileTab } from "../editor/saveFileTab";
 import { GoToFile } from "../goToFile/GoToFile";
 import { modLabel } from "../shortcuts/modLabel";
 import { explorerStore } from "./explorerStore";
@@ -28,27 +30,27 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
   const restored = useExplorerRestored(sessionId);
   const { openFiles, activeFile, previewFile } = useExplorerState(sessionId);
 
-  // Cmd+W / Cmd+S / Ctrl+Tab in File Explorer mode act on the tabs (see useFileShortcuts).
+  // Cmd+N / Cmd+W / Cmd+S / Cmd+Shift+S / Ctrl+Tab in File Explorer mode act on the tabs (see useFileShortcuts).
   useEffect(() => {
-    const onCloseFile = () => {
-      if (activeFile) void closeFileTab(sessionId, activeFile);
+    const onActiveFile = (act: (path: string) => unknown) => () => {
+      if (activeFile) void act(activeFile);
     };
-    const onSaveFile = () => {
-      if (activeFile) void fileBufferStore.save(sessionId, activeFile);
-    };
-    const onNextFile = () => explorerStore.cycleFile(sessionId, 1);
-    const onPrevFile = () => explorerStore.cycleFile(sessionId, -1);
-    window.addEventListener("switcheroo:close-file", onCloseFile);
-    window.addEventListener("switcheroo:save-file", onSaveFile);
-    window.addEventListener("switcheroo:next-file", onNextFile);
-    window.addEventListener("switcheroo:prev-file", onPrevFile);
+    const commands: Array<[string, () => void]> = [
+      // Not before the saved tabs are back: restoring never replaces a changed explorer.
+      ["switcheroo:new-file", () => {
+        if (restored) explorerStore.openFile(sessionId, nextUntitledPath(explorerStore.get(sessionId).openFiles));
+      }],
+      ["switcheroo:close-file", onActiveFile((path) => closeFileTab(sessionId, path))],
+      ["switcheroo:save-file", onActiveFile((path) => saveFileTab(sessionId, path))],
+      ["switcheroo:save-file-as", onActiveFile((path) => saveFileAs(sessionId, path))],
+      ["switcheroo:next-file", () => explorerStore.cycleFile(sessionId, 1)],
+      ["switcheroo:prev-file", () => explorerStore.cycleFile(sessionId, -1)],
+    ];
+    for (const [name, handler] of commands) window.addEventListener(name, handler);
     return () => {
-      window.removeEventListener("switcheroo:close-file", onCloseFile);
-      window.removeEventListener("switcheroo:save-file", onSaveFile);
-      window.removeEventListener("switcheroo:next-file", onNextFile);
-      window.removeEventListener("switcheroo:prev-file", onPrevFile);
+      for (const [name, handler] of commands) window.removeEventListener(name, handler);
     };
-  }, [sessionId, activeFile]);
+  }, [sessionId, activeFile, restored]);
 
   if (!restored) return <section className="panel" />;
   return (
@@ -64,7 +66,9 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
           </div>
         </>
       ) : (
-        <div className="empty">Click a file to open it, or press {modLabel("P")} to search.</div>
+        <div className="empty">
+          Click a file to open it, press {modLabel("P")} to search, or {modLabel("N")} for a new one.
+        </div>
       )}
       <GoToFile key={sessionId} sessionId={sessionId} />
     </section>

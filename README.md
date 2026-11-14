@@ -206,9 +206,13 @@ Niceties:
 
 **Cmd/Ctrl+G**: Find next
 
+**Cmd/Ctrl+N**: New untitled file (saving it asks where)
+
 **Cmd/Ctrl+P**: Go to File (search files & folders, Enter to open)
 
 **Cmd/Ctrl+S**: Save file
+
+**Cmd/Ctrl+Shift+S**: Save file as
 
 **Cmd/Ctrl+W**: Close file
 

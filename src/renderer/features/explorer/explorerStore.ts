@@ -1,3 +1,4 @@
+import { isUntitledPath } from "../editor/isUntitledPath";
 import { ancestorPaths } from "./ancestorPaths";
 import { explorerChanges } from "./explorerChanges";
 import type { ExplorerState } from "./ExplorerState";
@@ -101,10 +102,26 @@ export const explorerStore = {
     update(sessionId, (prev) => (prev.previewFile === path ? { ...prev, previewFile: null } : prev));
   },
 
-  /** Open a file tab with its folders expanded, so its row shows in the tree. */
+  /** Open a file tab with its folders expanded, so its row shows in the tree (an untitled tab has no row). */
   revealFile(sessionId: string, path: string): void {
-    expandFolders(sessionId, ancestorPaths(path));
+    if (!isUntitledPath(path)) expandFolders(sessionId, ancestorPaths(path));
     explorerStore.openFile(sessionId, path);
+  },
+
+  /** Save As: tab `from` now shows file `to`, in the same place; a tab `to` already had goes away. */
+  renameFile(sessionId: string, from: string, to: string): void {
+    expandFolders(sessionId, ancestorPaths(to));
+    update(sessionId, (prev) => {
+      if (from === to || !prev.openFiles.includes(from)) return prev;
+      const renamed = (path: string | null) => (path === from ? to : path);
+      return {
+        ...prev,
+        openFiles: prev.openFiles.filter((path) => path !== to).map((path) => (path === from ? to : path)),
+        activeFile: renamed(prev.activeFile),
+        selected: renamed(prev.selected),
+        previewFile: prev.previewFile === from || prev.previewFile === to ? null : prev.previewFile,
+      };
+    });
   },
 
   /** Expand a folder and the folders holding it, and highlight its row. */

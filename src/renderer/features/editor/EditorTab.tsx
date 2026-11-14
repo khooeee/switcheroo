@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { baseName } from "./baseName";
+import { displayPath } from "./displayPath";
 import { useFileBuffer } from "./useFileBuffer";
 
 interface Props {
@@ -32,7 +33,7 @@ export const EditorTab = memo(function EditorTab({
       role="tab"
       aria-selected={active}
       className={`editor-tab${active ? " active" : ""}${dirty ? " dirty" : ""}${preview ? " preview" : ""}`}
-      title={path}
+      title={displayPath(path)}
       data-path={path}
       onClick={() => onActivate(path)}
       onDoubleClick={() => onPin(path)}

@@ -1,6 +1,7 @@
 import type { PersistedExplorer } from "../../../shared/persistedExplorer";
 import { errorMessage } from "../../../shared/errorMessage";
 import { fileScrollMemory } from "../editor/fileScrollMemory";
+import { isUntitledPath } from "../editor/isUntitledPath";
 import { explorerChanges } from "./explorerChanges";
 import { explorerStore } from "./explorerStore";
 import { treeScrollMemory } from "./treeScrollMemory";
@@ -12,16 +13,20 @@ const restoring = new Map<string, Promise<void>>();
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
 const listeners = new Set<() => void>();
 
+/** Untitled tabs live only while the app runs, so the saved state leaves them out. */
 function snapshot(sessionId: string): PersistedExplorer {
   const state = explorerStore.get(sessionId);
+  const openFiles = state.openFiles.filter((path) => !isUntitledPath(path));
+  const onDisk = (path: string | null) => (path !== null && isUntitledPath(path) ? null : path);
+  const tops = Object.entries(fileScrollMemory.forSession(sessionId)).filter(([path]) => !isUntitledPath(path));
   return {
     expanded: [...state.expanded],
-    selected: state.selected,
-    openFiles: [...state.openFiles],
-    activeFile: state.activeFile,
+    selected: onDisk(state.selected),
+    openFiles,
+    activeFile: onDisk(state.activeFile) ?? openFiles[openFiles.length - 1] ?? null,
     previewFile: state.previewFile,
     treeScrollTop: treeScrollMemory.get(sessionId) ?? 0,
-    fileTops: fileScrollMemory.forSession(sessionId),
+    fileTops: Object.fromEntries(tops),
   };
 }
 

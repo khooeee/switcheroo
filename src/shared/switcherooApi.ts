@@ -7,6 +7,7 @@ import type { CreateSessionInput } from "./createSessionInput";
 import type { DirEntry } from "./dirEntry";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { RemoteStatus } from "./remoteStatus";
+import type { SavedFile } from "./savedFile";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { FileContent } from "./fileContent";
 import type { FileWriteResult } from "./fileWriteResult";
@@ -90,6 +91,8 @@ export interface SwitcherooApi {
     text: string,
     baseMtimeMs: number | null,
   ) => Promise<FileWriteResult>;
+  /** Native Save As inside the session cwd, starting at relative path `suggested`; null when cancelled. */
+  saveSessionFileAs: (sessionId: string, suggested: string, text: string) => Promise<SavedFile | null>;
   /** Native Save / Don't Save / Cancel for files with unsaved edits. */
   confirmUnsavedChanges: (names: string[]) => Promise<UnsavedChoice>;
   /** Watch the session cwd while its explorer is shown; changes arrive on `onSessionFilesChanged`. */

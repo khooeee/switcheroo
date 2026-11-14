@@ -5,11 +5,15 @@ import { resolveUnsavedFiles } from "./resolveUnsavedFiles";
 
 /** Close an editor tab, asking to save unsaved edits first. False when the user cancels or the save fails. */
 export async function closeFileTab(sessionId: string, path: string): Promise<boolean> {
-  if (fileBufferStore.isDirty(sessionId, path) && !(await resolveUnsavedFiles([{ sessionId, path }]))) {
-    return false;
+  let closing = path;
+  if (fileBufferStore.isDirty(sessionId, path)) {
+    const resolved = await resolveUnsavedFiles([{ sessionId, path }]);
+    if (!resolved) return false;
+    // Saving an untitled file gave its tab the file's path.
+    closing = resolved[0].path;
   }
-  explorerStore.closeFile(sessionId, path);
-  fileBufferStore.drop(sessionId, path);
-  fileScrollMemory.delete(sessionId, path);
+  explorerStore.closeFile(sessionId, closing);
+  fileBufferStore.drop(sessionId, closing);
+  fileScrollMemory.delete(sessionId, closing);
   return true;
 }
