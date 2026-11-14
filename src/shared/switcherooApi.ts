@@ -94,6 +94,11 @@ export interface SwitcherooApi {
   ) => Promise<FileWriteResult>;
   /** Native Save / Don't Save / Cancel for files with unsaved edits. */
   confirmUnsavedChanges: (names: string[]) => Promise<UnsavedChoice>;
+  /** Watch the session cwd while its explorer is shown; changes arrive on `onSessionFilesChanged`. */
+  watchSessionFiles: (sessionId: string) => Promise<void>;
+  unwatchSessionFiles: (sessionId: string) => Promise<void>;
+  /** Relative paths that changed under a watched session; null means too many to list. */
+  onSessionFilesChanged: (cb: (payload: { sessionId: string; paths: string[] | null }) => void) => () => void;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

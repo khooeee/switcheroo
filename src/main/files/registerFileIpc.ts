@@ -3,10 +3,12 @@ import type { SessionManager } from "../sessions/SessionManager";
 import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
 import { readSessionFile } from "./readSessionFile";
+import { SessionFileWatcher } from "./SessionFileWatcher";
 import { writeSessionFile } from "./writeSessionFile";
 
-/** File explorer and editor channels; every path is relative to the session's cwd. */
-export function registerFileIpc(sessions: SessionManager): void {
+/** File explorer and editor channels; every path is relative to the session's cwd. Returns the watcher to dispose on quit. */
+export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
+  const watcher = new SessionFileWatcher();
   const cwdOf = (sessionId: string): string => {
     const session = sessions.getSession(sessionId);
     if (!session) throw new Error("This agent session no longer exists.");
@@ -27,4 +29,11 @@ export function registerFileIpc(sessions: SessionManager): void {
   ipcMain.handle("files:confirmUnsaved", (event, names: string[]) =>
     confirmUnsavedChanges(BrowserWindow.fromWebContents(event.sender), names),
   );
+  ipcMain.handle("files:watch", (event, sessionId: string) => {
+    watcher.watch(sessionId, cwdOf(sessionId), event.sender);
+  });
+  ipcMain.handle("files:unwatch", (_e, sessionId: string) => {
+    watcher.unwatch(sessionId);
+  });
+  return watcher;
 }
