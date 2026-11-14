@@ -59,6 +59,15 @@ export const explorerStore = {
     });
   },
 
+  /** Switch to the tab `delta` places along (wrapping), highlighting its row. */
+  cycleFile(sessionId: string, delta: number): void {
+    const { openFiles, activeFile } = explorerStore.get(sessionId);
+    if (openFiles.length === 0) return;
+    const index = activeFile === null ? -1 : openFiles.indexOf(activeFile);
+    const start = index < 0 ? (delta > 0 ? -1 : 0) : index;
+    explorerStore.openFile(sessionId, openFiles[(start + delta + openFiles.length) % openFiles.length]);
+  },
+
   activateFile(sessionId: string, path: string): void {
     update(sessionId, (prev) => (prev.activeFile === path ? prev : { ...prev, activeFile: path }));
   },

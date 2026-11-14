@@ -5,6 +5,7 @@ import { EditorTabs } from "../editor/EditorTabs";
 import { FileEditor } from "../editor/FileEditor";
 import { FileHeader } from "../editor/FileHeader";
 import { fileBufferStore } from "../editor/fileBufferStore";
+import { explorerStore } from "./explorerStore";
 import { useExplorerRestored } from "./useExplorerRestored";
 import { useExplorerState } from "./useExplorerState";
 import "../editor/editor.css";
@@ -25,7 +26,7 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
   const restored = useExplorerRestored(sessionId);
   const { openFiles, activeFile } = useExplorerState(sessionId);
 
-  // Cmd+W / Cmd+S in File Explorer mode act on the active tab (see useFileShortcuts).
+  // Cmd+W / Cmd+S / Ctrl+Tab in File Explorer mode act on the tabs (see useFileShortcuts).
   useEffect(() => {
     const onCloseFile = () => {
       if (activeFile) void closeFileTab(sessionId, activeFile);
@@ -33,11 +34,17 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
     const onSaveFile = () => {
       if (activeFile) void fileBufferStore.save(sessionId, activeFile);
     };
+    const onNextFile = () => explorerStore.cycleFile(sessionId, 1);
+    const onPrevFile = () => explorerStore.cycleFile(sessionId, -1);
     window.addEventListener("switcheroo:close-file", onCloseFile);
     window.addEventListener("switcheroo:save-file", onSaveFile);
+    window.addEventListener("switcheroo:next-file", onNextFile);
+    window.addEventListener("switcheroo:prev-file", onPrevFile);
     return () => {
       window.removeEventListener("switcheroo:close-file", onCloseFile);
       window.removeEventListener("switcheroo:save-file", onSaveFile);
+      window.removeEventListener("switcheroo:next-file", onNextFile);
+      window.removeEventListener("switcheroo:prev-file", onPrevFile);
     };
   }, [sessionId, activeFile]);
 
