@@ -1,3 +1,4 @@
+import { explorerChanges } from "./explorerChanges";
 import type { ExplorerState } from "./ExplorerState";
 
 const EMPTY: ExplorerState = { expanded: [], selected: null, openFiles: [], activeFile: null };
@@ -12,6 +13,7 @@ function update(sessionId: string, change: (prev: ExplorerState) => ExplorerStat
   if (next === prev) return;
   states = { ...states, [sessionId]: next };
   listeners.forEach((listener) => listener());
+  explorerChanges.notify(sessionId);
 }
 
 /** The tab that takes over when `path` closes: the one to its right, else its left. */
@@ -29,6 +31,11 @@ export const explorerStore = {
 
   get(sessionId: string): ExplorerState {
     return states[sessionId] ?? EMPTY;
+  },
+
+  /** Put back saved state, unless the user already changed this session's explorer. */
+  restore(sessionId: string, saved: ExplorerState): void {
+    update(sessionId, (prev) => (prev === EMPTY ? saved : prev));
   },
 
   setExpanded(sessionId: string, path: string, open: boolean): void {

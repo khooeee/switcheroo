@@ -1,5 +1,7 @@
 import { BrowserWindow, ipcMain } from "electron";
 import type { SessionManager } from "../sessions/SessionManager";
+import { parsePersistedExplorer } from "../storage/parsePersistedExplorer";
+import { loadSessionExplorer, saveSessionExplorer } from "../storage/sessionExplorer";
 import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
 import { readSessionFile } from "./readSessionFile";
@@ -34,6 +36,16 @@ export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
   });
   ipcMain.handle("files:unwatch", (_e, sessionId: string) => {
     watcher.unwatch(sessionId);
+  });
+  // Session ids name folders on disk; only ids of known sessions get through.
+  ipcMain.handle("files:getExplorer", (_e, sessionId: string) => {
+    cwdOf(sessionId);
+    return loadSessionExplorer(sessionId);
+  });
+  ipcMain.handle("files:saveExplorer", async (_e, sessionId: string, state: unknown) => {
+    cwdOf(sessionId);
+    const parsed = parsePersistedExplorer(state);
+    if (parsed) await saveSessionExplorer(sessionId, parsed);
   });
   return watcher;
 }

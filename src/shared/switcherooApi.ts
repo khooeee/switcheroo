@@ -10,6 +10,7 @@ import type { RemoteStatus } from "./remoteStatus";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { FileContent } from "./fileContent";
 import type { FileWriteResult } from "./fileWriteResult";
+import type { PersistedExplorer } from "./persistedExplorer";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
 import type { UnsavedChoice } from "./unsavedChoice";
@@ -99,6 +100,9 @@ export interface SwitcherooApi {
   unwatchSessionFiles: (sessionId: string) => Promise<void>;
   /** Relative paths that changed under a watched session; null means too many to list. */
   onSessionFilesChanged: (cb: (payload: { sessionId: string; paths: string[] | null }) => void) => () => void;
+  /** The session's saved file explorer (tree, tabs, scroll), or null for a fresh one. */
+  getExplorerState: (sessionId: string) => Promise<PersistedExplorer | null>;
+  saveExplorerState: (sessionId: string, state: PersistedExplorer) => Promise<void>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

@@ -12,6 +12,6 @@ export async function closeFileTab(sessionId: string, path: string): Promise<boo
   }
   explorerStore.closeFile(sessionId, path);
   fileBufferStore.drop(sessionId, path);
-  fileScrollMemory.delete(`${sessionId}\0${path}`);
+  fileScrollMemory.delete(sessionId, path);
   return true;
 }

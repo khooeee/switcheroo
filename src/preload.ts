@@ -61,6 +61,8 @@ const api: SwitcherooApi = {
   unwatchSessionFiles: (sessionId) => ipcRenderer.invoke("files:unwatch", sessionId),
   onSessionFilesChanged: (cb) =>
     subscribe<{ sessionId: string; paths: string[] | null }>("files:changed", cb),
+  getExplorerState: (sessionId) => ipcRenderer.invoke("files:getExplorer", sessionId),
+  saveExplorerState: (sessionId, state) => ipcRenderer.invoke("files:saveExplorer", sessionId, state),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   getSubagentTranscript: (sessionId: string, subagentId: string) =>
     ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),

@@ -4,6 +4,7 @@ import { closeFileTab } from "../editor/closeFileTab";
 import { EditorTabs } from "../editor/EditorTabs";
 import { FileEditor } from "../editor/FileEditor";
 import { FileHeader } from "../editor/FileHeader";
+import { useExplorerRestored } from "./useExplorerRestored";
 import { useExplorerState } from "./useExplorerState";
 import "../editor/editor.css";
 
@@ -20,6 +21,7 @@ export function FilePane({ session }: { session: Session | null }) {
 }
 
 function SessionFiles({ sessionId }: { sessionId: string }) {
+  const restored = useExplorerRestored(sessionId);
   const { openFiles, activeFile } = useExplorerState(sessionId);
 
   // Cmd+W in File Explorer mode closes the active tab instead of the session.
@@ -31,6 +33,7 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
     return () => window.removeEventListener("switcheroo:close-file", onCloseFile);
   }, [sessionId, activeFile]);
 
+  if (!restored) return <section className="panel" />;
   return (
     <section className="panel file-pane">
       {openFiles.length > 0 ? (

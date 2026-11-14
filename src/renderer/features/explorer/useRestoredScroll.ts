@@ -1,5 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 
+interface ScrollPositions {
+  get(key: string): number | undefined;
+  set(key: string, top: number): void;
+}
+
 /**
  * Keep `positions[key]` in step with the element's scroll offset, and put it back when `key`
  * changes. Content may arrive later (folders loading), so the restore retries on each
@@ -9,7 +14,7 @@ export function useRestoredScroll(
   key: string,
   scrollRef: RefObject<HTMLElement | null>,
   contentVersion: unknown,
-  positions: Map<string, number>,
+  positions: ScrollPositions,
 ): void {
   const pending = useRef<number | null>(null);
 

@@ -1,9 +1,17 @@
 import type { RailMode } from "../../../shared/railMode";
+import { patchAppSettings } from "../settings/appSettingsCache";
 
 let mode: RailMode = "sessions";
 const listeners = new Set<() => void>();
 
-/** Sessions or File Explorer: one mode for the whole window, like VS Code's activity bar. */
+function apply(next: RailMode): boolean {
+  if (next === mode) return false;
+  mode = next;
+  listeners.forEach((listener) => listener());
+  return true;
+}
+
+/** Sessions or File Explorer: one mode for the whole window, like VS Code's activity bar. Saved in settings. */
 export const railModeStore = {
   subscribe(listener: () => void): () => void {
     listeners.add(listener);
@@ -15,8 +23,11 @@ export const railModeStore = {
   },
 
   set(next: RailMode): void {
-    if (next === mode) return;
-    mode = next;
-    listeners.forEach((listener) => listener());
+    if (apply(next)) void patchAppSettings({ railMode: next });
+  },
+
+  /** Take the saved mode at startup without writing it back. */
+  restore(saved: unknown): void {
+    apply(saved === "files" ? "files" : "sessions");
   },
 };

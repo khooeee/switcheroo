@@ -1,4 +1,5 @@
 import type { AgentKind } from "./agentKind";
+import type { RailMode } from "./railMode";
 import type { VoiceReasoningEffort } from "./voiceReasoningEffort";
 
 export type Theme = "light" | "dark";
@@ -9,6 +10,8 @@ export interface AppSettings {
   zenMode: boolean;
   soundEnabled: boolean;
   railWidth: number;
+  /** Rail shows Sessions or the File Explorer. */
+  railMode: RailMode;
   rightRailWidth: number;
   composerHeight: number;
   lastAgent: AgentKind;

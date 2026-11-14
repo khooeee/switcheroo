@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import { App } from "./renderer/App";
 import { applyStoredTheme } from "./renderer/features/theme/theme";
 import { applyStoredDetails } from "./renderer/features/settings/details";
-import { loadAppSettings } from "./renderer/features/settings/appSettingsCache";
+import { getAppSettingsCache, loadAppSettings } from "./renderer/features/settings/appSettingsCache";
+import { railModeStore } from "./renderer/features/explorer/railModeStore";
 import { applyRailWidth, readRailWidth } from "./renderer/features/sessions/railWidth";
 import { reclampRailWidth } from "./renderer/features/sessions/reclampRailWidth";
 import { reclampRightRailWidth } from "./renderer/features/chat/reclampRightRailWidth";
@@ -18,6 +19,7 @@ async function boot(): Promise<void> {
   applyStoredTheme();
   applyStoredDetails();
   applyRailWidth(readRailWidth());
+  railModeStore.restore(getAppSettingsCache().railMode);
   composerHeight.apply(composerHeight.read());
   installInstantTooltips();
   window.addEventListener("resize", () => {

@@ -40,9 +40,9 @@ export function CodeEditor({ sessionId, path, live }: Props) {
       },
     });
     viewRef.current = view;
-    scrollToPosition(view, fileScrollMemory.get(`${shown.current.sessionId}\0${shown.current.path}`) ?? 0);
+    scrollToPosition(view, fileScrollMemory.get(shown.current.sessionId, shown.current.path) ?? 0);
     const onScroll = () => {
-      fileScrollMemory.set(`${shown.current.sessionId}\0${shown.current.path}`, topPosition(view));
+      fileScrollMemory.set(shown.current.sessionId, shown.current.path, topPosition(view));
     };
     view.scrollDOM.addEventListener("scroll", onScroll, { passive: true });
     view.focus();
@@ -61,7 +61,7 @@ export function CodeEditor({ sessionId, path, live }: Props) {
     shown.current = { sessionId, path, live };
     if (sameFile && view.state === live.state) return;
     // Same file with a new state is a reload from disk: keep the reader where they were.
-    const top = sameFile ? topPosition(view) : fileScrollMemory.get(`${sessionId}\0${path}`) ?? 0;
+    const top = sameFile ? topPosition(view) : fileScrollMemory.get(sessionId, path) ?? 0;
     view.setState(live.state);
     scrollToPosition(view, top);
     if (!sameFile) view.focus();

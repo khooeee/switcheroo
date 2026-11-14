@@ -43,6 +43,11 @@ export function sessionMetaPath(sessionId: string): string {
   return path.join(sessionDir(sessionId), "meta.json");
 }
 
+/** The session's file explorer tree and editor tabs. */
+export function sessionExplorerPath(sessionId: string): string {
+  return path.join(sessionDir(sessionId), "explorer.json");
+}
+
 /** Inworld API key, encrypted with safeStorage; never sent to the renderer. */
 export function voiceKeyPath(): string {
   return path.join(userDataDir(), "inworld-key.enc");
