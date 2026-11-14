@@ -1,9 +1,8 @@
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
 import type { AgentKind } from "../../shared/agentKind";
-import { agentSearchPath } from "./agentSearchPath";
 import { findOnPath } from "./findOnPath";
 import { AGENT_PRESETS } from "./presets";
+import { shellEnv } from "../shellEnv/shellEnv";
 
 function commandExists(command: string, searchPath: string): boolean {
   return findOnPath(command, searchPath) !== undefined;
@@ -23,9 +22,9 @@ function isAvailable(kind: AgentKind, searchPath: string): boolean {
   }
 }
 
-/** Agents whose CLI and ACP adapter resolve on this machine, in preset order. */
-export function availableAgents(): AgentKind[] {
-  const searchPath = agentSearchPath(process.env.HOME ?? homedir());
+/** Agents whose CLI and ACP adapter resolve on the shell's PATH, in preset order. */
+export async function availableAgents(): Promise<AgentKind[]> {
+  const searchPath = (await shellEnv.get()).PATH ?? "";
   return (Object.keys(AGENT_PRESETS) as AgentKind[]).filter((kind) =>
     isAvailable(kind, searchPath),
   );

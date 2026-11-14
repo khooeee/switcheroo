@@ -1,7 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { agentSearchPath } from "./agentSearchPath";
 
 function assertSpawnCwd(cwd: string): void {
   if (!cwd.trim()) throw new Error("Working directory is empty.");
@@ -17,12 +16,12 @@ function assertSpawnCwd(cwd: string): void {
   }
 }
 
-/** Spawn an ACP agent CLI; rejects on failure instead of crashing the main process. */
+/** Spawn an ACP agent CLI with `env`; rejects on failure instead of crashing the main process. */
 export function spawnAgentProcess(
   command: string,
   args: string[],
   cwd: string,
-  extraEnv: Record<string, string> = {},
+  env: NodeJS.ProcessEnv,
 ): Promise<ChildProcessWithoutNullStreams> {
   try {
     assertSpawnCwd(cwd);
@@ -30,11 +29,10 @@ export function spawnAgentProcess(
     return Promise.reject(err);
   }
 
-  const home = process.env.HOME ?? homedir();
   const proc = spawn(command, args, {
     cwd,
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, ...extraEnv, HOME: home, PATH: agentSearchPath(home) },
+    env: { ...env, HOME: env.HOME || homedir() },
     shell: false,
   }) as ChildProcessWithoutNullStreams;
 

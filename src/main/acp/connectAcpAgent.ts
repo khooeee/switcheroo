@@ -7,6 +7,7 @@ import { AGENT_PRESETS } from "./presets";
 import { spawnAgentProcess } from "./spawnAgentProcess";
 import { drainAgentStream } from "./drainAgentStream";
 import { piMcpEnv } from "./piMcpEnv";
+import { shellEnv } from "../shellEnv/shellEnv";
 import { parseSubagentNotification } from "./subagents/parseSubagentNotification";
 import { rewriteSubagentUpdates } from "./subagents/rewriteSubagentUpdates";
 import type { SubagentUpdate } from "./subagents/SubagentUpdate";
@@ -50,7 +51,9 @@ export async function connectAcpAgent(handlers: ConnectHandlers): Promise<Connec
 
   let proc: ChildProcessWithoutNullStreams;
   try {
-    const env = { ...preset.env, ...piMcpEnv(handlers.agent, handlers.mcpServers) };
+    // Presets look up CLIs on the shell's PATH, so wait for it before reading them.
+    const base = await shellEnv.get();
+    const env = { ...base, ...preset.env, ...piMcpEnv(handlers.agent, handlers.mcpServers) };
     proc = await spawnAgentProcess(preset.command, preset.args, handlers.cwd, env);
   } catch (err) {
     const message = errorMessage(err);

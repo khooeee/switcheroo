@@ -58,9 +58,11 @@ export class SessionAgents {
 
   /** Keep a started session ready for every installed agent in `cwd`. */
   ensureWarm(cwd: string): void {
-    const openers = new Map<string, () => AcpSession>();
-    for (const agent of availableAgents()) openers.set(agent, () => this.openWarm(agent, cwd));
-    this.state.warm.ensure(cwd, openers);
+    void availableAgents().then((agents) => {
+      const openers = new Map<string, () => AcpSession>();
+      for (const agent of agents) openers.set(agent, () => this.openWarm(agent, cwd));
+      this.state.warm.ensure(cwd, openers);
+    });
   }
 
   /** A claimed warm session keeps this id, which its MCP server URL names. */

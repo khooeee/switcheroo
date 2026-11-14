@@ -2,6 +2,7 @@ import { app } from "electron";
 import { join } from "node:path";
 import type * as acp from "@agentclientprotocol/sdk/unstable";
 import type { AgentKind } from "../../shared/agentKind";
+import { shellEnv } from "../shellEnv/shellEnv";
 
 /** The packaged extraResource, or `assets/pi-mcp` in a dev checkout; never the launch directory when packaged. */
 function piMcpDir(): string {
@@ -18,7 +19,7 @@ export function piMcpEnv(agent: AgentKind, mcpServers: acp.McpServer[]): Record<
   return {
     PI_ACP_PI_COMMAND: join(piMcpDir(), "pi-with-mcp.sh"),
     // The wrapper still runs the user's own Pi command.
-    SWITCHEROO_PI_COMMAND: process.env.PI_ACP_PI_COMMAND || "pi",
+    SWITCHEROO_PI_COMMAND: shellEnv.current().PI_ACP_PI_COMMAND || "pi",
     PI_ACP_MCP_SERVERS: JSON.stringify(mcpServers),
   };
 }

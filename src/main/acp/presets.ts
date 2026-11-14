@@ -1,9 +1,8 @@
-import { homedir } from "node:os";
 import type { AgentKind } from "../../shared/agentKind";
-import { agentSearchPath } from "./agentSearchPath";
 import { findOnPath } from "./findOnPath";
 import { packageBin } from "./packageBin";
 import { resolvePathCommand } from "./resolvePathCommand";
+import { shellEnv } from "../shellEnv/shellEnv";
 import { subagentCapabilityMeta } from "./subagents/subagentCapabilityMeta";
 
 interface AgentPreset {
@@ -26,16 +25,16 @@ function resolveCursorAgent(): string {
 }
 
 function claudeCommand(): string {
-  return process.env.CLAUDE_CODE_EXECUTABLE || "claude";
+  return shellEnv.current().CLAUDE_CODE_EXECUTABLE || "claude";
 }
 
 function codexCommand(): string {
-  return process.env.CODEX_PATH || "codex";
+  return shellEnv.current().CODEX_PATH || "codex";
 }
 
 /** The user's own install of an agent CLI; the app does not bundle Claude Code or Codex. */
 function userCli(command: string): string {
-  return findOnPath(command, agentSearchPath(process.env.HOME ?? homedir())) ?? command;
+  return findOnPath(command, shellEnv.current().PATH ?? "") ?? command;
 }
 
 export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
@@ -86,7 +85,7 @@ export const AGENT_PRESETS: Record<AgentKind, AgentPreset> = {
       return [packageBin("pi-acp")];
     },
     get requiredCommand() {
-      return process.env.PI_ACP_PI_COMMAND || "pi";
+      return shellEnv.current().PI_ACP_PI_COMMAND || "pi";
     },
   },
 };

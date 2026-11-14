@@ -14,7 +14,7 @@ export async function createSessionTool(ctx: VoiceToolContext, args: Record<stri
   const focusCwd = ctx.focus.sessionId ? ctx.sessions.getSession(ctx.focus.sessionId)?.cwd : undefined;
   const project = resolveProjectCwd(railSessions(ctx.sessions), toolArgs.string(args, "project"), focusCwd ?? settings.lastCwd);
   if (!project.ok) return project;
-  const agent = resolveAgentKind(toolArgs.string(args, "agent"), settings.lastAgent);
+  const agent = await resolveAgentKind(toolArgs.string(args, "agent"), settings.lastAgent);
   if (!agent.ok) return agent;
 
   const title = toolArgs.string(args, "title") ?? (prompt ? clipText(prompt, 60) : undefined);

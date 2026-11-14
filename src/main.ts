@@ -22,6 +22,7 @@ import type { AppMenuOptions } from "./main/appMenu/AppMenuOptions";
 import { VoiceAgent } from "./main/voice/VoiceAgent";
 import { registerVoiceIpc } from "./main/voice/registerVoiceIpc";
 import { openVoiceLogFolder } from "./main/files/openVoiceLogFolder";
+import { shellEnv } from "./main/shellEnv/shellEnv";
 import { errorMessage } from "./shared/errorMessage";
 
 installStdioGuards((error) => {
@@ -99,6 +100,8 @@ const createWindow = async () => {
 };
 
 if (installSingleInstanceLock(() => mainWindow)) {
+  // Agents start from the user's shell environment; read it while the window loads.
+  void shellEnv.get();
   app.on("ready", () => {
     applyAppIcon();
     installAboutPanel();
