@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import { powerMonitor } from "electron";
 import { errorMessage } from "../../shared/errorMessage";
 import { remindersPath } from "../storage/userDataPaths";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { updateReminders } from "./updateReminders";
 
 /** Longest single wait, so sleep, clock changes and a stuck timer are noticed within a minute. */

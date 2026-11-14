@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { localIsoTime } from "./localIsoTime";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { resolveDueAt } from "./resolveDueAt";
 import { updateReminders } from "./updateReminders";
 

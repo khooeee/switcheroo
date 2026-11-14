@@ -6,6 +6,8 @@ import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
 import type { DirEntry } from "./dirEntry";
 import type { FindInSessionsHit } from "./findInSessionsHit";
+import type { Reminder } from "./reminder";
+import type { ReminderInput } from "./reminderInput";
 import type { RemoteStatus } from "./remoteStatus";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
 import type { FileContent } from "./fileContent";
@@ -54,7 +56,9 @@ export interface SwitcherooApi {
   saveMarkdown: (text: string, nameHint?: string) => Promise<boolean>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
-  openRemindersFile: () => Promise<void>;
+  listReminders: () => Promise<{ reminders: Reminder[]; errors: string[] }>;
+  saveReminder: (input: ReminderInput) => Promise<Reminder>;
+  cancelReminder: (id: string) => Promise<Reminder | undefined>;
   getSettings: () => Promise<AppSettings>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>;
   /** iOS remote access: the pairing link and `tailscale serve` setup. */

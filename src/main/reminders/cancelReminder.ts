@@ -1,4 +1,4 @@
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { updateReminders } from "./updateReminders";
 
 /** Remove a pending reminder; returns it, or undefined when none has that id. */

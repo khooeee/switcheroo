@@ -1,4 +1,4 @@
-import type { Reminder } from "../reminders/Reminder";
+import type { Reminder } from "../../shared/reminder";
 
 /** What an agent sees of a reminder; `mine` marks the caller's own. */
 export function reminderSummary(reminder: Reminder, callerId: string) {

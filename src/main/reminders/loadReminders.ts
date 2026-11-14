@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import { errorMessage } from "../../shared/errorMessage";
 import { isMissingFile } from "../storage/isMissingFile";
 import { remindersPath } from "../storage/userDataPaths";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { parseRemindersFile } from "./parseRemindersFile";
 
 /** Read reminders.json. A missing file means none; problems come back as errors, never thrown. */

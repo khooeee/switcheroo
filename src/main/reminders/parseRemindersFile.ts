@@ -1,5 +1,5 @@
 import { errorMessage } from "../../shared/errorMessage";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 
 /** Validate parsed reminders.json. Bad entries are skipped and described in `errors`. */
 export function parseRemindersFile(parsed: unknown): { reminders: Reminder[]; errors: string[] } {

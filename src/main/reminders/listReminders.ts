@@ -1,4 +1,4 @@
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { loadReminders } from "./loadReminders";
 
 /** Pending reminders, soonest first, and any problems reading reminders.json. */

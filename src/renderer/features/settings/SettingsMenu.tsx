@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toggleDetailsVisible } from "./details";
 import { modLabel } from "../shortcuts/modLabel";
 import { GearIcon } from "./GearIcon";
 import { OPEN_SETTINGS_EVENT } from "./openSettingsEvent";
+import { RemindersModal } from "../reminders/RemindersModal";
 import { SettingsModal } from "./SettingsModal";
 import "./menus.css";
 import "./settingsShortcuts.css";
@@ -11,9 +12,14 @@ import "./settingsShortcuts.css";
 export function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [remindersOpen, setRemindersOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeReminders = useCallback(() => {
+    setRemindersOpen(false);
+    rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  }, []);
   const closeThen = (action: () => Promise<void>) => () => {
     setOpen(false);
     void action();
@@ -73,7 +79,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={closeThen(window.switcheroo.openRemindersFile)}
+              onClick={closeThen(async () => setRemindersOpen(true))}
             >
               Open Reminders
             </button>
@@ -114,6 +120,7 @@ export function SettingsMenu() {
           </div>,
           document.body,
         )}
+      {remindersOpen && createPortal(<RemindersModal onClose={closeReminders} />, document.body)}
       {settingsOpen && createPortal(<SettingsModal onClose={() => setSettingsOpen(false)} />, document.body)}
       <button
         type="button"

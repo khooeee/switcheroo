@@ -3,7 +3,7 @@ import { revealWindow } from "../lifecycle/revealWindow";
 import type { SessionManager } from "../sessions/SessionManager";
 import type { VoiceAgent } from "../voice/VoiceAgent";
 import { sessionLabel } from "../voice/sessionLabel";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import type { ReminderAlert } from "./ReminderAlert";
 import { reminderToasts } from "./reminderToasts";
 import { showNotification } from "./showNotification";

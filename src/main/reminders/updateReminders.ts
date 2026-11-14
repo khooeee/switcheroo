@@ -1,6 +1,6 @@
 import { remindersPath } from "../storage/userDataPaths";
 import { writeFileAtomic } from "../storage/writeFileAtomic";
-import type { Reminder } from "./Reminder";
+import type { Reminder } from "../../shared/reminder";
 import { loadReminders } from "./loadReminders";
 
 let queue: Promise<unknown> = Promise.resolve();

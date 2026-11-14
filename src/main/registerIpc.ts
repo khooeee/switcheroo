@@ -1,7 +1,10 @@
 import { BrowserWindow, dialog, ipcMain } from "electron";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
-import { openRemindersFile } from "./files/openRemindersFile";
+import { listReminders } from "./reminders/listReminders";
+import { saveReminder } from "./reminders/saveReminder";
+import { cancelReminder } from "./reminders/cancelReminder";
+import type { ReminderInput } from "../shared/reminderInput";
 import { readClipboardPng } from "./images/readClipboardPng";
 import { savePastedImage } from "./images/savePastedImage";
 import { availableAgents } from "./acp/availableAgents";
@@ -95,7 +98,9 @@ export function registerIpc({
   );
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
-  ipcMain.handle("fs:openRemindersFile", () => openRemindersFile());
+  ipcMain.handle("reminders:list", () => listReminders());
+  ipcMain.handle("reminders:save", (_e, input: ReminderInput) => saveReminder(input));
+  ipcMain.handle("reminders:cancel", (_e, id: string) => cancelReminder(id));
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", async (_e, patch: Partial<AppSettings>) => {
     const next = sessions.updateSettings(patch);
