@@ -1,9 +1,10 @@
 import { useCallback } from "react";
+import { closeSessionSafely } from "../editor/closeSessionSafely";
 
 /** Stable SessionRail IPC callbacks (avoid inline lambdas if the rail is memoized later). */
 export function useSessionRailActions() {
   const onCloseSession = useCallback((id: string) => {
-    void window.switcheroo.closeSession(id);
+    void closeSessionSafely(id);
   }, []);
   const onStop = useCallback((id: string) => {
     void window.switcheroo.cancelPrompt(id).catch(console.error);

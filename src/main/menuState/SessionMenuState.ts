@@ -6,7 +6,7 @@ export type SessionMenuState = {
   /** Rename, Mark as Unread and Close: any chat. */
   chatItemsEnabled: boolean;
   /** The active chat's project folder exists. */
-  openInCursorEnabled: boolean;
+  openInEditorEnabled: boolean;
   forkEnabled: boolean;
   stopEnabled: boolean;
 };

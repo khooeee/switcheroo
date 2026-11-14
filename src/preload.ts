@@ -16,8 +16,6 @@ function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
 }
 
 const api: SwitcherooApi = {
-  openInCursor: (sessionId, filePath) => ipcRenderer.invoke("files:openInCursor", sessionId, filePath),
-  openSessionInCursor: (sessionId) => ipcRenderer.invoke("sessions:openInCursor", sessionId),
   availableAgents: () => ipcRenderer.invoke("agents:available"),
   createSession: (input: CreateSessionInput) => ipcRenderer.invoke("sessions:create", input),
   forkSession: (sessionId, eventId) =>
@@ -52,6 +50,19 @@ const api: SwitcherooApi = {
   showComposerContextMenu: (opts) => ipcRenderer.invoke("composer:contextMenu", opts),
   showImageContextMenu: (name) => ipcRenderer.invoke("image:contextMenu", name),
   showConfigMenu: (sessionId, category) => ipcRenderer.invoke("session:configMenu", sessionId, category),
+  listSessionDir: (sessionId, relPath) => ipcRenderer.invoke("files:list", sessionId, relPath),
+  readSessionFile: (sessionId, relPath) => ipcRenderer.invoke("files:read", sessionId, relPath),
+  writeSessionFile: (sessionId, relPath, text, baseMtimeMs) =>
+    ipcRenderer.invoke("files:write", sessionId, relPath, text, baseMtimeMs),
+  confirmUnsavedChanges: (names) => ipcRenderer.invoke("files:confirmUnsaved", names),
+  watchSessionFiles: (sessionId) => ipcRenderer.invoke("files:watch", sessionId),
+  unwatchSessionFiles: (sessionId) => ipcRenderer.invoke("files:unwatch", sessionId),
+  onSessionFilesChanged: (cb) =>
+    subscribe<{ sessionId: string; paths: string[] | null }>("files:changed", cb),
+  getExplorerState: (sessionId) => ipcRenderer.invoke("files:getExplorer", sessionId),
+  saveExplorerState: (sessionId, state) => ipcRenderer.invoke("files:saveExplorer", sessionId, state),
+  onPrepareQuit: (cb) => subscribe<{ requestId: number }>("app:prepareQuit", cb),
+  quitReady: (requestId, ok) => ipcRenderer.send("app:quitReady", requestId, ok),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   getSubagentTranscript: (sessionId: string, subagentId: string) =>
     ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),
@@ -124,6 +135,8 @@ const MENU_EVENTS: Record<string, string> = {
   "prompt:focus": "switcheroo:focus-prompt",
   "filter:focus": "switcheroo:focus-filter",
   "settings:open": "switcheroo:open-settings",
+  "explorer:toggle": "switcheroo:toggle-explorer",
+  "session:open-in-editor": "switcheroo:open-in-editor",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

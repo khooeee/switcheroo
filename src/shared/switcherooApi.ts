@@ -4,11 +4,16 @@ import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
+import type { DirEntry } from "./dirEntry";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { RemoteStatus } from "./remoteStatus";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
+import type { FileContent } from "./fileContent";
+import type { FileWriteResult } from "./fileWriteResult";
+import type { PersistedExplorer } from "./persistedExplorer";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
+import type { UnsavedChoice } from "./unsavedChoice";
 import type { VoiceCommand } from "./voiceCommand";
 import type { VoiceConnectionEvent } from "./voiceConnectionEvent";
 import type { VoiceKeyInfo } from "./voiceKeyInfo";
@@ -22,9 +27,6 @@ export interface SessionListPayload {
 }
 
 export interface SwitcherooApi {
-  openInCursor: (sessionId: string, filePath: string) => Promise<void>;
-  /** Open the session project folder (cwd) in Cursor. */
-  openSessionInCursor: (sessionId: string) => Promise<void>;
   /** Agents whose CLI and ACP adapter are installed. */
   availableAgents: () => Promise<AgentKind[]>;
   createSession: (input: CreateSessionInput) => Promise<Session>;
@@ -78,6 +80,29 @@ export interface SwitcherooApi {
   }) => Promise<void>;
   /** Popup the session's model or effort picker; choosing a value sets it on the agent. */
   showConfigMenu: (sessionId: string, category: ConfigMenuCategory) => Promise<void>;
+  /** Children of a folder under the session cwd ("" is the root). */
+  listSessionDir: (sessionId: string, relPath: string) => Promise<DirEntry[]>;
+  readSessionFile: (sessionId: string, relPath: string) => Promise<FileContent>;
+  /** Save editor text; `baseMtimeMs` null overwrites even when the file changed on disk. */
+  writeSessionFile: (
+    sessionId: string,
+    relPath: string,
+    text: string,
+    baseMtimeMs: number | null,
+  ) => Promise<FileWriteResult>;
+  /** Native Save / Don't Save / Cancel for files with unsaved edits. */
+  confirmUnsavedChanges: (names: string[]) => Promise<UnsavedChoice>;
+  /** Watch the session cwd while its explorer is shown; changes arrive on `onSessionFilesChanged`. */
+  watchSessionFiles: (sessionId: string) => Promise<void>;
+  unwatchSessionFiles: (sessionId: string) => Promise<void>;
+  /** Relative paths that changed under a watched session; null means too many to list. */
+  onSessionFilesChanged: (cb: (payload: { sessionId: string; paths: string[] | null }) => void) => () => void;
+  /** The session's saved file explorer (tree, tabs, scroll), or null for a fresh one. */
+  getExplorerState: (sessionId: string) => Promise<PersistedExplorer | null>;
+  saveExplorerState: (sessionId: string, state: PersistedExplorer) => Promise<void>;
+  /** Main is about to quit: settle unsaved files, then answer with `quitReady` (false cancels). */
+  onPrepareQuit: (cb: (payload: { requestId: number }) => void) => () => void;
+  quitReady: (requestId: number, ok: boolean) => void;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

@@ -6,6 +6,7 @@ export function defaultAppSettings(): AppSettings {
     zenMode: true,
     soundEnabled: true,
     railWidth: 160,
+    railMode: "sessions",
     rightRailWidth: 320,
     composerHeight: 72,
     lastAgent: "claude",

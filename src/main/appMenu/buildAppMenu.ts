@@ -81,6 +81,14 @@ export function buildAppMenu(opts: AppMenuOptions): void {
     {
       label: "View",
       submenu: [
+        {
+          label: "Toggle File Explorer",
+          accelerator: "CmdOrCtrl+Shift+E",
+          click: () => {
+            win()?.webContents.send("explorer:toggle");
+          },
+        },
+        { type: "separator" },
         { role: "reload", accelerator: "CmdOrCtrl+Shift+R" },
         { role: "toggleDevTools" },
         { type: "separator" },

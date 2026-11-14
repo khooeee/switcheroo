@@ -1,6 +1,4 @@
 import { BrowserWindow, dialog, ipcMain } from "electron";
-import { openInCursor } from "./cursor/openInCursor";
-import { openFolderInCursor } from "./cursor/openFolderInCursor";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
 import { openRemindersFile } from "./files/openRemindersFile";
@@ -28,12 +26,6 @@ type IpcContext = {
 
 /** Register every renderer → main `ipcMain.handle` channel. */
 export function registerIpc({ sessions, control, getMainWindow, setActiveSessionUnread }: IpcContext): void {
-  ipcMain.handle("files:openInCursor", async (_event, sessionId: string, filePath: string) => {
-    await openInCursor(requireSession(sessionId).cwd, filePath);
-  });
-  ipcMain.handle("sessions:openInCursor", async (_event, sessionId: string) => {
-    await openFolderInCursor(requireSession(sessionId).cwd);
-  });
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle("edit:contextMenu", (event, opts?: EditContextMenuOptions) => {
     showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);

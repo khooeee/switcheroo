@@ -1,8 +1,12 @@
 import { useEffect } from "react";
 import type { Session } from "../../../shared/session";
+import { railModeStore } from "../explorer/railModeStore";
 import { dialogOpen } from "./dialogOpen";
 
-/** Escape closes Find, else stops the running agent, else closes the right rail, else stops an idle agent. */
+/**
+ * Escape closes Find, else stops the running agent, else closes the right rail, else stops an idle agent.
+ * Does nothing in File Explorer mode.
+ */
 export function useEscapeShortcut({
   activeSession,
   blocked,
@@ -25,6 +29,8 @@ export function useEscapeShortcut({
       if (dialogOpen()) return;
       if (event.key !== "Escape") return;
       if (event.defaultPrevented || event.repeat || event.isComposing || blocked) return;
+      // The chat is hidden in File Explorer mode; Escape there belongs to the editor.
+      if (railModeStore.getSnapshot() === "files") return;
       if (document.querySelector('[role="menu"]')) return;
       if (findOpen) {
         setFindOpen(false);

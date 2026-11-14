@@ -17,6 +17,9 @@ import { runCron } from "./main/crons/runCron";
 import { ReminderScheduler } from "./main/reminders/ReminderScheduler";
 import { fireReminder } from "./main/reminders/fireReminder";
 import { registerIpc } from "./main/registerIpc";
+import { registerFileIpc } from "./main/files/registerFileIpc";
+import type { SessionFileWatcher } from "./main/files/SessionFileWatcher";
+import { confirmRendererUnsaved } from "./main/files/confirmRendererUnsaved";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
 import { refreshVoiceMenuItems } from "./main/appMenu/refreshVoiceMenuItems";
@@ -49,6 +52,7 @@ const crons = new CronScheduler((job, at) => {
   });
 });
 let activeSessionUnread = false;
+let fileWatcher: SessionFileWatcher | null = null;
 const voice = new VoiceAgent({
   sessions,
   getWindow: () => mainWindow,
@@ -120,20 +124,13 @@ if (installSingleInstanceLock(() => mainWindow)) {
       },
     });
     registerVoiceIpc(voice);
+    fileWatcher = registerFileIpc(sessions);
     sessions.setOnSessionsChanged(() => {
       refreshMenus();
     });
     const menuOptions: AppMenuOptions = {
       getMainWindow: () => mainWindow,
       getMenuState: () => sessions.activeMenuState(),
-      openActiveInCursor: () => {
-        void sessions.openActiveInCursor().catch((error) => {
-          dialog.showErrorBox(
-            "Could not open in Cursor",
-            errorMessage(error),
-          );
-        });
-      },
       getActiveUnread: () => activeSessionUnread,
       voice: {
         getStatus: () => voice.getStatus(),
@@ -157,9 +154,12 @@ if (installSingleInstanceLock(() => mainWindow)) {
   });
 
   installQuitHandler(
-    () => confirmQuit(mainWindow, sessions.runningChatCount()),
+    async () =>
+      (await confirmRendererUnsaved(mainWindow)) &&
+      confirmQuit(mainWindow, sessions.runningChatCount()),
     async () => {
       voice.stop();
+      fileWatcher?.dispose();
       crons.stop();
       reminders.stop();
       await sessions.disposeAll();

@@ -1,0 +1,89 @@
+.explorer {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.explorer-header {
+  flex-shrink: 0;
+  padding: 4px 12px 6px;
+  color: var(--text-dim);
+  font-size: var(--font-mono-small-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explorer-empty {
+  padding: 8px 12px;
+  color: var(--text-dim);
+  font-size: var(--font-ui-size);
+}
+
+.explorer-tree {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+  outline: none;
+}
+
+.explorer-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 22px;
+  padding: 0 8px 0 calc(6px + var(--depth, 0) * 12px);
+  color: var(--text-dim);
+  font-size: var(--font-ui-size);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 22px;
+}
+
+.explorer-row:hover {
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
+  color: var(--text);
+}
+
+.explorer-row.selected {
+  background: var(--bg-selected-tab);
+  color: var(--text);
+}
+
+.explorer-tree:focus-visible .explorer-row.selected {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.explorer-chevron {
+  width: 16px;
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+
+.explorer-chevron svg {
+  transition: transform 0.1s ease;
+}
+
+.explorer-row[aria-expanded="true"] .explorer-chevron svg {
+  transform: rotate(90deg);
+}
+
+.explorer-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explorer-row.error .explorer-name {
+  color: var(--danger-text);
+}

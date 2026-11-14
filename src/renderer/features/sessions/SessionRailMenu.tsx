@@ -3,6 +3,7 @@ import type { Session } from "../../../shared/session";
 import { SAVE_MARKDOWN_VIEW_LABELS } from "../../../shared/saveMarkdownViewLabels";
 import "../settings/menus.css";
 import "../settings/settingsShortcuts.css";
+import { openSessionInEditor } from "../explorer/openSessionInEditor";
 import { modLabel } from "../shortcuts/modLabel";
 import { SessionRailMenuItem } from "./SessionRailMenuItem";
 import { saveSessionMarkdown } from "./saveSessionMarkdown";
@@ -48,11 +49,11 @@ export function SessionRailMenu({
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem
-        label="Open in Cursor"
+        label="Open in Editor"
         shortcut={modLabel("E")}
         keys="Meta+E Control+E"
         disabled={!session.cwd.trim()}
-        onSelect={() => void window.switcheroo.openSessionInCursor(session.id).catch(console.error)}
+        onSelect={() => void openSessionInEditor(session.id).catch(console.error)}
         onDismiss={onDismiss}
       />
       <SessionRailMenuItem

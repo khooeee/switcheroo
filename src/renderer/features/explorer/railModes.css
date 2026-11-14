@@ -1,0 +1,14 @@
+.rail-modes {
+  flex-shrink: 0;
+  width: calc(100% - 16px);
+  display: flex;
+  gap: 4px;
+}
+
+.rail-modes .rail-mode {
+  width: 40px;
+  min-height: 36px;
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}

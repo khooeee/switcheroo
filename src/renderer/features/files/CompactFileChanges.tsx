@@ -80,6 +80,7 @@ function OpenDiff({
       change={change}
       title={relativeChangePath(change.path, cwd)}
       sessionId={sessionId}
+      cwd={cwd}
       onTitleClick={() => onCollapse(index)}
     />
   );

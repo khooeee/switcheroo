@@ -52,7 +52,7 @@ function DetailedFileEntry({
       {hasText ? (
         <details className="file-change" onToggle={(event) => setOpen(event.currentTarget.open)}>
           <summary data-tooltip={change.path}>{label}</summary>
-          {open && <FileDiff change={change} title={path} sessionId={sessionId} />}
+          {open && <FileDiff change={change} title={path} sessionId={sessionId} cwd={cwd} />}
         </details>
       ) : (
         <div className="file-change-label" data-tooltip={change.path}>
