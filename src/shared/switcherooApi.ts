@@ -82,6 +82,8 @@ export interface SwitcherooApi {
   showConfigMenu: (sessionId: string, category: ConfigMenuCategory) => Promise<void>;
   /** Children of a folder under the session cwd ("" is the root). */
   listSessionDir: (sessionId: string, relPath: string) => Promise<DirEntry[]>;
+  /** Every file under the session cwd for Go to File (git's tracked and unignored files in a repo). */
+  listSessionFiles: (sessionId: string) => Promise<string[]>;
   readSessionFile: (sessionId: string, relPath: string) => Promise<FileContent>;
   /** Save editor text; `baseMtimeMs` null overwrites even when the file changed on disk. */
   writeSessionFile: (
