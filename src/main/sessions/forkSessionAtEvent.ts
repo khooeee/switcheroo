@@ -10,6 +10,7 @@ import { newSessionId } from "./newSessionId";
 import { finalizeStalledTurns } from "./finalizeStalledTurns";
 import { airForkPoint, type AirForkPoint } from "../acp/airForkPoint";
 import { clipTurnsThrough } from "../acp/clipTurnsThrough";
+import { clipTurnsBeforeInFlight } from "../acp/clipTurnsBeforeInFlight";
 import { cloneTurn } from "../acp/cloneTurn";
 
 interface ForkSessionHost {
@@ -34,7 +35,8 @@ function clipTurns(turns: TranscriptTurn[], eventId: string): TranscriptTurn[] {
 }
 
 /**
- * Create a forked session. With `eventId`, history ends there; otherwise the full transcript is kept.
+ * Create a forked session. With `eventId`, history ends there; otherwise the full transcript is kept,
+ * except a thinking session ends after its last assistant reply.
  * Forking on a user message ends history before its turn and returns that text as a composer draft,
  * so the agent and transcript agree and the message can be edited and resent.
  */
@@ -50,6 +52,7 @@ export async function forkSessionAtEvent(
   let clipped: TranscriptTurn[];
   let forkPoint: AirForkPoint | undefined;
   let draft: string | undefined;
+  let cut = !!eventId;
   if (eventId) {
     clipped = clipTurns(turns, eventId);
     const last = clipped.at(-1);
@@ -59,7 +62,12 @@ export async function forkSessionAtEvent(
     }
     forkPoint = airForkPoint(clipped);
   } else {
-    clipped = turns.map(cloneTurn);
+    const settled = host.forkSupport(source.agent).supportsForkAtMessage
+      ? clipTurnsBeforeInFlight(turns)
+      : null;
+    clipped = settled ?? turns.map(cloneTurn);
+    if (settled) forkPoint = airForkPoint(settled);
+    cut = settled !== null;
   }
 
   const sourceSession = await host.ensureSession(source);
@@ -89,7 +97,7 @@ export async function forkSessionAtEvent(
       throw new Error(`${AGENT_LABELS[source.agent]} cannot fork from a message`);
     }
     // No assistant message before the fork point leaves no agent history to keep.
-    const acp = eventId && !forkPoint
+    const acp = cut && !forkPoint
       ? await host.ensureSession(session)
       : await sourceSession.forkSibling(id, host.callbacksFor(session), forkPoint);
     acp.restoreTurns(clipped);
