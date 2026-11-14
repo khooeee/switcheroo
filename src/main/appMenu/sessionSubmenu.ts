@@ -77,13 +77,5 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
         win()?.webContents.send("session:close");
       },
     },
-    { type: "separator" },
-    {
-      // New sessions pick up edits to shell startup files without restarting the app.
-      label: "Reload Shell Environment",
-      click: () => {
-        opts.reloadShellEnv();
-      },
-    },
   ];
 }

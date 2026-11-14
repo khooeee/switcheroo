@@ -129,14 +129,6 @@ if (installSingleInstanceLock(() => mainWindow)) {
           );
         });
       },
-      reloadShellEnv: () => {
-        void sessions.reloadShellEnv().catch((error) => {
-          dialog.showErrorBox(
-            "Could not reload the shell environment",
-            `${errorMessage(error)}\n\nAgents keep the previous environment.`,
-          );
-        });
-      },
       getActiveUnread: () => activeSessionUnread,
       voice: {
         getStatus: () => voice.getStatus(),

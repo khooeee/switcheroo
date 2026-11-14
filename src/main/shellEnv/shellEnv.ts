@@ -14,10 +14,10 @@ class ShellEnv {
   get(): Promise<NodeJS.ProcessEnv> {
     if (this.env) return Promise.resolve(this.env);
     this.loading ??= resolveShellEnv().then(
-      (env) => (this.env ??= env),
+      (env) => (this.env = env),
       (error) => {
         console.warn("[shell-env] Using fallback environment:", errorMessage(error));
-        return (this.env ??= fallbackEnv());
+        return (this.env = fallbackEnv());
       },
     );
     return this.loading;
@@ -26,11 +26,6 @@ class ShellEnv {
   /** The resolved environment, or the fallback until the first resolve finishes. */
   current(): NodeJS.ProcessEnv {
     return this.env ?? fallbackEnv();
-  }
-
-  /** Re-read the shell's startup files; keeps the previous environment if that fails. */
-  async reload(): Promise<void> {
-    this.env = await resolveShellEnv();
   }
 }
 
