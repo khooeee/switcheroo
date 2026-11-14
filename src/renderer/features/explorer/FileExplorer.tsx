@@ -1,4 +1,5 @@
 import type { Session } from "../../../shared/session";
+import { FileTree } from "./FileTree";
 import { projectFolderName } from "./projectFolderName";
 import "./explorer.css";
 
@@ -14,6 +15,7 @@ export function FileExplorer({ session }: { session: Session | null }) {
   return (
     <div className="explorer">
       <div className="explorer-header" title={session.cwd}>{projectFolderName(session.cwd)}</div>
+      <FileTree key={session.id} sessionId={session.id} />
     </div>
   );
 }
