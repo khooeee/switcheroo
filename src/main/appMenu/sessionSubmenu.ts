@@ -47,7 +47,7 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       id: SESSION_MENU_IDS.pin,
       label: state.pin.label,
       enabled: state.pin.enabled,
-      accelerator: "CmdOrCtrl+P",
+      accelerator: "CmdOrCtrl+Shift+P",
       click: () => {
         win()?.webContents.send("session:toggle-pin");
       },

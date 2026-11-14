@@ -68,10 +68,10 @@ export function useAppShortcuts({
   const filesMode = useRailMode() === "files";
   const promptFocus = useSessionFocusShortcuts(activeTabId, blocked);
   useFocusShortcut("i", !!activeSession && !blocked, requestPromptFocus);
-  // In File Explorer mode Cmd+G is the editor's Find Next; the Go menu still reaches the filter.
-  useFocusShortcut("g", !blocked && !filesMode, focusFilter);
-  useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
-  // Tab history, find in history, new, fork, unread and rename are Sessions mode only.
+  // In File Explorer mode Cmd+P is Go to File; the Go menu still reaches the filter.
+  useFocusShortcut("p", !blocked && !filesMode, focusFilter);
+  // Pin, tab stepping and history, find in history, new, fork, unread and rename are Sessions mode only.
+  useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked || filesMode, sessionFilter);
   useTabHistory(pinned, unpinned, activeTabId, selectTab, blocked || filesMode, sessionFilter);
 
   useEffect(() => {

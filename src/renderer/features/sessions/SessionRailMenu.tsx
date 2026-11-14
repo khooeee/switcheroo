@@ -71,8 +71,8 @@ export function SessionRailMenu({
       />
       <SessionRailMenuItem
         label={pinned ? "Unpin" : "Pin"}
-        shortcut={modLabel("P")}
-        keys="Meta+P Control+P"
+        shortcut={modLabel("P", true)}
+        keys="Meta+Shift+P Control+Shift+P"
         onSelect={() => (pinned ? onUnpin(session.id) : onPin(session.id))}
         onDismiss={onDismiss}
       />

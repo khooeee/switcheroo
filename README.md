@@ -172,11 +172,11 @@ Niceties:
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+G**: Focus on filter tabs
-
 **Cmd/Ctrl+N**: New session
 
-**Cmd/Ctrl+P**: Pin/unpin selected session
+**Cmd/Ctrl+P**: Filter sessions
+
+**Cmd/Ctrl+Shift+P**: Pin/unpin selected session
 
 **Cmd/Ctrl+R**: Rename selected tab
 

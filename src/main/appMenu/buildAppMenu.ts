@@ -151,8 +151,8 @@ export function buildAppMenu(opts: AppMenuOptions): void {
           },
         },
         {
-          label: "Go to Filter Tabs",
-          accelerator: "CmdOrCtrl+G",
+          label: "Go to Filter Sessions",
+          accelerator: "CmdOrCtrl+P",
           click: () => {
             win()?.webContents.send("filter:focus");
           },
