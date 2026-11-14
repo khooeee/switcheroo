@@ -17,6 +17,7 @@ import { useFocusShortcut } from "./useFocusShortcut";
 import { useSessionFocusShortcuts } from "./useSessionFocusShortcuts";
 
 const focusFilter = () => window.dispatchEvent(new CustomEvent("switcheroo:focus-filter"));
+const inFilesMode = () => railModeStore.getSnapshot() === "files";
 
 /** Window-level shortcuts: find, sessions, pin, focus, rename, fork, unread, stop, close, zen, Escape. */
 export function useAppShortcuts({
@@ -70,7 +71,8 @@ export function useAppShortcuts({
   // In File Explorer mode Cmd+G is the editor's Find Next; the Go menu still reaches the filter.
   useFocusShortcut("g", !blocked && !filesMode, focusFilter);
   useSessionShortcuts(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
-  useTabHistory(pinned, unpinned, activeTabId, selectTab, blocked, sessionFilter);
+  // Tab history, find in history, new, fork, unread and rename are Sessions mode only.
+  useTabHistory(pinned, unpinned, activeTabId, selectTab, blocked || filesMode, sessionFilter);
 
   useEffect(() => {
     const closeActive = () => {
@@ -80,7 +82,7 @@ export function useAppShortcuts({
     };
     const forkActive = () => {
       const id = forkableId.current;
-      if (!id || blockedRef.current) return;
+      if (!id || blockedRef.current || inFilesMode()) return;
       void window.switcheroo.forkSession(id).catch(console.error);
     };
     const stopActive = () => {
@@ -90,20 +92,20 @@ export function useAppShortcuts({
     };
     const openFind = () => {
       if (dialogOpen() || findInSessionsOpen.current) return;
-      if (railModeStore.getSnapshot() === "files") {
+      if (inFilesMode()) {
         window.dispatchEvent(new CustomEvent("switcheroo:find-in-file"));
         return;
       }
       setFindOpen(true);
     };
     const openFindSessions = () => {
-      if (dialogOpen()) return;
+      if (dialogOpen() || inFilesMode()) return;
       setFindOpen(false);
       setFindQuery("");
       setShowFindInSessions(true);
     };
     const openNewSession = () => {
-      if (!dialogOpen()) setShowNewSession(true);
+      if (!dialogOpen() && !inFilesMode()) setShowNewSession(true);
     };
 
     const onKey = (event: KeyboardEvent) => {
@@ -118,7 +120,7 @@ export function useAppShortcuts({
 
       // Ctrl+D closes a chat session on empty draft (not from File Explorer mode, where the chat is hidden).
       if (ctrlOnlyKey(event, "d")) {
-        if (dialogOpen() || blockedRef.current || railModeStore.getSnapshot() === "files") return;
+        if (dialogOpen() || blockedRef.current || inFilesMode()) return;
         if (!activeId.current) return;
         if (!isComposerDraftEmpty(activeId.current)) return;
         event.preventDefault();
@@ -135,6 +137,9 @@ export function useAppShortcuts({
         closeActive();
         return;
       }
+
+      // The rest are session commands; File Explorer mode leaves these keys alone.
+      if (inFilesMode()) return;
 
       if (modKey(event, "f", true)) {
         event.preventDefault();

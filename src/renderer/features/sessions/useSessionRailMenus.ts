@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
+import { railModeStore } from "../explorer/railModeStore";
 import type { MenuState } from "./railMenuState";
+
+/** Rename and Mark as Unread are Sessions mode only; the rail is hidden in File Explorer mode. */
+const inFilesMode = () => railModeStore.getSnapshot() === "files";
 
 /** Context menus, rename target, and window-event wiring for the session rail. */
 export function useSessionRailMenus(
@@ -32,6 +36,7 @@ export function useSessionRailMenus(
 
   useEffect(() => {
     const startRename = () => {
+      if (inFilesMode()) return;
       const session = sessions.find((item) => item.id === activeTabId);
       if (!session) return;
       setMenu(null);
@@ -43,7 +48,7 @@ export function useSessionRailMenus(
 
   useEffect(() => {
     const onToggleUnread = () => {
-      if (activeTabId) toggleUnread(activeTabId);
+      if (activeTabId && !inFilesMode()) toggleUnread(activeTabId);
     };
     window.addEventListener("switcheroo:mark-unread", onToggleUnread);
     return () => window.removeEventListener("switcheroo:mark-unread", onToggleUnread);

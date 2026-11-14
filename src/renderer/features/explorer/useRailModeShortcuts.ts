@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { railModeStore } from "./railModeStore";
 
 /** Session commands whose target lives in the (hidden) session list or chat. */
-const SESSION_FOCUS_EVENTS = ["switcheroo:focus-prompt", "switcheroo:focus-filter", "switcheroo:rename-session"];
+const SESSION_FOCUS_EVENTS = ["switcheroo:focus-prompt", "switcheroo:focus-filter"];
 
 /**
  * View → Toggle File Explorer (Cmd+Shift+E) switches modes; Session → Open in Editor (Cmd+E)
- * shows File Explorer. Going to the prompt, the filter, or
- * renaming from File Explorer mode switches back to Sessions and repeats the command once shown.
+ * shows File Explorer. Going to the prompt or the filter from File Explorer mode switches back
+ * to Sessions and repeats the command once shown.
  */
 export function useRailModeShortcuts(): void {
   useEffect(() => {

@@ -162,21 +162,7 @@ Niceties:
 
 **Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
 
-**Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
-
 **Cmd/Ctrl+I**: Focus on prompt (switches to Sessions mode)
-
-**Cmd/Ctrl+N**: New session
-
-**Cmd/Ctrl+R**: Rename selected tab (switches to Sessions mode)
-
-**Cmd/Ctrl+U**: Mark as Unread
-
-**Cmd/Ctrl+Y**: Fork selected session
-
-**Alt+Left or Cmd+[**: Go back to the previously selected tab
-
-**Alt+Right or Cmd+]**: Go forward through selected tabs
 
 **Cmd/Ctrl+,**: Open settings
 
@@ -186,17 +172,31 @@ Niceties:
 
 **Cmd/Ctrl+F**: Find in current session
 
+**Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
+
 **Cmd/Ctrl+G**: Focus on filter tabs
+
+**Cmd/Ctrl+N**: New session
 
 **Cmd/Ctrl+P**: Pin/unpin selected session
 
+**Cmd/Ctrl+R**: Rename selected tab
+
+**Cmd/Ctrl+U**: Mark as Unread
+
 **Cmd/Ctrl+W**: Close selected tab
+
+**Cmd/Ctrl+Y**: Fork selected session
 
 **Escape**: Stop agent (while running)
 
 **Ctrl+Tab**: Go to next visible tab
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
+
+**Alt+Left or Cmd+[**: Go back to the previously selected tab
+
+**Alt+Right or Cmd+]**: Go forward through selected tabs
 
 **/**: shows autocomplete of slash commands in the composer
 
