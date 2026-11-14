@@ -1,6 +1,7 @@
-import { useEffect, useRef, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from "react";
 import { modKey } from "../shortcuts/modKey";
 import { FindOptionToggles } from "./FindOptionToggles";
+import { findFocusMemory } from "./findFocusMemory";
 import { findOptions } from "./findOptions";
 import { findOptionShortcut } from "./findOptionShortcut";
 import { useFindMatches } from "./useFindMatches";
@@ -15,6 +16,10 @@ interface Props {
   rootsKey?: string | number;
   /** Where find is searching. */
   scope?: "session" | "message" | "turn-details" | "voice-log";
+  /** Tab this bar belongs to; remembers whether it had focus when the tab was left. */
+  focusKey: string;
+  /** Mounted by switching back to the tab: take focus only if it had focus when the tab was left. */
+  fromTabSwitch: boolean;
   onClose: () => void;
 }
 
@@ -31,8 +36,11 @@ export function FindBar({
   rootRefs,
   rootsKey = 0,
   scope = "session",
+  focusKey,
+  fromTabSwitch,
   onClose,
 }: Props) {
+  const barRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const options = useSyncExternalStore(findOptions.subscribe, findOptions.getSnapshot);
   const { count, index, go } = useFindMatches(rootRefs, query, options, rootsKey);
@@ -50,7 +58,8 @@ export function FindBar({
         focus();
       }
     };
-    focus();
+    // Mount-only: a tab switch keeps whatever had focus when the tab was left.
+    if (!fromTabSwitch || findFocusMemory.has(focusKey)) focus();
     window.addEventListener("switcheroo:find", focus);
     window.addEventListener("keydown", onKey);
     return () => {
@@ -60,8 +69,14 @@ export function FindBar({
     };
   }, []);
 
+  // Layout cleanup runs before the bar leaves the DOM, so focus is still readable.
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    return () => findFocusMemory.set(focusKey, !!bar?.contains(document.activeElement));
+  }, [focusKey]);
+
   return (
-    <div className="find-bar" role="search" aria-label={label}
+    <div ref={barRef} className="find-bar" role="search" aria-label={label}
       onKeyDown={(event) => {
         if (event.nativeEvent.isComposing) return;
         const option = findOptionShortcut(event.nativeEvent);

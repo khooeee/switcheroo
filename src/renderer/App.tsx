@@ -57,6 +57,8 @@ export function App() {
     findOpen,
     findQuery,
     setFindQuery,
+    findFocusKey,
+    findFromTabSwitch,
     findScope,
     findScopeRef,
     closeFind,
@@ -166,6 +168,8 @@ export function App() {
               rootRefs={findRootRefs}
               rootsKey={`${railOpen ? 1 : 0}:${findScope?.getAttribute("data-event-id") ?? ""}`}
               scope={findScopeName}
+              focusKey={findFocusKey}
+              fromTabSwitch={findFromTabSwitch}
               onClose={closeFind}
             />
           )}

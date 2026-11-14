@@ -3,6 +3,7 @@ import type { ConfigMenuCategory } from "../../../shared/configMenuCategory";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { formatAgentError } from "../../../shared/formatAgentError";
+import { findBarHasFocus } from "../find/findBarHasFocus";
 import { ComposerResize } from "./ComposerResize";
 import { ComposerPrompt } from "./ComposerPrompt";
 import { applyPromptImagePaste } from "./applyPromptImagePaste";
@@ -86,7 +87,10 @@ export function ChatComposer({
   }, [session.id]);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => promptRef.current?.focus());
+    // A tab whose find bar had focus when it was left gets it back instead.
+    const frame = requestAnimationFrame(() => {
+      if (!findBarHasFocus()) promptRef.current?.focus();
+    });
     return () => cancelAnimationFrame(frame);
   }, [session.id]);
 
