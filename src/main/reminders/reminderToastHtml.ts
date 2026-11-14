@@ -1,3 +1,4 @@
+import themeCss from "../../renderer/features/theme/theme.css?raw";
 import type { Theme } from "../../shared/appSettings";
 import type { ReminderAlert } from "./ReminderAlert";
 
@@ -5,7 +6,10 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-/** The toast page. Clicks report back by setting the title to `open` or `dismiss`; there is no preload. */
+/**
+ * The toast page, styled with the app's own theme tokens. Clicks report back by setting the title to
+ * `open` or `dismiss`; there is no preload.
+ */
 export function reminderToastHtml(alert: ReminderAlert, theme: Theme): string {
   const head = [alert.title, alert.subtitle].filter(Boolean).map((part) => escapeHtml(part!)).join(" · ");
   return `<!doctype html>
@@ -14,15 +18,14 @@ export function reminderToastHtml(alert: ReminderAlert, theme: Theme): string {
 <meta charset="utf-8">
 <title>${escapeHtml(alert.title)}</title>
 <style>
-:root { color-scheme: dark; --bg: #1a2026; --border: #2c3640; --text: #e8eef3; --dim: #8b9aab; --accent: #3dd6c6; }
-:root[data-theme="light"] { color-scheme: light; --bg: #ffffff; --border: #c9d5dc; --text: #000000; --dim: #5c6d7a; --accent: #1a9e91; }
+${themeCss}
 html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
-body { font: 13px/1.35 system-ui, sans-serif; color: var(--text); cursor: pointer; user-select: none; }
-.toast { box-sizing: border-box; position: relative; height: 100%; padding: 11px 34px 11px 14px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; background: var(--bg); }
-.head { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.body { margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; white-space: pre-line; }
-.close { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--dim); font-size: 16px; line-height: 22px; cursor: pointer; }
-.close:hover { background: var(--border); color: var(--text); }
+body { color: var(--text); cursor: pointer; user-select: none; }
+.toast { box-sizing: border-box; position: relative; height: 100%; padding: 11px 34px 11px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-1); }
+.head { font: 600 var(--font-ui-size)/1.35 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.body { margin-top: 5px; font: var(--font-mono-weight) var(--font-mono-size)/1.35 var(--font-mono); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; white-space: pre-line; }
+.close { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-dim); font: 16px/22px var(--font-ui); cursor: pointer; }
+.close:hover { background: var(--bg-3); color: var(--text); }
 </style>
 </head>
 <body>
