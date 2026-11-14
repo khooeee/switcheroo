@@ -160,7 +160,7 @@ Niceties:
 
 **Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
 
-**Cmd/Ctrl+I**: Focus on prompt (switches to Sessions mode)
+**Cmd/Ctrl+I**: Focus on prompt
 
 **Cmd/Ctrl+,**: Open settings
 
