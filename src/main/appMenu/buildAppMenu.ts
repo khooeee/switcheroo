@@ -1,5 +1,4 @@
 import { Menu, app } from "electron";
-import { standupPrompt } from "../dailyLog/standupPrompt";
 import type { AppMenuOptions } from "./AppMenuOptions";
 import { sessionSubmenu } from "./sessionSubmenu";
 import { voiceSubmenu } from "./voiceSubmenu";
@@ -48,12 +47,6 @@ export function buildAppMenu(opts: AppMenuOptions): void {
         { role: "cut" },
         { role: "copy" },
         { role: "paste" },
-        {
-          label: "Paste Standup Prompt",
-          click: () => {
-            win()?.webContents.send("prompt:paste-standup", standupPrompt());
-          },
-        },
         { role: "selectAll" },
         { type: "separator" },
         {

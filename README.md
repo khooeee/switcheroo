@@ -8,7 +8,6 @@ An agentic development environment that sparks joy in my everyday coding:
 - All agents are started in bypass permissions/YOLO mode.
 - You can go back and forward through the sessions you selected.  As an example of how I use this, I do something similar to `/btw` by forking a session, sending a prompt and then going back to the original session to keep on working.
 - Zen mode hides the message type & timestamps.  It's on by default.  You can always turn it off to see those details as needed with Command/Control + /.
-- Standup notes can be generated for your daily work by going to **Edit** → **Paste Standup Prompt**.
 - You can control your sessions through an iOS app.
 - Best paired with [beaver](https://github.com/khooeee/beaver/)
 
@@ -121,11 +120,9 @@ Switcheroo desktop app
 
 The phone uses the localhost control API, on a fixed port (7389 by default) that also serves Switcheroo's MCP server to sessions. Unticking the checkbox only refuses requests that come through Tailscale; sessions keep their MCP tools. Tailscale Funnel (public internet) traffic is always refused. The iOS token stays the same across launches. To revoke it, click **Rotate Token** in **Settings** and pair again. Scripts on the Mac use a separate token from `~/.switcheroo/control.json`, which is new every launch and refused over Tailscale; sessions have their own MCP keys. Neither is affected by rotating.
 
-## Daily Standup
+## Daily Log
 
 Each finished turn adds one line to `daily-log/YYYY-MM-DD.jsonl` in the app's data folder, next to `sessions` (local date). Click the Settings button on the bottom and select **Open Daily Log Folder** to see them.
-
-To generate standup notes, select **Edit** → **Paste Standup Prompt**. It pastes a prompt for yesterday into the composer, so change the date if you need another day, then send it. If that day has no log, the agent uses the newest earlier one.
 
 ## History Management
 
