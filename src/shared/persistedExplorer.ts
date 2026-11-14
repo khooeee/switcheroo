@@ -1,4 +1,4 @@
-/** One session's file explorer as saved in its folder's explorer.json. Paths are relative to the cwd. */
+/** Saved file explorer; paths are project-relative, or absolute for external editor tabs. */
 export interface PersistedExplorer {
   expanded: string[];
   selected: string | null;

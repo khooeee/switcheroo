@@ -51,6 +51,7 @@ const api: SwitcherooApi = {
   showConfigMenu: (sessionId, category) => ipcRenderer.invoke("session:configMenu", sessionId, category),
   listSessionDir: (sessionId, relPath) => ipcRenderer.invoke("files:list", sessionId, relPath),
   listSessionFiles: (sessionId) => ipcRenderer.invoke("files:listAll", sessionId),
+  pickSessionFile: (sessionId) => ipcRenderer.invoke("files:pick", sessionId),
   readSessionFile: (sessionId, relPath) => ipcRenderer.invoke("files:read", sessionId, relPath),
   writeSessionFile: (sessionId, relPath, text, baseMtimeMs) =>
     ipcRenderer.invoke("files:write", sessionId, relPath, text, baseMtimeMs),

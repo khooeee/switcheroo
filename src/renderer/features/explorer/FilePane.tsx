@@ -10,6 +10,7 @@ import { modLabel } from "../shortcuts/modLabel";
 import { explorerStore } from "./explorerStore";
 import { useExplorerRestored } from "./useExplorerRestored";
 import { useExplorerState } from "./useExplorerState";
+import { useOpenFileDialog } from "./useOpenFileDialog";
 import "../editor/editor.css";
 
 /** File Explorer mode's main pane: the active session's editor tabs and the open file. */
@@ -25,6 +26,7 @@ export function FilePane({ session }: { session: Session | null }) {
 }
 
 function SessionFiles({ sessionId }: { sessionId: string }) {
+  useOpenFileDialog(sessionId);
   const restored = useExplorerRestored(sessionId);
   const { openFiles, activeFile, previewFile } = useExplorerState(sessionId);
 

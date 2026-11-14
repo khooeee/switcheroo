@@ -4,8 +4,9 @@ import { dialogOpen } from "../shortcuts/dialogOpen";
 import { modKey } from "../shortcuts/modKey";
 import { railModeStore } from "./railModeStore";
 
-/** Cmd+S / Cmd+F / Cmd+W → the active file's save, search and close events; Cmd+P → Go to File. */
+/** File commands in Files mode, dispatched to the active pane. */
 const FILE_KEYS: Record<string, string> = {
+  o: "switcheroo:open-file",
   s: "switcheroo:save-file",
   f: "switcheroo:find-in-file",
   w: "switcheroo:close-file",
@@ -19,7 +20,7 @@ function ctrlTab(event: KeyboardEvent): boolean {
 
 /**
  * In File Explorer mode, Cmd+S saves, Cmd+F searches and Cmd+W closes the active file, Cmd+P opens
- * Go to File, and Ctrl+Tab / Ctrl+Shift+Tab step through the open files, wherever focus is (editor or tree).
+ * Go to File, Cmd+O opens a file dialog, and Ctrl+Tab / Ctrl+Shift+Tab step through the open files.
  * Capture phase, registered before the session shortcuts, so they never see these keys there.
  * While Go to File is open the keys are still taken (else Cmd+W would close the session), but only Cmd+P acts.
  */

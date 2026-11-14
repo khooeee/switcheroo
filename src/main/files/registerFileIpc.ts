@@ -5,11 +5,12 @@ import { loadSessionExplorer, saveSessionExplorer } from "../storage/sessionExpl
 import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
 import { listSessionFiles } from "./listSessionFiles";
+import { pickSessionFile } from "./pickSessionFile";
 import { readSessionFile } from "./readSessionFile";
 import { SessionFileWatcher } from "./SessionFileWatcher";
 import { writeSessionFile } from "./writeSessionFile";
 
-/** File explorer and editor channels; every path is relative to the session's cwd. Returns the watcher to dispose on quit. */
+/** File explorer and editor channels. Returns the watcher to dispose on quit. */
 export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
   const watcher = new SessionFileWatcher();
   const cwdOf = (sessionId: string): string => {
@@ -22,6 +23,9 @@ export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
     listSessionDir(cwdOf(sessionId), relPath),
   );
   ipcMain.handle("files:listAll", (_e, sessionId: string) => listSessionFiles(cwdOf(sessionId)));
+  ipcMain.handle("files:pick", (event, sessionId: string) =>
+    pickSessionFile(BrowserWindow.fromWebContents(event.sender), cwdOf(sessionId)),
+  );
   ipcMain.handle("files:read", (_e, sessionId: string, relPath: string) =>
     readSessionFile(cwdOf(sessionId), relPath),
   );

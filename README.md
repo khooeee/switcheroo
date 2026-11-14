@@ -202,6 +202,8 @@ Niceties:
 
 ### Files mode
 
+**Cmd/Ctrl+O**: Open File (native file dialog)
+
 **Cmd/Ctrl+F**: Find in file
 
 **Cmd/Ctrl+G**: Find next

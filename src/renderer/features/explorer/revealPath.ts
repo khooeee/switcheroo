@@ -3,6 +3,10 @@ import { treeReveal } from "./treeReveal";
 
 /** Open a file in a tab, or expand a folder and move focus to the tree; either way its row scrolls into view. */
 export function revealPath(sessionId: string, path: string, kind: "file" | "dir"): void {
+  if (kind === "file" && /^(?:\/|[A-Za-z]:[\\/])/.test(path)) {
+    explorerStore.openFile(sessionId, path);
+    return;
+  }
   treeReveal.request(sessionId);
   if (kind === "file") explorerStore.revealFile(sessionId, path);
   else explorerStore.revealFolder(sessionId, path);

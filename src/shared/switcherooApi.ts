@@ -82,6 +82,9 @@ export interface SwitcherooApi {
   listSessionDir: (sessionId: string, relPath: string) => Promise<DirEntry[]>;
   /** Files under the session cwd for Go to File: git's tracked and unignored files in a repo, else a capped folder walk. */
   listSessionFiles: (sessionId: string) => Promise<string[]>;
+  /** Native Open File dialog; returns a project-relative or external absolute path, null when cancelled. */
+  pickSessionFile: (sessionId: string) => Promise<string | null>;
+  /** Editor paths are project-relative, or absolute for files opened outside the project. */
   readSessionFile: (sessionId: string, relPath: string) => Promise<FileContent>;
   /** Save editor text; `baseMtimeMs` null overwrites even when the file changed on disk. */
   writeSessionFile: (

@@ -1,4 +1,4 @@
-/** One session's file explorer: tree and editor tabs. Paths are relative to the session cwd. */
+/** One session's file explorer. Paths are project-relative, or absolute for external editor tabs. */
 export interface ExplorerState {
   /** Expanded folders (the root is always open). */
   expanded: readonly string[];

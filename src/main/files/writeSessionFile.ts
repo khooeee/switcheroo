@@ -1,9 +1,9 @@
 import * as fs from "node:fs/promises";
 import type { FileWriteResult } from "../../shared/fileWriteResult";
-import { resolveInsideCwd } from "./resolveInsideCwd";
+import { resolveEditorFile } from "./resolveEditorFile";
 
 /**
- * Save editor text to a file under the session cwd. With `baseMtimeMs`, refuse when the file
+ * Save editor text to a file. With `baseMtimeMs`, refuse when the file
  * changed since it was loaded; null overwrites. Writes in place so permissions and links stay.
  */
 export async function writeSessionFile(
@@ -12,7 +12,7 @@ export async function writeSessionFile(
   text: string,
   baseMtimeMs: number | null,
 ): Promise<FileWriteResult> {
-  const file = resolveInsideCwd(cwd, relPath);
+  const file = resolveEditorFile(cwd, relPath);
   if (baseMtimeMs !== null) {
     const current = await fs.stat(file).catch(() => null);
     if (current && current.mtimeMs !== baseMtimeMs) {

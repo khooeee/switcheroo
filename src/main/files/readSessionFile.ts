@@ -3,7 +3,7 @@ import * as path from "node:path";
 import type { FileContent } from "../../shared/fileContent";
 import { MAX_IMAGE_BYTES } from "../images/maxImageBytes";
 import { isMissingFile } from "../storage/isMissingFile";
-import { resolveInsideCwd } from "./resolveInsideCwd";
+import { resolveEditorFile } from "./resolveEditorFile";
 
 /** Largest text file the editor opens. */
 const MAX_TEXT_BYTES = 2 * 1024 * 1024;
@@ -23,9 +23,9 @@ function looksBinary(bytes: Buffer): boolean {
   return bytes.subarray(0, 8000).includes(0);
 }
 
-/** Read a file under the session cwd as text, an image, or a reason it cannot be shown. */
+/** Read an editor file as text, an image, or a reason it cannot be shown. */
 export async function readSessionFile(cwd: string, relPath: string): Promise<FileContent> {
-  const file = resolveInsideCwd(cwd, relPath);
+  const file = resolveEditorFile(cwd, relPath);
   const stat = await fs.stat(file).catch((err: unknown) => {
     if (isMissingFile(err)) return null;
     throw err;
