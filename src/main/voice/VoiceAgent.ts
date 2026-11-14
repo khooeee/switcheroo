@@ -10,11 +10,8 @@ import { clipText } from "../../shared/clipText";
 import { ensureMicAccess } from "./ensureMicAccess";
 import { exchangeVoiceSdp } from "./exchangeVoiceSdp";
 import { fetchIceServers } from "./fetchIceServers";
-import { realtimeErrorMessage } from "./realtimeErrorMessage";
 import { runVoiceSearch } from "./runVoiceSearch";
-import { responseUsage } from "./responseUsage";
 import { runVoiceTool } from "./runVoiceTool";
-import { sessionReasoningEffort } from "./sessionReasoningEffort";
 import { VoiceAnnouncer } from "./VoiceAnnouncer";
 import { VoiceConversation } from "./VoiceConversation";
 import { VoiceIdleTimer } from "./VoiceIdleTimer";
@@ -23,6 +20,7 @@ import { voiceLogFeed } from "./voiceLogFeed";
 import { voiceNoticeText } from "./voiceNoticeText";
 import { VoiceNotices } from "./VoiceNotices";
 import { VoiceRendererLink } from "./VoiceRendererLink";
+import { VoiceServerEvents } from "./VoiceServerEvents";
 import { voiceSessionConfig } from "./voiceSessionConfig";
 import type { VoiceToolContext } from "./VoiceToolContext";
 import { voiceUserMessage } from "./voiceUserMessage";
@@ -46,6 +44,7 @@ export class VoiceAgent {
   private readonly notices: VoiceNotices;
   private readonly announcer: VoiceAnnouncer;
   private readonly tools: VoiceToolContext;
+  private readonly serverEvents: VoiceServerEvents;
   private readonly idle = new VoiceIdleTimer((minutes) => {
     appendVoiceLog("state", { idleMinutes: minutes });
     this.stop();
@@ -54,8 +53,6 @@ export class VoiceAgent {
   private channelOpen = false;
   /** Opened at least once since start, so drops reconnect instead of failing. */
   private opened = false;
-  /** "Voice on" waits for `session.updated` so it can show the reasoning effort; holds `reconnected`. */
-  private onLogPending: boolean | null = null;
   private retries = 0;
   private reconnecting = false;
 
@@ -78,6 +75,12 @@ export class VoiceAgent {
       },
       stopVoice: () => this.stop(),
     };
+    this.serverEvents = new VoiceServerEvents(this.conversation, {
+      setStatus: (patch) => this.setStatus(patch),
+      resetIdle: () => this.resetIdle(),
+      pokeNotices: () => this.notices.poke(),
+      runTool: (event) => this.runTool(event),
+    });
   }
 
   get observer(): SessionObserver {
@@ -135,62 +138,7 @@ export class VoiceAgent {
 
   handleServerEvent(event: ServerEvent): void {
     if (this.status.state === "off") return;
-    const c = this.conversation;
-    const error = realtimeErrorMessage(event);
-    if (error) {
-      appendVoiceLog("error", { error });
-      this.setStatus({ error });
-    }
-    switch (event.type) {
-      case "input_audio_buffer.speech_started":
-        // Speech cancels any notice response (interrupt_response), so what follows is the user's.
-        c.userSpeaking = true;
-        c.trigger = "user";
-        c.touch();
-        return;
-      case "input_audio_buffer.speech_stopped":
-        c.userSpeaking = false;
-        c.touch();
-        return;
-      case "input_audio_buffer.committed":
-        c.trigger = "user";
-        this.setStatus({ activity: "thinking" });
-        return;
-      case "conversation.item.input_audio_transcription.completed":
-        if (c.heard(event.transcript)) this.resetIdle();
-        return;
-      case "response.created":
-        c.responseStarted();
-        this.setStatus({ activity: "thinking" });
-        return;
-      case "response.content_part.added":
-      case "output_audio_buffer.started":
-        this.setStatus({ activity: "speaking" });
-        return;
-      case "output_audio_buffer.stopped":
-        c.audioStopped();
-        this.setStatus({ activity: "idle" });
-        this.notices.poke();
-        return;
-      case "response.output_audio_transcript.done":
-        return c.said(event.transcript);
-      case "response.done": {
-        const usage = responseUsage(event);
-        if (usage) appendVoiceLog("usage", usage);
-        c.responseEnded();
-        this.setStatus({ activity: "idle" });
-        this.notices.poke();
-        return;
-      }
-      case "response.function_call_arguments.done":
-        void this.runTool(event);
-        return;
-      case "session.updated":
-        if (this.onLogPending === null) return;
-        appendVoiceLog("state", { state: "listening", reconnected: this.onLogPending, reasoning: sessionReasoningEffort(event) ?? "model default" });
-        this.onLogPending = null;
-        return;
-    }
+    this.serverEvents.handle(event);
   }
 
   private async connect(): Promise<void> {
@@ -224,7 +172,7 @@ export class VoiceAgent {
     }
     this.setStatus({ state: "listening", activity: "idle", error: null });
     this.resetIdle();
-    this.onLogPending = reconnected;
+    this.serverEvents.listening(reconnected);
     this.notices.poke();
   }
 

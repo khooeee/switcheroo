@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { errorMessage } from "../../../shared/errorMessage";
+import { ipcErrorMessage } from "../../../shared/ipcErrorMessage";
 import type { Reminder } from "../../../shared/reminder";
 import type { ReminderInput } from "../../../shared/reminderInput";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
@@ -64,7 +65,7 @@ export function RemindersModal({ onClose }: { onClose: () => void }) {
       await action();
       if (saved) setEditing(undefined);
     } catch (err) {
-      setError(errorMessage(err).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+      setError(ipcErrorMessage(err));
     } finally {
       setBusy(false);
       setLoading(true);

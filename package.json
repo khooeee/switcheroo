@@ -12,6 +12,7 @@
   "scripts": {
     "prestart": "node scripts/brand-dev-electron.mjs",
     "start": "electron-forge start",
+    "typecheck": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

@@ -1,5 +1,9 @@
 # Contributing
 
+## Checks
+
+Run `npm run typecheck` to check types and unused locals and parameters.
+
 ## Releasing
 
 Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds an Apple Silicon DMG and an x64 Ubuntu `.deb`, then publishes both to a GitHub Release.

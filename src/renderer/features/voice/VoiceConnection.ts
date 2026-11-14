@@ -1,11 +1,6 @@
-import { errorMessage } from "../../../shared/errorMessage";
+import { ipcErrorMessage } from "../../../shared/ipcErrorMessage";
 import type { VoiceCommand } from "../../../shared/voiceCommand";
 import { iceGatheringDone } from "./iceGatheringDone";
-
-/** IPC wraps main's errors as "Error invoking remote method 'x': Error: …". */
-function ipcError(error: unknown): string {
-  return errorMessage(error).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
-}
 
 /**
  * The voice WebRTC peer: mic up, agent audio down, realtime events over `oai-events`.
@@ -89,7 +84,7 @@ export class VoiceConnection {
     } catch (error) {
       if (!current()) return;
       this.disconnect();
-      api.voiceConnection({ type: "failed", error: ipcError(error) });
+      api.voiceConnection({ type: "failed", error: ipcErrorMessage(error) });
     }
   }
 

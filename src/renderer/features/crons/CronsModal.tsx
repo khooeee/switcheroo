@@ -3,6 +3,7 @@ import { AGENT_LABELS } from "../../../shared/agentLabels";
 import type { CronInput } from "../../../shared/cronInput";
 import type { CronsSnapshot } from "../../../shared/cronsSnapshot";
 import { errorMessage } from "../../../shared/errorMessage";
+import { ipcErrorMessage } from "../../../shared/ipcErrorMessage";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { CronForm } from "./CronForm";
 import "../modals/modal.css";
@@ -58,7 +59,7 @@ export function CronsModal({ onClose }: { onClose: () => void }) {
       setSnapshot(await window.switcheroo.saveCrons(crons, snapshot.revision));
       cancelEdit();
     } catch (err) {
-      setError(errorMessage(err).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+      setError(ipcErrorMessage(err));
     } finally {
       setBusy(false);
     }

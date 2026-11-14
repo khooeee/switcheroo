@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { errorMessage } from "../../../shared/errorMessage";
+import { ipcErrorMessage } from "../../../shared/ipcErrorMessage";
 import { trapModalTabFocus } from "../modals/trapModalTabFocus";
 import { applyStoredTheme } from "../theme/theme";
 import { VoiceSettingsFields } from "../voice/VoiceSettingsFields";
@@ -46,7 +46,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       applyStoredTheme();
       onClose();
     } catch (err) {
-      setError(errorMessage(err).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+      setError(ipcErrorMessage(err));
       setBusy(false);
     }
   };
