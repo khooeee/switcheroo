@@ -48,7 +48,8 @@ export const reminderToasts = {
     webContents.on("page-title-updated", (event, title) => {
       event.preventDefault();
       if (title === "open") alert.onClick();
-      if (title === "open" || title === "dismiss") win.close();
+      // Not close(): installQuitHandler treats any window's close as quitting the app.
+      if (title === "open" || title === "dismiss") win.destroy();
     });
     webContents.on("will-navigate", (event) => event.preventDefault());
     webContents.setWindowOpenHandler(() => ({ action: "deny" }));
