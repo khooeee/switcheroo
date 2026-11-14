@@ -4,6 +4,7 @@ import type { Session } from "../../../shared/session";
 import { isComposerDraftEmpty } from "../chat/isComposerDraftEmpty";
 import { useSessionShortcuts } from "../sessions/useSessionShortcuts";
 import { useTabHistory } from "../sessions/useTabHistory";
+import { railModeStore } from "../explorer/railModeStore";
 import { toggleDetailsVisible } from "../settings/details";
 import { ctrlOnlyKey } from "./ctrlOnlyKey";
 import { dialogOpen } from "./dialogOpen";
@@ -123,6 +124,10 @@ export function useAppShortcuts({
         if (!activeId.current) return;
         event.preventDefault();
         if (event.repeat) return;
+        if (railModeStore.getSnapshot() === "files") {
+          window.dispatchEvent(new CustomEvent("switcheroo:close-file"));
+          return;
+        }
         closeActive();
         return;
       }

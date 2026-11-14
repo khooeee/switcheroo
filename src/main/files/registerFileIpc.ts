@@ -1,5 +1,6 @@
-import { ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 import type { SessionManager } from "../sessions/SessionManager";
+import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
 import { readSessionFile } from "./readSessionFile";
 import { writeSessionFile } from "./writeSessionFile";
@@ -22,5 +23,8 @@ export function registerFileIpc(sessions: SessionManager): void {
     "files:write",
     (_e, sessionId: string, relPath: string, text: string, baseMtimeMs: number | null) =>
       writeSessionFile(cwdOf(sessionId), relPath, text, baseMtimeMs),
+  );
+  ipcMain.handle("files:confirmUnsaved", (event, names: string[]) =>
+    confirmUnsavedChanges(BrowserWindow.fromWebContents(event.sender), names),
   );
 }

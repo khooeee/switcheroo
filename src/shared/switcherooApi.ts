@@ -12,6 +12,7 @@ import type { FileContent } from "./fileContent";
 import type { FileWriteResult } from "./fileWriteResult";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
+import type { UnsavedChoice } from "./unsavedChoice";
 import type { VoiceCommand } from "./voiceCommand";
 import type { VoiceConnectionEvent } from "./voiceConnectionEvent";
 import type { VoiceKeyInfo } from "./voiceKeyInfo";
@@ -91,6 +92,8 @@ export interface SwitcherooApi {
     text: string,
     baseMtimeMs: number | null,
   ) => Promise<FileWriteResult>;
+  /** Native Save / Don't Save / Cancel for files with unsaved edits. */
+  confirmUnsavedChanges: (names: string[]) => Promise<UnsavedChoice>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;
