@@ -36,7 +36,8 @@ const api: SwitcherooApi = {
   saveMarkdown: (text: string, nameHint?: string) =>
     ipcRenderer.invoke("fs:saveMarkdown", text, nameHint),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
-  openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
+  getCrons: () => ipcRenderer.invoke("crons:get"),
+  saveCrons: (crons, revision) => ipcRenderer.invoke("crons:save", crons, revision),
   listReminders: () => ipcRenderer.invoke("reminders:list"),
   saveReminder: (input) => ipcRenderer.invoke("reminders:save", input),
   cancelReminder: (id) => ipcRenderer.invoke("reminders:cancel", id),

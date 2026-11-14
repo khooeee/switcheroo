@@ -55,7 +55,7 @@ npm start
 
 ## Crons
 
-Click the Settings button on the bottom and select **Open Crons** to edit `crons.json`. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply as soon as you save `crons.json`.
+Click the Settings button on the bottom and select **Open Crons** to add, edit, enable, disable, or delete crons in the app. Each enabled cron starts a new unpinned session in the background and sends its prompt. Changes apply when saved. You can also edit `crons.json` directly:
 
 ```json
 {
@@ -202,13 +202,13 @@ Niceties:
 
 ### Files mode
 
-**Cmd/Ctrl+O**: Open File (native file dialog)
+**Cmd/Ctrl+O**: Open File
 
 **Cmd/Ctrl+F**: Find in file
 
 **Cmd/Ctrl+G**: Find next
 
-**Cmd/Ctrl+P**: Go to File (search files & folders, Enter to open)
+**Cmd/Ctrl+P**: Go to File (search files & folders)
 
 **Cmd/Ctrl+S**: Save file
 

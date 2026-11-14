@@ -1,0 +1,32 @@
+.crons-modal {
+  width: min(720px, 90vw);
+  max-height: 85vh;
+}
+
+.crons-header,
+.cron-folder,
+.cron-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crons-header { justify-content: space-between; }
+.cron-actions { justify-content: flex-end; flex-wrap: wrap; }
+.crons-header h2,
+.cron-form h3,
+.cron-details h3 { margin: 0; }
+.crons-body { min-height: 0; overflow-y: auto; }
+.crons-hint { color: var(--text-dim); margin: 0; line-height: 1.5; }
+.crons-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.cron-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.cron-details { min-width: 0; overflow-wrap: anywhere; }
+.cron-details p { margin: 6px 0; }
+.cron-summary,
+.cron-path { color: var(--text-dim); }
+.cron-prompt { white-space: pre-wrap; max-height: 6em; overflow-y: auto; }
+.cron-form { display: flex; flex-direction: column; gap: 12px; }
+.cron-fields { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+.cron-fields label { min-width: 0; }
+.cron-folder input { flex: 1; min-width: 0; }
+.crons-error { color: var(--danger); overflow-wrap: anywhere; margin-bottom: 12px; }

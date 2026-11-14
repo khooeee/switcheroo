@@ -5,6 +5,7 @@ import { modLabel } from "../shortcuts/modLabel";
 import { GearIcon } from "./GearIcon";
 import { OPEN_SETTINGS_EVENT } from "./openSettingsEvent";
 import { RemindersModal } from "../reminders/RemindersModal";
+import { CronsModal } from "../crons/CronsModal";
 import { SettingsModal } from "./SettingsModal";
 import "./menus.css";
 import "./settingsShortcuts.css";
@@ -13,9 +14,14 @@ export function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [remindersOpen, setRemindersOpen] = useState(false);
+  const [cronsOpen, setCronsOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, bottom: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeCrons = useCallback(() => {
+    setCronsOpen(false);
+    rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  }, []);
   const closeReminders = useCallback(() => {
     setRemindersOpen(false);
     rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
@@ -71,7 +77,7 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
-              onClick={closeThen(window.switcheroo.openCronsFile)}
+              onClick={closeThen(async () => setCronsOpen(true))}
             >
               Open Crons
             </button>
@@ -121,6 +127,7 @@ export function SettingsMenu() {
           document.body,
         )}
       {remindersOpen && createPortal(<RemindersModal onClose={closeReminders} />, document.body)}
+      {cronsOpen && createPortal(<CronsModal onClose={closeCrons} />, document.body)}
       {settingsOpen && createPortal(<SettingsModal onClose={() => setSettingsOpen(false)} />, document.body)}
       <button
         type="button"

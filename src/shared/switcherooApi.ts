@@ -4,6 +4,8 @@ import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
+import type { CronInput } from "./cronInput";
+import type { CronsSnapshot } from "./cronsSnapshot";
 import type { DirEntry } from "./dirEntry";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { Reminder } from "./reminder";
@@ -55,7 +57,8 @@ export interface SwitcherooApi {
   /** Save-as dialog that writes `text` to a `.md` file named from `nameHint` (else `text`); false when cancelled. */
   saveMarkdown: (text: string, nameHint?: string) => Promise<boolean>;
   openTranscriptsFolder: () => Promise<void>;
-  openCronsFile: () => Promise<void>;
+  getCrons: () => Promise<CronsSnapshot>;
+  saveCrons: (crons: CronInput[], revision: string) => Promise<CronsSnapshot>;
   listReminders: () => Promise<{ reminders: Reminder[]; errors: string[] }>;
   saveReminder: (input: ReminderInput) => Promise<Reminder>;
   cancelReminder: (id: string) => Promise<Reminder | undefined>;

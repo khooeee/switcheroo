@@ -1,6 +1,8 @@
 import { BrowserWindow, dialog, ipcMain } from "electron";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
-import { openCronsFile } from "./files/openCronsFile";
+import { CronsStore } from "./crons/CronsStore";
+import { cronsPath } from "./storage/userDataPaths";
+import type { CronInput } from "../shared/cronInput";
 import { listReminders } from "./reminders/listReminders";
 import { saveReminder } from "./reminders/saveReminder";
 import { cancelReminder } from "./reminders/cancelReminder";
@@ -34,6 +36,7 @@ export function registerIpc({
   getMainWindow,
   refreshMenus,
 }: IpcContext): void {
+  const crons = new CronsStore(cronsPath());
   ipcMain.handle("agents:available", () => availableAgents());
   ipcMain.handle("edit:contextMenu", (event, opts?: EditContextMenuOptions) => {
     showEditContextMenu(BrowserWindow.fromWebContents(event.sender), opts);
@@ -97,7 +100,8 @@ export function registerIpc({
     saveMarkdownFile(BrowserWindow.fromWebContents(event.sender), text, nameHint),
   );
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
-  ipcMain.handle("fs:openCronsFile", () => openCronsFile());
+  ipcMain.handle("crons:get", () => crons.read());
+  ipcMain.handle("crons:save", (_e, entries: CronInput[], revision: string) => crons.save(entries, revision));
   ipcMain.handle("reminders:list", () => listReminders());
   ipcMain.handle("reminders:save", (_e, input: ReminderInput) => saveReminder(input));
   ipcMain.handle("reminders:cancel", (_e, id: string) => cancelReminder(id));

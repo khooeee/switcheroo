@@ -9,7 +9,7 @@ export function statePath(): string {
   return path.join(userDataDir(), "switcheroo.json");
 }
 
-/** User-edited cron list; the app reads it but never writes it (except a starter file). */
+/** Cron list shared by the in-app editor and scheduler; also editable by hand. */
 export function cronsPath(): string {
   return path.join(userDataDir(), "crons.json");
 }
