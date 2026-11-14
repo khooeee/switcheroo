@@ -55,6 +55,7 @@ export interface SwitcherooApi {
   openDailyLogFolder: () => Promise<void>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
+  openRemindersFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>;
   /** iOS remote access: the pairing link and `tailscale serve` setup. */

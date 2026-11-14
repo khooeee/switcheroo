@@ -1,5 +1,6 @@
 import type { BrowserWindow } from "electron";
 import { errorMessage } from "../../shared/errorMessage";
+import type { Session } from "../../shared/session";
 import type { VoiceConnectionEvent } from "../../shared/voiceConnectionEvent";
 import type { VoiceStatus } from "../../shared/voiceStatus";
 import type { SessionManager } from "../sessions/SessionManager";
@@ -83,6 +84,11 @@ export class VoiceAgent {
 
   get observer(): SessionObserver {
     return this.announcer;
+  }
+
+  /** Speak a due reminder; dropped while voice is off. */
+  announceReminder(message: string, session: Session | undefined): void {
+    this.notices.push(voiceNoticeText.reminder(message, session));
   }
 
   getStatus(): VoiceStatus {

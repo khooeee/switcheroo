@@ -41,6 +41,7 @@ const api: SwitcherooApi = {
   openDailyLogFolder: () => ipcRenderer.invoke("fs:openDailyLogFolder"),
   openTranscriptsFolder: () => ipcRenderer.invoke("fs:openTranscriptsFolder"),
   openCronsFile: () => ipcRenderer.invoke("fs:openCronsFile"),
+  openRemindersFile: () => ipcRenderer.invoke("fs:openRemindersFile"),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (patch: Partial<AppSettings>) => ipcRenderer.invoke("settings:update", patch),
   getRemoteStatus: () => ipcRenderer.invoke("remote:status"),

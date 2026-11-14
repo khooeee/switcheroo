@@ -1,6 +1,13 @@
+import { randomBytes } from "node:crypto";
 import { errorMessage } from "../../shared/errorMessage";
 import type { SessionManager } from "../sessions/SessionManager";
 import { parseCreateSession } from "../control/parseCreateSession";
+import { loadReminders } from "../reminders/loadReminders";
+import { localIsoTime } from "../reminders/localIsoTime";
+import type { Reminder } from "../reminders/Reminder";
+import { resolveDueAt } from "../reminders/resolveDueAt";
+import { updateReminders } from "../reminders/updateReminders";
+import { reminderSummary } from "./reminderSummary";
 import { sessionSummary } from "./sessionSummary";
 import { waitForSessions } from "./waitForSessions";
 
@@ -90,6 +97,35 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       if (pinned === true) sessions.pinSession(sessionId);
       if (pinned === false) sessions.unpinSession(sessionId);
       return { ...summary(sessionId), ...(pinned === undefined ? {} : { pinned }) };
+    }
+    case "set_reminder": {
+      const reminder: Reminder = {
+        id: randomBytes(4).toString("hex"),
+        dueAt: localIsoTime(resolveDueAt(args.at ?? undefined, optionalNumber(args, "inMinutes"))),
+        message: text(args, "message").trim(),
+        sessionId: callerId,
+      };
+      await updateReminders((reminders) => [[...reminders, reminder], undefined]);
+      return reminderSummary(reminder, callerId);
+    }
+    case "list_reminders": {
+      const { reminders, errors } = await loadReminders();
+      return {
+        now: localIsoTime(new Date()),
+        reminders: reminders
+          .toSorted((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))
+          .map((reminder) => reminderSummary(reminder, callerId)),
+        ...(errors.length ? { errors } : {}),
+      };
+    }
+    case "cancel_reminder": {
+      const id = text(args, "id");
+      const cancelled = await updateReminders((reminders) => {
+        const match = reminders.find((reminder) => reminder.id === id);
+        return [match ? reminders.filter((reminder) => reminder !== match) : reminders, match];
+      });
+      if (!cancelled) throw new Error("Reminder not found");
+      return { cancelled: reminderSummary(cancelled, callerId) };
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

@@ -14,6 +14,8 @@ import { installStdioGuards } from "./main/lifecycle/installStdioGuards";
 import { ControlServer } from "./main/control/ControlServer";
 import { CronScheduler } from "./main/crons/CronScheduler";
 import { runCron } from "./main/crons/runCron";
+import { ReminderScheduler } from "./main/reminders/ReminderScheduler";
+import { fireReminder } from "./main/reminders/fireReminder";
 import { registerIpc } from "./main/registerIpc";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
@@ -53,6 +55,9 @@ const voice = new VoiceAgent({
   onStatus: refreshVoiceMenuItems,
 });
 sessions.setObserver(voice.observer);
+const reminders = new ReminderScheduler((reminder) =>
+  fireReminder(reminder, { sessions, voice, getWindow: () => mainWindow }),
+);
 
 function refreshMenus() {
   refreshSessionMenuItems(sessions.activeMenuState(), activeSessionUnread);
@@ -140,6 +145,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     buildAppMenu(menuOptions);
     void createWindow().then(() => {
       crons.start();
+      reminders.start();
       void control.apply(sessions.getSettings());
     });
   });
@@ -155,6 +161,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     async () => {
       voice.stop();
       crons.stop();
+      reminders.stop();
       await sessions.disposeAll();
       await control.stop();
     },

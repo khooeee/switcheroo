@@ -14,6 +14,11 @@ export function cronsPath(): string {
   return path.join(userDataDir(), "crons.json");
 }
 
+/** Pending reminders; agents add them over MCP and the user may edit them by hand. */
+export function remindersPath(): string {
+  return path.join(userDataDir(), "reminders.json");
+}
+
 export function dailyLogDir(): string {
   return path.join(userDataDir(), "daily-log");
 }
