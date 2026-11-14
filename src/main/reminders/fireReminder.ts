@@ -16,7 +16,8 @@ type Deps = {
 
 /**
  * Tell the user a reminder is due: a notification (or an in-app toast where the OS refuses one) that
- * opens its session, a dock bounce, and a chime, or speech while voice is on.
+ * opens its session, a marker in that session's transcript, a dock bounce, and a chime, or speech
+ * while voice is on.
  */
 export function fireReminder(reminder: Reminder, { sessions, voice, getWindow }: Deps): void {
   const session = reminder.sessionId ? sessions.getSession(reminder.sessionId) : undefined;
@@ -33,6 +34,7 @@ export function fireReminder(reminder: Reminder, { sessions, voice, getWindow }:
     },
   };
   showNotification(alert, () => reminderToasts.show(alert, sessions.getSettings().theme));
+  if (reminder.sessionId) void sessions.noteReminder(reminder.sessionId, reminder.message);
   app.dock?.bounce("informational");
   // Voice reading it out stands in for the chime, as it does for the turn-finished sound.
   if (!voice.announceReminder(reminder.message, session)) getWindow()?.webContents.send("reminder:chime");

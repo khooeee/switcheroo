@@ -10,7 +10,9 @@ export type TranscriptRole =
   | "system"
   | "stopped"
   /** A subagent the agent started; its own transcript is stored separately. */
-  | "subagent";
+  | "subagent"
+  /** A due reminder, as its own turn's `user` item; the agent never sees it. */
+  | "reminder";
 
 export interface TranscriptItem {
   id: string;

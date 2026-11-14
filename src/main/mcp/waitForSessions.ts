@@ -1,3 +1,4 @@
+import { agentTurns } from "../../shared/agentTurns";
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { SessionManager } from "../sessions/SessionManager";
 
@@ -27,7 +28,7 @@ async function report(sessions: SessionManager, sessionId: string) {
   const session = sessions.getSession(sessionId);
   if (!session) return { sessionId, status: "not found" };
   if (await busy(sessions, sessionId)) return { sessionId, status: "running" };
-  const last = (await sessions.getTranscript(sessionId)).at(-1);
+  const last = agentTurns(await sessions.getTranscript(sessionId)).at(-1);
   return {
     sessionId,
     status: session.status,
