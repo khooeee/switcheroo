@@ -8,10 +8,12 @@ import { useFileBuffer } from "./useFileBuffer";
 /** The active tab's body: the code editor for text, the picture for images, else why it cannot open. */
 export function FileEditor({ sessionId, path }: { sessionId: string; path: string }) {
   const buffer = useFileBuffer(sessionId, path);
+  const unloaded = buffer === undefined;
 
+  // Also after the buffer is dropped (edits discarded while the tab stays open).
   useEffect(() => {
-    void fileBufferStore.load(sessionId, path);
-  }, [sessionId, path]);
+    if (unloaded) void fileBufferStore.load(sessionId, path);
+  }, [sessionId, path, unloaded]);
 
   if (!buffer || buffer.kind === "loading") return <div className="file-editor-note">Loading…</div>;
   switch (buffer.kind) {

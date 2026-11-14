@@ -19,6 +19,7 @@ import { fireReminder } from "./main/reminders/fireReminder";
 import { registerIpc } from "./main/registerIpc";
 import { registerFileIpc } from "./main/files/registerFileIpc";
 import type { SessionFileWatcher } from "./main/files/SessionFileWatcher";
+import { confirmRendererUnsaved } from "./main/files/confirmRendererUnsaved";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
 import { refreshVoiceMenuItems } from "./main/appMenu/refreshVoiceMenuItems";
@@ -161,7 +162,9 @@ if (installSingleInstanceLock(() => mainWindow)) {
   });
 
   installQuitHandler(
-    () => confirmQuit(mainWindow, sessions.runningChatCount()),
+    async () =>
+      (await confirmRendererUnsaved(mainWindow)) &&
+      confirmQuit(mainWindow, sessions.runningChatCount()),
     async () => {
       voice.stop();
       fileWatcher?.dispose();

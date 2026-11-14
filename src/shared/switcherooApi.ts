@@ -103,6 +103,9 @@ export interface SwitcherooApi {
   /** The session's saved file explorer (tree, tabs, scroll), or null for a fresh one. */
   getExplorerState: (sessionId: string) => Promise<PersistedExplorer | null>;
   saveExplorerState: (sessionId: string, state: PersistedExplorer) => Promise<void>;
+  /** Main is about to quit: settle unsaved files, then answer with `quitReady` (false cancels). */
+  onPrepareQuit: (cb: (payload: { requestId: number }) => void) => () => void;
+  quitReady: (requestId: number, ok: boolean) => void;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

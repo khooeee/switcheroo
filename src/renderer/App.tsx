@@ -28,6 +28,9 @@ import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
 import { FilePane } from "./features/explorer/FilePane";
 import { useRailMode } from "./features/explorer/useRailMode";
+import { useFileShortcuts } from "./features/explorer/useFileShortcuts";
+import { useRailModeShortcuts } from "./features/explorer/useRailModeShortcuts";
+import { useQuitGuard } from "./features/editor/useQuitGuard";
 
 /** Stable fallback so memoized SessionTranscript does not re-render on a new `[]`. */
 const NO_TURNS: TranscriptTurn[] = [];
@@ -36,6 +39,9 @@ export function App() {
   useCompletionSound();
   useReminderChime();
   useVoiceConnection();
+  useFileShortcuts();
+  useRailModeShortcuts();
+  useQuitGuard();
   const {
     pinnedSessions,
     unpinnedSessions,

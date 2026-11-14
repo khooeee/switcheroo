@@ -63,6 +63,8 @@ const api: SwitcherooApi = {
     subscribe<{ sessionId: string; paths: string[] | null }>("files:changed", cb),
   getExplorerState: (sessionId) => ipcRenderer.invoke("files:getExplorer", sessionId),
   saveExplorerState: (sessionId, state) => ipcRenderer.invoke("files:saveExplorer", sessionId, state),
+  onPrepareQuit: (cb) => subscribe<{ requestId: number }>("app:prepareQuit", cb),
+  quitReady: (requestId, ok) => ipcRenderer.send("app:quitReady", requestId, ok),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   getSubagentTranscript: (sessionId: string, subagentId: string) =>
     ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),
@@ -135,6 +137,7 @@ const MENU_EVENTS: Record<string, string> = {
   "prompt:focus": "switcheroo:focus-prompt",
   "filter:focus": "switcheroo:focus-filter",
   "settings:open": "switcheroo:open-settings",
+  "explorer:toggle": "switcheroo:toggle-explorer",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { openSearchPanel } from "@codemirror/search";
 import { EditorView } from "@codemirror/view";
 import type { LiveText } from "./FileBuffer";
 import { fileBufferStore } from "./fileBufferStore";
@@ -66,6 +67,17 @@ export function CodeEditor({ sessionId, path, live }: Props) {
     scrollToPosition(view, top);
     if (!sameFile) view.focus();
   });
+
+  useEffect(() => {
+    const onFind = () => {
+      const view = viewRef.current;
+      if (!view) return;
+      view.focus();
+      openSearchPanel(view);
+    };
+    window.addEventListener("switcheroo:find-in-file", onFind);
+    return () => window.removeEventListener("switcheroo:find-in-file", onFind);
+  }, []);
 
   return <div ref={hostRef} className="code-editor" />;
 }

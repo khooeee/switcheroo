@@ -4,6 +4,7 @@ import { closeFileTab } from "../editor/closeFileTab";
 import { EditorTabs } from "../editor/EditorTabs";
 import { FileEditor } from "../editor/FileEditor";
 import { FileHeader } from "../editor/FileHeader";
+import { fileBufferStore } from "../editor/fileBufferStore";
 import { useExplorerRestored } from "./useExplorerRestored";
 import { useExplorerState } from "./useExplorerState";
 import "../editor/editor.css";
@@ -24,13 +25,20 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
   const restored = useExplorerRestored(sessionId);
   const { openFiles, activeFile } = useExplorerState(sessionId);
 
-  // Cmd+W in File Explorer mode closes the active tab instead of the session.
+  // Cmd+W / Cmd+S in File Explorer mode act on the active tab (see useFileShortcuts).
   useEffect(() => {
     const onCloseFile = () => {
       if (activeFile) void closeFileTab(sessionId, activeFile);
     };
+    const onSaveFile = () => {
+      if (activeFile) void fileBufferStore.save(sessionId, activeFile);
+    };
     window.addEventListener("switcheroo:close-file", onCloseFile);
-    return () => window.removeEventListener("switcheroo:close-file", onCloseFile);
+    window.addEventListener("switcheroo:save-file", onSaveFile);
+    return () => {
+      window.removeEventListener("switcheroo:close-file", onCloseFile);
+      window.removeEventListener("switcheroo:save-file", onSaveFile);
+    };
   }, [sessionId, activeFile]);
 
   if (!restored) return <section className="panel" />;
