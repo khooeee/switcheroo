@@ -25,7 +25,7 @@ function looksBinary(bytes: Buffer): boolean {
 
 /** Read a file under the session cwd as text, an image, or a reason it cannot be shown. */
 export async function readSessionFile(cwd: string, relPath: string): Promise<FileContent> {
-  const file = await resolveInsideCwd(cwd, relPath);
+  const file = resolveInsideCwd(cwd, relPath);
   const stat = await fs.stat(file).catch((err: unknown) => {
     if (isMissingFile(err)) return null;
     throw err;

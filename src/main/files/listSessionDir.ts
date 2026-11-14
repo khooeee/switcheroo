@@ -19,7 +19,7 @@ async function entryKind(dir: string, entry: Dirent): Promise<DirEntry["kind"] |
 
 /** Children of one folder under the session cwd: folders first, then files, natural name order. */
 export async function listSessionDir(cwd: string, relPath: string): Promise<DirEntry[]> {
-  const dir = await resolveInsideCwd(cwd, relPath);
+  const dir = resolveInsideCwd(cwd, relPath);
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const listed = await Promise.all(
     entries

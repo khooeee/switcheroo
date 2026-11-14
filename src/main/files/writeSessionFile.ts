@@ -12,7 +12,7 @@ export async function writeSessionFile(
   text: string,
   baseMtimeMs: number | null,
 ): Promise<FileWriteResult> {
-  const file = await resolveInsideCwd(cwd, relPath);
+  const file = resolveInsideCwd(cwd, relPath);
   if (baseMtimeMs !== null) {
     const current = await fs.stat(file).catch(() => null);
     if (current && current.mtimeMs !== baseMtimeMs) {
