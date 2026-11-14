@@ -81,7 +81,7 @@ Click the Settings button on the bottom and select **Open Crons** to edit `crons
 
 ## Reminders
 
-Ask any session to remind you of something ("remind me to check the deploy in 20 minutes"). Agents set reminders with the `set_reminder` tool from Switcheroo's MCP server, and can list and cancel them too. The voice agent can as well; its reminders link to the session you name, else the one you're talking about or the one on screen. With no session open, it starts one and has it set the reminder. When one is due, Switcheroo shows a desktop notification and plays a short chime (unless sounds are off in settings); clicking it opens the session that set it. If voice is on, it reads the reminder out instead of chiming. Reminders are for you: they never send a prompt to a session.
+Ask any session to remind you of something ("remind me to check the deploy in 20 minutes"). Agents set reminders with the `set_reminder` tool from Switcheroo's MCP server, and can list and cancel them too. The voice agent can as well; its reminders link to the session you name, else the one you're talking about or the one on screen. With no session open, it starts one and has it set the reminder. When one is due, Switcheroo shows a desktop notification and plays a short chime (unless sounds are off in settings); clicking it opens the session that set it. If voice is on, it reads the reminder out instead of chiming. The reminder also appears in that session's transcript as a "Reminder" row, so you can see it when you return to the session. Reminders are for you: they never send a prompt to a session, and the agent never sees the row.
 
 Pending reminders live in `reminders.json`. Click the Settings button on the bottom and select **Open Reminders** to view or edit it; changes apply as soon as you save.
 
@@ -101,7 +101,7 @@ Pending reminders live in `reminders.json`. Click the Settings button on the bot
 - `dueAt` is ISO 8601; without an offset it is local time.
 - `sessionId` is optional; without it, the notification just brings Switcheroo to the front.
 - Each reminder fires once and is then removed. One that came due while Switcheroo was closed or the computer was asleep fires late, as soon as Switcheroo is running again.
-- macOS only shows notifications for properly code-signed apps, so release builds show a small Switcheroo popup in the top-right corner instead. It stays until you click it (opens the session) or dismiss it, and never takes focus.
+- macOS only shows notifications for properly code-signed apps, so Switcheroo builds show a small Switcheroo popup in the top-right corner instead. It stays until you click it (opens the session) or dismiss it, and never takes focus.
 
 ## iOS app
 
@@ -159,6 +159,7 @@ Niceties:
 - Copy message or copy individual code blocks
 - Save message or session as Markdown
 - Preview Markdown files like how they would appear in GitHub
+- [Reminders](#reminders) that agents or voice can set for you, with a popup, chime and transcript note when due
 
 ## Shortcuts
 
