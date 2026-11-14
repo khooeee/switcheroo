@@ -33,6 +33,11 @@ export const voiceNoticeText = {
     return `${who(session)} hit an error.\n${untrusted("Error", clipText(error, 300))}`;
   },
 
+  reminder(message: string, session: Session | undefined): string {
+    const from = session ? ` set by ${who(session)}` : "";
+    return `A reminder is due${from}.\n${untrusted("Reminder", clipText(message, 500))}\nRead the reminder to the user.`;
+  },
+
   searchResult(query: string, answer: string, sources: string[]): string {
     const from = sources.length ? `\nSources: ${sources.join(", ")}` : "";
     return `Web search finished for "${clipText(query, 200)}".\n${untrusted("Answer", clipText(answer, 1500))}${from}\nTell the user the answer.`;

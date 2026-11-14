@@ -55,6 +55,7 @@ export interface SwitcherooApi {
   openDailyLogFolder: () => Promise<void>;
   openTranscriptsFolder: () => Promise<void>;
   openCronsFile: () => Promise<void>;
+  openRemindersFile: () => Promise<void>;
   getSettings: () => Promise<AppSettings>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>;
   /** iOS remote access: the pairing link and `tailscale serve` setup. */
@@ -112,6 +113,8 @@ export interface SwitcherooApi {
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   /** `announced`: the voice agent will speak about it, so skip the completion sound. */
   onPromptComplete: (cb: (payload: { sessionId: string; announced?: boolean }) => void) => () => void;
+  /** A reminder is due and the voice agent won't read it out. */
+  onReminderChime: (cb: () => void) => () => void;
   /** Voice button / shortcut: start or stop. */
   toggleVoice: () => Promise<void>;
   getVoiceStatus: () => Promise<VoiceStatus>;

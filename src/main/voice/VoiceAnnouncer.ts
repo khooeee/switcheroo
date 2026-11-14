@@ -1,4 +1,5 @@
 import type { CursorAskQuestionRequest } from "../../shared/agentRequests";
+import { agentTurns } from "../../shared/agentTurns";
 import type { Session } from "../../shared/session";
 import type { SessionManager } from "../sessions/SessionManager";
 import type { SessionObserver } from "../sessions/SessionObserver";
@@ -21,7 +22,7 @@ export class VoiceAnnouncer implements SessionObserver {
     const session = this.announceable(sessionId);
     if (!session) return false;
     void this.sessions.getTranscript(sessionId).then((turns) => {
-      const turn = turns[turns.length - 1];
+      const turn = agentTurns(turns).at(-1);
       if (turn?.status === "complete") this.notices.push(voiceNoticeText.turnFinished(session, turn));
     });
     return true;

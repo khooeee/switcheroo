@@ -73,6 +73,14 @@ export function SettingsMenu() {
               type="button"
               role="menuitem"
               className="settings-item"
+              onClick={closeThen(window.switcheroo.openRemindersFile)}
+            >
+              Open Reminders
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="settings-item"
               onClick={closeThen(async () => setSettingsOpen(true))}
             >
               Open Settings

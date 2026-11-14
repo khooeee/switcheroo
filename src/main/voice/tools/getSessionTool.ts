@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { AGENT_LABELS } from "../../../shared/agentLabels";
+import { agentTurns } from "../../../shared/agentTurns";
 import { clipText } from "../../../shared/clipText";
 import { questionPayload } from "../questionPayload";
 import { resolveToolSession } from "../resolveToolSession";
@@ -14,7 +15,7 @@ export async function getSessionTool(ctx: VoiceToolContext, args: Record<string,
   const resolved = resolveToolSession(ctx, toolArgs.string(args, "session"));
   if (!resolved.ok) return resolved;
   const { session } = resolved;
-  const turns = await ctx.sessions.getTranscript(session.id);
+  const turns = agentTurns(await ctx.sessions.getTranscript(session.id));
   const latest = turns[turns.length - 1];
   const finished = [...turns].reverse().find((turn) => turn.status !== "running");
   const question = [...ctx.questions.values()].find((request) => request.sessionId === session.id);

@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from "electron";
+import { revealWindow } from "./revealWindow";
 
 /** Keep only one Switcheroo process; focus the existing window on relaunch. */
 export function installSingleInstanceLock(
@@ -11,10 +12,7 @@ export function installSingleInstanceLock(
 
   app.on("second-instance", () => {
     const win = getWindow();
-    if (!win) return;
-    if (win.isMinimized()) win.restore();
-    win.show();
-    win.focus();
+    if (win) revealWindow(win);
   });
 
   return true;

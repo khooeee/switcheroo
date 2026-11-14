@@ -1,6 +1,12 @@
 import { errorMessage } from "../../shared/errorMessage";
+import { isReminderTurn } from "../../shared/isReminderTurn";
 import type { SessionManager } from "../sessions/SessionManager";
 import { parseCreateSession } from "../control/parseCreateSession";
+import { addReminder } from "../reminders/addReminder";
+import { cancelReminder } from "../reminders/cancelReminder";
+import { listReminders } from "../reminders/listReminders";
+import { localIsoTime } from "../reminders/localIsoTime";
+import { reminderSummary } from "./reminderSummary";
 import { sessionSummary } from "./sessionSummary";
 import { waitForSessions } from "./waitForSessions";
 
@@ -75,12 +81,11 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       const sessionId = knownSession(sessions, args);
       const last = Math.max(1, Math.floor(optionalNumber(args, "last") ?? 1));
       const turns = (await sessions.getTranscript(sessionId)).slice(-last);
-      return turns.map((turn) => ({
-        turnId: turn.id,
-        status: turn.status,
-        prompt: turn.user.text,
-        reply: turn.assistant?.text ?? null,
-      }));
+      return turns.map((turn) =>
+        isReminderTurn(turn)
+          ? { turnId: turn.id, reminder: turn.user.text }
+          : { turnId: turn.id, status: turn.status, prompt: turn.user.text, reply: turn.assistant?.text ?? null },
+      );
     }
     case "update_session": {
       const sessionId = args.sessionId === undefined ? callerId : knownSession(sessions, args);
@@ -90,6 +95,28 @@ async function run(sessions: SessionManager, callerId: string, name: string, arg
       if (pinned === true) sessions.pinSession(sessionId);
       if (pinned === false) sessions.unpinSession(sessionId);
       return { ...summary(sessionId), ...(pinned === undefined ? {} : { pinned }) };
+    }
+    case "set_reminder": {
+      const reminder = await addReminder({
+        message: text(args, "message"),
+        at: args.at ?? undefined,
+        inMinutes: optionalNumber(args, "inMinutes"),
+        sessionId: callerId,
+      });
+      return reminderSummary(reminder, callerId);
+    }
+    case "list_reminders": {
+      const { reminders, errors } = await listReminders();
+      return {
+        now: localIsoTime(new Date()),
+        reminders: reminders.map((reminder) => reminderSummary(reminder, callerId)),
+        ...(errors.length ? { errors } : {}),
+      };
+    }
+    case "cancel_reminder": {
+      const cancelled = await cancelReminder(text(args, "id"));
+      if (!cancelled) throw new Error("Reminder not found");
+      return { cancelled: reminderSummary(cancelled, callerId) };
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

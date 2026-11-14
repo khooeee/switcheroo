@@ -10,6 +10,7 @@ import { SWITCHEROO_TOOLS } from "./switcherooTools";
 const INSTRUCTIONS = [
   "Switcheroo is the desktop app running this session; its sidebar lists other agent sessions (Claude Code, Codex, Cursor, Pi).",
   "Use these tools to start sessions, prompt them and collect their replies, for example to work on several tasks in parallel.",
+  "Reminders notify the user at a set time; they never prompt a session.",
 ].join(" ");
 
 type RpcId = string | number;

@@ -19,7 +19,7 @@ export function GeneralSettingsFields({ draft, busy, onChange }: SettingsFieldsP
           disabled={busy}
           onChange={(e) => onChange({ soundEnabled: e.target.checked })}
         />
-        Play a sound when a turn finishes
+        Play a sound when a turn finishes or a reminder is due
       </label>
       <label>
         Max sessions in the list (0 = unlimited)

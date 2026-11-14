@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import type { TranscriptTurn } from "../../shared/transcript";
 import { clipText } from "../../shared/clipText";
+import { isReminderTurn } from "../../shared/isReminderTurn";
 
 /** What a running turn is doing right now: its latest tool call or assistant text. */
 function currentStep(turn: TranscriptTurn): string {
@@ -14,6 +15,7 @@ function currentStep(turn: TranscriptTurn): string {
 
 /** Compact, speakable view of one turn; `replyMax` bounds the final message. */
 export function turnSnapshot(turn: TranscriptTurn, replyMax: number) {
+  if (isReminderTurn(turn)) return { reminder: clipText(turn.user.text, 200) };
   const files = [...new Set(turn.fileChanges.map((change) => path.basename(change.path)))];
   if (turn.status === "running") {
     return {

@@ -121,6 +121,11 @@ html[data-details="hidden"] .message.assistant .row:not(:has(.tool-status)):not(
   text-transform: uppercase;
 }
 
+.message.reminder .kind-pill {
+  background: color-mix(in srgb, var(--accent-2) 18%, transparent);
+  color: var(--accent-2);
+}
+
 .message.thought {
   opacity: 0.75;
   font-style: italic;

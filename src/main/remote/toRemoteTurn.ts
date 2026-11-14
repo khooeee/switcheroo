@@ -1,3 +1,4 @@
+import { isReminderTurn } from "../../shared/isReminderTurn";
 import type { TranscriptTurn } from "../../shared/transcript";
 import type { RemoteTurn } from "./RemoteTurn";
 
@@ -14,7 +15,8 @@ export function toRemoteTurn(turn: TranscriptTurn): RemoteTurn {
     id: turn.id,
     at: turn.at,
     status: turn.status,
-    user: turn.user.text,
+    // The iOS app has no reminder row; label it so it doesn't read as a prompt.
+    user: isReminderTurn(turn) ? `⏰ Reminder: ${turn.user.text}` : turn.user.text,
     queued: turn.user.queued || undefined,
     assistant: turn.assistant?.text ?? null,
     activity: turn.status === "running" ? latestActivity(turn) : undefined,

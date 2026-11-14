@@ -24,6 +24,7 @@ import { createSession } from "./createSession";
 import { forkSession } from "./forkSession";
 import { setActiveTab } from "./setActiveTab";
 import { navigateToEvent } from "./navigateToEvent";
+import { noteReminder } from "./noteReminder";
 import { promptSession } from "./promptSession";
 import { showSessionConfigMenu } from "./showSessionConfigMenu";
 
@@ -149,6 +150,11 @@ export class SessionManager {
 
   setActiveTab(tabId: string): Promise<void> {
     return setActiveTab(this.deps, tabId);
+  }
+
+  /** Add a due reminder to the session's transcript without prompting its agent. */
+  noteReminder(sessionId: string, message: string): Promise<void> {
+    return noteReminder(this.deps, sessionId, message);
   }
 
   navigateToEvent(sessionId: string, turnId: string, eventId: string): Promise<void> {

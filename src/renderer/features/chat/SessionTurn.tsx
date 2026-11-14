@@ -1,4 +1,5 @@
 import { memo, useMemo } from "react";
+import { isReminderTurn } from "../../../shared/isReminderTurn";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { steerEvents } from "./steerEvents";
 import { ThinkingIndicator } from "./ThinkingIndicator";
@@ -10,7 +11,10 @@ import { turnImages } from "../images/turnImages";
 import type { MessageSession } from "./useMessageSession";
 import { useTurnRailOpeners } from "./useTurnRailOpeners";
 
-/** Compact session turn: user + steers + subagents + assistant. Other mid-turn events live in the right rail. */
+/**
+ * Compact session turn: user + steers + subagents + assistant. Other mid-turn events live in the right
+ * rail. A reminder turn is just its marker.
+ */
 export const SessionTurn = memo(function SessionTurn({
   session,
   turn,
@@ -26,6 +30,14 @@ export const SessionTurn = memo(function SessionTurn({
   const subagents = useMemo(() => subagentRows(turn.events), [turn.events]);
   // The agent's reply often refers to an image a tool returned; show it with the reply.
   const images = useMemo(() => turnImages(turn.events), [turn.events]);
+
+  if (isReminderTurn(turn)) {
+    return (
+      <div className="session-turn" data-turn-id={turn.id}>
+        <TranscriptMessage session={session} item={turn.user} />
+      </div>
+    );
+  }
 
   return (
     <div className="session-turn" data-turn-id={turn.id}>

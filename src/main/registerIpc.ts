@@ -4,6 +4,7 @@ import { openFolderInCursor } from "./cursor/openFolderInCursor";
 import { openDailyLogFolder } from "./files/openDailyLogFolder";
 import { openTranscriptsFolder } from "./files/openTranscriptsFolder";
 import { openCronsFile } from "./files/openCronsFile";
+import { openRemindersFile } from "./files/openRemindersFile";
 import { readClipboardPng } from "./images/readClipboardPng";
 import { savePastedImage } from "./images/savePastedImage";
 import { availableAgents } from "./acp/availableAgents";
@@ -102,6 +103,7 @@ export function registerIpc({ sessions, control, getMainWindow, setActiveSession
   ipcMain.handle("fs:openDailyLogFolder", () => openDailyLogFolder());
   ipcMain.handle("fs:openTranscriptsFolder", () => openTranscriptsFolder());
   ipcMain.handle("fs:openCronsFile", () => openCronsFile());
+  ipcMain.handle("fs:openRemindersFile", () => openRemindersFile());
   ipcMain.handle("settings:get", () => sessions.getSettings());
   ipcMain.handle("settings:update", async (_e, patch: Partial<AppSettings>) => {
     const next = sessions.updateSettings(patch);

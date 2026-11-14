@@ -52,4 +52,16 @@ export const SWITCHEROO_TOOLS = [
       pinned: { type: "boolean", description: "Pin it at the top of the sidebar" },
     },
   ),
+  tool(
+    "set_reminder",
+    "Remind the user at a time with a desktop notification, spoken too when voice is on; clicking it opens this session. It is for the user only: it never prompts any session, this one included. Give `at` or `inMinutes`. Returns the reminder with its due time in local time.",
+    {
+      message: { type: "string", description: "What to tell the user" },
+      at: { type: "string", description: "ISO 8601 time, e.g. YYYY-MM-DDTHH:MM; without an offset it is the user's local time" },
+      inMinutes: { type: "number", description: "Minutes from now" },
+    },
+    ["message"],
+  ),
+  tool("list_reminders", "List pending reminders from every session, soonest first, and the current local time."),
+  tool("cancel_reminder", "Cancel a pending reminder by id.", { id: { type: "string" } }, ["id"]),
 ];
