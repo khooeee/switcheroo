@@ -158,15 +158,15 @@ Niceties:
 
 ### Global Shortcuts
 
-**Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
-
 **Cmd/Ctrl+E**: Open selected session's folder in Files mode
+
+**Cmd/Ctrl+Shift+E**: Switch between Sessions mode and Files mode
 
 **Cmd/Ctrl+Shift+F**: Find in History (searches all sessions on disk)
 
-**Cmd/Ctrl+N**: New session
-
 **Cmd/Ctrl+I**: Focus on prompt (switches to Sessions mode)
+
+**Cmd/Ctrl+N**: New session
 
 **Cmd/Ctrl+R**: Rename selected tab (switches to Sessions mode)
 
@@ -192,32 +192,32 @@ Niceties:
 
 **Cmd/Ctrl+W**: Close selected tab
 
+**Escape**: Stop agent (while running)
+
 **Ctrl+Tab**: Go to next visible tab
 
 **Ctrl+Shift+Tab**: Go to previous visible tab
 
-**Escape**: Stop agent (while running)
+**/**: shows autocomplete of slash commands in the composer
 
 **Cmd/Ctrl+/**: Toggle zen mode
 
-**/**: shows autocomplete of slash commands in the composer
-
 ### Files mode
-
-**Cmd/Ctrl+P**: Go to File (search files & folders, Enter to open)
-
-**Cmd/Ctrl+S**: Save file
 
 **Cmd/Ctrl+F**: Find in file
 
 **Cmd/Ctrl+G**: Find next
 
+**Cmd/Ctrl+P**: Go to File (search files & folders, Enter to open)
+
+**Cmd/Ctrl+S**: Save file
+
 **Cmd/Ctrl+W**: Close file
-
-**Ctrl+Tab**: Go to next open file
-
-**Ctrl+Shift+Tab**: Go to previous open file
 
 **Arrow keys, Home/End**: Move through the file tree, expand/collapse folders
 
 **Enter**: Open selected file, or expand/collapse selected folder
+
+**Ctrl+Tab**: Go to next open file
+
+**Ctrl+Shift+Tab**: Go to previous open file
