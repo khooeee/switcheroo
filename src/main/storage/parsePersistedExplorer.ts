@@ -27,11 +27,13 @@ export function parsePersistedExplorer(value: unknown): PersistedExplorer | null
     }
   }
   const activeFile = pathOrNull(value.activeFile);
+  const previewFile = pathOrNull(value.previewFile);
   return {
     expanded: paths(value.expanded),
     selected: pathOrNull(value.selected),
     openFiles,
     activeFile: activeFile && openFiles.includes(activeFile) ? activeFile : openFiles[0] ?? null,
+    previewFile: previewFile && openFiles.includes(previewFile) ? previewFile : null,
     treeScrollTop: offset(value.treeScrollTop),
     fileTops,
   };

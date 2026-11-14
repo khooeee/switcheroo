@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import { previewFileTab } from "../editor/previewFileTab";
 import { dirListingStore } from "./dirListingStore";
 import { explorerStore } from "./explorerStore";
 import { FileTreeRow } from "./FileTreeRow";
@@ -12,7 +13,7 @@ import { useSessionFileWatch } from "./useSessionFileWatch";
 import { useTreeReveal } from "./useTreeReveal";
 import { visibleTreeRows } from "./visibleTreeRows";
 
-/** The session's project folder as an expandable tree. Click a folder to expand it; double-click a file to open it. */
+/** The session's project folder as an expandable tree. Click a folder to expand it; click a file to preview it, double-click to keep it open. */
 export function FileTree({ sessionId }: { sessionId: string }) {
   const state = useExplorerState(sessionId);
   const listings = useDirListings(sessionId);
@@ -31,10 +32,12 @@ export function FileTree({ sessionId }: { sessionId: string }) {
   }, [sessionId, rows]);
 
   const onRowClick = useCallback((path: string, kind: TreeRow["kind"]) => {
-    explorerStore.select(sessionId, path);
-    if (kind === "dir") {
-      explorerStore.setExpanded(sessionId, path, !explorerStore.get(sessionId).expanded.includes(path));
+    if (kind === "file") {
+      previewFileTab(sessionId, path);
+      return;
     }
+    explorerStore.select(sessionId, path);
+    explorerStore.setExpanded(sessionId, path, !explorerStore.get(sessionId).expanded.includes(path));
   }, [sessionId]);
 
   const onRowDoubleClick = useCallback((path: string, kind: TreeRow["kind"]) => {

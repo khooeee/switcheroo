@@ -19,6 +19,7 @@ function snapshot(sessionId: string): PersistedExplorer {
     selected: state.selected,
     openFiles: [...state.openFiles],
     activeFile: state.activeFile,
+    previewFile: state.previewFile,
     treeScrollTop: treeScrollMemory.get(sessionId) ?? 0,
     fileTops: fileScrollMemory.forSession(sessionId),
   };
@@ -63,6 +64,7 @@ export const explorerPersistence = {
           selected: saved.selected,
           openFiles: saved.openFiles,
           activeFile: saved.activeFile,
+          previewFile: saved.previewFile,
         });
       })
       .catch((err: unknown) => console.warn(`[explorer] restore for ${sessionId} failed:`, errorMessage(err)))

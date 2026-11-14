@@ -6,12 +6,23 @@ interface Props {
   sessionId: string;
   path: string;
   active: boolean;
+  /** Replaced by the next previewed file; shown in italics. */
+  preview: boolean;
   onActivate: (path: string) => void;
+  onPin: (path: string) => void;
   onClose: (path: string) => void;
 }
 
-/** One editor tab: a dot while unsaved (× on hover), middle-click closes. */
-export const EditorTab = memo(function EditorTab({ sessionId, path, active, onActivate, onClose }: Props) {
+/** One editor tab: a dot while unsaved (× on hover), double-click keeps a preview, middle-click closes. */
+export const EditorTab = memo(function EditorTab({
+  sessionId,
+  path,
+  active,
+  preview,
+  onActivate,
+  onPin,
+  onClose,
+}: Props) {
   const buffer = useFileBuffer(sessionId, path);
   const dirty = buffer?.kind === "text" && buffer.dirty;
   const name = baseName(path);
@@ -20,10 +31,11 @@ export const EditorTab = memo(function EditorTab({ sessionId, path, active, onAc
     <div
       role="tab"
       aria-selected={active}
-      className={`editor-tab${active ? " active" : ""}${dirty ? " dirty" : ""}`}
+      className={`editor-tab${active ? " active" : ""}${dirty ? " dirty" : ""}${preview ? " preview" : ""}`}
       title={path}
       data-path={path}
       onClick={() => onActivate(path)}
+      onDoubleClick={() => onPin(path)}
       onMouseDown={(event) => {
         if (event.button === 1) event.preventDefault();
       }}

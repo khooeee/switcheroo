@@ -40,6 +40,10 @@
   white-space: nowrap;
 }
 
+.editor-tab.preview .editor-tab-name {
+  font-style: italic;
+}
+
 .editor-tab-close {
   width: 18px;
   height: 18px;

@@ -7,12 +7,14 @@ interface Props {
   sessionId: string;
   openFiles: readonly string[];
   activeFile: string | null;
+  previewFile: string | null;
 }
 
-/** The session's open files, left to right; the active tab scrolls into view. */
-export function EditorTabs({ sessionId, openFiles, activeFile }: Props) {
+/** The session's open files, left to right; the active tab scrolls into view. Double-click keeps the preview tab. */
+export function EditorTabs({ sessionId, openFiles, activeFile, previewFile }: Props) {
   const stripRef = useRef<HTMLDivElement>(null);
-  const onActivate = useCallback((path: string) => explorerStore.openFile(sessionId, path), [sessionId]);
+  const onActivate = useCallback((path: string) => explorerStore.activateFile(sessionId, path), [sessionId]);
+  const onPin = useCallback((path: string) => explorerStore.pinFile(sessionId, path), [sessionId]);
   const onClose = useCallback((path: string) => void closeFileTab(sessionId, path), [sessionId]);
 
   useEffect(() => {
@@ -27,7 +29,9 @@ export function EditorTabs({ sessionId, openFiles, activeFile }: Props) {
           sessionId={sessionId}
           path={path}
           active={path === activeFile}
+          preview={path === previewFile}
           onActivate={onActivate}
+          onPin={onPin}
           onClose={onClose}
         />
       ))}

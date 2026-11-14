@@ -4,6 +4,7 @@ export interface PersistedExplorer {
   selected: string | null;
   openFiles: string[];
   activeFile: string | null;
+  previewFile: string | null;
   treeScrollTop: number;
   /** Document position at the top of each open file's viewport. */
   fileTops: Record<string, number>;

@@ -7,4 +7,6 @@ export interface ExplorerState {
   /** Editor tabs, left to right. */
   openFiles: readonly string[];
   activeFile: string | null;
+  /** The tab the next previewed file takes over; null once it is kept. */
+  previewFile: string | null;
 }

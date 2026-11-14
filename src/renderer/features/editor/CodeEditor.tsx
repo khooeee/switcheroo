@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { openSearchPanel } from "@codemirror/search";
 import { EditorView } from "@codemirror/view";
+import { explorerStore } from "../explorer/explorerStore";
 import type { LiveText } from "./FileBuffer";
 import { fileBufferStore } from "./fileBufferStore";
 import { fileScrollMemory } from "./fileScrollMemory";
@@ -38,6 +39,10 @@ export function CodeEditor({ sessionId, path, live }: Props) {
       dispatchTransactions: (transactions, editor) => {
         editor.update(transactions);
         fileBufferStore.noteEdit(shown.current.sessionId, shown.current.path, editor.state);
+        // Editing a previewed file keeps its tab.
+        if (transactions.some((tr) => tr.docChanged)) {
+          explorerStore.pinFile(shown.current.sessionId, shown.current.path);
+        }
       },
     });
     viewRef.current = view;

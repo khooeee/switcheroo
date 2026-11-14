@@ -26,7 +26,7 @@ export function FilePane({ session }: { session: Session | null }) {
 
 function SessionFiles({ sessionId }: { sessionId: string }) {
   const restored = useExplorerRestored(sessionId);
-  const { openFiles, activeFile } = useExplorerState(sessionId);
+  const { openFiles, activeFile, previewFile } = useExplorerState(sessionId);
 
   // Cmd+W / Cmd+S / Ctrl+Tab in File Explorer mode act on the tabs (see useFileShortcuts).
   useEffect(() => {
@@ -54,7 +54,7 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
   return (
     <section className="panel file-pane">
       {openFiles.length > 0 ? (
-        <EditorTabs sessionId={sessionId} openFiles={openFiles} activeFile={activeFile} />
+        <EditorTabs sessionId={sessionId} openFiles={openFiles} activeFile={activeFile} previewFile={previewFile} />
       ) : null}
       {activeFile ? (
         <>
@@ -64,7 +64,7 @@ function SessionFiles({ sessionId }: { sessionId: string }) {
           </div>
         </>
       ) : (
-        <div className="empty">Double-click a file to open it, or press {modLabel("P")} to search.</div>
+        <div className="empty">Click a file to open it, or press {modLabel("P")} to search.</div>
       )}
       <GoToFile key={sessionId} sessionId={sessionId} />
     </section>

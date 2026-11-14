@@ -2,7 +2,7 @@ import { ancestorPaths } from "./ancestorPaths";
 import { explorerChanges } from "./explorerChanges";
 import type { ExplorerState } from "./ExplorerState";
 
-const EMPTY: ExplorerState = { expanded: [], selected: null, openFiles: [], activeFile: null };
+const EMPTY: ExplorerState = { expanded: [], selected: null, openFiles: [], activeFile: null, previewFile: null };
 
 let states: Record<string, ExplorerState> = {};
 const listeners = new Set<() => void>();
@@ -59,13 +59,46 @@ export const explorerStore = {
     update(sessionId, (prev) => (prev.selected === path ? prev : { ...prev, selected: path }));
   },
 
-  /** Open (or switch to) a file tab and highlight its row. */
+  /** Open (or switch to) a file tab that stays open, and highlight its row. */
   openFile(sessionId: string, path: string): void {
     update(sessionId, (prev) => {
       const openFiles = prev.openFiles.includes(path) ? prev.openFiles : [...prev.openFiles, path];
-      if (openFiles === prev.openFiles && prev.activeFile === path && prev.selected === path) return prev;
-      return { ...prev, openFiles, activeFile: path, selected: path };
+      const previewFile = prev.previewFile === path ? null : prev.previewFile;
+      if (
+        openFiles === prev.openFiles &&
+        previewFile === prev.previewFile &&
+        prev.activeFile === path &&
+        prev.selected === path
+      ) {
+        return prev;
+      }
+      return { ...prev, openFiles, activeFile: path, selected: path, previewFile };
     });
+  },
+
+  /**
+   * Show a file in the preview tab, in place of the file previewed before; returns that file.
+   * A file that already has a tab just gets focus.
+   */
+  previewFile(sessionId: string, path: string): string | null {
+    const { openFiles, previewFile: replaced } = explorerStore.get(sessionId);
+    if (openFiles.includes(path)) {
+      explorerStore.activateFile(sessionId, path);
+      return null;
+    }
+    update(sessionId, (prev) => ({
+      ...prev,
+      openFiles: replaced === null ? [...prev.openFiles, path] : prev.openFiles.map((p) => (p === replaced ? path : p)),
+      activeFile: path,
+      selected: path,
+      previewFile: path,
+    }));
+    return replaced;
+  },
+
+  /** Keep the preview tab open: the next previewed file no longer replaces it. */
+  pinFile(sessionId: string, path: string): void {
+    update(sessionId, (prev) => (prev.previewFile === path ? { ...prev, previewFile: null } : prev));
   },
 
   /** Open a file tab with its folders expanded, so its row shows in the tree. */
@@ -86,18 +119,23 @@ export const explorerStore = {
     if (openFiles.length === 0) return;
     const index = activeFile === null ? -1 : openFiles.indexOf(activeFile);
     const start = index < 0 ? (delta > 0 ? -1 : 0) : index;
-    explorerStore.openFile(sessionId, openFiles[(start + delta + openFiles.length) % openFiles.length]);
+    explorerStore.activateFile(sessionId, openFiles[(start + delta + openFiles.length) % openFiles.length]);
   },
 
+  /** Switch to an open tab and highlight its row. */
   activateFile(sessionId: string, path: string): void {
-    update(sessionId, (prev) => (prev.activeFile === path ? prev : { ...prev, activeFile: path }));
+    update(sessionId, (prev) => {
+      if (prev.activeFile === path && prev.selected === path) return prev;
+      return { ...prev, activeFile: path, selected: path };
+    });
   },
 
   closeFile(sessionId: string, path: string): void {
     update(sessionId, (prev) => {
       if (!prev.openFiles.includes(path)) return prev;
       const activeFile = prev.activeFile === path ? neighborTab(prev.openFiles, path) : prev.activeFile;
-      return { ...prev, openFiles: prev.openFiles.filter((p) => p !== path), activeFile };
+      const previewFile = prev.previewFile === path ? null : prev.previewFile;
+      return { ...prev, openFiles: prev.openFiles.filter((p) => p !== path), activeFile, previewFile };
     });
   },
 };
