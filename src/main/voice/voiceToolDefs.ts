@@ -72,7 +72,8 @@ export const voiceToolDefs = [
       at: { type: "string", description: "Local date and time as YYYY-MM-DDTHH:MM." },
       session: {
         ...SESSION,
-        description: "The session it is about; clicking the reminder opens it. Omit for the session already being discussed or on screen.",
+        description:
+          "The session it is about; clicking the reminder opens it. Omit for the session being discussed or on screen; with neither, a new session is started to hold it.",
       },
     },
     ["message"],
