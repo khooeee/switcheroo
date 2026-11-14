@@ -5,4 +5,5 @@ export type AppMenuOptions = {
   getMainWindow: () => BrowserWindow | null;
   /** False in File Explorer mode, where Find in History is disabled. */
   getSessionsMode: () => boolean;
+  getHasSessions: () => boolean;
 };

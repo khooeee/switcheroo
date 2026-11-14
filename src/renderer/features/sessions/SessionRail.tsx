@@ -28,7 +28,7 @@ export function SessionRail(props: SessionListProps) {
         aria-label="Resize tabs"
         onPointerDown={startRailResize}
       />
-      <RailModeBar />
+      <RailModeBar hasSessions={props.pinned.length + props.unpinned.length > 0} />
       <SessionList hidden={mode !== "sessions"} {...props} />
       {mode === "files" ? <FileExplorer session={activeSession} /> : null}
       <div className="rail-footer">

@@ -81,6 +81,8 @@ export function buildAppMenu(opts: AppMenuOptions): void {
       submenu: [
         {
           label: "Toggle File Explorer",
+          id: "toggle-file-explorer",
+          enabled: opts.getHasSessions(),
           accelerator: "CmdOrCtrl+Shift+E",
           click: () => {
             win()?.webContents.send("explorer:toggle");

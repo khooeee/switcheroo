@@ -60,10 +60,18 @@ const reminders = new ReminderScheduler((reminder) =>
 );
 
 const sessionsMode = () => sessions.getSettings().railMode === "sessions";
+const hasSessions = () => {
+  const { pinned, unpinned } = sessions.list();
+  return pinned.length + unpinned.length > 0;
+};
 
 function refreshMenus() {
-  refreshSessionMenuItems(sessionsMode());
+  refreshSessionMenuItems(sessionsMode(), hasSessions());
 }
+
+sessions.subscribe((channel) => {
+  if (channel === "sessions:changed") refreshMenus();
+});
 
 const createWindow = async () => {
   await sessions.init();
@@ -123,6 +131,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
     const menuOptions: AppMenuOptions = {
       getMainWindow: () => mainWindow,
       getSessionsMode: sessionsMode,
+      getHasSessions: hasSessions,
     };
     buildAppMenu(menuOptions);
     void createWindow().then(() => {

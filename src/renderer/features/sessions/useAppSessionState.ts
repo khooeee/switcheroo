@@ -3,6 +3,7 @@ import type { ActiveTabId } from "../../../shared/activeTabId";
 import type { Session } from "../../../shared/session";
 import type { TranscriptTurn } from "../../../shared/transcript";
 import { seedComposerDraft } from "../chat/seedComposerDraft";
+import { railModeStore } from "../explorer/railModeStore";
 import { flatRailSessions } from "./flatRailSessions";
 import { shareById } from "./shareById";
 import { shareTurn } from "./shareTurn";
@@ -24,6 +25,7 @@ export function useAppSessionState() {
 
   useEffect(() => {
     void window.switcheroo.listSessions().then(async (data) => {
+      railModeStore.setHasSessions(data.pinned.length + data.unpinned.length > 0);
       setPinnedSessions(data.pinned);
       setUnpinnedSessions(data.unpinned);
       setActiveTabId(data.activeTabId);
@@ -37,6 +39,7 @@ export function useAppSessionState() {
 
     const unsubs = [
       window.switcheroo.onSessionsChanged(({ pinned: p, unpinned: u, activeTabId: a }) => {
+        railModeStore.setHasSessions(p.length + u.length > 0);
         setPinnedSessions((prev) => shareById(prev, p));
         setUnpinnedSessions((prev) => shareById(prev, u));
         setActiveTabId(a);

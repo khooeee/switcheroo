@@ -2,6 +2,7 @@ import type { RailMode } from "../../../shared/railMode";
 import { patchAppSettings } from "../settings/appSettingsCache";
 
 let mode: RailMode = "sessions";
+let hasSessions = false;
 const listeners = new Set<() => void>();
 
 function apply(next: RailMode): boolean {
@@ -19,15 +20,28 @@ export const railModeStore = {
   },
 
   getSnapshot(): RailMode {
-    return mode;
+    return hasSessions ? mode : "sessions";
   },
 
   set(next: RailMode): void {
+    if (next === "files" && !hasSessions) return;
     if (apply(next)) void patchAppSettings({ railMode: next });
+  },
+
+  /** Called with each loaded session list; closing the last session also leaves Files mode. */
+  setHasSessions(available: boolean): void {
+    if (hasSessions === available && (available || mode === "sessions")) return;
+    hasSessions = available;
+    if (!available && mode === "files") {
+      mode = "sessions";
+      void patchAppSettings({ railMode: "sessions" });
+    }
+    listeners.forEach((listener) => listener());
   },
 
   /** Take the saved mode at startup without writing it back. */
   restore(saved: unknown): void {
+    // Keep the preference until the initial session list tells us whether Files is available.
     apply(saved === "files" ? "files" : "sessions");
   },
 };

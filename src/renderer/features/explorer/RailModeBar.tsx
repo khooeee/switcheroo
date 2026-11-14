@@ -15,7 +15,7 @@ const MODES: Array<{ mode: RailMode; label: string; Icon: ComponentType }> = [
 const TOGGLE_HINT = isMac ? "⇧⌘E" : "Ctrl+Shift+E";
 
 /** Icons at the top of the rail that switch between the session list and the file explorer. */
-export function RailModeBar() {
+export function RailModeBar({ hasSessions }: { hasSessions: boolean }) {
   const current = useRailMode();
   return (
     <div className="rail-modes" role="tablist" aria-label="Rail view">
@@ -27,6 +27,7 @@ export function RailModeBar() {
           className={`rail-session rail-mode${current === mode ? " active" : ""}`}
           aria-selected={current === mode}
           aria-label={label}
+          disabled={mode === "files" && !hasSessions}
           data-tooltip={`${label} (${TOGGLE_HINT})`}
           data-tooltip-align="center"
           onClick={() => railModeStore.set(mode)}
