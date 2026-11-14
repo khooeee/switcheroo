@@ -22,7 +22,7 @@ ${themeCss}
 html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
 body { color: var(--text); cursor: pointer; user-select: none; }
 .toast { box-sizing: border-box; position: relative; height: 100%; padding: 11px 34px 11px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-1); }
-.head { font: 600 var(--font-ui-size)/1.35 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.head { font: var(--font-ui-size)/1.35 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .body { margin-top: 5px; font: var(--font-mono-weight) var(--font-mono-size)/1.35 var(--font-mono); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; white-space: pre-line; }
 .close { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-dim); font: 16px/22px var(--font-ui); cursor: pointer; }
 .close:hover { background: var(--bg-3); color: var(--text); }

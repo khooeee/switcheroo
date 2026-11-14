@@ -113,6 +113,8 @@ export interface SwitcherooApi {
   onAskQuestion: (cb: (req: CursorAskQuestionRequest) => void) => () => void;
   /** `announced`: the voice agent will speak about it, so skip the completion sound. */
   onPromptComplete: (cb: (payload: { sessionId: string; announced?: boolean }) => void) => () => void;
+  /** A reminder is due and the voice agent won't read it out. */
+  onReminderChime: (cb: () => void) => () => void;
   /** Voice button / shortcut: start or stop. */
   toggleVoice: () => Promise<void>;
   getVoiceStatus: () => Promise<VoiceStatus>;

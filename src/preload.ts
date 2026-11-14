@@ -73,6 +73,7 @@ const api: SwitcherooApi = {
   onQuestionSettled: (cb) => subscribe<{ requestId: string }>("question:settled", cb),
   onAskQuestion: (cb) => subscribe<CursorAskQuestionRequest>("ask-question", cb),
   onPromptComplete: (cb) => subscribe<{ sessionId: string; announced?: boolean }>("prompt:complete", cb),
+  onReminderChime: (cb) => subscribe<void>("reminder:chime", cb),
   toggleVoice: () => ipcRenderer.invoke("voice:toggle"),
   getVoiceStatus: () => ipcRenderer.invoke("voice:status"),
   getVoiceKeyInfo: () => ipcRenderer.invoke("voice:keyInfo"),

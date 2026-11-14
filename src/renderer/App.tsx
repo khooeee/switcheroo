@@ -18,6 +18,7 @@ import { NewSessionModal } from "./features/sessions/NewSessionModal";
 import { useSessionRailActions } from "./features/sessions/useSessionRailActions";
 import { useAgentQuestions } from "./features/permissions/useAgentQuestions";
 import { useCompletionSound } from "./features/sound/useCompletionSound";
+import { useReminderChime } from "./features/sound/useReminderChime";
 import { useVoiceConnection } from "./features/voice/useVoiceConnection";
 import { VoiceLogPanel } from "./features/voiceLog/VoiceLogPanel";
 import { voiceLogView } from "./features/voiceLog/voiceLogView";
@@ -31,6 +32,7 @@ const NO_TURNS: TranscriptTurn[] = [];
 
 export function App() {
   useCompletionSound();
+  useReminderChime();
   useVoiceConnection();
   const {
     pinnedSessions,

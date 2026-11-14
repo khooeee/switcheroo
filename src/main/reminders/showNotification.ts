@@ -11,7 +11,8 @@ const live = new Set<Notification>();
 export function showNotification(alert: ReminderAlert, onFailed: () => void): void {
   if (!Notification.isSupported()) return onFailed();
   const { onClick, ...content } = alert;
-  const notification = new Notification(content);
+  // The app plays its own chime.
+  const notification = new Notification({ ...content, silent: true });
   const forget = () => live.delete(notification);
   notification.on("click", () => {
     forget();

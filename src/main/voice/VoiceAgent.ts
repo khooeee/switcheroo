@@ -86,9 +86,11 @@ export class VoiceAgent {
     return this.announcer;
   }
 
-  /** Speak a due reminder; dropped while voice is off. */
-  announceReminder(message: string, session: Session | undefined): void {
+  /** Speak a due reminder; false while voice is off. */
+  announceReminder(message: string, session: Session | undefined): boolean {
+    if (this.status.state === "off") return false;
     this.notices.push(voiceNoticeText.reminder(message, session));
+    return true;
   }
 
   getStatus(): VoiceStatus {
