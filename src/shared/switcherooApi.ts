@@ -4,9 +4,12 @@ import type { AgentKind } from "./agentKind";
 import type { AppSettings } from "./appSettings";
 import type { ConfigMenuCategory } from "./configMenuCategory";
 import type { CreateSessionInput } from "./createSessionInput";
+import type { DirEntry } from "./dirEntry";
 import type { FindInSessionsHit } from "./findInSessionsHit";
 import type { RemoteStatus } from "./remoteStatus";
 import type { EditContextMenuOptions } from "./editContextMenuOptions";
+import type { FileContent } from "./fileContent";
+import type { FileWriteResult } from "./fileWriteResult";
 import type { Session } from "./session";
 import type { TranscriptTurn } from "./transcript";
 import type { VoiceCommand } from "./voiceCommand";
@@ -78,6 +81,16 @@ export interface SwitcherooApi {
   }) => Promise<void>;
   /** Popup the session's model or effort picker; choosing a value sets it on the agent. */
   showConfigMenu: (sessionId: string, category: ConfigMenuCategory) => Promise<void>;
+  /** Children of a folder under the session cwd ("" is the root). */
+  listSessionDir: (sessionId: string, relPath: string) => Promise<DirEntry[]>;
+  readSessionFile: (sessionId: string, relPath: string) => Promise<FileContent>;
+  /** Save editor text; `baseMtimeMs` null overwrites even when the file changed on disk. */
+  writeSessionFile: (
+    sessionId: string,
+    relPath: string,
+    text: string,
+    baseMtimeMs: number | null,
+  ) => Promise<FileWriteResult>;
   getTranscript: (sessionId: string) => Promise<TranscriptTurn[]>;
   getSubagentTranscript: (sessionId: string, subagentId: string) => Promise<TranscriptTurn[]>;
   findInSessions: (query: string, searchId: number) => Promise<{ searchId: number }>;

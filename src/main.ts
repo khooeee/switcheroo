@@ -17,6 +17,7 @@ import { runCron } from "./main/crons/runCron";
 import { ReminderScheduler } from "./main/reminders/ReminderScheduler";
 import { fireReminder } from "./main/reminders/fireReminder";
 import { registerIpc } from "./main/registerIpc";
+import { registerFileIpc } from "./main/files/registerFileIpc";
 import { buildAppMenu } from "./main/appMenu/buildAppMenu";
 import { refreshSessionMenuItems } from "./main/appMenu/refreshSessionMenuItems";
 import { refreshVoiceMenuItems } from "./main/appMenu/refreshVoiceMenuItems";
@@ -120,6 +121,7 @@ if (installSingleInstanceLock(() => mainWindow)) {
       },
     });
     registerVoiceIpc(voice);
+    registerFileIpc(sessions);
     sessions.setOnSessionsChanged(() => {
       refreshMenus();
     });

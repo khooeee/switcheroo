@@ -52,6 +52,10 @@ const api: SwitcherooApi = {
   showComposerContextMenu: (opts) => ipcRenderer.invoke("composer:contextMenu", opts),
   showImageContextMenu: (name) => ipcRenderer.invoke("image:contextMenu", name),
   showConfigMenu: (sessionId, category) => ipcRenderer.invoke("session:configMenu", sessionId, category),
+  listSessionDir: (sessionId, relPath) => ipcRenderer.invoke("files:list", sessionId, relPath),
+  readSessionFile: (sessionId, relPath) => ipcRenderer.invoke("files:read", sessionId, relPath),
+  writeSessionFile: (sessionId, relPath, text, baseMtimeMs) =>
+    ipcRenderer.invoke("files:write", sessionId, relPath, text, baseMtimeMs),
   getTranscript: (sessionId: string) => ipcRenderer.invoke("transcript:get", sessionId),
   getSubagentTranscript: (sessionId: string, subagentId: string) =>
     ipcRenderer.invoke("subagent:transcript", sessionId, subagentId),
