@@ -9,7 +9,7 @@ import "./railModes.css";
 
 const MODES: Array<{ mode: RailMode; label: string; Icon: ComponentType }> = [
   { mode: "sessions", label: "Sessions", Icon: SessionsIcon },
-  { mode: "files", label: "File Explorer", Icon: FilesIcon },
+  { mode: "files", label: "Files", Icon: FilesIcon },
 ];
 
 const TOGGLE_HINT = isMac ? "⇧⌘E" : "Ctrl+Shift+E";
