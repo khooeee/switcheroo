@@ -1,3 +1,4 @@
+import { ancestorPaths } from "./ancestorPaths";
 import { explorerChanges } from "./explorerChanges";
 import type { ExplorerState } from "./ExplorerState";
 
@@ -57,6 +58,15 @@ export const explorerStore = {
       if (openFiles === prev.openFiles && prev.activeFile === path && prev.selected === path) return prev;
       return { ...prev, openFiles, activeFile: path, selected: path };
     });
+  },
+
+  /** Open a file tab with its folders expanded, so its row shows in the tree. */
+  revealFile(sessionId: string, path: string): void {
+    update(sessionId, (prev) => {
+      const closed = ancestorPaths(path).filter((dir) => !prev.expanded.includes(dir));
+      return closed.length ? { ...prev, expanded: [...prev.expanded, ...closed] } : prev;
+    });
+    explorerStore.openFile(sessionId, path);
   },
 
   /** Switch to the tab `delta` places along (wrapping), highlighting its row. */

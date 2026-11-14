@@ -8,17 +8,19 @@ export function FileDiff({
   change,
   title,
   sessionId,
+  cwd,
   onTitleClick,
 }: {
   change: FileChange;
   title?: string;
   sessionId: string;
+  cwd: string;
   onTitleClick?: () => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   const heading = title ?? change.path;
   const previewText = markdownPreviewText(change) ?? undefined;
-  const frame = { title: heading, path: change.path, sessionId, previewText, onTitleClick };
+  const frame = { title: heading, path: change.path, sessionId, cwd, previewText, onTitleClick };
   const hasText = typeof change.oldText === "string" || typeof change.newText === "string";
   const lines = useMemo(
     () => (hasText ? diffLines(change.oldText ?? "", change.newText ?? "") : []),

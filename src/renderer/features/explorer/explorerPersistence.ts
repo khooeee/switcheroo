@@ -8,7 +8,7 @@ import { treeScrollMemory } from "./treeScrollMemory";
 const SAVE_DELAY_MS = 400;
 
 const restored = new Set<string>();
-const restoring = new Set<string>();
+const restoring = new Map<string, Promise<void>>();
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
 const listeners = new Set<() => void>();
 
@@ -48,10 +48,12 @@ export const explorerPersistence = {
     return restored.has(sessionId);
   },
 
-  ensureRestored(sessionId: string): void {
-    if (restored.has(sessionId) || restoring.has(sessionId)) return;
-    restoring.add(sessionId);
-    void window.switcheroo.getExplorerState(sessionId)
+  /** Load the session's saved state once; resolves when it is back (or failed to load). */
+  ensureRestored(sessionId: string): Promise<void> {
+    if (restored.has(sessionId)) return Promise.resolve();
+    const pending = restoring.get(sessionId);
+    if (pending) return pending;
+    const loading = window.switcheroo.getExplorerState(sessionId)
       .then((saved) => {
         if (!saved) return;
         treeScrollMemory.set(sessionId, saved.treeScrollTop);
@@ -69,6 +71,8 @@ export const explorerPersistence = {
         restored.add(sessionId);
         listeners.forEach((listener) => listener());
       });
+    restoring.set(sessionId, loading);
+    return loading;
   },
 
   /** Write every pending save now (before quitting). */

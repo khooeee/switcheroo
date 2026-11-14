@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { isMarkdownFile } from "../files/isMarkdownFile";
 import { MarkdownPreviewModal } from "../files/MarkdownPreviewModal";
-import { OpenInCursor } from "../files/OpenInCursor";
 import { fileBufferStore } from "./fileBufferStore";
 
-/** Path of the active file, with Preview (Markdown, as currently edited) and Open in Cursor. */
+/** Path of the active file, with Preview (Markdown, as currently edited). */
 export function FileHeader({ sessionId, path }: { sessionId: string; path: string }) {
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -19,7 +18,6 @@ export function FileHeader({ sessionId, path }: { sessionId: string; path: strin
       {isMarkdownFile(path) ? (
         <button type="button" className="file-open-button" onClick={showPreview}>Preview</button>
       ) : null}
-      <OpenInCursor sessionId={sessionId} filePath={path} />
       {preview !== null ? (
         <MarkdownPreviewModal path={path} text={preview} onClose={() => setPreview(null)} />
       ) : null}

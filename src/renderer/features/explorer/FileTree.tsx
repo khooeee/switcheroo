@@ -9,6 +9,7 @@ import { useDirListings } from "./useDirListings";
 import { useExplorerState } from "./useExplorerState";
 import { useRestoredScroll } from "./useRestoredScroll";
 import { useSessionFileWatch } from "./useSessionFileWatch";
+import { useTreeReveal } from "./useTreeReveal";
 import { visibleTreeRows } from "./visibleTreeRows";
 
 /** The session's project folder as an expandable tree. Click a folder to expand it; double-click a file to open it. */
@@ -20,6 +21,7 @@ export function FileTree({ sessionId }: { sessionId: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   useRestoredScroll(sessionId, scrollRef, rows, treeScrollMemory);
   useSessionFileWatch(sessionId);
+  useTreeReveal(sessionId, scrollRef, rows, state.selected);
 
   useEffect(() => {
     dirListingStore.ensure(sessionId, "");

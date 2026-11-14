@@ -24,12 +24,12 @@ export function sessionSubmenu(opts: AppMenuOptions): MenuItemConstructorOptions
       },
     },
     {
-      id: SESSION_MENU_IDS.openInCursor,
-      label: "Open in Cursor",
-      enabled: state.openInCursorEnabled,
+      id: SESSION_MENU_IDS.openInEditor,
+      label: "Open in Editor",
+      enabled: state.openInEditorEnabled,
       accelerator: "CmdOrCtrl+E",
       click: () => {
-        opts.openActiveInCursor();
+        win()?.webContents.send("session:open-in-editor");
       },
     },
     {

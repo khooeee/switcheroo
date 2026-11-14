@@ -131,14 +131,6 @@ if (installSingleInstanceLock(() => mainWindow)) {
     const menuOptions: AppMenuOptions = {
       getMainWindow: () => mainWindow,
       getMenuState: () => sessions.activeMenuState(),
-      openActiveInCursor: () => {
-        void sessions.openActiveInCursor().catch((error) => {
-          dialog.showErrorBox(
-            "Could not open in Cursor",
-            errorMessage(error),
-          );
-        });
-      },
       getActiveUnread: () => activeSessionUnread,
       voice: {
         getStatus: () => voice.getStatus(),

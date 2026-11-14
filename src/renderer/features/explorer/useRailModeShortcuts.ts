@@ -5,7 +5,8 @@ import { railModeStore } from "./railModeStore";
 const SESSION_FOCUS_EVENTS = ["switcheroo:focus-prompt", "switcheroo:focus-filter", "switcheroo:rename-session"];
 
 /**
- * View → Toggle File Explorer (Cmd+Shift+E) switches modes. Going to the prompt, the filter, or
+ * View → Toggle File Explorer (Cmd+Shift+E) switches modes; Session → Open in Editor (Cmd+E)
+ * shows File Explorer. Going to the prompt, the filter, or
  * renaming from File Explorer mode switches back to Sessions and repeats the command once shown.
  */
 export function useRailModeShortcuts(): void {
@@ -13,15 +14,18 @@ export function useRailModeShortcuts(): void {
     const toggle = () => {
       railModeStore.set(railModeStore.getSnapshot() === "files" ? "sessions" : "files");
     };
+    const showFiles = () => railModeStore.set("files");
     const backToSessions = (event: Event) => {
       if (railModeStore.getSnapshot() !== "files") return;
       railModeStore.set("sessions");
       requestAnimationFrame(() => window.dispatchEvent(new CustomEvent(event.type)));
     };
     window.addEventListener("switcheroo:toggle-explorer", toggle);
+    window.addEventListener("switcheroo:open-in-editor", showFiles);
     SESSION_FOCUS_EVENTS.forEach((name) => window.addEventListener(name, backToSessions));
     return () => {
       window.removeEventListener("switcheroo:toggle-explorer", toggle);
+      window.removeEventListener("switcheroo:open-in-editor", showFiles);
       SESSION_FOCUS_EVENTS.forEach((name) => window.removeEventListener(name, backToSessions));
     };
   }, []);

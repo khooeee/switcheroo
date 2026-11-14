@@ -6,7 +6,6 @@ import type { VoiceMenuActions } from "./VoiceMenuActions";
 export type AppMenuOptions = {
   getMainWindow: () => BrowserWindow | null;
   getMenuState: () => SessionMenuState;
-  openActiveInCursor: () => void;
   getActiveUnread: () => boolean;
   voice: VoiceMenuActions;
 };

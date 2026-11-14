@@ -16,8 +16,6 @@ function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
 }
 
 const api: SwitcherooApi = {
-  openInCursor: (sessionId, filePath) => ipcRenderer.invoke("files:openInCursor", sessionId, filePath),
-  openSessionInCursor: (sessionId) => ipcRenderer.invoke("sessions:openInCursor", sessionId),
   availableAgents: () => ipcRenderer.invoke("agents:available"),
   createSession: (input: CreateSessionInput) => ipcRenderer.invoke("sessions:create", input),
   forkSession: (sessionId, eventId) =>
@@ -138,6 +136,7 @@ const MENU_EVENTS: Record<string, string> = {
   "filter:focus": "switcheroo:focus-filter",
   "settings:open": "switcheroo:open-settings",
   "explorer:toggle": "switcheroo:toggle-explorer",
+  "session:open-in-editor": "switcheroo:open-in-editor",
 };
 
 for (const [channel, eventName] of Object.entries(MENU_EVENTS)) {

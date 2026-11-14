@@ -8,7 +8,6 @@ import { loadState } from "../storage/persist";
 import { getAppSettings, hydrateAppSettings, patchAppSettings } from "../appSettings";
 import { activeSessionMenuState } from "../menuState/activeSessionMenuState";
 import type { SessionMenuState } from "../menuState/SessionMenuState";
-import { openFolderInCursor } from "../cursor/openFolderInCursor";
 import { SessionState } from "./SessionState";
 import { SessionPersistence } from "./SessionPersistence";
 import { SessionHydration } from "./SessionHydration";
@@ -66,12 +65,6 @@ export class SessionManager {
   /** Session menu labels/enabled state for the active tab. */
   activeMenuState(): SessionMenuState {
     return activeSessionMenuState(this.state.menuCtx());
-  }
-
-  async openActiveInCursor(): Promise<void> {
-    const session = this.state.activeSession();
-    if (!session?.cwd.trim()) return;
-    await openFolderInCursor(session.cwd);
   }
 
   async init(): Promise<void> {
