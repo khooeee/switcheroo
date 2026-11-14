@@ -26,6 +26,8 @@ import { voiceTurnDetails } from "./features/voiceLog/voiceTurnDetails";
 import { VoiceTurnRail } from "./features/voiceLog/VoiceTurnRail";
 import { SubagentOpenContext } from "./features/subagents/SubagentOpenContext";
 import { useSubagentTranscripts } from "./features/subagents/useSubagentTranscripts";
+import { FilePane } from "./features/explorer/FilePane";
+import { useRailMode } from "./features/explorer/useRailMode";
 
 /** Stable fallback so memoized SessionTranscript does not re-render on a new `[]`. */
 const NO_TURNS: TranscriptTurn[] = [];
@@ -50,6 +52,7 @@ export function App() {
   const voiceLogOpen = useSyncExternalStore(voiceLogView.subscribe, voiceLogView.getSnapshot);
   const voiceTurnId = useSyncExternalStore(voiceTurnDetails.subscribe, voiceTurnDetails.getSnapshot);
   const { subagentTranscripts, loadingSubagents, loadSubagentTranscript } = useSubagentTranscripts();
+  const filesMode = useRailMode() === "files";
 
   const [showNewSession, setShowNewSession] = useState(false);
   const [sessionFilter, setSessionFilter] = useState("");
@@ -124,7 +127,7 @@ export function App() {
     showNewSession,
     showFindInSessions,
     findOpen,
-    rightRailOpen: !!rightRailView,
+    rightRailOpen: !!rightRailView && !filesMode,
     sessionFilter,
     setFindOpen: setFindVisible,
     setFindQuery,
@@ -162,7 +165,7 @@ export function App() {
             <SessionNotice message={sessionNotice} onDismiss={() => setSessionNotice(null)} />
           )}
 
-          {findOpen && (activeSession || voiceLogOpen) && (
+          {findOpen && (voiceLogOpen || (activeSession && !filesMode)) && (
             <FindBar
               key={`${voiceLogOpen ? "voice-log" : activeTabId}:${findScope?.getAttribute("data-event-id") ?? findScopeName}`}
               query={findQuery}
@@ -178,31 +181,39 @@ export function App() {
 
           {voiceLogOpen ? (
             <VoiceLogPanel scrollRef={voiceLogRef} />
-          ) : activeSession ? (
-            <ChatPanel
-              session={activeSession}
-              turns={transcripts[activeSession.id] ?? NO_TURNS}
-              focusEventId={focusEvent?.id ?? null}
-              focusTurnId={focusEvent?.turnId ?? null}
-              focusEventKey={focusEvent?.key ?? 0}
-              promptFocus={promptFocus}
-              chatRef={chatRef}
-              onOpenRightRail={toggleRightRail}
-              onForceOpenRightRail={forceRightRail}
-              openSubagentId={rightRailView?.subagent?.id ?? null}
-              onSend={chat.send}
-              onInterrupt={chat.interrupt}
-              askQuestion={askQuestion}
-              onAsk={chat.answer}
-            />
           ) : (
-            <section className="panel">
-              <div className="empty">Select or create a session to begin.</div>
-            </section>
+            <>
+              {/* Stays mounted under File Explorer mode so the transcript keeps its scroll position. */}
+              <div className="main-view" hidden={filesMode}>
+                {activeSession ? (
+                  <ChatPanel
+                    session={activeSession}
+                    turns={transcripts[activeSession.id] ?? NO_TURNS}
+                    focusEventId={focusEvent?.id ?? null}
+                    focusTurnId={focusEvent?.turnId ?? null}
+                    focusEventKey={focusEvent?.key ?? 0}
+                    promptFocus={promptFocus}
+                    chatRef={chatRef}
+                    onOpenRightRail={toggleRightRail}
+                    onForceOpenRightRail={forceRightRail}
+                    openSubagentId={rightRailView?.subagent?.id ?? null}
+                    onSend={chat.send}
+                    onInterrupt={chat.interrupt}
+                    askQuestion={askQuestion}
+                    onAsk={chat.answer}
+                  />
+                ) : (
+                  <section className="panel">
+                    <div className="empty">Select or create a session to begin.</div>
+                  </section>
+                )}
+              </div>
+              {filesMode ? <FilePane session={activeSession} /> : null}
+            </>
           )}
         </div>
 
-        {rightRailView && !voiceLogOpen ? (
+        {rightRailView && !voiceLogOpen && !filesMode ? (
           <RightRail
             session={rightRailView.session}
             turn={rightRailView.turn}
