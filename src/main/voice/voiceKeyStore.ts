@@ -9,9 +9,13 @@ import { writeFileAtomic } from "../storage/writeFileAtomic";
 let cached: string | null | undefined;
 
 /** Linux without a keyring falls back to a fixed obfuscation key. */
-function secure(): boolean {
-  if (!safeStorage.isEncryptionAvailable()) return false;
+async function secure(): Promise<boolean> {
+  if (!(await safeStorage.isAsyncEncryptionAvailable())) return false;
   return process.platform !== "linux" || safeStorage.getSelectedStorageBackend() !== "basic_text";
+}
+
+async function save(key: string): Promise<void> {
+  await writeFileAtomic(voiceKeyPath(), (await safeStorage.encryptStringAsync(key)).toString("base64"));
 }
 
 /** Inworld API key on disk, encrypted with safeStorage (OS keychain). */
@@ -20,7 +24,9 @@ export const voiceKeyStore = {
     if (cached !== undefined) return cached;
     try {
       const body = await fs.readFile(voiceKeyPath(), "utf8");
-      cached = safeStorage.decryptString(Buffer.from(body.trim(), "base64")) || null;
+      const { result, shouldReEncrypt } = await safeStorage.decryptStringAsync(Buffer.from(body.trim(), "base64"));
+      cached = result || null;
+      if (cached && shouldReEncrypt) save(cached).catch(() => console.warn("[voice] could not re-encrypt the Inworld API key"));
     } catch (error) {
       if (!isMissingFile(error)) console.warn("[voice] could not read the Inworld API key");
       cached = null;
@@ -36,12 +42,12 @@ export const voiceKeyStore = {
       cached = null;
       return;
     }
-    if (!safeStorage.isEncryptionAvailable()) throw new Error("OS encryption is unavailable, so the key cannot be stored safely.");
-    await writeFileAtomic(voiceKeyPath(), safeStorage.encryptString(trimmed).toString("base64"));
+    if (!(await safeStorage.isAsyncEncryptionAvailable())) throw new Error("OS encryption is unavailable, so the key cannot be stored safely.");
+    await save(trimmed);
     cached = trimmed;
   },
 
   async info(): Promise<VoiceKeyInfo> {
-    return { hasKey: !!(await this.read()), secure: secure() };
+    return { hasKey: !!(await this.read()), secure: await secure() };
   },
 };
