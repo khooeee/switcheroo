@@ -14,6 +14,7 @@ export async function walkSessionFiles(root: string): Promise<string[]> {
   while (dirs.length > 0 && files.length < MAX_FILES) {
     const next: string[] = [];
     for (const dir of dirs) {
+      if (files.length >= MAX_FILES) break;
       const entries = await fs.readdir(path.join(root, dir), { withFileTypes: true }).catch(() => []);
       for (const entry of entries) {
         if (SKIPPED.has(entry.name)) continue;

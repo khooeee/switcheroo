@@ -3,6 +3,7 @@ import { highlightMatches } from "./highlightMatches";
 import type { PathEntry } from "./PathEntry";
 
 interface Props {
+  id: string;
   index: number;
   entry: PathEntry;
   positions: readonly number[];
@@ -11,10 +12,11 @@ interface Props {
 }
 
 /** One result: the name, then the folder holding it; folders end in "/". */
-export const GoToFileRow = memo(function GoToFileRow({ index, entry, positions, selected, onPick }: Props) {
+export const GoToFileRow = memo(function GoToFileRow({ id, index, entry, positions, selected, onPick }: Props) {
   const { path, kind, nameStart } = entry;
   return (
     <div
+      id={id}
       role="option"
       className="go-to-file-row"
       aria-selected={selected}

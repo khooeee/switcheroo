@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { revealPath } from "../explorer/revealPath";
 import { useExplorerState } from "../explorer/useExplorerState";
 import { GoToFileRow } from "./GoToFileRow";
@@ -17,6 +17,7 @@ const NO_POSITIONS: readonly number[] = [];
 export function GoToFile({ sessionId }: { sessionId: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
@@ -110,16 +111,22 @@ export function GoToFile({ sessionId }: { sessionId: string }) {
         spellCheck={false}
         placeholder="Search files and folders by name"
         aria-label="Search files and folders"
+        role="combobox"
+        aria-expanded
+        aria-autocomplete="list"
+        aria-controls={listId}
+        aria-activedescendant={index >= 0 ? `${listId}-${index}` : undefined}
         onChange={(event) => {
           setQuery(event.target.value);
           setSelected(0);
         }}
         onKeyDown={onKeyDown}
       />
-      <div ref={listRef} className="go-to-file-results" role="listbox" aria-label="Files and folders">
+      <div ref={listRef} id={listId} className="go-to-file-results" role="listbox" aria-label="Files and folders">
         {results.map((hit, at) => (
           <GoToFileRow
             key={hit.entry.path}
+            id={`${listId}-${at}`}
             index={at}
             entry={hit.entry}
             positions={hit.positions}

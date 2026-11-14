@@ -12,13 +12,18 @@ const run = promisify(execFile);
  */
 export async function listSessionFiles(cwd: string): Promise<string[]> {
   const root = resolveInsideCwd(cwd, "");
+  const lsFiles = async (...args: string[]) => {
+    const { stdout } = await run("git", ["ls-files", "-z", ...args], { cwd: root, maxBuffer: 256 * 1024 * 1024 });
+    return stdout.split("\0").filter(Boolean);
+  };
   try {
-    const { stdout } = await run("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], {
-      cwd: root,
-      maxBuffer: 256 * 1024 * 1024,
-    });
-    // Unmerged files list once per stage.
-    return [...new Set(stdout.split("\0").filter(Boolean))];
+    const [listed, deleted] = await Promise.all([
+      lsFiles("--cached", "--others", "--exclude-standard"),
+      lsFiles("--deleted"),
+    ]);
+    // Tracked files deleted on disk are still listed, and unmerged files list once per stage.
+    const gone = new Set(deleted);
+    return [...new Set(listed)].filter((file) => !gone.has(file));
   } catch {
     return walkSessionFiles(root);
   }

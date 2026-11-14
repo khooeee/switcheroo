@@ -13,7 +13,7 @@ function startsWord(text: string, index: number): boolean {
 
 /**
  * Match `needle` (lowercase) as a subsequence of `text` at or after `from`; `lower` is `text`
- * lowercased. Finds the first full match, then walks back from its end for the tightest span.
+ * lowercased at the same offsets. Finds the first full match, then walks back from its end for the tightest span.
  * Runs of adjacent characters and word starts score up; gaps score down.
  */
 export function fuzzyMatch(text: string, lower: string, needle: string, from = 0): FuzzyHit | null {
