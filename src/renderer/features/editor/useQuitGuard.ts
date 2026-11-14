@@ -7,7 +7,7 @@ import { resolveUnsavedFiles } from "./resolveUnsavedFiles";
 export function useQuitGuard(): void {
   useEffect(() => window.switcheroo.onPrepareQuit(({ requestId }) => {
     void resolveUnsavedFiles(fileBufferStore.dirtyFiles())
-      .catch(() => false)
+      .then((files) => files !== null, () => false)
       .then(async (ok) => {
         await explorerPersistence.flush();
         window.switcheroo.quitReady(requestId, ok);

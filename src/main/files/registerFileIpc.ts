@@ -6,6 +6,7 @@ import { confirmUnsavedChanges } from "./confirmUnsavedChanges";
 import { listSessionDir } from "./listSessionDir";
 import { listSessionFiles } from "./listSessionFiles";
 import { readSessionFile } from "./readSessionFile";
+import { saveSessionFileAs } from "./saveSessionFileAs";
 import { SessionFileWatcher } from "./SessionFileWatcher";
 import { writeSessionFile } from "./writeSessionFile";
 
@@ -29,6 +30,9 @@ export function registerFileIpc(sessions: SessionManager): SessionFileWatcher {
     "files:write",
     (_e, sessionId: string, relPath: string, text: string, baseMtimeMs: number | null) =>
       writeSessionFile(cwdOf(sessionId), relPath, text, baseMtimeMs),
+  );
+  ipcMain.handle("files:saveAs", (event, sessionId: string, suggested: string, text: string) =>
+    saveSessionFileAs(BrowserWindow.fromWebContents(event.sender), cwdOf(sessionId), suggested, text),
   );
   ipcMain.handle("files:confirmUnsaved", (event, names: string[]) =>
     confirmUnsavedChanges(BrowserWindow.fromWebContents(event.sender), names),

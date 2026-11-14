@@ -1,8 +1,10 @@
-import { EditorState, type Extension } from "@codemirror/state";
+import { EditorState, type Extension, type Text } from "@codemirror/state";
 import type { FileContent } from "../../../shared/fileContent";
 import { errorMessage } from "../../../shared/errorMessage";
 import { editorExtensions } from "./editorExtensions";
+import { editorLanguage } from "./editorLanguage";
 import type { FileBuffer } from "./FileBuffer";
+import { isUntitledPath } from "./isUntitledPath";
 import { languageFor } from "./languageFor";
 import { docReplacement } from "./docReplacement";
 
@@ -25,13 +27,16 @@ function textAt(key: string): TextBuffer | null {
   return buffer?.kind === "text" ? buffer : null;
 }
 
-function fromContent(sessionId: string, path: string, content: FileContent, language: Extension): FileBuffer {
+/** Cmd+S inside the editor saves the active tab, whatever path its buffer has by then (see FilePane). */
+const saveActiveFile = () => void window.dispatchEvent(new CustomEvent("switcheroo:save-file"));
+
+function fromContent(content: FileContent, language: Extension): FileBuffer {
   switch (content.kind) {
     case "text": {
       const crlf = content.text.includes("\r\n");
       const state = EditorState.create({
         doc: content.text,
-        extensions: editorExtensions(language, crlf, () => void fileBufferStore.save(sessionId, path)),
+        extensions: editorExtensions(language, crlf, saveActiveFile),
       });
       return { kind: "text", live: { state, saved: state.doc }, mtimeMs: content.mtimeMs, dirty: false, conflictMtimeMs: null };
     }
@@ -56,17 +61,21 @@ export const fileBufferStore = {
     return buffers.get(keyOf(sessionId, path));
   },
 
-  /** Read a file (and its grammar) unless it is already open. */
+  /** Read a file (and its grammar) unless it is already open. An untitled tab starts empty. */
   async load(sessionId: string, path: string): Promise<void> {
     const key = keyOf(sessionId, path);
     if (buffers.has(key)) return;
+    if (isUntitledPath(path)) {
+      put(key, fromContent({ kind: "text", text: "", mtimeMs: 0 }, []));
+      return;
+    }
     put(key, LOADING);
     try {
       const [content, language] = await Promise.all([
         window.switcheroo.readSessionFile(sessionId, path),
         languageFor(path),
       ]);
-      if (buffers.get(key) === LOADING) put(key, fromContent(sessionId, path, content, language));
+      if (buffers.get(key) === LOADING) put(key, fromContent(content, language));
     } catch (err) {
       if (buffers.get(key) === LOADING) put(key, { kind: "error", message: errorMessage(err) });
     }
@@ -117,7 +126,7 @@ export const fileBufferStore = {
   async reload(sessionId: string, path: string, discardEdits = false): Promise<void> {
     const key = keyOf(sessionId, path);
     const before = buffers.get(key);
-    if (!before || before.kind === "loading") return;
+    if (!before || before.kind === "loading" || isUntitledPath(path)) return;
     const content = await window.switcheroo.readSessionFile(sessionId, path).catch(
       (err: unknown): FileContent | Error => new Error(errorMessage(err)),
     );
@@ -128,7 +137,7 @@ export const fileBufferStore = {
       if (buffer.kind === "text" && buffer.dirty && !discardEdits) {
         put(key, { ...buffer, conflictMtimeMs: "mtimeMs" in content ? content.mtimeMs : buffer.mtimeMs });
       }
-      else put(key, fromContent(sessionId, path, content, await languageFor(path)));
+      else put(key, fromContent(content, await languageFor(path)));
       return;
     }
     if (content.mtimeMs === buffer.mtimeMs && !discardEdits) return;
@@ -141,6 +150,19 @@ export const fileBufferStore = {
     buffer.live.state = next;
     buffer.live.saved = next.doc;
     put(key, { ...buffer, mtimeMs: content.mtimeMs, dirty: false, conflictMtimeMs: null });
+  },
+
+  /**
+   * Save As wrote `saved` to `to`: the buffer carries on under that path with its undo history
+   * and cursor, in that file's `language`. A buffer `to` already had is replaced.
+   */
+  moveTo(sessionId: string, from: string, to: string, saved: Text, mtimeMs: number, language: Extension): void {
+    const buffer = textAt(keyOf(sessionId, from));
+    if (!buffer) return;
+    const state = buffer.live.state.update({ effects: editorLanguage.reconfigure(language) }).state;
+    buffers.delete(keyOf(sessionId, from));
+    const dirty = !state.doc.eq(saved);
+    put(keyOf(sessionId, to), { kind: "text", live: { state, saved }, mtimeMs, dirty, conflictMtimeMs: null });
   },
 
   /** Keep the unsaved edits; the next save overwrites the disk version that caused the conflict. */

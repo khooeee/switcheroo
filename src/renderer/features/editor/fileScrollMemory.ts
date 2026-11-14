@@ -21,6 +21,17 @@ export const fileScrollMemory = {
     if (tops.get(sessionId)?.delete(path)) explorerChanges.notify(sessionId);
   },
 
+  /** A file saved under another path keeps its position there. */
+  move(sessionId: string, from: string, to: string): void {
+    const session = tops.get(sessionId);
+    if (!session) return;
+    const top = session.get(from);
+    session.delete(from);
+    if (top === undefined) session.delete(to);
+    else session.set(to, top);
+    explorerChanges.notify(sessionId);
+  },
+
   forSession(sessionId: string): Record<string, number> {
     return Object.fromEntries(tops.get(sessionId) ?? []);
   },

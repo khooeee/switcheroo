@@ -54,6 +54,7 @@ const api: SwitcherooApi = {
   readSessionFile: (sessionId, relPath) => ipcRenderer.invoke("files:read", sessionId, relPath),
   writeSessionFile: (sessionId, relPath, text, baseMtimeMs) =>
     ipcRenderer.invoke("files:write", sessionId, relPath, text, baseMtimeMs),
+  saveSessionFileAs: (sessionId, suggested, text) => ipcRenderer.invoke("files:saveAs", sessionId, suggested, text),
   confirmUnsavedChanges: (names) => ipcRenderer.invoke("files:confirmUnsaved", names),
   watchSessionFiles: (sessionId) => ipcRenderer.invoke("files:watch", sessionId),
   unwatchSessionFiles: (sessionId) => ipcRenderer.invoke("files:unwatch", sessionId),
